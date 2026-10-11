@@ -29,11 +29,11 @@ export const PresentButton = ({
       <PresentMenu
         disabled={disabled}
         title={title}
-        onPresent={({ pip }) => {
+        onPresent={({ live }) => {
           if (disabled) return;
           present(
             typeof selection === "function" ? selection() : selection,
-            pip ? "pip" : "stage",
+            live,
           );
         }}
       >

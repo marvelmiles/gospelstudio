@@ -48,6 +48,26 @@ export interface SecondaryPresentation {
 
 export const LIVE_CAMERA_ID = "live-camera";
 
+export interface PresentStartOptions {
+  /** Drive the audience display rather than preview on this screen only. */
+  live?: boolean;
+  /** The document as it stands in the editor, which may be newer than the saved one. */
+  doc?: SlideDeckDoc;
+  item?: MediaItem;
+}
+
+/** The live presentation set aside while something else is previewed here. */
+interface HeldLivePresentation {
+  target: PresentTarget;
+  index: number;
+  mode: PresentationMode;
+  deck: PresentedDeck | null;
+  secondary: SecondaryPresentation | null;
+}
+
+let presentationSessions = 0;
+const nextSession = (): number => ++presentationSessions;
+
 export interface PresentSlice {
   presentation: PresentTarget | null;
   presentationMode: PresentationMode;
@@ -55,13 +75,16 @@ export interface PresentSlice {
   presentedDeck: PresentedDeck | null;
   presentedMedia: PresentedMedia | null;
   secondaryPresentation: SecondaryPresentation | null;
+  heldLivePresentation: HeldLivePresentation | null;
 
   startPresent: (
     kind: ContentKind,
     id: string,
     startIndex?: number,
-    mode?: PresentationMode,
+    options?: PresentStartOptions,
   ) => void;
+  markPresentationLive: () => void;
+  leavePresentation: () => void;
   setPresentationMode: (mode: PresentationMode) => void;
   setPresentationIndex: (index: number) => void;
   updatePresentation: (kind: ContentKind, doc: SlideDeckDoc) => boolean;
@@ -76,6 +99,21 @@ export interface PresentSlice {
   stopPresent: () => void;
 }
 
+/* Previewing while the audience display is showing something keeps that live
+   presentation aside, so leaving the preview hands control of it back. */
+const holdLivePresentation = (
+  state: PresentSlice,
+): HeldLivePresentation | null =>
+  state.presentation?.live && presentLiveWindow.getState().isLive
+    ? {
+        target: state.presentation,
+        index: state.presentationIndex,
+        mode: state.presentationMode,
+        deck: state.presentedDeck,
+        secondary: state.secondaryPresentation,
+      }
+    : null;
+
 export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
   presentation: null,
   presentationMode: "stage",
@@ -83,32 +121,69 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
   presentedDeck: null,
   presentedMedia: null,
   secondaryPresentation: null,
+  heldLivePresentation: null,
 
-  startPresent: (kind, id, startIndex = 0, mode = "stage") => {
+  startPresent: (kind, id, startIndex = 0, options = {}) => {
+    const { live = false } = options;
     const state = get();
     const deckDoc =
-      kind === "manuscript"
-        ? state.manuscripts.find((m) => m.id === id)
-        : kind === "scripture"
-          ? state.scriptures.find((s) => s.id === id)
-          : undefined;
+      kind === "manuscript" || kind === "scripture"
+        ? (options.doc ??
+          (kind === "manuscript"
+            ? state.manuscripts.find((m) => m.id === id)
+            : state.scriptures.find((s) => s.id === id)))
+        : undefined;
     const mediaItem =
       kind === "image" || kind === "video"
-        ? state.media.find((m) => m.id === id && m.kind === kind)
+        ? (options.item ??
+          state.media.find((m) => m.id === id && m.kind === kind))
         : undefined;
     const canPresent =
       kind === "manuscript" || kind === "scripture"
         ? Boolean(deckDoc?.slides?.length)
         : Boolean(mediaItem);
-    if (canPresent)
-      set({
-        presentation: { kind, id, startIndex },
-        presentationMode: mode,
-        presentationIndex: startIndex,
-        presentedDeck: pinnedContent(kind, deckDoc, mediaItem),
-        presentedMedia: null,
-        secondaryPresentation: null,
-      });
+    if (!canPresent) return;
+    set({
+      presentation: { kind, id, startIndex, live, session: nextSession() },
+      presentationMode: live ? "pip" : "stage",
+      presentationIndex: startIndex,
+      presentedDeck: pinnedContent(kind, deckDoc, mediaItem),
+      presentedMedia: null,
+      secondaryPresentation: null,
+      heldLivePresentation: live
+        ? null
+        : (state.heldLivePresentation ?? holdLivePresentation(state)),
+    });
+  },
+
+  markPresentationLive: () => {
+    const { presentation } = get();
+    if (!presentation || presentation.live) return;
+    set({
+      presentation: { ...presentation, live: true },
+      heldLivePresentation: null,
+    });
+  },
+
+  leavePresentation: () => {
+    const held = get().heldLivePresentation;
+    if (!held || !presentLiveWindow.getState().isLive) {
+      get().stopPresent();
+      return;
+    }
+    set({
+      presentation: {
+        ...held.target,
+        startIndex: held.index,
+        session: nextSession(),
+      },
+      presentationMode: held.mode,
+      presentationIndex: held.index,
+      presentedDeck: held.deck,
+      presentedMedia: null,
+      secondaryPresentation: held.secondary,
+      heldLivePresentation: null,
+    });
   },
 
   setPresentationMode: (mode) => set({ presentationMode: mode }),
@@ -200,6 +275,7 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
       presentedDeck: null,
       presentedMedia: null,
       secondaryPresentation: null,
+      heldLivePresentation: null,
     });
   },
 });

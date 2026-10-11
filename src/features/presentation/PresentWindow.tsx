@@ -18,6 +18,7 @@ import { useOpenerLiveComposition } from "../stream/lib/useOpenerComposition";
 import { useMirroredStreamOverlays } from "../stream/lib/streamOverlayStore";
 import { useOverlayContentSync } from "../stream/lib/useOverlayContentSync";
 import { useDeck } from "./useDeck";
+import { applyPresentAssets } from "./lib/presentAssets";
 import { buildStageFrame } from "./stageContent";
 import { SecondaryPip } from "./SecondaryPip";
 import { Stage } from "./Stage";
@@ -51,6 +52,7 @@ export const PresentWindow = () => {
   useEffect(() => {
     const channel = openPresentChannel((msg) => {
       if (msg.type === "state") {
+        if (msg.state.assets) applyPresentAssets(msg.state.assets);
         setState(msg.state);
         return;
       }

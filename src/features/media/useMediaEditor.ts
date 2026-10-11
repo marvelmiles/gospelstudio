@@ -4,6 +4,7 @@ import { useStore } from "../../store/useStore";
 import { shallowEqual } from "../../lib/equality";
 import type { PresentedMedia } from "../../store/slices/presentSlice";
 import { useDraftHistory } from "../../hooks/useDraftHistory";
+import type { PresentOptions } from "../../hooks/usePresentActions";
 import {
   DEFAULT_IMAGE_SETTINGS,
   DEFAULT_VIDEO_SETTINGS,
@@ -40,7 +41,7 @@ export interface MediaEditor {
   /** Off while every adjustment already sits where this file starts. */
   canResetSettings: boolean;
   save: () => boolean;
-  present: (options: { pip: boolean }) => void;
+  present: (options: PresentOptions) => void;
   isPresenting: boolean;
   updatePresentation: () => boolean;
   presentedVideo: PresentedMedia | null;
@@ -158,13 +159,12 @@ export const useMediaEditor = (item: MediaItem): MediaEditor => {
   }, [draft, item, updateMedia, markSaved]);
 
   const present = useCallback(
-    ({ pip }: { pip: boolean }) => {
+    ({ live }: PresentOptions) => {
       const startIndex =
         item.kind === "image" ? imageDeckIndex(media, item.id) : 0;
-      startPresent(item.kind, item.id, startIndex, pip ? "pip" : "stage");
-      updateMediaPresentation(preview);
+      startPresent(item.kind, item.id, startIndex, { live, item: preview });
     },
-    [item, media, preview, startPresent, updateMediaPresentation],
+    [item, media, preview, startPresent],
   );
 
   return {

@@ -105,8 +105,8 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
               bgMap={bgMap}
               trashView={trashView}
               onOpen={() => navigate(routes.passage(passage.id))}
-              onPresent={(pip) =>
-                startPresent("scripture", passage.id, 0, pip ? "pip" : "stage")
+              onPresent={(live) =>
+                startPresent("scripture", passage.id, 0, { live })
               }
               onQuickShare={() =>
                 quickShare.open(
@@ -140,7 +140,7 @@ interface PassageCardProps {
   bgMap: BgMap;
   trashView: boolean;
   onOpen: () => void;
-  onPresent: (pip: boolean) => void;
+  onPresent: (live: boolean) => void;
   onQuickShare: () => void;
   onTrash: () => void;
   onRestore: () => void;
@@ -209,7 +209,7 @@ const PassageCard = ({
             </>
           ) : (
             <>
-              <PresentMenu fill onPresent={({ pip }) => onPresent(pip)} />
+              <PresentMenu fill onPresent={({ live }) => onPresent(live)} />
               <PinButton kind="scripture" item={passage} library={library} />
               <IconButton
                 filled

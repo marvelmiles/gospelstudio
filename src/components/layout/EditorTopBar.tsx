@@ -10,7 +10,10 @@ import {
 } from "lucide-react";
 import { useUITheme } from "../../theme/ThemeProvider";
 import { useEditorShortcuts } from "../../hooks/useEditorShortcuts";
-import { usePresentActions } from "../../hooks/usePresentActions";
+import {
+  usePresentActions,
+  type PresentOptions,
+} from "../../hooks/usePresentActions";
 import { EDITOR_COMMANDS } from "../../lib/shortcuts";
 import { Button, IconButton } from "../ui/Button";
 import { PresentMenu } from "../ui/PresentMenu";
@@ -26,7 +29,7 @@ interface EditorTopBarProps {
   backTitle?: string;
   onBack?: () => void;
   leading?: ReactNode;
-  onPresent?: (options: { pip: boolean }) => void;
+  onPresent?: (options: PresentOptions) => void;
   actions?: ReactNode;
   dirty: boolean;
   titleError?: string | null;

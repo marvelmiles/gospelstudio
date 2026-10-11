@@ -217,6 +217,7 @@ export const PresenterPip = ({
               lineStyles={content.lineStyles}
               bg={content.background}
               bgImage={content.backgroundImage}
+              bgVideo={content.backgroundVideo}
               radius={0}
               fill
             />

@@ -1,9 +1,11 @@
 import type {
+  Background,
   ContentKind,
   MediaItem,
   PipPlacement,
   PresentationView,
   SlideDeckDoc,
+  Theme,
 } from "../types";
 
 export const PRESENT_CHANNEL_NAME = "worship-studio-present";
@@ -28,6 +30,17 @@ export interface SecondaryPresentState {
 
 export type SecondaryModuleKind = "image" | "video" | "stream";
 
+/**
+ * The library records a deck leans on, sent along with it because the live
+ * window loaded its own copy of the library when it opened and never sees a
+ * background, clip or theme change made after that.
+ */
+export interface PresentAssets {
+  theme?: Theme;
+  backgrounds: Background[];
+  media: MediaItem[];
+}
+
 export interface PresentState {
   kind: ContentKind;
   id: string;
@@ -41,6 +54,7 @@ export interface PresentState {
   view: PresentationView;
   media?: MediaPlayback;
   secondary?: SecondaryPresentState;
+  assets?: PresentAssets;
 }
 
 export interface MediaSync {

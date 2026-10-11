@@ -175,13 +175,8 @@ export const ManuscriptLibrary = () => {
             themes,
             bgMap,
             onOpen: () => navigate(routes.manuscript(manuscript.id)),
-            onPresent: (pip: boolean) =>
-              startPresent(
-                "manuscript",
-                manuscript.id,
-                0,
-                pip ? "pip" : "stage",
-              ),
+            onPresent: (live: boolean) =>
+              startPresent("manuscript", manuscript.id, 0, { live }),
             onQuickShare: () =>
               quickShare.open(
                 [{ collection: "manuscripts", id: manuscript.id }],
@@ -239,7 +234,7 @@ interface ManuscriptCardProps {
   themes: Theme[];
   bgMap: BgMap;
   onOpen: () => void;
-  onPresent: (pip: boolean) => void;
+  onPresent: (live: boolean) => void;
   onQuickShare: () => void;
   onDelete: () => void;
 }
@@ -319,7 +314,7 @@ const ManuscriptRow = ({
       onOpen={onOpen}
       actions={
         <>
-          <PresentMenu onPresent={({ pip }) => onPresent(pip)} />
+          <PresentMenu onPresent={({ live }) => onPresent(live)} />
           <PinButton kind="manuscript" item={manuscript} library={library} />
           <IconButton
             filled
@@ -377,7 +372,7 @@ const ManuscriptCard = ({
           {manuscript.collection ? ` · ${manuscript.collection}` : ""}
         </div>
         <CardActions>
-          <PresentMenu fill onPresent={({ pip }) => onPresent(pip)} />
+          <PresentMenu fill onPresent={({ live }) => onPresent(live)} />
           <PinButton kind="manuscript" item={manuscript} library={library} />
           <IconButton
             filled

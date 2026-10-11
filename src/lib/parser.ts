@@ -1,4 +1,4 @@
-import type { ManuscriptFormat, Slide, TextStyle } from "../types";
+import type { ManuscriptFormat, Slide } from "../types";
 import type { Collection } from "../data/collections";
 import { uid } from "./id";
 import {
@@ -7,6 +7,7 @@ import {
   slideRowCapacity,
   slideTextMetrics,
   type SlideTextMetrics,
+  type SlideTextStyle,
 } from "./slideLayout";
 import { defaultFormatForCollection } from "./manuscript/format";
 import { extractManuscriptMetadata } from "./manuscript/metadata";
@@ -319,13 +320,12 @@ export interface ParseManuscriptOptions {
   maxLines?: number;
   format?: ManuscriptFormat;
   /** The deck's resolved text style, which decides how much fits on a slide. */
-  style?: Pick<TextStyle, "fontSize" | "lineHeight"> | null;
+  style?: SlideTextStyle | null;
 }
 
 /** How many written lines a slide holds at the default text size. */
-export const defaultMaxLines = (
-  style?: Pick<TextStyle, "fontSize" | "lineHeight"> | null,
-): number => slideRowCapacity(slideTextMetrics(style));
+export const defaultMaxLines = (style?: SlideTextStyle | null): number =>
+  slideRowCapacity(slideTextMetrics(style));
 
 const emptySlide = (): Slide => ({
   id: uid(),

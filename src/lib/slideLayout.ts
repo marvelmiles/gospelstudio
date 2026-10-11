@@ -1,4 +1,5 @@
 import type { TextStyle } from "../types";
+import { textMeasurer, wrappedRowCount, type TextMeasure } from "./textMeasure";
 
 export const SLIDE_ASPECT = 16 / 9;
 
@@ -9,14 +10,15 @@ export const SLIDE_ASPECT = 16 / 9;
  */
 export const SLIDE_HEIGHT_CQW = 100 / SLIDE_ASPECT;
 
-export const SLIDE_BODY_PADDING_Y_CQW = 7;
+export const SLIDE_BODY_PADDING_Y_CQW = 5;
 export const SLIDE_BODY_PADDING_X_CQW = 9;
 
 /**
- * Air kept above and below the words on top of the body padding, so a slide
- * reads as a framed line of text rather than a block pressed against the edges.
+ * Air kept above and below the words on top of the body padding, so a full
+ * slide still reads as framed text rather than a block pressed against the
+ * edges, without leaving rows of usable space empty.
  */
-export const SLIDE_BREATHING_ROOM_CQW = 3;
+export const SLIDE_BREATHING_ROOM_CQW = 0.5;
 
 export const SLIDE_BODY_PADDING = `${SLIDE_BODY_PADDING_Y_CQW}cqw ${SLIDE_BODY_PADDING_X_CQW}cqw`;
 
@@ -26,11 +28,7 @@ export const DEFAULT_SLIDE_LINE_HEIGHT = 1.25;
 export const MIN_SLIDE_FONT_SIZE = 2.5;
 export const MAX_SLIDE_FONT_SIZE = 10;
 
-/**
- * Mixed-case English text averages about half the font size per glyph across
- * the faces this app ships, which is close enough to predict where a line wraps
- * without laying it out first.
- */
+/** Matches the estimate {@link textMeasurer} falls back on when it cannot measure. */
 const AVERAGE_GLYPH_WIDTH_RATIO = 0.5;
 
 const TEXT_AREA_HEIGHT_CQW =
@@ -41,7 +39,21 @@ const TEXT_AREA_WIDTH_CQW = 100 - 2 * SLIDE_BODY_PADDING_X_CQW;
 export interface SlideTextMetrics {
   fontSize: number;
   lineHeight: number;
+  fontFamily?: string;
+  fontWeight?: number;
+  letterSpacing?: number;
+  uppercase?: boolean;
 }
+
+export type SlideTextStyle = Pick<
+  TextStyle,
+  | "fontSize"
+  | "lineHeight"
+  | "fontFamily"
+  | "fontWeight"
+  | "letterSpacing"
+  | "uppercase"
+>;
 
 export const DEFAULT_SLIDE_TEXT_METRICS: SlideTextMetrics = {
   fontSize: DEFAULT_SLIDE_FONT_SIZE,
@@ -49,10 +61,14 @@ export const DEFAULT_SLIDE_TEXT_METRICS: SlideTextMetrics = {
 };
 
 export const slideTextMetrics = (
-  style?: Pick<TextStyle, "fontSize" | "lineHeight"> | null,
+  style?: SlideTextStyle | null,
 ): SlideTextMetrics => ({
   fontSize: style?.fontSize || DEFAULT_SLIDE_FONT_SIZE,
   lineHeight: style?.lineHeight || DEFAULT_SLIDE_LINE_HEIGHT,
+  fontFamily: style?.fontFamily,
+  fontWeight: style?.fontWeight,
+  letterSpacing: style?.letterSpacing,
+  uppercase: style?.uppercase,
 });
 
 export const sameSlideTextMetrics = (
@@ -76,12 +92,12 @@ export const slideRowCharacters = (metrics: SlideTextMetrics): number =>
     ),
   );
 
-/** How many rows one written line takes once it wraps. */
+/** How many rows one written line takes once it wraps between words. */
 export const slideRowsForText = (
   text: string,
   metrics: SlideTextMetrics,
-): number =>
-  Math.max(1, Math.ceil(text.trim().length / slideRowCharacters(metrics)));
+  measure: TextMeasure = textMeasurer(metrics),
+): number => wrappedRowCount(text, TEXT_AREA_WIDTH_CQW, measure);
 
 /** How many characters a whole slide holds, minus any rows already spoken for. */
 export const slideCharacterBudget = (
@@ -113,6 +129,7 @@ export const chunkToFit = <T>(
     slideRowCapacity(metrics) - (options.reservedRows ?? 0),
   );
   const lineBudget = Math.max(1, options.maxLines ?? rowBudget);
+  const measure = textMeasurer(metrics);
 
   const chunks: T[][] = [];
   let current: T[] = [];
@@ -126,7 +143,10 @@ export const chunkToFit = <T>(
   };
 
   for (const item of items) {
-    const cost = Math.min(slideRowsForText(textOf(item), metrics), rowBudget);
+    const cost = Math.min(
+      slideRowsForText(textOf(item), metrics, measure),
+      rowBudget,
+    );
     if (
       current.length &&
       (rows + cost > rowBudget || current.length >= lineBudget)

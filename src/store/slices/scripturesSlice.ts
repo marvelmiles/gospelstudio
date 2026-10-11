@@ -11,7 +11,7 @@ import { deleteRecord, saveRecord } from "../../lib/storage";
 import { buildScriptureSlides } from "../../features/bible/lib/scriptureSlides";
 import { formatReference } from "../../features/bible/lib/reference";
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
-import type { PresentationMode } from "./presentSlice";
+import type { PresentStartOptions } from "./presentSlice";
 import type { SliceCreator } from "../storeTypes";
 
 export const QUICK_PASSAGE_ID = "scripture-quick-present";
@@ -56,7 +56,7 @@ export interface ScripturesSlice {
   deleteScripture: (id: string) => void;
   presentScriptureSelection: (
     selection: ScriptureSelection,
-    mode?: PresentationMode,
+    options?: Pick<PresentStartOptions, "live">,
   ) => void;
   stageScriptureSelection: (
     selection: ScriptureSelection,
@@ -206,7 +206,7 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
     afterDelete(get);
   },
 
-  presentScriptureSelection: (selection, mode = "stage") => {
+  presentScriptureSelection: (selection, options = {}) => {
     if (blockWrite(get)) return;
     const passage = buildPassage(
       { ...selection, showVerseNumbers: false },
@@ -215,7 +215,7 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
       scriptureThemeId(get),
     );
     get().upsertScripture(passage);
-    get().startPresent("scripture", passage.id, 0, mode);
+    get().startPresent("scripture", passage.id, 0, options);
   },
 
   stageScriptureSelection: (selection, options = {}) => {

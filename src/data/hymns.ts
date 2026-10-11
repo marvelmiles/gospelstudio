@@ -15,7 +15,7 @@ export interface HymnSource {
  * Bumped whenever the generated hymnal changes, so an install that already has
  * an older set reconciles its built-in manuscripts on the next load.
  */
-export const HYMNAL_VERSION = 4;
+export const HYMNAL_VERSION = 5;
 
 export const HYMN_COLLECTION: Collection = "Hymns";
 

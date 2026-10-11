@@ -3,7 +3,7 @@ import { presentLiveWindow } from "../lib/liveWindow";
 import { useGoLiveToast } from "./useGoLiveToast";
 
 export interface PresentOptions {
-  pip: boolean;
+  live: boolean;
 }
 
 export interface PresentActions {
@@ -19,12 +19,12 @@ export const usePresentActions = (
   const startLive = useCallback(() => {
     void presentLiveWindow.goLive().then((result) => {
       announceGoLive(result);
-      if (result.ok) onPresent({ pip: true });
+      if (result.ok) onPresent({ live: true });
     });
   }, [announceGoLive, onPresent]);
 
   const startPreview = useCallback(
-    () => onPresent({ pip: false }),
+    () => onPresent({ live: false }),
     [onPresent],
   );
 

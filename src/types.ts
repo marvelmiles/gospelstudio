@@ -321,6 +321,10 @@ export interface PresentTarget {
   kind: ContentKind;
   id: string;
   startIndex: number;
+  /** Whether this presentation drives the audience display, or is a local preview. */
+  live: boolean;
+  /** Changes every time a presentation is started, even of the same item. */
+  session: number;
 }
 
 export type ImportMode = "override" | "merge-imported" | "merge-existing";

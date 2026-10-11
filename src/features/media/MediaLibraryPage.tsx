@@ -145,11 +145,10 @@ export const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
     [backgrounds],
   );
 
-  const present = (item: MediaItem, pip: boolean) => {
-    const mode = pip ? "pip" : "stage";
+  const present = (item: MediaItem, live: boolean) => {
     if (kind === "image")
-      startPresent("image", item.id, imageDeckIndex(media, item.id), mode);
-    else startPresent("video", item.id, 0, mode);
+      startPresent("image", item.id, imageDeckIndex(media, item.id), { live });
+    else startPresent("video", item.id, 0, { live });
   };
 
   const toggleBackground = (item: MediaItem) => {
@@ -231,7 +230,7 @@ export const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
               library,
               isBackground: backgroundImageIds.has(item.id),
               onOpen: () => openEditor(item),
-              onPresent: (pip: boolean) => present(item, pip),
+              onPresent: (live: boolean) => present(item, live),
               onToggleBackground: () => toggleBackground(item),
               onQuickShare: () =>
                 quickShare.open(
@@ -279,7 +278,7 @@ interface MediaCardProps {
   library: MediaItem[];
   isBackground: boolean;
   onOpen: () => void;
-  onPresent: (pip: boolean) => void;
+  onPresent: (live: boolean) => void;
   onToggleBackground: () => void;
   onQuickShare: () => void;
   onDelete: () => void;
@@ -366,7 +365,7 @@ const MediaRow = ({
     onOpen={onOpen}
     actions={
       <>
-        <PresentMenu onPresent={({ pip }) => onPresent(pip)} />
+        <PresentMenu onPresent={({ live }) => onPresent(live)} />
         <PinButton kind={item.kind} item={item} library={library} />
         <IconButton
           filled
@@ -412,7 +411,7 @@ const MediaCard = ({
           {formatBytes(item.size || 0)}
         </div>
         <CardActions>
-          <PresentMenu fill onPresent={({ pip }) => onPresent(pip)} />
+          <PresentMenu fill onPresent={({ live }) => onPresent(live)} />
           <PinButton kind={item.kind} item={item} library={library} />
           <IconButton
             filled

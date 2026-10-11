@@ -22,6 +22,7 @@ import { usePresentation } from "./usePresentation";
 import { usePresentBroadcast } from "./lib/usePresentBroadcast";
 import { useScriptureReadAloud } from "./lib/useScriptureReadAloud";
 import { useSecondaryModule } from "./lib/useSecondaryModule";
+import { collectPresentAssets } from "./lib/presentAssets";
 import {
   DECK_END_LABELS,
   STAGE_TRANSPORT_STYLE,
@@ -48,7 +49,13 @@ export const Presentation = () => {
   const mode = useStore((s) => s.presentationMode);
   const setPresentationMode = useStore((s) => s.setPresentationMode);
   const publishPresentedMedia = useStore((s) => s.publishPresentedMedia);
+  const isLiveTarget = useStore((s) => Boolean(s.presentation?.live));
+  const markPresentationLive = useStore((s) => s.markPresentationLive);
+  const media = useStore((s) => s.media);
   const { isExtended, isLive, goLive, endLive } = useGoLive();
+  /* The live window can stay open while something else is previewed here, so
+     only the presentation that went live is mirrored onto it. */
+  const isBroadcasting = isLive && isLiveTarget;
 
   const pipRef = useRef<HTMLDivElement>(null);
   const videoHost = usePortalHost();
@@ -112,6 +119,11 @@ export const Presentation = () => {
     view,
   } = presentation;
   const videoRate = videoSettings?.playbackRate ?? 1;
+  const { bgMap } = presentation;
+  const presentAssets = useMemo(
+    () => (deck ? collectPresentAssets(deck, bgMap, media) : undefined),
+    [deck, bgMap, media],
+  );
 
   const presentState: PresentState | null = useMemo(
     () =>
@@ -129,6 +141,7 @@ export const Presentation = () => {
             view,
             media: isVideoSlide ? mediaPlayback : undefined,
             secondary: secondary.state,
+            assets: presentAssets,
           }
         : null,
     [
@@ -141,11 +154,12 @@ export const Presentation = () => {
       isVideoSlide,
       mediaPlayback,
       secondary.state,
+      presentAssets,
     ],
   );
 
   usePresentBroadcast(
-    isLive,
+    isBroadcasting,
     presentState,
     {
       isActive: isVideoSlide,
@@ -204,17 +218,19 @@ export const Presentation = () => {
     !presentation.prefs.autoHidePresenterBar || isChromeVisible;
 
   const handleGoLive = () => {
-    if (isLive) {
+    if (isBroadcasting) {
       endLive();
       pushToast("Ended the live projection.");
       return;
     }
-    void goLive().then(announceGoLive);
+    void goLive().then((result) => {
+      announceGoLive(result);
+      if (result.ok) markPresentationLive();
+    });
   };
 
   const handleExit = () => {
     readAloud.speech.stop();
-    endLive();
     presentation.exit();
   };
 
@@ -302,7 +318,7 @@ export const Presentation = () => {
           slideIndex={slideIndex}
           total={presentation.slides.length}
           paused={presentation.playbackPaused}
-          isLive={isLive}
+          isLive={isBroadcasting}
           videoHost={videoHost}
           videoProgress={videoProgress}
           videoMuted={mediaPlayback.muted}
@@ -345,9 +361,9 @@ export const Presentation = () => {
           slideIndex={slideIndex}
           content={presentation.frame.content}
           animation={presentation.frame.animation}
-          view={isLive ? "normal" : view}
-          zoom={isLive ? 1 : zoom}
-          pan={isLive ? { x: 0, y: 0 } : pan}
+          view={isBroadcasting ? "normal" : view}
+          zoom={isBroadcasting ? 1 : zoom}
+          pan={isBroadcasting ? { x: 0, y: 0 } : pan}
           onPanBy={presentation.panBy}
           durationMs={presentation.prefs.transitionDuration}
           easing={presentation.prefs.easing}
@@ -364,7 +380,7 @@ export const Presentation = () => {
           isFullscreen={presentation.isFullscreen}
           visible={areControlsVisible}
           isExternal={isExtended}
-          isLive={isLive}
+          isLive={isBroadcasting}
           canRead={readAloud.canRead}
           reading={readAloud.isReading}
           onToggleRead={readAloud.toggleReadAloud}

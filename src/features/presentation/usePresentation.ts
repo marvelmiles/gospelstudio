@@ -31,7 +31,7 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
   const presentation = useStore((s) => s.presentation);
   const audio = useStore((s) => s.audio);
   const prefs = useStore((s) => s.prefs);
-  const stopPresent = useStore((s) => s.stopPresent);
+  const leavePresentation = useStore((s) => s.leavePresentation);
   const setPresentationIndex = useStore((s) => s.setPresentationIndex);
 
   const deck = useDeck(presentation?.kind, presentation?.id);
@@ -40,6 +40,15 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
 
   const [slideIndex, setSlideIndex] = useState(presentation?.startIndex ?? 0);
   const [paused, setPaused] = useState(false);
+  const [followedSession, setFollowedSession] = useState(presentation?.session);
+
+  /* Starting the same item again, from another slide or straight from its
+     editor, keeps this view mounted, so the new start is taken up here. */
+  if (presentation && presentation.session !== followedSession) {
+    setFollowedSession(presentation.session);
+    setSlideIndex(presentation.startIndex);
+    setPaused(false);
+  }
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [view, setView] = useState<PresentationView>(prefs.presentationView);
@@ -125,8 +134,8 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
 
   const exit = useCallback(() => {
     if (document.fullscreenElement) void document.exitFullscreen?.();
-    stopPresent();
-  }, [stopPresent]);
+    leavePresentation();
+  }, [leavePresentation]);
 
   const togglePause = useCallback(() => setPaused((p) => !p), []);
   const zoomIn = useCallback(

@@ -2,13 +2,16 @@ import { useState, type ReactNode } from "react";
 import { MonitorPlay, MonitorUp, Play } from "lucide-react";
 import { useUITheme } from "../../theme/ThemeProvider";
 import { fade } from "../../theme/uiTheme";
-import { usePresentActions } from "../../hooks/usePresentActions";
+import {
+  usePresentActions,
+  type PresentOptions,
+} from "../../hooks/usePresentActions";
 import { EDITOR_COMMANDS } from "../../lib/shortcuts";
 import { Button } from "./Button";
 import { Popover } from "./Popover";
 
 interface PresentMenuProps {
-  onPresent: (options: { pip: boolean }) => void;
+  onPresent: (options: PresentOptions) => void;
   label?: string;
   size?: "sm" | "md" | "lg";
   variant?: "primary" | "ghost" | "subtle";

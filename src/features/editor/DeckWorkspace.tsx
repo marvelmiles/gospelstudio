@@ -118,15 +118,32 @@ export const DeckWorkspace = ({
   );
   const bgMap = useBgMap();
 
-  const { fontSize: docFontSize, lineHeight: docLineHeight } = resolveStyle(
-    undefined,
-    doc,
-    theme,
-  );
+  const {
+    fontSize: docFontSize,
+    lineHeight: docLineHeight,
+    fontFamily: docFontFamily,
+    fontWeight: docFontWeight,
+    letterSpacing: docLetterSpacing,
+    uppercase: docUppercase,
+  } = resolveStyle(undefined, doc, theme);
   const textMetrics = useMemo(
     () =>
-      slideTextMetrics({ fontSize: docFontSize, lineHeight: docLineHeight }),
-    [docFontSize, docLineHeight],
+      slideTextMetrics({
+        fontSize: docFontSize,
+        lineHeight: docLineHeight,
+        fontFamily: docFontFamily,
+        fontWeight: docFontWeight,
+        letterSpacing: docLetterSpacing,
+        uppercase: docUppercase,
+      }),
+    [
+      docFontSize,
+      docLineHeight,
+      docFontFamily,
+      docFontWeight,
+      docLetterSpacing,
+      docUppercase,
+    ],
   );
   useRefitOnTextSize({
     metrics: textMetrics,
@@ -159,15 +176,11 @@ export const DeckWorkspace = ({
   const isPresentingThisDoc =
     presentation?.kind === kind && presentation.id === doc.id;
 
-  const present = ({ pip }: { pip: boolean }) => {
-    startPresent(
-      kind,
-      doc.id,
-      Math.max(0, editor.selectedIndex),
-      pip ? "pip" : "stage",
-    );
-    updatePresentation(kind, doc);
-  };
+  const present = ({ live }: { live: boolean }) =>
+    startPresent(kind, doc.id, Math.max(0, editor.selectedIndex), {
+      live,
+      doc,
+    });
 
   const refuseInvalid = () =>
     pushToast(validation.message ?? "Fix the highlighted fields.", "error");
