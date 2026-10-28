@@ -4,8 +4,7 @@ import { placedMediaSource } from "./slideMedia";
 import { NO_AUDIO_ID } from "./media";
 import { contentIdsOf } from "../features/stream/lib/overlayPresets";
 
-/** Where a record lives, which is also where a backup carries it. */
-export type BackupCollection =
+type BackupCollection =
   | "manuscripts"
   | "scriptures"
   | "media"
@@ -15,7 +14,7 @@ export type BackupCollection =
   | "overlayPresets"
   | "prefs";
 
-export const BACKUP_COLLECTIONS: readonly BackupCollection[] = [
+const BACKUP_COLLECTIONS: readonly BackupCollection[] = [
   "manuscripts",
   "scriptures",
   "media",
@@ -31,24 +30,11 @@ export interface BackupRecordRef {
   id: string;
 }
 
-/** Which records travel, by collection. */
 export type BackupSelection = Readonly<
   Record<BackupCollection, readonly string[]>
 >;
 
-/** The one preferences record, which is either sent or not. */
 export const PREFS_RECORD_ID = "app";
-
-export const EMPTY_SELECTION: BackupSelection = {
-  manuscripts: [],
-  scriptures: [],
-  media: [],
-  themes: [],
-  backgrounds: [],
-  audio: [],
-  overlayPresets: [],
-  prefs: [],
-};
 
 export const selectionFrom = (
   refs: readonly BackupRecordRef[],
@@ -76,15 +62,10 @@ export const selectionFrom = (
   };
 };
 
-export const selectionRefs = (selection: BackupSelection): BackupRecordRef[] =>
+const selectionRefs = (selection: BackupSelection): BackupRecordRef[] =>
   BACKUP_COLLECTIONS.flatMap((collection) =>
     selection[collection].map((id) => ({ collection, id })),
   );
-
-export const mergeSelections = (
-  ...selections: BackupSelection[]
-): BackupSelection =>
-  selectionFrom(selections.flatMap((selection) => selectionRefs(selection)));
 
 export const selectionCount = (selection: BackupSelection): number =>
   BACKUP_COLLECTIONS.reduce(
@@ -98,8 +79,6 @@ export const isSelectionEmpty = (selection: BackupSelection): boolean =>
 export const wholeLibrarySelection = (source: BackupSource): BackupSelection =>
   selectionFrom([
     ...source.manuscripts.map((doc) => ref("manuscripts", doc.id)),
-    /* Quick-present passages are working state rather than library content;
-       the ones a saved overlay stands on are picked up by resolveSelection. */
     ...source.scriptures
       .filter((passage) => !passage.quick)
       .map((passage) => ref("scriptures", passage.id)),
@@ -146,13 +125,6 @@ const slideAssetRefs = (slide: Slide): BackupRecordRef[] => {
   return refs;
 };
 
-/**
- * What a chosen record cannot arrive without: the picture behind a slide, the
- * clip placed on it, the sound a manuscript plays, the passage an overlay
- * shows. Built-in themes, backgrounds and sounds are left behind, since every
- * device already has them, and anything already gone is dropped rather than
- * named in a backup that cannot carry it.
- */
 export const resolveSelection = (
   source: BackupSource,
   selection: BackupSelection,
@@ -217,8 +189,6 @@ const dependenciesOf = (
   }
 };
 
-/* A saved overlay names what it shows by id alone, so whichever library holds
-   that id is the one that has to travel with it. */
 const overlayContentRefs = (
   source: BackupSource,
   contentId: string,
@@ -234,7 +204,6 @@ const overlayContentRefs = (
   return [];
 };
 
-/** Whether this record is here to send, and worth sending. */
 const holds = (source: BackupSource, entry: BackupRecordRef): boolean => {
   switch (entry.collection) {
     case "manuscripts":

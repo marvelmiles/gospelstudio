@@ -16,7 +16,7 @@ const safe = (test: () => boolean): boolean => {
 const hasWindowProperty = (name: string): boolean =>
   safe(() => typeof window !== "undefined" && name in window);
 
-export const checkCapabilities = (): Capability[] => {
+const checkCapabilities = (): Capability[] => {
   return [
     {
       id: "promise",
@@ -56,7 +56,7 @@ export const checkCapabilities = (): Capability[] => {
       label: "Remembering your place in the Bible",
       critical: false,
       ok: safe(() => {
-        const key = "__ws_cap__";
+        const key = "__gospelstudio_cap__";
         localStorage.setItem(key, "1");
         localStorage.removeItem(key);
         return true;
@@ -122,8 +122,6 @@ export const checkCapabilities = (): Capability[] => {
       id: "camera",
       label: "Sharing this device's camera",
       critical: false,
-      /* mediaDevices is withheld on an insecure origin, which is a connection
-         problem the Stream page explains itself, not a missing browser feature. */
       ok: safe(
         () =>
           !window.isSecureContext ||

@@ -33,7 +33,7 @@ import { AnimationPicker } from "../../components/controls/AnimationPicker";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import { useOpenAssetLibrary } from "../assets/assetLibraryNavigation";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 
 interface ManuscriptSettingsModalProps {
   open: boolean;
@@ -48,15 +48,10 @@ interface ManuscriptSettingsModalProps {
   onEditAsset: (request: AssetUsageRequest) => void;
 }
 
-const GRID = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
-  gap: 12,
-} as const;
+const gridClassName =
+  "grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3";
 
 const TuneDetails = ({ music }: { music: HymnMusic }) => {
-  const { colors, fonts } = useUITheme();
-
   const rows: [string, string][] = [
     ["Tune", music.tune ?? ""],
     ["Composer", music.composer ?? ""],
@@ -70,45 +65,18 @@ const TuneDetails = ({ music }: { music: HymnMusic }) => {
   return (
     <>
       <SectionTitle>Tune</SectionTitle>
-      <dl style={{ ...GRID, margin: "0 0 13px" }}>
+      <dl className={cn(gridClassName, "mt-0 mb-3.25")}>
         {rows.map(([label, value]) => (
           <div key={label}>
-            <dt
-              style={{
-                fontFamily: fonts.ui,
-                fontSize: 11.5,
-                fontWeight: 600,
-                letterSpacing: 0.4,
-                textTransform: "uppercase",
-                color: colors.dim,
-                marginBottom: 6,
-              }}
-            >
+            <dt className="mb-1.5 text-[11.5px] font-semibold tracking-[0.4px] text-dim uppercase">
               {label}
             </dt>
-            <dd
-              style={{
-                margin: 0,
-                fontFamily: fonts.ui,
-                fontSize: 13.5,
-                color: colors.text,
-              }}
-            >
-              {value}
-            </dd>
+            <dd className="m-0 text-[13.5px] text-fg">{value}</dd>
           </div>
         ))}
       </dl>
       {music.source && (
-        <p
-          style={{
-            margin: "0 0 13px",
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            lineHeight: 1.5,
-            color: colors.dim,
-          }}
-        >
+        <p className="mt-0 mb-3.25 text-[11.5px] leading-normal text-dim">
           {music.source}
         </p>
       )}
@@ -172,7 +140,7 @@ export const ManuscriptSettingsModal = ({
       }
     >
       <SectionTitle>Details</SectionTitle>
-      <div style={GRID}>
+      <div className={gridClassName}>
         <Field label="Title" error={titleError}>
           <TextInput
             value={manuscript.title}
@@ -293,7 +261,7 @@ export const ManuscriptSettingsModal = ({
       >
         Playback
       </SectionTitle>
-      <div style={{ marginBottom: 12 }}>
+      <div className="mb-3">
         <Toggle
           label="Auto-play slides while presenting"
           checked={autoPlay}

@@ -2,15 +2,11 @@ import { z } from "zod";
 
 export const SHARE_CHANNEL_LABEL = "library-share";
 
-/* Small enough for every browser to accept in one message, with the send
-   paused whenever the link has more than it can push out. */
 export const SHARE_CHUNK_BYTES = 16 * 1024;
 export const SHARE_BUFFER_HIGH_BYTES = 1024 * 1024;
 export const SHARE_BUFFER_LOW_BYTES = 256 * 1024;
 
 const shareMessageSchema = z.discriminatedUnion("type", [
-  /* A link paired by hand has no presence row to read a name from, so each
-     side says who it is as soon as the channel opens. */
   z.object({ type: z.literal("hello"), name: z.string().min(1).max(120) }),
   z.object({
     type: z.literal("offer"),
@@ -22,8 +18,6 @@ const shareMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("accept") }),
   z.object({ type: z.literal("decline") }),
   z.object({ type: z.literal("sent"), bytes: z.number().nonnegative() }),
-  /* Either side may walk away mid transfer, so the other stops waiting rather
-     than sitting on a link that will never carry anything else. */
   z.object({ type: z.literal("cancel") }),
   z.object({ type: z.literal("importing") }),
   z.object({

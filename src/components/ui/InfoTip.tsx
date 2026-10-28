@@ -1,14 +1,13 @@
 import { useState } from "react";
 import type { KeyboardEvent, ReactNode } from "react";
 import { Info } from "lucide-react";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { Button } from "./Button";
 import { Modal } from "./Modal";
 import { Popover } from "./Popover";
 import type { PopoverAlign, PopoverSide } from "./Popover";
 
-export type InfoTipVariant = "popover" | "modal";
+type InfoTipVariant = "popover" | "modal";
 
 interface InfoTipProps {
   title: string;
@@ -27,7 +26,6 @@ export const InfoTip = ({
   align = "start",
   size = 14,
 }: InfoTipProps) => {
-  const { colors, fonts, shadows } = useUITheme();
   const [open, setOpen] = useState(false);
 
   const trigger = (
@@ -49,21 +47,11 @@ export const InfoTip = ({
         event.preventDefault();
         setOpen((current) => (variant === "modal" ? true : !current));
       }}
-      style={{
-        display: "inline-grid",
-        placeItems: "center",
-        width: size + 8,
-        height: size + 8,
-        borderRadius: "50%",
-        cursor: "pointer",
-        color: open ? colors.accentSoft : colors.dim,
-        background: open ? fade(colors.accent, 0.16) : "transparent",
-        transition: "color .15s, background .15s",
-        verticalAlign: "middle",
-        flexShrink: 0,
-        textTransform: "none",
-        letterSpacing: 0,
-      }}
+      style={{ width: size + 8, height: size + 8 }}
+      className={cn(
+        "inline-grid shrink-0 cursor-pointer place-items-center rounded-full align-middle tracking-normal normal-case transition-colors duration-150",
+        open ? "bg-accent/16 text-accent-soft" : "bg-transparent text-dim",
+      )}
     >
       <Info size={size} aria-hidden />
     </span>
@@ -84,17 +72,7 @@ export const InfoTip = ({
             </Button>
           }
         >
-          <div
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              lineHeight: 1.7,
-              color: colors.sub,
-              textTransform: "none",
-              letterSpacing: 0,
-              fontWeight: 400,
-            }}
-          >
+          <div className="text-[13.5px] leading-[1.7] font-normal tracking-normal text-sub normal-case">
             {children}
           </div>
         </Modal>
@@ -113,36 +91,10 @@ export const InfoTip = ({
     >
       <div
         role="tooltip"
-        style={{
-          maxWidth: 300,
-          padding: "11px 13px",
-          borderRadius: 12,
-          background: fade(colors.panelSolid, 0.98),
-          border: `1px solid ${colors.border}`,
-          boxShadow: shadows.overlay,
-          fontFamily: fonts.ui,
-          textTransform: "none",
-          letterSpacing: 0,
-        }}
+        className="max-w-75 rounded-xl border border-line bg-panel-solid/98 px-3.25 py-2.75 tracking-normal normal-case shadow-overlay"
       >
-        <div
-          style={{
-            fontSize: 12.5,
-            fontWeight: 600,
-            color: colors.text,
-            marginBottom: 4,
-          }}
-        >
-          {title}
-        </div>
-        <div
-          style={{
-            fontSize: 12.5,
-            fontWeight: 400,
-            lineHeight: 1.55,
-            color: colors.sub,
-          }}
-        >
+        <div className="mb-1 text-[12.5px] font-semibold text-fg">{title}</div>
+        <div className="text-[12.5px] leading-[1.55] font-normal text-sub">
           {children}
         </div>
       </div>

@@ -18,16 +18,8 @@ import { now } from "../../lib/id";
 import { useStore } from "../../store/useStore";
 import type { DeckEditor } from "../editor/useDeckEditor";
 
-/**
- * Editing an asset for one place it is used: a slide, a manuscript or a
- * passage. The settings are saved onto that one place from the asset's own
- * editor page, so the picture, clip or sound in the library is never touched
- * and every other place it is used stays as it is.
- */
-
 const editStateSchema = z.object({ assetUsageEdit: assetUsageEditSchema });
 
-/** What the opening page fills in; the editor works out the rest. */
 export type AssetUsagePlaceRequest = Pick<AssetUsagePlace, "label" | "slideId">;
 
 interface AssetUsageEditorOptions {
@@ -36,11 +28,6 @@ interface AssetUsageEditorOptions {
   editor: DeckEditor;
 }
 
-/**
- * Opens an asset's editor for one place in this document. The document is
- * written first: its editor is left behind while the asset is being tuned, and
- * an unsaved draft would not survive the trip.
- */
 export const useOpenAssetUsageEditor = ({
   kind,
   doc,
@@ -53,8 +40,6 @@ export const useOpenAssetUsageEditor = ({
   return useCallback(
     (request: AssetUsageRequest, place: AssetUsagePlaceRequest) => {
       if (!isAssetUsageDocKind(kind)) return;
-      /* Written even when nothing has changed: a document that has never been
-         saved would have nothing to come back to. */
       if (!save()) {
         pushToast(
           "This document could not be saved, so its asset editor stayed closed.",
@@ -75,22 +60,13 @@ export const useOpenAssetUsageEditor = ({
   );
 };
 
-export type OpenAssetUsageEditor = ReturnType<typeof useOpenAssetUsageEditor>;
-
 export interface AssetUsageEditorSession {
   edit: AssetUsageEdit;
-  /** Where the back arrow goes, once there is nothing left unsaved. */
   returnTo: string;
   back: () => void;
-  /** Writes the settings onto the one place they were edited for. */
   save: (settings: AssetUsageEdit["settings"]) => boolean;
 }
 
-/**
- * Saving reads the document straight from the store rather than from an open
- * editor: the page that opened this one was left behind, and the asset editor
- * only ever touches the single slide or document the edit names.
- */
 const saveAssetUsage = (edit: AssetUsageEdit): boolean => {
   const state = useStore.getState();
   if (edit.docKind === "manuscript") {

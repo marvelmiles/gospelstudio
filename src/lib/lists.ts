@@ -81,7 +81,7 @@ const toAlpha = (value: number): string => {
   return out;
 };
 
-export const ordinalLabel = (kind: ListKind, index: number): string => {
+const ordinalLabel = (kind: ListKind, index: number): string => {
   switch (kind) {
     case "decimal":
       return String(Math.max(1, index));
@@ -144,7 +144,7 @@ const matchMarker = (rest: string): MarkerMatch | null => {
   };
 };
 
-export const splitIndent = (line: string): { level: number; rest: string } => {
+const splitIndent = (line: string): { level: number; rest: string } => {
   let index = 0;
   let spaces = 0;
   let level = 0;
@@ -228,7 +228,7 @@ export const analyzeLines = (lines: string[]): ListLine[] => {
   return renumber(parsed);
 };
 
-export const composeLine = (item: ListLine): string => {
+const composeLine = (item: ListLine): string => {
   const indent = INDENT_UNIT.repeat(Math.max(0, item.level));
   if (!item.kind) return indent + item.content;
   return `${indent}${storedMarker(item.kind, item.index)} ${item.content}`;

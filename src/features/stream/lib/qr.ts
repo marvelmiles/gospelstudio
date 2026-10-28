@@ -1,15 +1,24 @@
 import qrcode from "qrcode-generator";
 
-export interface QrPalette {
+interface QrPalette {
   surface: string;
   ink: string;
   eye: string;
 }
 
+const themePalette = (): QrPalette => {
+  const theme = getComputedStyle(document.documentElement);
+  return {
+    surface: theme.getPropertyValue("--color-qr-surface").trim(),
+    ink: theme.getPropertyValue("--color-qr-ink").trim(),
+    eye: theme.getPropertyValue("--color-qr-eye").trim(),
+  };
+};
+
 const FINDER_MODULES = 7;
 const QUIET_ZONE_MODULES = 4;
 const AUTO_VERSION = 0;
-// Medium correction reads through screen glare and camera blur far better than low, at a few more modules.
+/* Medium error correction still scans through screen glare and camera blur. */
 const ERROR_CORRECTION = "M";
 
 const fillRoundedSquare = (
@@ -61,7 +70,7 @@ const isInFinderPattern = (row: number, col: number, count: number): boolean =>
   (row < FINDER_MODULES && col >= count - FINDER_MODULES) ||
   (row >= count - FINDER_MODULES && col < FINDER_MODULES);
 
-// The signal encoder only emits Base45 characters, so alphanumeric mode is safe and packs the most data per module.
+/* Pairing codes only use letters, digits and a few symbols, so the compact text mode fits the most data. */
 const buildQr = (text: string) => {
   const qr = qrcode(AUTO_VERSION, ERROR_CORRECTION);
   qr.addData(text, "Alphanumeric");
@@ -73,16 +82,16 @@ const buildQr = (text: string) => {
   }
 };
 
-// Modules are drawn as whole device pixels so the browser never resamples a dense grid.
+/* Each square is drawn on whole screen pixels so the code stays crisp and easy to scan. */
 export const drawQr = (
   canvas: HTMLCanvasElement,
   text: string,
   targetCssPx: number,
-  palette: QrPalette,
   devicePixelRatio = 1,
 ): number => {
   const qr = buildQr(text);
   if (!qr) return 0;
+  const palette = themePalette();
 
   const count = qr.getModuleCount();
   const totalModules = count + QUIET_ZONE_MODULES * 2;

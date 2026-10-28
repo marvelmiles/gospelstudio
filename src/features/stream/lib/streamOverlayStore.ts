@@ -14,9 +14,9 @@ import {
   type StreamOverlay,
 } from "./streamOverlay";
 
-export const STREAM_OVERLAY_CHANNEL_NAME = "worship-studio-stream-overlays";
+const STREAM_OVERLAY_CHANNEL_NAME = "gospelstudio-stream-overlays";
 
-export type StreamOverlayMessage =
+type StreamOverlayMessage =
   { type: "state"; overlays: StreamOverlay[] } | { type: "request-state" };
 
 let overlays: StreamOverlay[] = [];
@@ -65,7 +65,7 @@ const replace = (
 
 let selectedId: string | null = null;
 
-export const getSelectedStreamOverlayId = (): string | null => {
+const getSelectedStreamOverlayId = (): string | null => {
   return selectedId;
 };
 
@@ -82,7 +82,7 @@ export const useSelectedStreamOverlayId = (): string | null => {
   );
 };
 
-export const subscribeStreamOverlays = (listener: () => void): (() => void) => {
+const subscribeStreamOverlays = (listener: () => void): (() => void) => {
   listeners.add(listener);
   ensureChannel();
   return () => listeners.delete(listener);
@@ -159,7 +159,6 @@ export const setStreamOverlayAutoSync = (
   });
 };
 
-/** Ties an overlay to the saved copy it keeps in step with, or unties it. */
 export const linkStreamOverlayPreset = (
   id: string,
   presetId: string | undefined,
@@ -213,10 +212,7 @@ export const duplicateStreamOverlay = (id: string): void => {
   commit(next);
 };
 
-export const setStreamOverlayStatus = (
-  id: string,
-  status: OverlayStatus,
-): void => {
+const setStreamOverlayStatus = (id: string, status: OverlayStatus): void => {
   replace(id, (overlay) => {
     const settled = status === "draft" ? editedOverlay(overlay) : overlay;
     return { ...settled, status } as StreamOverlay;

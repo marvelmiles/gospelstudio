@@ -1,15 +1,16 @@
 import { useState } from "react";
-import { AlertTriangle, HardDrive, Trash2 } from "lucide-react";
+import { AlertTriangle, ChevronRight, HardDrive, Trash2 } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Button } from "./Button";
 import { formatBytes } from "../../lib/storageStats";
 import { InfoTip } from "./InfoTip";
 import { APP_NAME } from "../../lib/appInfo";
 
+const Step = () => (
+  <ChevronRight size={13} className="mx-0.5 inline align-[-2px]" />
+);
+
 export const StorageGate = () => {
-  const { colors, fonts, glass, shadows } = useUITheme();
   const storage = useStore((s) => s.storage);
   const freeUpStorage = useStore((s) => s.freeUpStorage);
   const [busy, setBusy] = useState(false);
@@ -25,65 +26,15 @@ export const StorageGate = () => {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 600,
-        display: "grid",
-        placeItems: "center",
-        padding: 20,
-        background: colors.scrimStrong,
-        backdropFilter: "blur(10px)",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 480,
-          borderRadius: 18,
-          padding: 26,
-          background: colors.panel,
-          backdropFilter: glass.backdropFilter,
-          WebkitBackdropFilter: glass.WebkitBackdropFilter,
-          border: `1px solid ${colors.border}`,
-          boxShadow: shadows.overlay,
-        }}
-      >
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: 13,
-            display: "grid",
-            placeItems: "center",
-            background: fade(colors.danger, 0.16),
-            color: colors.danger,
-            marginBottom: 16,
-          }}
-        >
+    <div className="fixed inset-0 z-600 grid place-items-center bg-scrim-strong p-5 backdrop-blur-[10px]">
+      <div className="w-full max-w-120 rounded-[18px] border border-line bg-panel p-6.5 shadow-overlay backdrop-blur-sm">
+        <div className="mb-4 grid size-12 place-items-center rounded-[13px] bg-danger/16 text-danger">
           <HardDrive size={24} />
         </div>
-        <h2
-          style={{
-            margin: "0 0 8px",
-            fontFamily: fonts.display,
-            fontSize: 23,
-            fontWeight: 600,
-            color: colors.text,
-          }}
-        >
+        <h2 className="mt-0 mb-2 text-[23px] font-semibold text-fg">
           Not enough storage space
         </h2>
-        <p
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 14,
-            color: colors.sub,
-            lineHeight: 1.65,
-            marginTop: 0,
-          }}
-        >
+        <p className="mt-0 text-sm leading-[1.65] text-sub">
           Your browser hasn't given {APP_NAME} enough room to run smoothly
           {storage.budget > 0
             ? ` (about ${formatBytes(storage.budget)} available)`
@@ -93,35 +44,15 @@ export const StorageGate = () => {
         </p>
 
         {attempted && !storage.viable && (
-          <div
-            style={{
-              display: "flex",
-              gap: 11,
-              padding: 14,
-              borderRadius: 11,
-              background: fade(colors.danger, 0.1),
-              border: `1px solid ${fade(colors.danger, 0.3)}`,
-              marginBottom: 16,
-            }}
-          >
-            <AlertTriangle
-              size={18}
-              color={colors.danger}
-              style={{ flexShrink: 0, marginTop: 1 }}
-            />
-            <div
-              style={{
-                fontFamily: fonts.ui,
-                fontSize: 13,
-                color: colors.text,
-                lineHeight: 1.6,
-              }}
-            >
+          <div className="mb-4 flex gap-2.75 rounded-[11px] border border-danger/30 bg-danger/10 p-3.5">
+            <AlertTriangle size={18} className="mt-px shrink-0 text-danger" />
+            <div className="text-[13px] leading-[1.6] text-fg">
               There still isn't enough space. Please update your browser to the
               latest version, or clear this site's storage manually: open your
-              browser settings → Privacy / Site settings → find this site →{" "}
-              <strong>Clear data</strong> (this removes cached site data and
-              storage). Closing other installed web apps can also free space.
+              browser settings <Step /> Privacy / Site settings <Step /> find
+              this site <Step /> <strong>Clear data</strong> (this removes
+              cached site data and storage). Closing other installed web apps
+              can also free space.
             </div>
           </div>
         )}
@@ -130,23 +61,12 @@ export const StorageGate = () => {
           variant="danger"
           onClick={onFree}
           busy={busy}
-          style={{ width: "100%", justifyContent: "center" }}
+          className="w-full justify-center"
         >
           <Trash2 size={15} />
           Free up storage
         </Button>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 4,
-            marginTop: 8,
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            color: colors.dim,
-          }}
-        >
+        <div className="mt-2 flex items-center justify-center gap-1 text-[11.5px] text-dim">
           What gets cleared
           <InfoTip title="Free up storage" side="top" align="center">
             Clears {APP_NAME}&apos;s stored data on this device (manuscripts,

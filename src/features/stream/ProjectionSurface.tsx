@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { useViewport } from "../../hooks/useViewport";
+import { cn } from "../../lib/cn";
+import { useMediaQuery } from "usehooks-ts";
 import { useFullscreen } from "../../hooks/useFullscreen";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
 import { CameraStatusOverlay } from "./components/CameraStatusOverlay";
@@ -25,7 +25,7 @@ import {
 import { useRemoteAudio } from "./lib/useRemoteAudio";
 import { useStreamGoLive } from "./lib/useStreamGoLive";
 
-const MIN_VIDEO_HEIGHT = 360;
+const TABLET_QUERY = "(max-width: 1024px)";
 
 interface ProjectionSurfaceProps {
   stream: MediaStream | null;
@@ -36,8 +36,6 @@ interface ProjectionSurfaceProps {
   onStop: () => void;
   onPopOut: () => void;
   onLiveChange?: (live: boolean) => void;
-  /** Floats above the stage: the surface owns a stacking context, so pop-outs
-   *  opened from its drawer have to live inside it to stay visible. */
   children?: ReactNode;
 }
 
@@ -52,10 +50,9 @@ export const ProjectionSurface = ({
   onLiveChange,
   children,
 }: ProjectionSurfaceProps) => {
-  const { colors, stage } = useUITheme();
   const { isLive, toggleLive } = useStreamGoLive();
   const audio = useRemoteAudio(stream);
-  const { isTablet } = useViewport();
+  const isTablet = useMediaQuery(TABLET_QUERY);
   const overlays = useStreamOverlays();
   useSavedOverlaySync(overlays);
   const selectedOverlayId = useSelectedStreamOverlayId();
@@ -83,19 +80,7 @@ export const ProjectionSurface = ({
   return (
     <div
       ref={shellRef}
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        right: 0,
-        height: "100dvh",
-        zIndex: 200,
-        display: "flex",
-        flexDirection: "column",
-        background: colors.bg,
-        overflowX: "hidden",
-        overflowY: "auto",
-      }}
+      className="fixed inset-x-0 top-0 z-200 flex h-dvh flex-col overflow-x-hidden overflow-y-auto bg-canvas"
     >
       <StageHeader
         status={status}
@@ -118,29 +103,19 @@ export const ProjectionSurface = ({
       />
 
       <div
-        style={{
-          display: "flex",
-          flexDirection: isTablet ? "column" : "row",
-          flex: 1,
-          minHeight: 0,
-          alignItems: "stretch",
-        }}
+        className={cn(
+          "flex min-h-0 flex-1 items-stretch",
+          isTablet ? "flex-col" : "flex-row",
+        )}
       >
-        <div
-          style={{
-            position: "relative",
-            flex: 1,
-            minHeight: MIN_VIDEO_HEIGHT,
-            background: stage.surface,
-          }}
-        >
+        <div className="relative min-h-90 flex-1 bg-stage">
           <StreamVideo stream={stream} muted={isLive} />
           <StreamPipLayer
             windows={secondaries}
             showLabels
             forceMuted={isLive}
           />
-          {/* The operator's copy shows drafts too; the room's projection only ever receives on-air overlays. */}
+          {/* You see draft overlays here; the audience only ever sees the ones on air. */}
           <StreamOverlayLayers
             overlays={overlays}
             live

@@ -18,7 +18,6 @@ const FALLBACK_PEER_NAME = "Paired device";
 const UNREACHABLE_MESSAGE =
   "The devices could not reach each other. Check that both are on the same WiFi or hotspot.";
 
-/** A link two devices set up by reading each other's codes, with no server. */
 export interface PairedLink {
   link: ShareLink;
   channel: RTCDataChannel;
@@ -32,7 +31,6 @@ const SIGNAL_KIND: Record<PairingCodeKind, SignalKind> = {
   reply: "share-answer",
 };
 
-/** The connection details inside a pairing code, or null if it is not one. */
 export const readPairingCode = (
   text: string,
   kind: PairingCodeKind,
@@ -77,10 +75,8 @@ const closeUnlessPaired = (link: ShareLink, isPaired: () => boolean) => () => {
   if (!isPaired()) link.close();
 };
 
-/** The sending side: it shows an invite, then reads the other device's reply. */
 export interface PairingInvite {
   code: string;
-  /** Takes the reply's connection details and waits for the link to open. */
   complete: (replySdp: string, ownName: string) => Promise<PairedLink>;
   cancel: () => void;
 }
@@ -113,10 +109,8 @@ export const createPairingInvite = async (): Promise<PairingInvite> => {
   };
 };
 
-/** The receiving side: it reads the invite and shows a reply to scan back. */
 export interface PairingReply {
   code: string;
-  /** Settles once the sending device has read the reply and the link is up. */
   connected: Promise<PairedLink>;
   cancel: () => void;
 }

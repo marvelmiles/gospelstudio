@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { useIntersectionObserver } from "usehooks-ts";
 
 interface LazyMountProps {
   children: ReactNode;
@@ -11,30 +12,11 @@ export const LazyMount = ({
   placeholder,
   rootMargin = "400px",
 }: LazyMountProps) => {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (typeof IntersectionObserver === "undefined") {
-      setVisible(true);
-      return;
-    }
-    const observer = new IntersectionObserver(
-      (observed) => {
-        for (const observedEntry of observed)
-          setVisible(observedEntry.isIntersecting);
-      },
-      { rootMargin },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [rootMargin]);
+  const { ref, isIntersecting } = useIntersectionObserver({ rootMargin });
 
   return (
-    <div ref={ref} style={{ width: "100%", height: "100%" }}>
-      {visible ? children : placeholder}
+    <div ref={ref} className="size-full">
+      {isIntersecting ? children : placeholder}
     </div>
   );
 };

@@ -1,24 +1,22 @@
 import { useRef } from "react";
 import { Search } from "lucide-react";
-import type { CSSProperties } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { TextInput } from "./Field";
-import { CLEAR_BUTTON_INSET, ClearInputButton } from "./ClearInputButton";
+import { ClearInputButton } from "./ClearInputButton";
 
 interface SearchInputProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const SearchInput = ({
   value,
   onChange,
   placeholder = "Search…",
-  style,
+  className,
 }: SearchInputProps) => {
-  const { colors } = useUITheme();
   const inputRef = useRef<HTMLInputElement>(null);
   const filled = value.length > 0;
 
@@ -28,26 +26,20 @@ export const SearchInput = ({
   };
 
   return (
-    <div style={{ position: "relative", flex: 1, minWidth: 200, ...style }}>
-      <Search
-        size={16}
-        style={{ position: "absolute", left: 13, top: 12, color: colors.dim }}
-      />
+    <div className={cn("relative min-w-50 flex-1", className)}>
+      <Search size={16} className="absolute top-3 left-3.25 text-dim" />
       <TextInput
         ref={inputRef}
         placeholder={placeholder}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        onKeyDown={(e) => {
-          if (e.key === "Escape" && filled) {
-            e.preventDefault();
+        onChange={(event) => onChange(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape" && filled) {
+            event.preventDefault();
             clear();
           }
         }}
-        style={{
-          paddingLeft: 38,
-          paddingRight: filled ? CLEAR_BUTTON_INSET : undefined,
-        }}
+        className={cn("pl-9.5", filled && "pr-9.5")}
       />
       <ClearInputButton value={value} onClear={clear} />
     </div>

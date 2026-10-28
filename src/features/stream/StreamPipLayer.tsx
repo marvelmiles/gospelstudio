@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { PipCorner, PipPlacement } from "../../types";
 import { pipFrameStyle } from "../../lib/pipPlacement";
 import { StreamVideo } from "./StreamVideo";
@@ -25,38 +24,17 @@ export const cameraPipWindow = (camera: {
   muted: camera.muted,
 });
 
+export const pipFrameClassName =
+  "@container overflow-hidden rounded-[2.5%] bg-black shadow-[0_8px_28px_rgb(0_0_0/0.55)] outline -outline-offset-1 outline-white/22";
+
+export const pipLabelClassName =
+  "pointer-events-none absolute bottom-[6%] left-[4%] max-w-[84%] truncate rounded-full bg-black/60 px-[4%] py-[1.5%] text-[clamp(8px,7cqw,13px)] font-bold text-white";
+
 interface StreamPipLayerProps {
   windows: StreamPipWindow[];
   showLabels?: boolean;
   forceMuted?: boolean;
 }
-
-const FRAME_STYLE: CSSProperties = {
-  overflow: "hidden",
-  borderRadius: "2.5%",
-  background: "#000",
-  boxShadow: "0 8px 28px rgba(0,0,0,0.55)",
-  outline: "1px solid rgba(255,255,255,0.22)",
-  outlineOffset: -1,
-};
-
-const LABEL_STYLE: CSSProperties = {
-  position: "absolute",
-  left: "4%",
-  bottom: "6%",
-  maxWidth: "84%",
-  padding: "1.5% 4%",
-  borderRadius: 999,
-  background: "rgba(0,0,0,0.6)",
-  color: "#fff",
-  fontFamily: "system-ui, sans-serif",
-  fontSize: "clamp(8px, 7cqw, 13px)",
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  pointerEvents: "none",
-};
 
 export const StreamPipLayer = ({
   windows,
@@ -75,17 +53,16 @@ export const StreamPipLayer = ({
         return (
           <div
             key={window.id}
-            style={{
-              ...pipFrameStyle(window.placement, index),
-              ...FRAME_STYLE,
-              containerType: "inline-size",
-            }}
+            style={pipFrameStyle(window.placement, index)}
+            className={pipFrameClassName}
           >
             <StreamVideo
               stream={window.stream}
               muted={forceMuted || window.muted}
             />
-            {showLabels && <span style={LABEL_STYLE}>{window.label}</span>}
+            {showLabels && (
+              <span className={pipLabelClassName}>{window.label}</span>
+            )}
           </div>
         );
       })}

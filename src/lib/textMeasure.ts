@@ -8,15 +8,8 @@ export interface TextFont {
 
 export type TextMeasure = (text: string) => number;
 
-/**
- * Mixed-case English text averages about half the font size per glyph across
- * the faces this app ships, which is close enough to predict where a line wraps
- * when the real face cannot be measured.
- */
 const AVERAGE_GLYPH_WIDTH_RATIO = 0.5;
 
-/* Canvas fonts are sized in pixels, so the slide's cqw sizes are scaled up far
-   enough that subpixel rounding no longer matters, then scaled back down. */
 const MEASURE_SCALE_PX = 100;
 
 let measuringContext: CanvasRenderingContext2D | null | undefined;
@@ -37,8 +30,6 @@ const canvasContext = (): CanvasRenderingContext2D | null => {
 const canvasFont = (font: TextFont): string =>
   `${font.fontWeight ?? 400} ${font.fontSize * MEASURE_SCALE_PX}px '${font.fontFamily}', serif`;
 
-/* A face that is still downloading would be measured as the fallback serif,
-   so it is only trusted once the browser reports it ready. */
 const isFontReady = (cssFont: string): boolean => {
   try {
     return document.fonts?.check(cssFont) ?? true;
@@ -52,7 +43,6 @@ const estimatedMeasure =
   (text) =>
     text.length * (font.fontSize * AVERAGE_GLYPH_WIDTH_RATIO + spacing);
 
-/** Gives the rendered width of a string in the slide's cqw units. */
 export const textMeasurer = (font: TextFont): TextMeasure => {
   const spacing = font.letterSpacing ?? 0;
   const context = font.fontFamily ? canvasContext() : null;
@@ -75,7 +65,6 @@ export const textMeasurer = (font: TextFont): TextMeasure => {
   };
 };
 
-/** How many rows a line of text takes once it wraps between words. */
 export const wrappedRowCount = (
   text: string,
   maxWidth: number,

@@ -16,7 +16,6 @@ export interface PlacedElement {
 
 export interface EditOptions {
   caret?: TextRange | null;
-  /** Edits sharing a key within the coalesce window collapse into one undo step. */
   coalesceKey?: string;
 }
 

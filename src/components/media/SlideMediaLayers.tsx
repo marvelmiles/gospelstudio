@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import type { SlideMedia } from "../../types";
 import { useSlideMediaFile } from "../../hooks/useSlideMediaFile";
 import { buildFilter } from "../../lib/media";
+import { cn } from "../../lib/cn";
 import { placedImageSettings, placedVideoSettings } from "../../lib/slideMedia";
 import { ImageLayer } from "./ImageLayer";
 
@@ -12,19 +13,13 @@ interface SlideMediaLayersProps {
   controlsFor?: string | null;
 }
 
-const frameStyle = (
-  media: SlideMedia,
-  interactive: boolean,
-): CSSProperties => ({
-  position: "absolute",
+const frameStyle = (media: SlideMedia): CSSProperties => ({
   left: `${media.frame.x}%`,
   top: `${media.frame.y}%`,
   width: `${media.frame.width}%`,
   height: `${media.frame.height}%`,
   borderRadius: `${media.radius ?? 0}cqw`,
-  overflow: "hidden",
   opacity: (media.opacity ?? 100) / 100,
-  pointerEvents: interactive ? "auto" : "none",
 });
 
 export const SlideMediaLayers = ({
@@ -40,7 +35,11 @@ export const SlideMediaLayers = ({
           <div
             key={placed.id}
             aria-hidden={!controls}
-            style={frameStyle(placed, controls)}
+            style={frameStyle(placed)}
+            className={cn(
+              "absolute overflow-hidden",
+              controls ? "pointer-events-auto" : "pointer-events-none",
+            )}
           >
             {placed.kind === "image" ? (
               <PlacedImage media={placed} />
@@ -61,7 +60,7 @@ const PlacedImage = ({ media }: { media: SlideMedia }) => {
       src={file.url}
       alt={file.name}
       settings={placedImageSettings(media)}
-      style={{ background: "transparent" }}
+      className="bg-transparent"
     />
   );
 };
@@ -128,12 +127,8 @@ const PlacedVideo = ({
       loop={settings.loop && settings.trimEnd === null}
       onTimeUpdate={handleTimeUpdate}
       onEnded={handleEnded}
-      style={{
-        width: "100%",
-        height: "100%",
-        objectFit: settings.fit,
-        filter: buildFilter(settings),
-      }}
+      style={{ objectFit: settings.fit, filter: buildFilter(settings) }}
+      className="size-full"
     />
   );
 };

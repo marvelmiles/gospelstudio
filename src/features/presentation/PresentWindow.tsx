@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Maximize2, Minimize2 } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useBgMap } from "../../hooks/useBgMap";
 import { useProjectionFullscreen } from "../../hooks/useProjectionFullscreen";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
-import { viewCommandTitle } from "../../lib/viewCommands";
+import { ProjectionFullscreenButton } from "../../components/ui/ProjectionFullscreenButton";
 import {
   MEDIA_SYNC_TOLERANCE_SECONDS,
   openPresentChannel,
@@ -27,15 +25,13 @@ import { documentTitle } from "../../lib/appInfo";
 const HINT_DELAY_MS = 2500;
 
 export const PresentWindow = () => {
-  const { stage } = useUITheme();
   const prefs = useStore((s) => s.prefs);
   const load = useStore((s) => s.load);
 
   const [state, setState] = useState<PresentState | null>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useProjectionFullscreen();
   useViewShortcuts({ onToggleFullscreen: toggleFullscreen });
-  /* A window that is not filling the display keeps its fullscreen button in
-     view: that button is the way back onto the projector. */
+  /* The fullscreen button stays visible until the window fills the screen, since it is how you get back onto the projector. */
   const { visible: isChromeVisible } = useAutoHideChrome({
     enabled: isFullscreen,
     delayMs: HINT_DELAY_MS,
@@ -75,9 +71,8 @@ export const PresentWindow = () => {
 
   useEffect(() => {
     document.title = documentTitle("Live");
-    document.body.style.background = stage.surface;
-    document.body.style.margin = "0";
-  }, [stage.surface]);
+    document.body.classList.add("bg-stage");
+  }, []);
 
   const claimFocus = () => {
     try {
@@ -119,52 +114,23 @@ export const PresentWindow = () => {
       : null;
 
   const fullscreenButton = (
-    <button
-      onClick={toggleFullscreen}
-      title={viewCommandTitle(
-        isFullscreen ? "Exit fullscreen" : "Fullscreen",
-        "fullscreen",
-      )}
-      style={{
-        position: "fixed",
-        top: 14,
-        right: 14,
-        zIndex: 10,
-        width: 38,
-        height: 38,
-        display: "grid",
-        placeItems: "center",
-        borderRadius: 10,
-        cursor: "pointer",
-        background: stage.overlay,
-        backdropFilter: "blur(10px)",
-        border: `1px solid ${stage.border}`,
-        color: stage.text,
-        opacity: isChromeVisible ? 1 : 0,
-        pointerEvents: isChromeVisible ? "auto" : "none",
-        transition: "opacity 0.3s ease",
-      }}
-    >
-      {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-    </button>
+    <ProjectionFullscreenButton
+      isFullscreen={isFullscreen}
+      visible={isChromeVisible}
+      onToggle={toggleFullscreen}
+    />
   );
 
   if (!state || !frame) {
     return (
-      <div
-        onPointerDown={claimFocus}
-        style={{ position: "fixed", inset: 0, background: stage.surface }}
-      >
+      <div onPointerDown={claimFocus} className="fixed inset-0 bg-stage">
         {fullscreenButton}
       </div>
     );
   }
 
   return (
-    <div
-      onPointerDown={claimFocus}
-      style={{ position: "fixed", inset: 0, background: stage.surface }}
-    >
+    <div onPointerDown={claimFocus} className="fixed inset-0 bg-stage">
       <Stage
         slideIndex={state.slideIndex}
         content={frame.content}

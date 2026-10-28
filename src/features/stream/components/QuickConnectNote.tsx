@@ -1,45 +1,20 @@
 import { useState } from "react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { Button } from "../../../components/ui/Button";
 import { Modal } from "../../../components/ui/Modal";
 
-export const QuickConnectNote = () => {
-  const { colors, fonts } = useUITheme();
-  const [open, setOpen] = useState(false);
+const paragraphClassName = "mt-0 mb-3 text-[13.5px] leading-[1.7] text-sub";
 
-  const paragraph = {
-    fontFamily: fonts.ui,
-    fontSize: 13.5,
-    lineHeight: 1.7,
-    color: colors.sub,
-    margin: "0 0 12px",
-  };
+export const QuickConnectNote = () => {
+  const [open, setOpen] = useState(false);
 
   return (
     <>
-      <p
-        style={{
-          margin: "14px 0 0",
-          textAlign: "center",
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          lineHeight: 1.5,
-          color: colors.dim,
-        }}
-      >
+      <p className="mt-3.5 mb-0 text-center text-[12.5px] leading-normal text-dim">
         A brief internet connection is needed to link both devices.{" "}
         <button
           type="button"
           onClick={() => setOpen(true)}
-          style={{
-            padding: 0,
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            font: "inherit",
-            color: colors.accentSoft,
-            textDecoration: "underline",
-          }}
+          className="border-none bg-transparent p-0 text-accent-soft underline [font:inherit]"
         >
           Learn more
         </button>
@@ -56,17 +31,17 @@ export const QuickConnectNote = () => {
           </Button>
         }
       >
-        <p style={{ ...paragraph, marginTop: 0 }}>
+        <p className={paragraphClassName}>
           Quick connect lets the two devices find each other on their own, and
           that introduction is made through a short online lookup. Both devices
           need to reach the internet for those few seconds.
         </p>
-        <p style={paragraph}>
+        <p className={paragraphClassName}>
           Once they are paired the video no longer goes online. It travels
           straight between the two devices over your WiFi, so the picture keeps
           running even if the internet drops out afterwards.
         </p>
-        <p style={{ ...paragraph, marginBottom: 0, color: colors.text }}>
+        <p className="m-0 text-[13.5px] leading-[1.7] text-fg">
           No internet? Choose <strong>Pair with a code instead</strong>. That
           route is fully offline: point one device at the other&apos;s QR code,
           or copy the code text and paste it into the box on the other device.

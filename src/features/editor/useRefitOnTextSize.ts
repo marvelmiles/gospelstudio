@@ -12,11 +12,6 @@ interface RefitOptions {
   onRefit?: () => void;
 }
 
-/**
- * Keeps the deck readable as its text size changes: once the size or line
- * height moves, the slides are cut again so none of them fills the frame edge
- * to edge. Opening a document changes nothing, so nothing arrives unsaved.
- */
 export const useRefitOnTextSize = ({
   metrics,
   reflow,

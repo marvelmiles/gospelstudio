@@ -16,7 +16,7 @@ export interface OverlayBlock {
   lines: string[];
 }
 
-export const overlayBlockBudget = (
+const overlayBlockBudget = (
   frame: SlideFrame,
   block: OverlayBlockStyle,
   badge: OverlayBadgeStyle,

@@ -1,65 +1,38 @@
-import { useUITheme } from "../../theme/ThemeProvider";
-import { mix } from "../../theme/uiTheme";
 import { SectionTitle } from "../../components/ui/Field";
 import { getStorageLabel, type StorageInfo } from "../../lib/storageStats";
+import { cn } from "../../lib/cn";
+
+const BAR_CLASSES: Record<StorageInfo["level"], string> = {
+  critical: "from-danger to-danger-fg",
+  warn: "from-warning to-warning-fg",
+  ok: "from-success to-success-fg",
+};
 
 export const StorageSection = ({ storage }: { storage: StorageInfo }) => {
-  const { colors, fonts } = useUITheme();
   const usedPercent = Math.min(100, Math.round(storage.pct * 100));
-  const barColor =
-    storage.level === "critical"
-      ? colors.danger
-      : storage.level === "warn"
-        ? colors.warning
-        : colors.success;
 
   return (
     <>
       <SectionTitle>Storage</SectionTitle>
-      <div style={{ marginBottom: 18 }}>
-        <div
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: 10,
-            flexWrap: "wrap",
-          }}
-        >
+      <div className="mb-4.5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2.5">
           <div
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 20,
-              fontWeight: 600,
-              color: storage.level === "critical" ? colors.danger : colors.text,
-              lineHeight: 1,
-            }}
+            className={cn(
+              "text-xl leading-none font-semibold",
+              storage.level === "critical" ? "text-danger" : "text-fg",
+            )}
           >
             {usedPercent}%
           </div>
-          <div
-            style={{ fontFamily: fonts.ui, fontSize: 12, color: colors.sub }}
-          >
-            {getStorageLabel(storage)}
-          </div>
+          <div className="text-xs text-sub">{getStorageLabel(storage)}</div>
         </div>
-        <div
-          style={{
-            height: 7,
-            borderRadius: 99,
-            background: colors.raise,
-            overflow: "hidden",
-            marginTop: 9,
-          }}
-        >
+        <div className="mt-2.25 h-1.75 overflow-hidden rounded-full bg-raise">
           <div
-            style={{
-              height: "100%",
-              width: `${Math.max(2, usedPercent)}%`,
-              borderRadius: 99,
-              background: `linear-gradient(90deg, ${barColor}, ${mix(barColor, colors.onAccent, 0.28)})`,
-              transition: "width 0.4s ease",
-            }}
+            style={{ width: `${Math.max(2, usedPercent)}%` }}
+            className={cn(
+              "h-full rounded-full bg-linear-to-r transition-[width] duration-400",
+              BAR_CLASSES[storage.level],
+            )}
           />
         </div>
       </div>

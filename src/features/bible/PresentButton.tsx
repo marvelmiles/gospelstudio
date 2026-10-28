@@ -22,10 +22,7 @@ export const PresentButton = ({
   const { present } = usePresentScripture();
 
   return (
-    <span
-      style={{ display: "inline-flex" }}
-      onClick={(e) => e.stopPropagation()}
-    >
+    <span className="inline-flex" onClick={(e) => e.stopPropagation()}>
       <PresentMenu
         disabled={disabled}
         title={title}

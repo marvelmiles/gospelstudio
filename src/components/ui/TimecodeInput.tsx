@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import {
   formatTimecode,
   isPartialTimecode,
@@ -35,7 +34,6 @@ export const TimecodeInput = ({
   onErrorChange,
   "aria-label": ariaLabel,
 }: TimecodeInputProps) => {
-  const { colors, fonts } = useUITheme();
   const [typing, setTyping] = useState<TypingState | null>(null);
   const settled = seconds === null ? "" : formatTimecode(seconds, withHours);
   const live = typing?.seconds === seconds ? typing : null;
@@ -96,30 +94,13 @@ export const TimecodeInput = ({
         placeholder={placeholder ?? timecodeShape(withHours)}
         value={value}
         onChange={(event) => handleChange(event.target.value)}
-        onFocus={(event) => {
-          if (error) event.target.style.borderColor = colors.danger;
-        }}
-        onBlur={(event) => {
-          if (error) event.target.style.borderColor = colors.danger;
-        }}
-        style={{
-          fontVariantNumeric: "tabular-nums",
-          ...(error ? { borderColor: colors.danger } : {}),
-        }}
+        invalid={Boolean(error)}
+        className="tabular-nums"
       />
       {error && (
         <span
           role="alert"
-          style={{
-            display: "block",
-            marginTop: 6,
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            lineHeight: 1.45,
-            color: colors.danger,
-            textTransform: "none",
-            letterSpacing: 0,
-          }}
+          className="mt-1.5 block text-[11.5px] leading-[1.45] tracking-normal text-danger normal-case"
         >
           {error}
         </span>

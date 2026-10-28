@@ -9,7 +9,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
+import { cn } from "../../../lib/cn";
 import { formatDuration } from "../../../lib/media";
 import { OverlaySelect, OverlaySlider } from "../OverlayControls";
 import type { ContentOverlay } from "../lib/streamOverlay";
@@ -18,14 +18,14 @@ import {
   setStreamOverlayVideo,
 } from "../lib/streamOverlayStore";
 import { useOverlayVideoProgress } from "../lib/overlayVideoProgress";
-import { SPEED_OPTIONS, VIDEO_JUMP_SECONDS } from "./overlayOptions";
+import { VIDEO_JUMP_SECONDS } from "./overlayOptions";
+import { PLAYBACK_RATE_OPTIONS } from "../../../lib/mediaOptions";
 
 export const VideoOverlaySettings = ({
   overlay,
 }: {
   overlay: ContentOverlay;
 }) => {
-  const { colors, fonts } = useUITheme();
   const { time, duration } = useOverlayVideoProgress(overlay.id);
   const { video } = overlay;
   const scrubberEnd = duration > 0 ? duration : Math.max(time, 0.1);
@@ -38,7 +38,7 @@ export const VideoOverlaySettings = ({
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="flex items-center gap-1.5">
         <TransportButton
           icon={video.playing ? Pause : Play}
           label={video.playing ? "Pause the clip" : "Play the clip"}
@@ -79,19 +79,8 @@ export const VideoOverlaySettings = ({
         />
       </div>
 
-      <label style={{ display: "block" }}>
-        <span
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            fontWeight: 600,
-            color: colors.dim,
-            fontVariantNumeric: "tabular-nums",
-            marginBottom: 4,
-          }}
-        >
+      <label className="block">
+        <span className="mb-1 flex justify-between text-[11.5px] font-semibold text-dim tabular-nums">
           <span>{formatDuration(time)}</span>
           <span>{formatDuration(duration > 0 ? duration : 0)}</span>
         </span>
@@ -105,7 +94,7 @@ export const VideoOverlaySettings = ({
           onChange={(event) =>
             seekStreamOverlayVideo(overlay.id, Number(event.target.value))
           }
-          style={{ width: "100%", accentColor: colors.accent }}
+          className="w-full accent-accent"
         />
       </label>
 
@@ -121,7 +110,7 @@ export const VideoOverlaySettings = ({
       <OverlaySelect
         label="Speed"
         value={String(video.rate)}
-        options={SPEED_OPTIONS}
+        options={PLAYBACK_RATE_OPTIONS}
         onChange={(value) =>
           setStreamOverlayVideo(overlay.id, { rate: Number(value) })
         }
@@ -140,28 +129,17 @@ const TransportButton = ({
   label: string;
   onClick: () => void;
   isAccent?: boolean;
-}) => {
-  const { colors } = useUITheme();
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      onClick={onClick}
-      style={{
-        width: 30,
-        height: 30,
-        flexShrink: 0,
-        display: "grid",
-        placeItems: "center",
-        borderRadius: 8,
-        cursor: "pointer",
-        background: colors.raise,
-        border: `1px solid ${isAccent ? colors.accent : colors.border}`,
-        color: isAccent ? colors.accentSoft : colors.sub,
-      }}
-    >
-      <Icon size={14} />
-    </button>
-  );
-};
+}) => (
+  <button
+    type="button"
+    title={label}
+    aria-label={label}
+    onClick={onClick}
+    className={cn(
+      "grid size-7.5 shrink-0 place-items-center rounded-lg border bg-raise",
+      isAccent ? "border-accent text-accent-soft" : "border-line text-sub",
+    )}
+  >
+    <Icon size={14} />
+  </button>
+);

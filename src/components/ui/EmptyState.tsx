@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -18,80 +17,43 @@ interface MissingArtifactProps {
 }
 
 const MissingArtifact = ({ icon: Icon, compact }: MissingArtifactProps) => {
-  const { colors, shadows } = useUITheme();
-  const frameW = compact ? 104 : 128;
-  const frameH = compact ? 66 : 80;
-  const iconSize = compact ? 22 : 26;
-
-  const ghostFrame = {
-    position: "absolute" as const,
-    top: 0,
-    left: "50%",
-    width: frameW,
-    height: frameH,
-    marginLeft: -frameW / 2,
-    borderRadius: 14,
-    background: colors.panel,
-    border: `1px solid ${colors.border}`,
-    boxShadow: "0 8px 20px rgba(0,0,0,0.28)",
-  };
-
-  const bar = (width: number) => ({
-    height: 6,
-    width,
-    borderRadius: 99,
-    background: fade(colors.sub, 0.28),
-  });
+  const frame = cn(
+    "absolute top-0 left-1/2 rounded-[14px] border border-line bg-panel shadow-[0_8px_20px_rgb(0_0_0/0.28)]",
+    compact ? "-ml-13 h-16.5 w-26" : "-ml-16 h-20 w-32",
+  );
+  const bar = "h-1.5 rounded-full bg-sub/28";
 
   return (
     <div
-      style={{
-        position: "relative",
-        width: frameW + 40,
-        height: frameH + 30,
-        margin: "0 auto 22px",
-      }}
+      className={cn(
+        "relative mx-auto mb-5.5",
+        compact ? "h-24 w-36" : "h-27.5 w-42",
+      )}
     >
       <div
-        style={{
-          ...ghostFrame,
-          transform: "translate(-16px, 16px) rotate(-8deg)",
-          opacity: 0.55,
-        }}
+        className={cn(
+          frame,
+          "translate-x-[-16px] translate-y-4 -rotate-8 opacity-55",
+        )}
       />
       <div
-        style={{
-          ...ghostFrame,
-          transform: "translate(18px, 11px) rotate(7deg)",
-          opacity: 0.7,
-        }}
+        className={cn(
+          frame,
+          "translate-x-4.5 translate-y-2.75 rotate-7 opacity-70",
+        )}
       />
       <div
-        style={{
-          ...ghostFrame,
-          background: colors.panelSolid,
-          boxShadow: shadows.overlay,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 9,
-          opacity: 1,
-        }}
+        className={cn(
+          frame,
+          "flex flex-col items-center justify-center gap-2.25 bg-panel-solid shadow-overlay",
+        )}
       >
-        <div style={{ color: colors.accent, display: "grid" }}>
-          <Icon size={iconSize} />
+        <div className="grid text-accent">
+          <Icon size={compact ? 22 : 26} />
         </div>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 5,
-            alignItems: "center",
-          }}
-        >
-          <div style={bar(compact ? 44 : 54)} />
-          <div style={bar(compact ? 28 : 34)} />
+        <div className="flex flex-col items-center gap-1.25">
+          <div className={cn(bar, compact ? "w-11" : "w-13.5")} />
+          <div className={cn(bar, compact ? "w-7" : "w-8.5")} />
         </div>
       </div>
     </div>
@@ -105,49 +67,19 @@ export const EmptyState = ({
   action,
   compact,
   bare,
-}: EmptyStateProps) => {
-  const { colors, fonts, glass } = useUITheme();
-  const UI = fonts.ui;
-  const DISPLAY = fonts.display;
-  return (
-    <div
-      style={{
-        ...(bare ? {} : glass),
-        padding: compact ? "34px 24px" : "56px 28px",
-        textAlign: "center",
-      }}
-    >
-      <MissingArtifact icon={icon} compact={compact} />
-      <h3
-        style={{
-          fontFamily: DISPLAY,
-          fontSize: 19,
-          fontWeight: 600,
-          color: colors.text,
-          margin: "0 0 6px",
-        }}
-      >
-        {title}
-      </h3>
-      <p
-        style={{
-          fontFamily: UI,
-          fontSize: 13.5,
-          color: colors.sub,
-          margin: "0 auto",
-          maxWidth: 380,
-          lineHeight: 1.6,
-        }}
-      >
-        {message}
-      </p>
-      {action && (
-        <div
-          style={{ marginTop: 18, display: "flex", justifyContent: "center" }}
-        >
-          {action}
-        </div>
-      )}
-    </div>
-  );
-};
+}: EmptyStateProps) => (
+  <div
+    className={cn(
+      "text-center",
+      !bare && "glass",
+      compact ? "px-6 py-8.5" : "px-7 py-14",
+    )}
+  >
+    <MissingArtifact icon={icon} compact={compact} />
+    <h3 className="mt-0 mb-1.5 text-[19px] font-semibold text-fg">{title}</h3>
+    <p className="mx-auto my-0 max-w-95 text-[13.5px] leading-[1.6] text-sub">
+      {message}
+    </p>
+    {action && <div className="mt-4.5 flex justify-center">{action}</div>}
+  </div>
+);

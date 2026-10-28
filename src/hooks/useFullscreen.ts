@@ -12,17 +12,10 @@ interface FullscreenDocument extends Document {
 
 export interface FullscreenControls {
   isFullscreen: boolean;
-  /**
-   * Set while the view fills the viewport by layout instead of through the
-   * browser, so the element that asked for it can spread this over its own
-   * styles. Null whenever the browser granted real fullscreen.
-   */
   fillStyle: CSSProperties | null;
   toggle: () => void;
 }
 
-/* Above every panel, dialog and toast, and below the storage gate, which has to
-   stay reachable whatever else is on screen. */
 const FILL_Z_INDEX = 500;
 
 const FILL_STYLE: CSSProperties = {
@@ -65,11 +58,6 @@ const leaveFullscreen = (): void => {
   } catch {}
 };
 
-/**
- * Fills the screen with one element. Phone browsers that keep the Fullscreen
- * API for video players alone, iOS Safari among them, refuse the request, so
- * the element fills the viewport itself rather than leaving the button dead.
- */
 export const useFullscreen = (
   ref: RefObject<HTMLElement>,
 ): FullscreenControls => {
@@ -90,7 +78,6 @@ export const useFullscreen = (
     };
   }, []);
 
-  // Nothing behind a filled viewport should scroll while it is covered.
   useEffect(() => {
     if (!isFilling) return;
     const { overflow } = document.body.style;

@@ -30,28 +30,21 @@ export interface OutgoingShare {
   totalBytes: number;
 }
 
-/** One row per device, keyed so a device can never be listed twice. */
 export type OutgoingShareMap = Readonly<Record<string, OutgoingShare>>;
 
 export interface OutgoingShareOptions {
-  /** How to reach a device, or null once it can no longer be reached. */
   connectTo: (target: ShareDevice) => ShareConnector | null;
   deviceName: string;
-  /** Named as soon as a device turns the send down or never replies. */
   onDeviceLost?: (device: ShareDevice, reason: string) => void;
-  /** Runs once the send is over and at least one device has the whole thing. */
   onAllSent?: () => void;
-  /** Runs when the send ends with nothing delivered, stopped or otherwise. */
   onNothingLeft?: () => void;
 }
 
 export interface OutgoingShares {
   transfers: OutgoingShareMap;
   isBusy: boolean;
-  /** How far the whole send has got, or null while that cannot be measured. */
   progress: number | null;
   send: (targets: ShareDevice[], selection: BackupSelection) => Promise<void>;
-  /** Stops one device and drops it; stopping the last one stops everything. */
   stopDevice: (deviceId: string) => void;
   stopAll: () => void;
   reset: () => void;
@@ -117,8 +110,6 @@ export const useOutgoingShares = ({
   const pushToast = useStore((s) => s.pushToast);
   const [transfers, setTransfers] = useState<OutgoingShareMap>({});
   const [isBusy, setIsBusy] = useState(false);
-  /* Every send is one run. Stopping everything, refreshing or leaving moves
-     the run on, so a run that is still winding down can never write back. */
   const runRef = useRef(0);
   const stoppedDevicesRef = useRef(new Set<string>());
   const callbacksRef = useRef({ onDeviceLost, onAllSent, onNothingLeft });
@@ -127,12 +118,9 @@ export const useOutgoingShares = ({
     callbacksRef.current = { onDeviceLost, onAllSent, onNothingLeft };
   });
 
-  /* A phone that locks its screen or a minimised browser freezes the page,
-     which would otherwise stall the send until it is picked up again. */
   useScreenWakeLock(isBusy);
   useBackgroundKeepAlive(isBusy);
 
-  // Leaving the page stops the queue rather than sending on in the background.
   useEffect(
     () => () => {
       runRef.current += 1;
@@ -194,8 +182,6 @@ export const useOutgoingShares = ({
         return;
       }
 
-      /* One device at a time: a single WiFi link carries the whole archive far
-         more steadily than several fighting over it. */
       let deliveredCount = 0;
       for (const target of targets) {
         if (!isCurrent()) return;
@@ -230,8 +216,6 @@ export const useOutgoingShares = ({
           continue;
         }
         drop(target.id);
-        /* A device that said no, or never replied, leaves the list rather
-           than sitting there as a dead row nobody can act on. */
         if (outcome.state !== "stopped")
           callbacksRef.current.onDeviceLost?.(target, outcome.message);
       }

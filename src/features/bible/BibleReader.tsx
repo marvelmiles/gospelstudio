@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { BibleVerse, BibleVersionId } from "../../types";
 import { bookById } from "../../data/bibleBooks";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
 import type { ScriptureSelection } from "../../store/useStore";
 import { useSpeech } from "../../hooks/useSpeech";
@@ -40,7 +40,6 @@ export const BibleReader = ({
   onNavigate,
   onCurrentVerseChange,
 }: BibleReaderProps) => {
-  const { colors, fonts, glass } = useUITheme();
   const pushToast = useStore((s) => s.pushToast);
   const { present, edit } = usePresentScripture();
   const { verses, loading, error, retry } = useBibleChapter(
@@ -139,14 +138,7 @@ export const BibleReader = ({
     speech.speaking ? speech.stop() : readAloud(list);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: 0,
-        height: "100%",
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col">
       <ChapterToolbar
         reference={reference}
         onReferenceChange={setReference}
@@ -162,31 +154,19 @@ export const BibleReader = ({
       />
 
       <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          paddingRight: 6,
-          paddingBottom: selection.selection ? 76 : 12,
-        }}
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto pr-1.5",
+          selection.selection ? "pb-19" : "pb-3",
+        )}
       >
         {loading && (
-          <div style={{ padding: 40, display: "grid", placeItems: "center" }}>
+          <div className="grid place-items-center p-10">
             <Spinner size={26} />
           </div>
         )}
         {!loading && error && (
-          <div style={{ ...glass, padding: 28, textAlign: "center" }}>
-            <p
-              style={{
-                fontFamily: fonts.ui,
-                color: colors.sub,
-                marginTop: 0,
-                lineHeight: 1.6,
-              }}
-            >
-              {error}
-            </p>
+          <div className="glass p-7 text-center">
+            <p className="mt-0 leading-[1.6] text-sub">{error}</p>
             <Button variant="primary" onClick={retry}>
               <RotateCcw size={14} />
               Try again

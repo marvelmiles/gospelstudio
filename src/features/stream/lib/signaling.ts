@@ -51,7 +51,6 @@ export interface BroadcastHandle {
   close: () => Promise<void>;
 }
 
-// Firebase only relays the SDP handshake; both sides delete it once the peer link is up.
 export const publishBroadcaster = (
   room: string,
   name: string,
@@ -68,7 +67,6 @@ export const publishBroadcaster = (
     void set(presence, { name, ts: serverTimestamp() });
   };
 
-  // onDisconnect fires once per socket, so presence is re-announced whenever a sleeping device reconnects.
   const stopConnectionListener = onValue(
     ref(database, ".info/connected"),
     (snapshot) => {

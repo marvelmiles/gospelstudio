@@ -3,32 +3,18 @@ import { textMeasurer, wrappedRowCount, type TextMeasure } from "./textMeasure";
 
 export const SLIDE_ASPECT = 16 / 9;
 
-/**
- * The slide canvas is measured in cqw, so a 16:9 frame is this many cqw tall.
- * Every figure below is in the same unit, which is what makes the capacity
- * arithmetic work without knowing the projector's pixel size.
- */
-export const SLIDE_HEIGHT_CQW = 100 / SLIDE_ASPECT;
+const SLIDE_HEIGHT_CQW = 100 / SLIDE_ASPECT;
 
-export const SLIDE_BODY_PADDING_Y_CQW = 5;
-export const SLIDE_BODY_PADDING_X_CQW = 9;
+const SLIDE_BODY_PADDING_Y_CQW = 5;
+const SLIDE_BODY_PADDING_X_CQW = 9;
 
-/**
- * Air kept above and below the words on top of the body padding, so a full
- * slide still reads as framed text rather than a block pressed against the
- * edges, without leaving rows of usable space empty.
- */
-export const SLIDE_BREATHING_ROOM_CQW = 0.5;
+const SLIDE_BREATHING_ROOM_CQW = 0.5;
 
 export const SLIDE_BODY_PADDING = `${SLIDE_BODY_PADDING_Y_CQW}cqw ${SLIDE_BODY_PADDING_X_CQW}cqw`;
 
 export const DEFAULT_SLIDE_FONT_SIZE = 6;
-export const DEFAULT_SLIDE_LINE_HEIGHT = 1.25;
+const DEFAULT_SLIDE_LINE_HEIGHT = 1.25;
 
-export const MIN_SLIDE_FONT_SIZE = 2.5;
-export const MAX_SLIDE_FONT_SIZE = 10;
-
-/** Matches the estimate {@link textMeasurer} falls back on when it cannot measure. */
 const AVERAGE_GLYPH_WIDTH_RATIO = 0.5;
 
 const TEXT_AREA_HEIGHT_CQW =
@@ -76,15 +62,13 @@ export const sameSlideTextMetrics = (
   b: SlideTextMetrics,
 ): boolean => a.fontSize === b.fontSize && a.lineHeight === b.lineHeight;
 
-/** How many rendered rows of text fit on a slide at this size. */
 export const slideRowCapacity = (metrics: SlideTextMetrics): number =>
   Math.max(
     1,
     Math.floor(TEXT_AREA_HEIGHT_CQW / (metrics.fontSize * metrics.lineHeight)),
   );
 
-/** How many characters fit on one rendered row at this size. */
-export const slideRowCharacters = (metrics: SlideTextMetrics): number =>
+const slideRowCharacters = (metrics: SlideTextMetrics): number =>
   Math.max(
     8,
     Math.floor(
@@ -92,14 +76,12 @@ export const slideRowCharacters = (metrics: SlideTextMetrics): number =>
     ),
   );
 
-/** How many rows one written line takes once it wraps between words. */
 export const slideRowsForText = (
   text: string,
   metrics: SlideTextMetrics,
   measure: TextMeasure = textMeasurer(metrics),
 ): number => wrappedRowCount(text, TEXT_AREA_WIDTH_CQW, measure);
 
-/** How many characters a whole slide holds, minus any rows already spoken for. */
 export const slideCharacterBudget = (
   metrics: SlideTextMetrics,
   reservedRows = 0,
@@ -108,16 +90,10 @@ export const slideCharacterBudget = (
   slideRowCharacters(metrics);
 
 export interface SlideFitOptions {
-  /** A hard cap on written lines per slide, on top of the height budget. */
   maxLines?: number;
-  /** Rows a slide spends on something other than this text, such as a reference. */
   reservedRows?: number;
 }
 
-/**
- * Groups items into slide-sized runs: a run closes as soon as one more item
- * would push the text past the rows a slide can show with room to breathe.
- */
 export const chunkToFit = <T>(
   items: T[],
   textOf: (item: T) => string,
@@ -165,12 +141,6 @@ export const chunkLinesToFit = (
   metrics: SlideTextMetrics,
   options: SlideFitOptions = {},
 ): string[][] => chunkToFit(lines, (line) => line, metrics, options);
-
-export const slideLinesOverflow = (
-  lines: string[],
-  metrics: SlideTextMetrics,
-  options: SlideFitOptions = {},
-): boolean => chunkLinesToFit(lines, metrics, options).length > 1;
 
 const CHUNK_SUFFIX = /\s·\s\d+\/\d+$/;
 

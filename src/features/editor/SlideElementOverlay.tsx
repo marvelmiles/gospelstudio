@@ -1,32 +1,30 @@
 import { useRef } from "react";
-import type { CSSProperties, KeyboardEvent, PointerEvent } from "react";
+import type { KeyboardEvent, PointerEvent } from "react";
 import { ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { SlideElementKind, SlideFrame } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
+import { cn } from "../../lib/cn";
 import { clampFrame, MIN_FRAME_SIZE } from "../../lib/slideMedia";
 import { keepsSelection } from "../../lib/selectionScope";
 
 type HandleId = "nw" | "n" | "ne" | "e" | "se" | "s" | "sw" | "w";
 
-const HANDLES: { id: HandleId; x: number; y: number; cursor: string }[] = [
-  { id: "nw", x: 0, y: 0, cursor: "nwse-resize" },
-  { id: "n", x: 0.5, y: 0, cursor: "ns-resize" },
-  { id: "ne", x: 1, y: 0, cursor: "nesw-resize" },
-  { id: "e", x: 1, y: 0.5, cursor: "ew-resize" },
-  { id: "se", x: 1, y: 1, cursor: "nwse-resize" },
-  { id: "s", x: 0.5, y: 1, cursor: "ns-resize" },
-  { id: "sw", x: 0, y: 1, cursor: "nesw-resize" },
-  { id: "w", x: 0, y: 0.5, cursor: "ew-resize" },
+const HANDLES: { id: HandleId; position: string }[] = [
+  { id: "nw", position: "top-0 left-0 cursor-nwse-resize" },
+  { id: "n", position: "top-0 left-1/2 cursor-ns-resize" },
+  { id: "ne", position: "top-0 left-full cursor-nesw-resize" },
+  { id: "e", position: "top-1/2 left-full cursor-ew-resize" },
+  { id: "se", position: "top-full left-full cursor-nwse-resize" },
+  { id: "s", position: "top-full left-1/2 cursor-ns-resize" },
+  { id: "sw", position: "top-full left-0 cursor-nesw-resize" },
+  { id: "w", position: "top-1/2 left-0 cursor-ew-resize" },
 ];
 
-const EDGE_BAND = 11;
-const EDGES: { id: string; style: CSSProperties }[] = [
-  { id: "top", style: { top: 0, left: 0, right: 0, height: EDGE_BAND } },
-  { id: "bottom", style: { bottom: 0, left: 0, right: 0, height: EDGE_BAND } },
-  { id: "left", style: { top: 0, bottom: 0, left: 0, width: EDGE_BAND } },
-  { id: "right", style: { top: 0, bottom: 0, right: 0, width: EDGE_BAND } },
+const EDGES: { id: string; position: string }[] = [
+  { id: "top", position: "inset-x-0 top-0 h-2.75" },
+  { id: "bottom", position: "inset-x-0 bottom-0 h-2.75" },
+  { id: "left", position: "inset-y-0 left-0 w-2.75" },
+  { id: "right", position: "inset-y-0 right-0 w-2.75" },
 ];
 
 const NUDGE = 1;
@@ -73,7 +71,6 @@ export interface SlideElementEditing<Kind extends string = SlideElementKind> {
   ) => void;
   onDuplicate: (element: SlideElementRef<Kind>) => void;
   onDelete: (element: SlideElementRef<Kind>) => void;
-  /** Omitted where the elements have no meaningful front-to-back order. */
   onReorder?: (element: SlideElementRef<Kind>, direction: number) => void;
 }
 
@@ -126,7 +123,6 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
   onReorder,
   frameOnFocus,
 }: SlideElementOverlayProps<Kind>) => {
-  const { colors } = useUITheme();
   const rootRef = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture<Kind> | null>(null);
 
@@ -224,30 +220,10 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
   };
 
   return (
-    <div
-      ref={rootRef}
-      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-    >
+    <div ref={rootRef} className="pointer-events-none absolute inset-0">
       {elements.map((element) => {
         const selected = element.id === selectedId;
         const grabbable = interiorDrags(element, selected);
-        const boxStyle: CSSProperties = {
-          position: "absolute",
-          left: `${element.frame.x}%`,
-          top: `${element.frame.y}%`,
-          width: `${element.frame.width}%`,
-          height: `${element.frame.height}%`,
-          pointerEvents: grabbable ? "auto" : "none",
-          cursor: grabbable ? "move" : undefined,
-          touchAction: "none",
-          outline: selected
-            ? `2px solid ${colors.accent}`
-            : frameOnFocus
-              ? undefined
-              : `1px dashed ${fade(colors.accent, 0.45)}`,
-          outlineOffset: 1,
-          background: "transparent",
-        };
         return (
           <div
             key={element.id}
@@ -256,7 +232,21 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
             tabIndex={0}
             aria-label={`${element.label ?? LABELS[element.kind] ?? "Element"}. Drag to move, arrow keys to nudge.`}
             aria-pressed={selected}
-            style={boxStyle}
+            style={{
+              left: `${element.frame.x}%`,
+              top: `${element.frame.y}%`,
+              width: `${element.frame.width}%`,
+              height: `${element.frame.height}%`,
+            }}
+            className={cn(
+              "absolute touch-none bg-transparent outline-offset-1",
+              grabbable
+                ? "pointer-events-auto cursor-move"
+                : "pointer-events-none",
+              selected
+                ? "outline-2 outline-accent"
+                : !frameOnFocus && "outline-1 outline-accent/45 outline-dashed",
+            )}
             onPointerDown={
               grabbable ? (event) => begin(event, element, "move") : undefined
             }
@@ -279,13 +269,10 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
                 <span
                   key={edge.id}
                   onPointerDown={(event) => begin(event, element, "move")}
-                  style={{
-                    position: "absolute",
-                    ...edge.style,
-                    pointerEvents: "auto",
-                    cursor: "move",
-                    touchAction: "none",
-                  }}
+                  className={cn(
+                    "pointer-events-auto absolute cursor-move touch-none",
+                    edge.position,
+                  )}
                 />
               ))}
             {selected && (
@@ -305,21 +292,10 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
                   <span
                     key={handle.id}
                     onPointerDown={(event) => begin(event, element, handle.id)}
-                    style={{
-                      position: "absolute",
-                      left: `${handle.x * 100}%`,
-                      top: `${handle.y * 100}%`,
-                      width: 12,
-                      height: 12,
-                      marginLeft: -6,
-                      marginTop: -6,
-                      borderRadius: 3,
-                      background: colors.accent,
-                      border: `1.5px solid ${colors.onAccent}`,
-                      pointerEvents: "auto",
-                      cursor: handle.cursor,
-                      touchAction: "none",
-                    }}
+                    className={cn(
+                      "pointer-events-auto absolute -mt-1.5 -ml-1.5 size-3 touch-none rounded-[3px] border-[1.5px] border-on-accent bg-accent",
+                      handle.position,
+                    )}
                   />
                 ))}
               </>
@@ -353,7 +329,6 @@ const Toolbar = ({
   onForward,
   onBackward,
 }: ToolbarProps) => {
-  const { colors } = useUITheme();
   const buttons: ToolbarButton[] = [
     ...(onForward
       ? [
@@ -381,21 +356,10 @@ const Toolbar = ({
   return (
     <div
       onPointerDown={(event) => event.stopPropagation()}
-      style={{
-        position: "absolute",
-        left: 0,
-        ...(below
-          ? { top: "100%", marginTop: 8 }
-          : { bottom: "100%", marginBottom: 8 }),
-        display: "flex",
-        gap: 2,
-        padding: 3,
-        borderRadius: 9,
-        pointerEvents: "auto",
-        background: colors.panelSolid,
-        border: `1px solid ${colors.border}`,
-        boxShadow: "0 8px 22px rgba(0,0,0,0.4)",
-      }}
+      className={cn(
+        "pointer-events-auto absolute left-0 flex gap-0.5 rounded-[9px] border border-line bg-panel-solid p-0.75 shadow-[0_8px_22px_rgb(0_0_0/0.4)]",
+        below ? "top-full mt-2" : "bottom-full mb-2",
+      )}
     >
       {buttons.map(({ icon: Icon, label, fn, danger }) => (
         <button
@@ -403,18 +367,10 @@ const Toolbar = ({
           title={label}
           aria-label={label}
           onClick={fn}
-          style={{
-            display: "grid",
-            placeItems: "center",
-            width: 26,
-            height: 26,
-            padding: 0,
-            borderRadius: 7,
-            border: "none",
-            cursor: "pointer",
-            background: "transparent",
-            color: danger ? colors.danger : colors.sub,
-          }}
+          className={cn(
+            "grid size-6.5 place-items-center rounded-[7px] border-none bg-transparent p-0",
+            danger ? "text-danger" : "text-sub",
+          )}
         >
           <Icon size={14} />
         </button>

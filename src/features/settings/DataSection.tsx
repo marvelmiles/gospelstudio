@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ImportMode } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
 import { Button } from "../../components/ui/Button";
 import { InfoTip } from "../../components/ui/InfoTip";
@@ -51,7 +49,6 @@ const IMPORT_OPTIONS: {
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const DataSection = () => {
-  const { colors, fonts } = useUITheme();
   const navigate = useNavigate();
   const closeOverlay = useStore((s) => s.closeOverlay);
   const exportData = useStore((s) => s.exportData);
@@ -114,7 +111,7 @@ export const DataSection = () => {
       </SectionTitle>
 
       {busyWith && (
-        <div style={{ marginBottom: 14 }}>
+        <div className="mb-3.5">
           <ProgressBar
             value={progress}
             label={busyWith === "export" ? "Exporting" : "Importing"}
@@ -122,7 +119,7 @@ export const DataSection = () => {
         </div>
       )}
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 10 }}>
+      <div className="flex flex-wrap gap-2.5">
         <Button
           variant="primary"
           onClick={runExport}
@@ -167,14 +164,7 @@ export const DataSection = () => {
       </div>
 
       {isChoosingMode && !busyWith && (
-        <div
-          style={{
-            marginTop: 12,
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-            gap: 10,
-          }}
-        >
+        <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
           {IMPORT_OPTIONS.map((option) => (
             <button
               key={option.mode}
@@ -182,49 +172,15 @@ export const DataSection = () => {
                 pendingMode.current = option.mode;
                 fileInputRef.current?.click();
               }}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                padding: 14,
-                borderRadius: 12,
-                cursor: "pointer",
-                textAlign: "left",
-                background: colors.raise,
-                border: `1px solid ${colors.border}`,
-              }}
+              className="flex flex-col gap-2 rounded-xl border border-line bg-raise p-3.5 text-left"
             >
-              <div
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 9,
-                  display: "grid",
-                  placeItems: "center",
-                  background: fade(colors.accent, 0.14),
-                  color: colors.accentSoft,
-                }}
-              >
+              <div className="grid size-8.5 place-items-center rounded-[9px] bg-accent/14 text-accent-soft">
                 <option.icon size={17} />
               </div>
-              <div
-                style={{
-                  fontFamily: fonts.ui,
-                  fontWeight: 600,
-                  fontSize: 13.5,
-                  color: colors.text,
-                }}
-              >
+              <div className="text-[13.5px] font-semibold text-fg">
                 {option.title}
               </div>
-              <div
-                style={{
-                  fontFamily: fonts.ui,
-                  fontSize: 12,
-                  color: colors.sub,
-                  lineHeight: 1.45,
-                }}
-              >
+              <div className="text-xs leading-[1.45] text-sub">
                 {option.description}
               </div>
             </button>
@@ -233,16 +189,7 @@ export const DataSection = () => {
       )}
 
       {isMemoryFallback() && (
-        <p
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 12,
-            color: colors.danger,
-            opacity: 0.85,
-            marginTop: 12,
-            marginBottom: 0,
-          }}
-        >
+        <p className="mt-3 mb-0 text-xs text-danger opacity-85">
           Memory-only storage: data won&apos;t survive a refresh.
         </p>
       )}

@@ -9,10 +9,9 @@ import type {
   MediaItem,
   VideoSettings,
 } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
-import { useViewport } from "../../hooks/useViewport";
+import { useWindowSize } from "usehooks-ts";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useDraftHistory } from "../../hooks/useDraftHistory";
 import { useMediaPlayback } from "../../hooks/useMediaPlayback";
@@ -36,6 +35,7 @@ import { MissingPage } from "../../components/ui/MissingPage";
 import { EditorSplitLayout } from "../../components/layout/EditorSplitLayout";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
 import { AudioSettingsControls } from "../../components/media/AudioSettingsControls";
+import { AudioPreviewCard } from "../../components/media/AudioPreviewCard";
 import { AudioSurface } from "../../components/media/AudioSurface";
 import { ImageLayer } from "../../components/media/ImageLayer";
 import { ImageSettingsControls } from "../../components/media/ImageSettingsControls";
@@ -62,11 +62,6 @@ const resetTitle = (canReset: boolean): string =>
 const STACKED_WIDTH = 1080;
 const COMPACT_WIDTH = 560;
 
-/**
- * Tunes one picture, clip or sound for the single slide, manuscript or passage
- * it was opened from. The asset in the library is never written to, so the same
- * file can look and sound different wherever else it is used.
- */
 export const AssetUsageEditorPage = () => {
   const { assetId } = useParams();
   const navigate = useNavigate();
@@ -145,7 +140,6 @@ interface UsageFrameProps {
   name: string;
   kind: AssetUsageKind;
   usage: AssetUsageEditorSession;
-  /** What the save button writes onto the place this edit belongs to. */
   draft: AssetUsageEdit["settings"];
   dirty: boolean;
   canUndo: boolean;
@@ -153,7 +147,6 @@ interface UsageFrameProps {
   onUndo: () => void;
   onRedo: () => void;
   onReset: () => void;
-  /** Off while the settings already match the ones this asset starts from. */
   canReset: boolean;
   onSaved: () => void;
   invalid?: boolean;
@@ -162,7 +155,6 @@ interface UsageFrameProps {
   controls: ReactNode;
 }
 
-/** The chrome every usage editor shares: the top bar, the panels and the guards. */
 const UsageFrame = ({
   name,
   kind,
@@ -181,8 +173,7 @@ const UsageFrame = ({
   preview,
   controls,
 }: UsageFrameProps) => {
-  const { colors, fonts } = useUITheme();
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const pushToast = useStore((s) => s.pushToast);
   const { edit } = usage;
   const stacked = width < STACKED_WIDTH;
@@ -192,12 +183,8 @@ const UsageFrame = ({
   useUndoRedoShortcuts({ canUndo, canRedo, undo: onUndo, redo: onRedo });
 
   const resetAll = useConfirmedAction(onReset);
-  /* Saving writes straight onto the place these settings belong to and the page
-     stays put, so the only way out is the back arrow, guarded while dirty. */
   const leaveGuard = useUnsavedChanges(dirty);
 
-  /* The pencil also chooses the asset, so an asset this place is not using yet
-     has something to save even before a single setting is touched. */
   const [inUse, setInUse] = useState(edit.inUse);
   const unsaved = dirty || !inUse;
 
@@ -216,36 +203,14 @@ const UsageFrame = ({
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col">
       <EditorTopBar
         title={name}
         compact={compact}
         backTitle={`Back to ${edit.label}`}
         onBack={usage.back}
         leading={
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 5,
-              padding: "4px 6px 4px 9px",
-              borderRadius: 999,
-              background: fade(colors.accent, 0.12),
-              border: `1px solid ${fade(colors.accent, 0.3)}`,
-              fontFamily: fonts.ui,
-              fontSize: 11.5,
-              fontWeight: 600,
-              color: colors.accentSoft,
-              whiteSpace: "nowrap",
-            }}
-          >
+          <span className="inline-flex items-center gap-1.25 rounded-full border border-accent/30 bg-accent/12 py-1 pr-1.5 pl-2.25 text-[11.5px] font-semibold whitespace-nowrap text-accent-soft">
             Editing for {edit.label}
             <InfoTip title="Where changes go">
               {assetUsageNote(edit.label, kind)}
@@ -288,19 +253,15 @@ const UsageFrame = ({
         stacked={stacked}
         preview={
           <div
-            style={{
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              padding: stacked ? 16 : 24,
-              minHeight: 0,
-            }}
+            className={cn(
+              "flex h-full min-h-0 flex-col justify-center",
+              stacked ? "p-4" : "p-6",
+            )}
           >
             {preview}
           </div>
         }
-        sidebar={<div style={{ padding: 18 }}>{controls}</div>}
+        sidebar={<div className="p-4.5">{controls}</div>}
       />
 
       <ConfirmDialog
@@ -324,25 +285,14 @@ const UsageFrame = ({
   );
 };
 
-const PreviewSurface = ({ children }: { children: ReactNode }) => {
-  const { colors } = useUITheme();
-  return (
-    <div
-      {...mediaSurfaceProps}
-      style={{
-        position: "relative",
-        width: "100%",
-        aspectRatio: "16/9",
-        borderRadius: 14,
-        overflow: "hidden",
-        border: `1px solid ${colors.border}`,
-        background: "#000",
-      }}
-    >
-      {children}
-    </div>
-  );
-};
+const PreviewSurface = ({ children }: { children: ReactNode }) => (
+  <div
+    {...mediaSurfaceProps}
+    className="relative aspect-video w-full overflow-hidden rounded-[14px] border border-line bg-black"
+  >
+    {children}
+  </div>
+);
 
 interface ImageUsageWorkspaceProps {
   background: Background;
@@ -474,7 +424,7 @@ const VideoUsageWorkspace = ({
             onToggleMuted={() => patch({ muted: !draft.muted })}
             onVolume={(volume) => patch({ volume })}
             onSeek={video.seekTo}
-            style={{ position: "absolute", left: 12, right: 12, bottom: 12 }}
+            className="absolute inset-x-3 bottom-3"
           />
         </PreviewSurface>
       }
@@ -505,7 +455,6 @@ const AudioUsageWorkspace = ({
   settings,
   defaults,
 }: AudioUsageWorkspaceProps) => {
-  const { colors, fonts } = useUITheme();
   const history = useDraftHistory<AudioSettings>(settings);
   const { draft } = history;
   const loopAudio = useStore((s) => s.prefs.loopAudio);
@@ -547,48 +496,13 @@ const AudioUsageWorkspace = ({
       invalid={validation.invalid}
       invalidReason={validation.message}
       preview={
-        <div
-          {...mediaSurfaceProps}
-          style={{
-            width: "100%",
-            maxWidth: 640,
-            margin: "0 auto",
-            padding: 28,
-            borderRadius: 18,
-            border: `1px solid ${colors.border}`,
-            background: colors.bg2,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 18,
-          }}
+        <AudioPreviewCard
+          caption={
+            duration > 0
+              ? `Plays ${formatTrimmedDuration(duration, draft)}`
+              : undefined
+          }
         >
-          <div
-            aria-hidden
-            style={{
-              width: 96,
-              height: 96,
-              borderRadius: 24,
-              display: "grid",
-              placeItems: "center",
-              background: fade(colors.accent, 0.14),
-              color: colors.accentSoft,
-            }}
-          >
-            <Music size={40} />
-          </div>
-          {duration > 0 && (
-            <div
-              style={{
-                fontFamily: fonts.ui,
-                fontSize: 13,
-                color: colors.sub,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              Plays {formatTrimmedDuration(duration, draft)}
-            </div>
-          )}
           <VideoTransportBar
             playing={player.playback.playing}
             muted={player.playback.muted}
@@ -602,7 +516,7 @@ const AudioUsageWorkspace = ({
             onToggleMuted={player.toggleMuted}
             onVolume={(volume) => patch({ volume })}
             onSeek={player.seekTo}
-            style={{ width: "100%" }}
+            className="w-full"
           />
           <AudioSurface
             ref={player.surfaceRef}
@@ -613,7 +527,7 @@ const AudioUsageWorkspace = ({
             onTimeUpdate={player.onTimeUpdate}
             onEnded={player.onEnded}
           />
-        </div>
+        </AudioPreviewCard>
       }
       controls={
         <AudioSettingsControls

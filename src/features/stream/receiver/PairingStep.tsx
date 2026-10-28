@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { Panel } from "../../../components/ui/Panel";
 
 interface PairingStepProps {
@@ -13,43 +12,13 @@ export const PairingStep = ({
   title,
   children,
 }: PairingStepProps) => {
-  const { colors, fonts } = useUITheme();
   return (
     <Panel>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 9,
-          marginBottom: 14,
-        }}
-      >
-        <span
-          style={{
-            width: 24,
-            height: 24,
-            borderRadius: 999,
-            display: "grid",
-            placeItems: "center",
-            background: colors.accent,
-            color: colors.onAccent,
-            fontFamily: fonts.ui,
-            fontSize: 12.5,
-            fontWeight: 800,
-          }}
-        >
+      <div className="mb-3.5 flex items-center gap-2.25">
+        <span className="grid size-6 place-items-center rounded-full bg-accent text-[12.5px] font-extrabold text-on-accent">
           {stepNumber}
         </span>
-        <span
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 16,
-            fontWeight: 600,
-            color: colors.text,
-          }}
-        >
-          {title}
-        </span>
+        <span className="text-base font-semibold text-fg">{title}</span>
       </div>
       {children}
     </Panel>

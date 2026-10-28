@@ -1,8 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import { Film, Music, Pencil, Share2, Trash2, Upload } from "lucide-react";
 import type { AudioItem } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
 import { useAssetUrl } from "../../hooks/useAssetUrl";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
@@ -48,7 +47,7 @@ export const AudioPanel = ({ attentionId, targetItemId }: AudioPanelProps) => {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div className="flex flex-col gap-3.5">
       <SegmentedTabs<AudioTab>
         ariaLabel="Audio sources"
         idPrefix={TAB_PREFIX}
@@ -180,43 +179,21 @@ const AudioRow = ({
   onQuickShare,
   onRemove,
 }: AudioRowProps) => {
-  const { colors, fonts } = useUITheme();
   const url = useAssetUrl(item);
   return (
     <div
       {...attentionAttribute(item.id)}
-      className={attention ? ATTENTION_CLASS : undefined}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "11px 8px",
-        borderRadius: 10,
-        borderBottom: `1px solid ${colors.border}`,
-        flexWrap: "wrap",
-      }}
+      className={cn(
+        "flex flex-wrap items-center gap-3 rounded-[10px] border-b border-line px-2 py-2.75",
+        attention && ATTENTION_CLASS,
+      )}
     >
-      <div
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 9,
-          background: fade(colors.accent, 0.14),
-          color: colors.accentSoft,
-          display: "grid",
-          placeItems: "center",
-          flexShrink: 0,
-        }}
-      >
+      <div className="grid size-9.5 shrink-0 place-items-center rounded-[9px] bg-accent/14 text-accent-soft">
         {item.mediaId ? <Film size={17} /> : <Music size={17} />}
       </div>
-      <div style={{ flex: 1, minWidth: 120 }}>
-        <div style={{ fontFamily: fonts.ui, fontSize: 14, color: colors.text }}>
-          {item.name}
-        </div>
-        <div
-          style={{ fontFamily: fonts.ui, fontSize: 11.5, color: colors.sub }}
-        >
+      <div className="min-w-30 flex-1">
+        <div className="text-sm text-fg">{item.name}</div>
+        <div className="text-[11.5px] text-sub">
           {item.builtIn
             ? "Default"
             : item.mediaId
@@ -227,9 +204,7 @@ const AudioRow = ({
             : ""}
         </div>
       </div>
-      {url && (
-        <audio src={url} controls loop preload="none" style={{ height: 32 }} />
-      )}
+      {url && <audio src={url} controls loop preload="none" className="h-8" />}
       {!item.builtIn && (
         <>
           <IconButton icon={Pencil} title="Edit audio" onClick={onEdit} />

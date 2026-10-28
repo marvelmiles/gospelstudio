@@ -12,12 +12,11 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
+import { cn } from "../../lib/cn";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { Button, IconButton } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
 import { Panel, PanelTitle } from "../../components/ui/Panel";
 import { Spinner } from "../../components/ui/Spinner";
 import {
@@ -45,7 +44,6 @@ type Step = "devices" | "items";
 
 export const QuickSharePage = () => {
   useDocumentTitle("Quick Share");
-  const { colors, fonts } = useUITheme();
   const source = useBackupSource();
 
   const [step, setStep] = useState<Step>("devices");
@@ -76,18 +74,14 @@ export const QuickSharePage = () => {
     .join(", ");
 
   return (
-    <div className="ws-page">
+    <div className={pageClassName}>
       <PageHeader title="Quick Share" subtitle={SHARE_SUBTITLE} />
 
       <div
-        style={{
-          maxWidth: step === "items" ? 860 : 620,
-          margin: "0 auto",
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-          paddingBottom: 96,
-        }}
+        className={cn(
+          "mx-auto flex flex-col gap-4 pb-24",
+          step === "items" ? "max-w-215" : "max-w-155",
+        )}
       >
         <Panel>
           <PanelTitle
@@ -95,27 +89,16 @@ export const QuickSharePage = () => {
             title="This device"
             info="While this page is open, other devices running Quick Share on the same WiFi can see this one and send it data. With no internet, choose Receive with a code and read the sending device's code instead. Close the page and it disappears from their list."
           />
-          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+          <div className="flex items-center gap-2.75">
             <DeviceBadge />
-            <div style={{ minWidth: 0, flex: 1 }}>
-              <div
-                className="ws-ellipsis"
-                style={{
-                  fontFamily: fonts.ui,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: colors.text,
-                }}
-              >
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-fg">
                 {quickShare.deviceName}
               </div>
               <LobbyStatusLine status={quickShare.status} />
             </div>
           </div>
-          <div
-            className="ws-row"
-            style={{ gap: 6, marginTop: 12, flexWrap: "wrap" }}
-          >
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
             <Button
               variant="ghost"
               size="sm"
@@ -173,7 +156,7 @@ export const QuickSharePage = () => {
               />
             </Panel>
 
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div className="flex justify-end">
               <Button
                 variant="primary"
                 disabled={quickShare.selectedDeviceIds.length === 0}
@@ -206,18 +189,9 @@ export const QuickSharePage = () => {
                 </Button>
               }
             />
-            <p
-              style={{
-                margin: "0 0 12px",
-                fontFamily: fonts.ui,
-                fontSize: 12.5,
-                color: colors.dim,
-              }}
-            >
+            <p className="mt-0 mb-3 text-[12.5px] text-dim">
               Sending to{" "}
-              <span style={{ color: colors.text }}>
-                {targetNames || "no device yet"}
-              </span>
+              <span className="text-fg">{targetNames || "no device yet"}</span>
             </p>
             <ShareItemPicker
               tabs={tabs}
@@ -272,41 +246,19 @@ export const QuickSharePage = () => {
   );
 };
 
-const DeviceBadge = () => {
-  const { colors } = useUITheme();
-  return (
-    <span
-      style={{
-        width: 38,
-        height: 38,
-        flexShrink: 0,
-        borderRadius: 11,
-        display: "grid",
-        placeItems: "center",
-        background: fade(colors.accent, 0.14),
-        color: colors.accentSoft,
-      }}
-    >
-      <MonitorSmartphone size={19} />
-    </span>
-  );
-};
+const DeviceBadge = () => (
+  <span className="grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-accent/14 text-accent-soft">
+    <MonitorSmartphone size={19} />
+  </span>
+);
+
+const statusLineClassName =
+  "mt-0.75 flex items-center gap-1.5 text-xs text-dim";
 
 const LobbyStatusLine = ({ status }: { status: LobbyStatus }) => {
-  const { colors, fonts } = useUITheme();
-  const style = {
-    display: "flex",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 3,
-    fontFamily: fonts.ui,
-    fontSize: 12,
-    color: colors.dim,
-  };
-
   if (status === "starting") {
     return (
-      <span style={style}>
+      <span className={statusLineClassName}>
         <Spinner size={12} />
         Joining this network
       </span>
@@ -314,14 +266,14 @@ const LobbyStatusLine = ({ status }: { status: LobbyStatus }) => {
   }
   if (status === "ready") {
     return (
-      <span style={{ ...style, color: colors.accentSoft }}>
+      <span className={cn(statusLineClassName, "text-accent-soft")}>
         <Wifi size={13} />
         Visible to other devices here
       </span>
     );
   }
   return (
-    <span style={style}>
+    <span className={statusLineClassName}>
       <WifiOff size={13} />
       {status === "offline"
         ? "No internet. Pair with a code to share over this WiFi."
@@ -336,41 +288,20 @@ interface PairedSenderListProps {
 }
 
 const PairedSenderList = ({ senders, onDisconnect }: PairedSenderListProps) => {
-  const { colors, fonts } = useUITheme();
   if (senders.length === 0) return null;
   return (
     <ul
       aria-label="Devices paired with a code"
-      style={{
-        listStyle: "none",
-        margin: "12px 0 0",
-        padding: 0,
-        display: "flex",
-        flexDirection: "column",
-        gap: 6,
-      }}
+      className="mt-3 mb-0 flex list-none flex-col gap-1.5 p-0"
     >
       {senders.map((sender) => (
         <li
           key={sender.id}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "6px 6px 6px 11px",
-            borderRadius: 10,
-            background: colors.bg,
-            border: `1px solid ${colors.border}`,
-            fontFamily: fonts.ui,
-            fontSize: 12.5,
-            color: colors.sub,
-          }}
+          className="flex items-center gap-2 rounded-[10px] border border-line bg-canvas py-1.5 pr-1.5 pl-2.75 text-[12.5px] text-sub"
         >
-          <span className="ws-ellipsis" style={{ flex: 1, minWidth: 0 }}>
+          <span className="min-w-0 flex-1 truncate">
             Can receive from{" "}
-            <span style={{ color: colors.text, fontWeight: 600 }}>
-              {sender.name}
-            </span>
+            <span className="font-semibold text-fg">{sender.name}</span>
           </span>
           <IconButton
             icon={Unlink}

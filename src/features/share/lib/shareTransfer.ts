@@ -4,8 +4,6 @@ import {
   SHARE_CHUNK_BYTES,
 } from "./shareProtocol";
 
-/* The link takes more than the network can carry, so the send waits whenever
-   what is already queued grows past what it can push out. */
 const whenDrained = (channel: RTCDataChannel): Promise<void> => {
   if (channel.bufferedAmount <= SHARE_BUFFER_HIGH_BYTES)
     return Promise.resolve();
@@ -22,11 +20,9 @@ interface SendArchiveOptions {
   channel: RTCDataChannel;
   archive: Blob;
   onProgress: (sentBytes: number) => void;
-  /** Stops the send between chunks, for a cancelled or broken transfer. */
   shouldStop: () => boolean;
 }
 
-/** Streams an archive down an open link, a chunk at a time. */
 export const sendArchive = async ({
   channel,
   archive,
@@ -62,11 +58,6 @@ export const sendArchive = async ({
 const FLUSH_POLL_MS = 50;
 const FLUSH_TIMEOUT_MS = 1500;
 
-/**
- * Waits for what has been handed to the link to actually leave it. Closing a
- * channel throws away whatever is still queued, so the last word of a
- * conversation has to be seen out before the link goes.
- */
 export const whenFlushed = (channel: RTCDataChannel): Promise<void> =>
   new Promise((resolve) => {
     if (channel.readyState !== "open" || channel.bufferedAmount === 0) {
@@ -84,7 +75,6 @@ export const whenFlushed = (channel: RTCDataChannel): Promise<void> =>
     const timer = window.setTimeout(stop, FLUSH_TIMEOUT_MS);
   });
 
-/** Collects the chunks of an archive as they land. */
 export const createArchiveCollector = () => {
   const parts: ArrayBuffer[] = [];
   let bytes = 0;
@@ -105,5 +95,3 @@ export const createArchiveCollector = () => {
     },
   };
 };
-
-export type ArchiveCollector = ReturnType<typeof createArchiveCollector>;

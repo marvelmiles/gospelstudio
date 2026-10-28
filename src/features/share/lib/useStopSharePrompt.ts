@@ -8,11 +8,9 @@ interface StopPromptCopy {
 }
 
 export interface StopSharePrompt {
-  /** What is about to be stopped, or null while nothing is being asked. */
   prompt: StopPromptCopy | null;
   askForDevice: (device: ShareDevice) => void;
   askForEverything: () => void;
-  /** Refreshes at once when idle; asks first when it would cut a send short. */
   askForRefresh: () => void;
   confirm: () => void;
   cancel: () => void;
@@ -52,7 +50,6 @@ const promptCopy = (pending: PendingStop): StopPromptCopy => {
   };
 };
 
-/** Puts a confirmation in front of stopping a transfer that is already moving. */
 export const useStopSharePrompt = ({
   isBusy,
   stopDevice,

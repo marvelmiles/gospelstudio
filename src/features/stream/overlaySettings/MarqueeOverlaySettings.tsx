@@ -1,7 +1,7 @@
 import { Baseline } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { FONT_WEIGHT_OPTIONS } from "../../../data/slideFonts";
-import { inputStyle } from "../../../components/ui/Field";
+import { inputClassName } from "../../../components/ui/Field";
+import { cn } from "../../../lib/cn";
 import {
   OverlayColorField,
   OverlaySelect,
@@ -18,7 +18,6 @@ import { editStreamOverlay } from "../lib/streamOverlayStore";
 import { FONT_OPTIONS } from "./overlayOptions";
 import { SurfacePictureField } from "./SurfacePictureField";
 
-// The slider reads as speed, which runs opposite to the stored seconds-per-crossing.
 const toSpeed = (crossSeconds: number): number =>
   MIN_MARQUEE_CROSS_SECONDS + MAX_MARQUEE_CROSS_SECONDS - crossSeconds;
 
@@ -27,23 +26,13 @@ export const MarqueeOverlaySettings = ({
 }: {
   overlay: MarqueeOverlay;
 }) => {
-  const { colors, fonts } = useUITheme();
   const patchStyle = (style: Partial<OverlaySurfaceStyle>) =>
     editStreamOverlay(overlay.id, { style: { ...overlay.style, ...style } });
 
   return (
     <>
-      <label style={{ display: "block" }}>
-        <span
-          style={{
-            display: "block",
-            fontFamily: fonts.ui,
-            fontSize: 12,
-            fontWeight: 600,
-            color: colors.sub,
-            marginBottom: 6,
-          }}
-        >
+      <label className="block">
+        <span className="mb-1.5 block text-xs font-semibold text-sub">
           Announcement
         </span>
         <textarea
@@ -52,7 +41,7 @@ export const MarqueeOverlaySettings = ({
             editStreamOverlay(overlay.id, { text: event.target.value })
           }
           rows={2}
-          style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+          className={cn(inputClassName, "resize-y leading-normal")}
         />
       </label>
 

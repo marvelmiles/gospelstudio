@@ -1,7 +1,4 @@
-import { useUITheme } from "../../theme/ThemeProvider";
-
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+import escapeStringRegexp from "escape-string-regexp";
 
 const SNIPPET_LENGTH = 180;
 
@@ -28,9 +25,11 @@ export const VerseSnippet = ({
   text: string;
   term: string;
 }) => {
-  const { colors } = useUITheme();
   const snippet = snippetAroundFirstMatch(text, term);
-  const words = term.split(/\s+/).filter(Boolean).map(escapeRegExp);
+  const words = term
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((word) => escapeStringRegexp(word));
   if (words.length === 0) return <>{snippet}</>;
 
   const splitter = new RegExp(`(${words.join("|")})`, "gi");
@@ -39,10 +38,7 @@ export const VerseSnippet = ({
     <>
       {snippet.split(splitter).map((part, index) =>
         isMatch.test(part) ? (
-          <span
-            key={index}
-            style={{ color: colors.accentSoft, fontWeight: 700 }}
-          >
+          <span key={index} className="font-bold text-accent-soft">
             {part}
           </span>
         ) : (

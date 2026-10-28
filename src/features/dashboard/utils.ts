@@ -1,7 +1,5 @@
-import type { CSSProperties } from "react";
 import type { LucideIcon } from "lucide-react";
 import type { Background, LibraryMark } from "../../types";
-import { fade } from "../../theme/uiTheme";
 import { formatDate } from "../../lib/id";
 import { describeMark, latestMark } from "../../lib/libraryMarks";
 
@@ -23,7 +21,7 @@ export interface Activity {
   open: () => void;
 }
 
-export const isCreation = (createdAt?: string, updatedAt?: string): boolean => {
+const isCreation = (createdAt?: string, updatedAt?: string): boolean => {
   if (!createdAt) return false;
   if (!updatedAt) return true;
   return +new Date(updatedAt) - +new Date(createdAt) < 5000;
@@ -113,16 +111,4 @@ export const rank = (counts: Record<string, number>): [string, number][] => {
   return Object.entries(counts)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 5);
-};
-
-export const rankBarStyle = (
-  accent: string,
-  accentSoft: string,
-  index: number,
-): CSSProperties => {
-  const strength = Math.max(0.35, 1 - index * 0.16);
-  return {
-    background: `linear-gradient(90deg,${fade(accent, strength)},${fade(accentSoft, strength)})`,
-    boxShadow: index === 0 ? `0 0 10px ${fade(accent, 0.35)}` : "none",
-  };
 };

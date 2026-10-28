@@ -1,48 +1,22 @@
-import { useUITheme } from "../../theme/ThemeProvider";
-
 interface ProgressBarProps {
   value: number;
   label?: string;
 }
 
 export const ProgressBar = ({ value, label }: ProgressBarProps) => {
-  const { colors, controls, fonts, fills } = useUITheme();
-  const pct = Math.max(0, Math.min(100, value));
+  const percent = Math.max(0, Math.min(100, value));
   return (
-    <div style={{ marginTop: 12 }}>
+    <div className="mt-3">
       {label && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontFamily: fonts.ui,
-            fontSize: 12,
-            color: colors.sub,
-            marginBottom: 6,
-          }}
-        >
+        <div className="mb-1.5 flex justify-between text-xs text-sub">
           <span>{label}</span>
-          <span style={{ fontVariantNumeric: "tabular-nums" }}>
-            {Math.round(pct)}%
-          </span>
+          <span className="tabular-nums">{Math.round(percent)}%</span>
         </div>
       )}
-      <div
-        style={{
-          height: 8,
-          borderRadius: 99,
-          background: controls.track,
-          overflow: "hidden",
-        }}
-      >
+      <div className="h-2 overflow-hidden rounded-full bg-track">
         <div
-          style={{
-            height: "100%",
-            width: `${pct}%`,
-            borderRadius: 99,
-            background: fills.accentBar,
-            transition: "width 0.2s ease",
-          }}
+          style={{ width: `${percent}%` }}
+          className="h-full rounded-full bg-accent transition-[width] duration-200"
         />
       </div>
     </div>

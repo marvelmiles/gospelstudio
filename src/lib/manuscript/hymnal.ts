@@ -4,10 +4,6 @@ export interface HymnalSource {
 }
 
 export interface ReadHymnalOptions {
-  /**
-   * Forces the singing-hyphen join on or off. Callers reading a known hymnal
-   * corpus set it; parsing pasted text leaves it to detection.
-   */
   syllabified?: boolean;
 }
 
@@ -32,11 +28,6 @@ const DASH_RUN = /-{2,}/g;
 
 const TRAILING_HYPHEN = /-+(?=[\s,.;:!?]|$)/g;
 
-/**
- * Hymnal sources also break syllables with an underscore and use one to mark a
- * word held across several notes ("an_gels", "O_"). Either way it is singing
- * notation rather than spelling, so it simply goes.
- */
 const SINGING_UNDERSCORE = /_+/g;
 
 const SYLLABIFIED_DENSITY = 0.05;
@@ -75,15 +66,6 @@ const profileHyphens = (text: string): HyphenProfile => {
   return profile;
 };
 
-/**
- * Hymnal sources split words into singing syllables ("a-bide with me"). Two
- * things separate that from ordinary compounds such as "self-control" or
- * "day-to-day": how many words carry a hyphen at all, and how short the pieces
- * are, since syllables run one to three letters. A short text has to clear a
- * higher bar, because a handful of compounds can look syllabified by accident.
- * Wrongly joining someone's own hyphens damages their manuscript, while missing
- * a hymnal only leaves the hyphens showing, so the test leans on the safe side.
- */
 export const looksSyllabified = (text: string): boolean => {
   const { total, hyphenated, parts, shortParts } = profileHyphens(text);
   if (!total || !parts) return false;
@@ -95,7 +77,7 @@ export const looksSyllabified = (text: string): boolean => {
   return hyphenated >= SHORT_TEXT_MINIMUM && shortShare >= SHORT_TEXT_SHARE;
 };
 
-export const joinSingingHyphens = (text: string): string =>
+const joinSingingHyphens = (text: string): string =>
   text
     .replace(DASH_RUN, " - ")
     .replace(SYLLABLE_HYPHEN, "$1")
@@ -104,7 +86,7 @@ export const joinSingingHyphens = (text: string): string =>
     .replace(/[ \t]{2,}/g, " ")
     .trim();
 
-export const readHymnalCredit = (line: string): string | null => {
+const readHymnalCredit = (line: string): string | null => {
   const match = line.trim().match(CREDIT_LINE);
   if (!match) return null;
   const value = match[1].trim();
@@ -120,12 +102,6 @@ const stripHeaderCue = (line: string): string => {
   return line.slice(0, split + 1);
 };
 
-/**
- * Normalizes a hymnal text file into the manuscript body the parser expects:
- * music road maps and per-header tune cues drop out, the misspelled "Versee"
- * heading is corrected, credit lines become metadata instead of lyrics, and
- * singing hyphens are joined so the words read and search as whole words.
- */
 export const readHymnalSource = (
   text: string,
   options: ReadHymnalOptions = {},

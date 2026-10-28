@@ -1,45 +1,38 @@
 import { ArrowUpDown } from "lucide-react";
-import { useMemo, type CSSProperties } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { useMemo } from "react";
 import {
   librarySortChoices,
   type LibrarySortOption,
 } from "../../lib/librarySort";
+import { cn } from "../../lib/cn";
 import { Select } from "./Field";
 
 interface LibrarySortSelectProps {
   value: LibrarySortOption;
   onChange: (value: LibrarySortOption) => void;
   nameLabel: string;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const LibrarySortSelect = ({
   value,
   onChange,
   nameLabel,
-  style,
+  className,
 }: LibrarySortSelectProps) => {
-  const { colors } = useUITheme();
   const options = useMemo(() => librarySortChoices(nameLabel), [nameLabel]);
   return (
-    <div style={{ position: "relative", minWidth: 190, ...style }}>
+    <div className={cn("relative min-w-47.5", className)}>
       <ArrowUpDown
         size={15}
-        style={{
-          position: "absolute",
-          left: 13,
-          top: 13,
-          color: colors.dim,
-          pointerEvents: "none",
-        }}
+        className="pointer-events-none absolute top-3.25 left-3.25 text-dim"
       />
       <Select
         value={value}
         aria-label="Sort by"
         options={options}
         onChange={(event) => onChange(event.target.value as LibrarySortOption)}
-        style={{ paddingLeft: 38 }}
+        className="pl-9.5"
       />
     </div>
   );

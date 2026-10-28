@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { matchEditorCommand, type EditorCommand } from "../lib/shortcuts";
 
-export type EditorCommandHandlers = Partial<
+type EditorCommandHandlers = Partial<
   Record<EditorCommand, (() => void) | undefined>
 >;
 

@@ -4,12 +4,6 @@ import { useSlideArrangement } from "./deckEditor/useSlideArrangement";
 import { useSlideElementEdits } from "./deckEditor/useSlideElementEdits";
 import { useSlideTextEdits } from "./deckEditor/useSlideTextEdits";
 
-export type { EditOptions } from "./deckEditor/slideEditHelpers";
-
-/**
- * Every edit an open deck supports, over one undo history. The document core
- * owns the state; the edit hooks group the operations by what they change.
- */
 export const useDeckEditor = <T extends SlideDeckDoc>(
   source: T,
   commit: (doc: T) => boolean,

@@ -5,7 +5,6 @@ interface ScanRegion {
   maxSide: number;
 }
 
-// Full-frame passes find a code anywhere the camera sees it, not only inside the aiming box.
 const SCAN_REGIONS: readonly ScanRegion[] = [
   { crop: "fullFrame", maxSide: 1280 },
   { crop: "centerSquare", maxSide: 960 },
@@ -132,7 +131,6 @@ export const createQrFrameDecoder = (): QrFrameDecoder => {
     }
   };
 
-  // Native detection (where available) alternates with jsQR passes, since each reads codes the other misses.
   const decode = async (video: HTMLVideoElement): Promise<string[]> => {
     passIndex += 1;
     if (passIndex % 2 === 0) {

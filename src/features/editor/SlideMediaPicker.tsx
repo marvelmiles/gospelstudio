@@ -2,8 +2,6 @@ import { useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Film, Image as ImageIcon, Upload } from "lucide-react";
 import type { MediaKind } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
 import {
   formatDuration,
@@ -103,15 +101,8 @@ export const SlideMediaPicker = ({
 
   return (
     <Modal open onClose={onClose} title={COPY[kind].title} width={720}>
-      <div
-        style={{
-          display: "flex",
-          gap: 10,
-          flexWrap: "wrap",
-          marginBottom: 16,
-        }}
-      >
-        <div style={{ flex: 1, minWidth: 180 }}>
+      <div className="mb-4 flex flex-wrap gap-2.5">
+        <div className="min-w-45 flex-1">
           <SearchInput
             value={query}
             onChange={setQuery}
@@ -143,7 +134,7 @@ export const SlideMediaPicker = ({
           bare
         />
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+        <div className="flex flex-col gap-3.5">
           {uploads.length > 0 && (
             <LibrarySection
               title="Media library"
@@ -185,10 +176,7 @@ export const SlideMediaPicker = ({
                     name={background.name}
                     onPick={() => pick(backgroundChoice(background))}
                   >
-                    <BgSwatch
-                      bg={background}
-                      style={{ position: "absolute", inset: 0 }}
-                    />
+                    <BgSwatch bg={background} className="absolute inset-0" />
                   </PickerTile>
                 ))}
               </PickerGrid>
@@ -201,13 +189,7 @@ export const SlideMediaPicker = ({
 };
 
 const PickerGrid = ({ children }: { children: ReactNode }) => (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))",
-      gap: 12,
-    }}
-  >
+  <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
     {children}
   </div>
 );
@@ -222,56 +204,23 @@ const PickerTile = ({
   meta?: string;
   onPick: () => void;
   children: ReactNode;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      onClick={onPick}
-      title={name}
-      style={{
-        padding: 0,
-        borderRadius: 11,
-        overflow: "hidden",
-        cursor: "pointer",
-        textAlign: "left",
-        background: colors.raise,
-        border: `1px solid ${colors.border}`,
-      }}
-      onMouseEnter={(event) =>
-        (event.currentTarget.style.borderColor = fade(colors.accent, 0.5))
-      }
-      onMouseLeave={(event) =>
-        (event.currentTarget.style.borderColor = colors.border)
-      }
-    >
-      <div
-        style={{
-          position: "relative",
-          aspectRatio: "16/9",
-          background: "#000",
-        }}
-      >
-        <LazyMount>{children}</LazyMount>
-      </div>
-      <div
-        style={{
-          padding: "8px 10px",
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          color: colors.text,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
-      >
-        {name}
-        {meta && (
-          <span style={{ color: colors.dim }}>
-            {" · "}
-            {meta}
-          </span>
-        )}
-      </div>
-    </button>
-  );
-};
+}) => (
+  <button
+    onClick={onPick}
+    title={name}
+    className="overflow-hidden rounded-[11px] border border-line bg-raise p-0 text-left hover:border-accent/50"
+  >
+    <div className="relative aspect-video bg-black">
+      <LazyMount>{children}</LazyMount>
+    </div>
+    <div className="truncate px-2.5 py-2 text-[12.5px] text-fg">
+      {name}
+      {meta && (
+        <span className="text-dim">
+          {" · "}
+          {meta}
+        </span>
+      )}
+    </div>
+  </button>
+);

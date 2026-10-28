@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 
 export interface MenuItem {
   label?: string;
@@ -18,68 +18,40 @@ interface ContextMenuProps {
 }
 
 export const ContextMenu = ({ x, y, items, onClose }: ContextMenuProps) => {
-  const { colors, fonts, glass, shadows } = useUITheme();
-  const UI = fonts.ui;
   useEffect(() => {
-    const h = () => onClose();
-    window.addEventListener("click", h);
-    window.addEventListener("scroll", h, true);
+    const close = () => onClose();
+    window.addEventListener("click", close);
+    window.addEventListener("scroll", close, true);
     return () => {
-      window.removeEventListener("click", h);
-      window.removeEventListener("scroll", h, true);
+      window.removeEventListener("click", close);
+      window.removeEventListener("scroll", close, true);
     };
   }, [onClose]);
 
   return (
     <div
       style={{
-        position: "fixed",
         left: Math.min(x, window.innerWidth - 210),
         top: Math.min(y, window.innerHeight - items.length * 38 - 10),
-        zIndex: 300,
-        width: 196,
-        ...glass,
-        background: colors.panelSolid,
-        padding: 6,
-        boxShadow: shadows.overlay,
       }}
+      className="fixed z-300 w-49 glass bg-panel-solid p-1.5 shadow-overlay"
     >
-      {items.map((it, i) =>
-        it.divider ? (
-          <div
-            key={i}
-            style={{ height: 1, background: colors.border, margin: "5px 8px" }}
-          />
+      {items.map((item, index) =>
+        item.divider ? (
+          <div key={index} className="mx-2 my-1.25 h-px bg-line" />
         ) : (
           <button
-            key={i}
+            key={index}
             onClick={() => {
-              it.fn?.();
+              item.fn?.();
               onClose();
             }}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              width: "100%",
-              padding: "9px 11px",
-              borderRadius: 8,
-              background: "transparent",
-              border: "none",
-              cursor: "pointer",
-              fontFamily: UI,
-              fontSize: 13.5,
-              color: it.danger ? colors.danger : colors.text,
-              textAlign: "left",
-            }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.background = colors.raise)
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.background = "transparent")
-            }
+            className={cn(
+              "flex w-full items-center gap-2.5 rounded-lg border-none bg-transparent px-2.75 py-2.25 text-left text-[13.5px] hover:bg-raise",
+              item.danger ? "text-danger" : "text-fg",
+            )}
           >
-            {it.icon && <it.icon size={15} />} {it.label}
+            {item.icon && <item.icon size={15} />} {item.label}
           </button>
         ),
       )}

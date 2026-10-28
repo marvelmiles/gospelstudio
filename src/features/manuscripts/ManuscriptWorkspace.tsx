@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { RotateCcw, Settings2, Type } from "lucide-react";
 import type { Manuscript, ManuscriptFormat } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { DEFAULT_COLLECTION } from "../../data/collections";
 import { now } from "../../lib/id";
 import { useStore } from "../../store/useStore";
@@ -30,7 +29,6 @@ const DRAFT_LEAVE_MESSAGE =
 
 interface ManuscriptWorkspaceProps {
   manuscript: Manuscript;
-  /** True while the manuscript is still a draft that has never been saved. */
   unsaved?: boolean;
 }
 
@@ -38,7 +36,6 @@ export const ManuscriptWorkspace = ({
   manuscript,
   unsaved,
 }: ManuscriptWorkspaceProps) => {
-  const { colors, fonts } = useUITheme();
   const upsertManuscript = useStore((s) => s.upsertManuscript);
   const pushToast = useStore((s) => s.pushToast);
   const themes = useStore((s) => s.themes);
@@ -81,8 +78,6 @@ export const ManuscriptWorkspace = ({
     editor.setSelectedId(slides[0]?.id ?? null);
   };
 
-  /* Staged like any other edit, so Save still decides and undo can take it
-     back. */
   const resetToDefault = () => {
     setConfirmReset(false);
     const defaults = shippedDefault.shipped;
@@ -164,22 +159,9 @@ export const ManuscriptWorkspace = ({
         )
       }
       emptyState={
-        <div
-          style={{
-            height: "100%",
-            display: "grid",
-            placeItems: "center",
-            padding: 24,
-          }}
-        >
-          <div style={{ textAlign: "center", maxWidth: 320 }}>
-            <p
-              style={{
-                fontFamily: fonts.ui,
-                color: colors.sub,
-                lineHeight: 1.6,
-              }}
-            >
+        <div className="grid h-full place-items-center p-6">
+          <div className="max-w-80 text-center">
+            <p className="leading-[1.6] text-sub">
               This manuscript has no slides yet.
             </p>
             <Button variant="primary" onClick={() => setTextOpen(true)}>

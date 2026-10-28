@@ -5,10 +5,7 @@ import { deleteRecord, saveRecord } from "../../lib/storage";
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
 import type { SliceCreator } from "../storeTypes";
 
-export {
-  isUntitledManuscript,
-  UNTITLED_MANUSCRIPT,
-} from "../../lib/manuscript/newManuscript";
+export { isUntitledManuscript } from "../../lib/manuscript/newManuscript";
 
 export interface ManuscriptsSlice {
   manuscripts: Manuscript[];
@@ -40,10 +37,6 @@ export const createManuscriptsSlice: SliceCreator<ManuscriptsSlice> = (
     return true;
   },
 
-  /**
-   * A built-in manuscript the way it ships, keeping the dates and library marks
-   * the stored copy carries so a reset only puts the content back.
-   */
   defaultManuscriptFor: async (id) => {
     const stored = get().manuscripts.find((m) => m.id === id);
     if (!stored?.builtIn) return null;

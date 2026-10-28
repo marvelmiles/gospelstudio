@@ -8,7 +8,7 @@ import {
   Save,
   Undo2,
 } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useEditorShortcuts } from "../../hooks/useEditorShortcuts";
 import {
   usePresentActions,
@@ -22,7 +22,6 @@ const ignorePresent = () => {};
 
 interface EditorTopBarProps {
   title: string;
-  /** Left out where the title belongs to something else, such as an asset. */
   onTitle?: (title: string) => void;
   compact: boolean;
   titleLabel?: string;
@@ -70,7 +69,6 @@ export const EditorTopBar = ({
   onUpdatePresentation,
   onSyncFromPresentation,
 }: EditorTopBarProps) => {
-  const { colors, fonts } = useUITheme();
   const blocked = Boolean(invalid);
   const present = usePresentActions(onPresent ?? ignorePresent);
   const saveTitle = blocked
@@ -87,16 +85,7 @@ export const EditorTopBar = ({
   });
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: "11px 16px",
-        borderBottom: `1px solid ${colors.border}`,
-        flexWrap: "wrap",
-      }}
-    >
+    <div className="flex flex-wrap items-center gap-2.5 border-b border-line px-4 py-2.75">
       {onBack && (
         <IconButton
           icon={ArrowLeft}
@@ -105,35 +94,25 @@ export const EditorTopBar = ({
         />
       )}
       {leading}
-      <div style={{ flex: 1, minWidth: 120 }}>
+      <div className="min-w-30 flex-1">
         {onTitle ? (
           <input
             value={title}
             onChange={(event) => onTitle(event.target.value)}
             aria-label={titleLabel}
             aria-invalid={titleError ? true : undefined}
-            style={{
-              width: "100%",
-              background: "transparent",
-              border: "none",
-              borderBottom: `1px solid ${titleError ? colors.danger : "transparent"}`,
-              outline: "none",
-              fontFamily: fonts.display,
-              fontSize: compact ? 17 : 20,
-              fontWeight: 600,
-              color: colors.text,
-            }}
+            className={cn(
+              "w-full border-0 border-b bg-transparent font-semibold text-fg outline-none",
+              compact ? "text-[17px]" : "text-xl",
+              titleError ? "border-danger" : "border-transparent",
+            )}
           />
         ) : (
           <h1
-            className="ws-ellipsis"
-            style={{
-              margin: 0,
-              fontFamily: fonts.display,
-              fontSize: compact ? 17 : 20,
-              fontWeight: 600,
-              color: colors.text,
-            }}
+            className={cn(
+              "m-0 truncate font-semibold text-fg",
+              compact ? "text-[17px]" : "text-xl",
+            )}
           >
             {title}
           </h1>
@@ -141,14 +120,7 @@ export const EditorTopBar = ({
         {titleError && (
           <span
             role="alert"
-            style={{
-              display: "block",
-              marginTop: 3,
-              fontFamily: fonts.ui,
-              fontSize: 11.5,
-              lineHeight: 1.4,
-              color: colors.danger,
-            }}
+            className="mt-0.75 block text-[11.5px] leading-[1.4] text-danger"
           >
             {titleError}
           </span>

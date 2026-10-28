@@ -8,21 +8,11 @@ import {
 } from "./slideLayout";
 
 export interface ReflowOptions {
-  /** A hard cap on written lines per slide, on top of the height budget. */
   maxLines?: number;
 }
 
-/**
- * Slides that came out of one written section share a flow, which is what lets
- * a size change re-cut them: they are joined back together first, then cut
- * again to whatever the new size can hold.
- */
-export const flowIdOf = (slide: Slide): string => slide.flowId || slide.id;
+const flowIdOf = (slide: Slide): string => slide.flowId || slide.id;
 
-/**
- * A slide carrying its own pictures, clips or text boxes is laid out by hand,
- * so reflowing it would move things the user placed deliberately.
- */
 const isReflowable = (slide: Slide): boolean =>
   !slide.media?.length && !slide.textBoxes?.length;
 
@@ -118,19 +108,11 @@ const rebuildFlow = (
       label: slideChunkLabel(base, index, rebuilt.length),
       lines: chunk,
       lineOverrides: Object.keys(overrides).length ? overrides : undefined,
-      /* Repeat cues belong with the end of the section, the way the parser
-         attaches them. */
       notes: index === rebuilt.length - 1 ? joinedNotes : "",
     };
   });
 };
 
-/**
- * Re-cuts every automatically built run of slides so none of them is choked at
- * the current text size. Cuts fall between written lines, so the words are
- * regrouped and never rewritten. Returns the same array when nothing has to move, which
- * keeps an untouched document out of the undo history.
- */
 export const reflowSlides = (
   slides: Slide[],
   metrics: SlideTextMetrics,
@@ -145,7 +127,6 @@ export const reflowSlides = (
   return unchanged ? slides : next;
 };
 
-/** Marks a slide as the start of its own flow, so a reflow never rejoins it. */
 export const detachFlow = (slide: Slide): Slide => ({
   ...slide,
   flowId: slide.id,

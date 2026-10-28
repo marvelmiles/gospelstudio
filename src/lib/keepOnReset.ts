@@ -1,7 +1,6 @@
 import type { AudioItem, Background, Manuscript, Theme } from "../types";
 import { NO_AUDIO_ID } from "./media";
 
-/** Chosen silence outlives a reset: no sound has to survive for it to hold. */
 const audioSurvives = (
   id: string | null | undefined,
   audioIds: Set<string>,
@@ -20,7 +19,7 @@ interface Keepable {
 export const canKeep = (item: Keepable): boolean =>
   !item.builtIn && !item.deleted;
 
-export const isKept = (item: Keepable): boolean =>
+const isKept = (item: Keepable): boolean =>
   Boolean(item.keepOnReset) && canKeep(item);
 
 export const keptManuscripts = (manuscripts: Manuscript[]): Manuscript[] =>
@@ -30,7 +29,7 @@ export const keptThemes = (themes: Theme[]): Theme[] => themes.filter(isKept);
 export const keptCount = (manuscripts: Manuscript[], themes: Theme[]): number =>
   keptManuscripts(manuscripts).length + keptThemes(themes).length;
 
-export const rehomeKeptManuscript = (
+const rehomeKeptManuscript = (
   manuscript: Manuscript,
   surviving: {
     themeIds: Set<string>;
@@ -69,7 +68,7 @@ export const rehomeKeptManuscript = (
   };
 };
 
-export const rehomeKeptTheme = (
+const rehomeKeptTheme = (
   theme: Theme,
   surviving: {
     backgroundIds: Set<string>;

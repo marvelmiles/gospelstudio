@@ -5,10 +5,6 @@ import type { TextChangeMeta } from "../../../hooks/useTextFormatting";
 import { useUndoRedoShortcuts } from "../../../hooks/useUndoRedoShortcuts";
 import type { DeckEditor } from "../useDeckEditor";
 
-/**
- * The text the editor is writing into: the slide's own lines, or the text box
- * picked on it, together with the formatting toolbar bound to that text.
- */
 export const useSlideTextSurface = (
   editor: DeckEditor,
   slide: Slide | undefined,

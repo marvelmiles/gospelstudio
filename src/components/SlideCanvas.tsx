@@ -6,7 +6,7 @@ import type {
   Slide,
   VideoSettings,
 } from "../types";
-import { useUITheme } from "../theme/ThemeProvider";
+import { cn } from "../lib/cn";
 import {
   backgroundImageSettings,
   isImageBackground,
@@ -65,7 +65,6 @@ export const SlideCanvas = ({
   playBackground,
   overlay,
 }: SlideCanvasProps) => {
-  const { fonts } = useUITheme();
   const editable = Boolean(editing);
   const paintsPicture = !noBackground && isImageBackground(bg);
   const paintsVideo = !noBackground && isVideoBackground(bg);
@@ -93,16 +92,11 @@ export const SlideCanvas = ({
 
   return (
     <div
-      style={{
-        containerType: "inline-size",
-        ...(fill
-          ? { width: "100%", height: "100%" }
-          : { aspectRatio: "16 / 9" }),
-        position: "relative",
-        overflow: "hidden",
-        borderRadius: radius,
-        ...bgStyle,
-      }}
+      style={{ borderRadius: radius, ...bgStyle }}
+      className={cn(
+        "@container relative overflow-hidden",
+        fill ? "size-full" : "aspect-video",
+      )}
     >
       {pictureSettings && (
         <BackgroundSurface
@@ -156,23 +150,7 @@ export const SlideCanvas = ({
       )}
       {overlay}
       {showLabel && slide.label && (
-        <div
-          style={{
-            position: "absolute",
-            left: "3.5cqw",
-            bottom: "3cqw",
-            fontFamily: fonts.ui,
-            fontWeight: 600,
-            fontSize: "2.2cqw",
-            letterSpacing: "0.15cqw",
-            textTransform: "uppercase",
-            color: "rgba(255,255,255,0.78)",
-            background: "rgba(0,0,0,0.32)",
-            padding: "0.6cqw 1.4cqw",
-            borderRadius: 999,
-            backdropFilter: "blur(4px)",
-          }}
-        >
+        <div className="absolute bottom-[3cqw] left-[3.5cqw] rounded-full bg-black/32 px-[1.4cqw] py-[0.6cqw] font-sans text-[2.2cqw] font-semibold tracking-[0.15cqw] text-white/78 uppercase backdrop-blur-xs">
           {slide.label}
         </div>
       )}

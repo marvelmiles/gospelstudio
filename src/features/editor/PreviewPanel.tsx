@@ -8,7 +8,12 @@ import type {
 } from "../../types";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import type { ClickPoint } from "../../components/SlideCanvas";
-import { inputStyle } from "../../components/ui/Field";
+import { inputClassName } from "../../components/ui/Field";
+import {
+  previewFrameClassName,
+  previewStageClassName,
+} from "../../components/layout/EditorColumns";
+import { cn } from "../../lib/cn";
 import { InfoTip } from "../../components/ui/InfoTip";
 import { SelectionFormatToolbar } from "../../components/controls/SelectionFormatToolbar";
 import { useSlideTextEditor } from "../../hooks/useSlideTextEditor";
@@ -79,24 +84,10 @@ export const PreviewPanel = ({
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        padding: 24,
-        background:
-          "radial-gradient(circle at 50% 0%,rgba(255,255,255,0.02),transparent 60%)",
-      }}
-    >
+    <div className={previewStageClassName}>
       <div
         onPointerDown={() => elementEditing.onSelect(null)}
-        style={{
-          width: "100%",
-          maxWidth: 820,
-          margin: "auto",
-          boxShadow: "0 30px 70px rgba(0,0,0,0.5)",
-          borderRadius: 14,
-        }}
+        className={previewFrameClassName}
       >
         <SlideCanvas
           slide={slide}
@@ -125,30 +116,21 @@ export const PreviewPanel = ({
         rect={editing.selectionRect}
       />
 
-      <div
-        style={{
-          maxWidth: 820,
-          margin: "18px auto 0",
-          width: "100%",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-        }}
-      >
+      <div className="mx-auto mt-4.5 flex w-full max-w-205 items-center gap-2">
         <input
           value={slide.label}
           onChange={(e) => onChangeLabel(e.target.value)}
           placeholder="Slide label"
           aria-label="Slide label"
-          style={{ ...inputStyle, fontSize: 13 }}
+          className={cn(inputClassName, "text-[13px]")}
         />
         <InfoTip title="Editing on the slide" variant="modal" size={16}>
-          <p style={{ marginTop: 0 }}>
+          <p className="mt-0">
             Type straight onto the slide. Highlight a word or phrase for the
             formatting toolbar, or restyle it from the inspector. Tab and
             Shift+Tab move a point in and out, and Enter carries the list on.
           </p>
-          <p style={{ marginBottom: 0 }}>
+          <p className="mb-0">
             Pictures, clips and text boxes added from the inspector drag
             anywhere on the slide, resize from their corners and nudge with the
             arrow keys. A text box and a selected clip are moved by their edges,

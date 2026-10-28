@@ -1,14 +1,3 @@
-/**
- * Placing a window on the projector.
- *
- * A browser will not hand a page another display for free: `window.open` and
- * `moveTo` are clamped to the screen the page is on until the site holds the
- * window-management permission, and the only call that can ask for it needs a
- * click that has not been spent yet. Opening a window spends one, and so does
- * a fullscreen request, so the order these run in decides whether the picture
- * ever reaches the television.
- */
-
 export interface ScreenDetailed {
   left: number;
   top: number;
@@ -40,19 +29,14 @@ export interface ScreenPlacement {
 }
 
 export interface ProjectorScreen {
-  /** Where the live window goes so it fills the display, taskbars kept clear. */
   placement: ScreenPlacement;
-  /** The whole display, which is the area a fullscreen window covers. */
   bounds: ScreenPlacement;
   label: string;
   screen: ScreenDetailed;
 }
 
-/** Whether this site may place windows on another display, and if not, why. */
 export type ScreenAccess = "unsupported" | "granted" | "prompt" | "denied";
 
-/* Browsers that shipped this before it was renamed still answer to the old
-   name and throw on the new one. */
 const PERMISSION_NAMES = [
   "window-management",
   "window-placement",
@@ -68,18 +52,12 @@ export const isExtendedDisplay = (): boolean => {
   }
 };
 
-export const hasScreenDetails = (): boolean =>
+const hasScreenDetails = (): boolean =>
   typeof (window as ScreenDetailsWindow).getScreenDetails === "function";
 
-/* The live object keeps itself up to date as displays come and go, so it is
-   fetched once and then reused: asking again is what triggers a prompt. */
 let cached: ScreenDetails | null = null;
 let asking: Promise<ScreenDetails | null> | null = null;
 
-/**
- * Where this site stands on using another display. Asking this question never
- * prompts and never needs a click, so it is safe to check first.
- */
 export const screenAccess = async (): Promise<ScreenAccess> => {
   if (!hasScreenDetails()) return "unsupported";
   if (cached) return "granted";
@@ -89,23 +67,11 @@ export const screenAccess = async (): Promise<ScreenAccess> => {
       if (status?.state === "granted" || status?.state === "denied")
         return status.state;
       if (status) return "prompt";
-    } catch {
-      /* A browser that does not list the permission can still be asked for
-         it, so an unknown name is a reason to keep looking, not to give up. */
-    }
+    } catch {}
   }
   return "prompt";
 };
 
-/**
- * The displays attached to this device, asking the person for them the first
- * time on this origin.
- *
- * That first call only reaches the person while a click is still fresh, so it
- * has to run before anything that spends the click: opening a window, or
- * asking for fullscreen. A refusal is remembered by the browser, so a later
- * call answers nothing rather than pestering.
- */
 export const readScreenDetails = async (): Promise<ScreenDetails | null> => {
   if (cached) return cached;
   const getScreenDetails = (window as ScreenDetailsWindow).getScreenDetails;
@@ -123,10 +89,6 @@ export const readScreenDetails = async (): Promise<ScreenDetails | null> => {
   return asking;
 };
 
-/**
- * The display a window is standing on, judged by its middle so a window
- * straddling two displays counts for the one holding most of it.
- */
 export const screenOfWindow = (
   details: ScreenDetails,
   target: Window,
@@ -148,13 +110,6 @@ export const screenOfWindow = (
   }
 };
 
-/**
- * The display to project onto: an external one before an internal one, and
- * never the one the operator is working on if there is any other choice.
- *
- * The live window is not the operator: once it stands on the television, its
- * own current screen is the projector, so it passes the operator's display in.
- */
 export const pickProjectorScreen = (
   details: ScreenDetails,
   operatorScreen: ScreenDetailed = details.currentScreen,
@@ -205,10 +160,6 @@ export const projectorScreenOf = (
   };
 };
 
-/**
- * The projector, when this site may already place windows on it. Nothing is
- * ever asked for here: a prompt would spend the click a new window needs.
- */
 export const knownProjectorScreen =
   async (): Promise<ProjectorScreen | null> => {
     if (!isExtendedDisplay()) return null;
@@ -217,11 +168,6 @@ export const knownProjectorScreen =
     return details ? projectorScreenOf(details) : null;
   };
 
-/**
- * The display this page is on, for a device with nowhere else to project.
- * A television fed by HDMI is often set to mirror the laptop rather than
- * extend it, and then this is the screen the congregation is watching.
- */
 export const knownCurrentScreen = async (): Promise<ProjectorScreen | null> => {
   if ((await screenAccess()) !== "granted") return null;
   const details = await readScreenDetails();
@@ -235,7 +181,6 @@ export const knownCurrentScreen = async (): Promise<ProjectorScreen | null> => {
   };
 };
 
-/** Whether a window is standing on the display this describes. */
 export const isOnScreen = (
   target: Window,
   screen: ProjectorScreen,
@@ -263,9 +208,7 @@ export const moveToScreen = (target: Window, screen: ProjectorScreen): void => {
 };
 
 export interface ProjectorFill {
-  /** Whether the window is filling a display rather than sitting in a frame. */
   isFullscreen: boolean;
-  /** Whether the picture is on a display other than the one the app is on. */
   isOnProjector: boolean;
 }
 
@@ -278,18 +221,6 @@ const fillThisScreen = async (element: HTMLElement): Promise<boolean> => {
   }
 };
 
-/**
- * Fills the projector with this window.
- *
- * Runs from the window that was just opened, which still carries the click
- * that opened it. The displays are asked for before anything else, because a
- * fullscreen request spends that click and the browser then refuses to ask at
- * all, which is what leaves a laptop projecting onto its own screen forever.
- *
- * Once the display is known the window is walked onto it, which needs no click
- * of its own, so the picture reaches the projector even when the person took
- * long enough over the prompt for fullscreen to be refused.
- */
 export const fillProjector = async (
   element: HTMLElement,
 ): Promise<ProjectorFill> => {
@@ -315,11 +246,7 @@ export const fillProjector = async (
       screen: projector.screen,
     } as FullscreenOptions);
     return { isFullscreen: true, isOnProjector: true };
-  } catch {
-    /* Some builds refuse the display option rather than ignoring it, and a
-       window that has already been walked across fills the right display with
-       a plain request anyway. */
-  }
+  } catch {}
   return {
     isFullscreen: await fillThisScreen(element),
     isOnProjector: isOnScreen(window, projector),

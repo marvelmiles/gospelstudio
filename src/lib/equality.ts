@@ -6,7 +6,6 @@ const definedKeys = (value: object): string[] =>
 const isComparableObject = (value: unknown): value is object =>
   typeof value === "object" && value !== null;
 
-/** Enough for the flat settings records the media editors work with. */
 export const shallowEqual = <T extends object>(a: T, b: T): boolean => {
   if (a === b) return true;
   const keys = definedKeys(a);
@@ -19,7 +18,6 @@ export const shallowEqual = <T extends object>(a: T, b: T): boolean => {
   );
 };
 
-/** Keys holding undefined count as absent, so an optional field left off and one written as undefined compare equal. */
 export const deepEqual = (a: unknown, b: unknown): boolean => {
   if (Object.is(a, b)) return true;
   if (!isComparableObject(a) || !isComparableObject(b)) return false;

@@ -1,10 +1,14 @@
 import type { MediaAdjustments } from "../../types";
+import { cn } from "../../lib/cn";
 import { Field, Range } from "../../components/ui/Field";
 
 interface AdjustmentControlsProps {
   value: MediaAdjustments;
   onChange: (changes: Partial<MediaAdjustments>) => void;
 }
+
+export const settingsColumns = (narrow?: boolean): string =>
+  narrow ? "grid-cols-1" : "grid-cols-[repeat(auto-fit,minmax(200px,1fr))]";
 
 const SLIDERS: {
   key: keyof MediaAdjustments;
@@ -24,26 +28,18 @@ const SLIDERS: {
 export const AdjustmentControls = ({
   value,
   onChange,
-}: AdjustmentControlsProps) => {
-  return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-        gap: "0 16px",
-      }}
-    >
-      {SLIDERS.map(({ key, label, min, max, suffix }) => (
-        <Field key={key} label={label}>
-          <Range
-            value={value[key]}
-            min={min}
-            max={max}
-            suffix={suffix}
-            onChange={(e) => onChange({ [key]: Number(e.target.value) })}
-          />
-        </Field>
-      ))}
-    </div>
-  );
-};
+}: AdjustmentControlsProps) => (
+  <div className={cn("grid gap-x-4", settingsColumns())}>
+    {SLIDERS.map(({ key, label, min, max, suffix }) => (
+      <Field key={key} label={label}>
+        <Range
+          value={value[key]}
+          min={min}
+          max={max}
+          suffix={suffix}
+          onChange={(event) => onChange({ [key]: Number(event.target.value) })}
+        />
+      </Field>
+    ))}
+  </div>
+);

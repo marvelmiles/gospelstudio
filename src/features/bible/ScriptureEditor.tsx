@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, BookOpen, Settings2 } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { BookOpen, Settings2 } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { Button, IconButton } from "../../components/ui/Button";
+import { MissingPage } from "../../components/ui/MissingPage";
 import { useDeckEditor } from "../editor/useDeckEditor";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import { DeckWorkspace } from "../editor/DeckWorkspace";
@@ -19,44 +19,27 @@ const sameLines = (a: string[], b: string[]): boolean =>
   a.length === b.length && a.every((line, index) => line === b[index]);
 
 export const ScriptureEditor = () => {
-  const { colors, fonts } = useUITheme();
   const { passageId } = useParams();
   const navigate = useNavigate();
   const passage = useStore((s) =>
     s.scriptures.find((item) => item.id === passageId),
   );
 
-  if (!passage) {
+  if (!passage)
     return (
-      <div
-        style={{
-          height: "100%",
-          display: "grid",
-          placeItems: "center",
-          padding: 24,
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontFamily: fonts.display, color: colors.text }}>
-            Passage not found
-          </h2>
-          <p style={{ fontFamily: fonts.ui, color: colors.sub }}>
-            It may have been deleted.
-          </p>
-          <Button variant="primary" onClick={() => navigate(routes.bible())}>
-            <ArrowLeft size={15} />
-            Back to Bible
-          </Button>
-        </div>
-      </div>
+      <MissingPage
+        icon={BookOpen}
+        title="Passage not found"
+        message="It may have been deleted."
+        actionLabel="Back to Bible"
+        onAction={() => navigate(routes.bible())}
+      />
     );
-  }
 
   return <ScriptureWorkspace key={passage.id} passageId={passage.id} />;
 };
 
 const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
-  const { colors, fonts } = useUITheme();
   const current = useStore((s) =>
     s.scriptures.find((item) => item.id === passageId),
   );
@@ -102,9 +85,7 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
 
   const draft = editor.doc;
 
-  /* A passage is built from its verses rather than from written lines, so a new
-     text size re-cuts it from those: a long verse can then be broken across
-     slides instead of overflowing one. */
+  /* Re-cut from the verses themselves, so a long verse can spill onto a new slide instead of overflowing. */
   const refitFromVerses = (metrics: SlideTextMetrics): boolean => {
     const next = buildScriptureSlides({
       version: draft.version,
@@ -154,27 +135,10 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
         )
       }
       emptyState={
-        <div
-          style={{
-            height: "100%",
-            display: "grid",
-            placeItems: "center",
-            padding: 24,
-          }}
-        >
-          <div style={{ textAlign: "center", maxWidth: 320 }}>
-            <BookOpen
-              size={30}
-              color={colors.dim}
-              style={{ margin: "0 auto 10px" }}
-            />
-            <p
-              style={{
-                fontFamily: fonts.ui,
-                color: colors.sub,
-                lineHeight: 1.6,
-              }}
-            >
+        <div className="grid h-full place-items-center p-6">
+          <div className="max-w-80 text-center">
+            <BookOpen size={30} className="mx-auto mb-2.5 text-dim" />
+            <p className="leading-[1.6] text-sub">
               This passage has no slides yet.
             </p>
             <Button variant="primary" onClick={() => setSettingsOpen(true)}>

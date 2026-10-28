@@ -64,11 +64,6 @@ export const sortBuiltInFirst = (themes: Theme[]): Theme[] => {
   });
 };
 
-/**
- * A built-in theme the user has never saved carries no updatedAt, so it can be
- * moved onto the shipped definition without losing anyone's work. A theme that
- * has been edited is left exactly as it is; its editor offers a reset instead.
- */
 const refreshedBuiltIn = (theme: Theme): Theme => {
   if (!theme.builtIn || theme.updatedAt) return theme;
   const shipped = THEMES.find((entry) => entry.id === theme.id);

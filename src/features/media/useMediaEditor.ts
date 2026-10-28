@@ -14,7 +14,7 @@ import {
 import { settingsGrouping } from "../../lib/settingsHistory";
 import { imageDeckIndex } from "../presentation/useDeck";
 
-export interface MediaDraft {
+interface MediaDraft {
   name: string;
   image: ImageSettings;
   video: VideoSettings;
@@ -38,7 +38,6 @@ export interface MediaEditor {
   patchImage: (changes: Partial<ImageSettings>) => void;
   patchVideo: (changes: Partial<VideoSettings>) => void;
   resetSettings: () => void;
-  /** Off while every adjustment already sits where this file starts. */
   canResetSettings: boolean;
   save: () => boolean;
   present: (options: PresentOptions) => void;

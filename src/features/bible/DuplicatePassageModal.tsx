@@ -1,5 +1,4 @@
 import { CopyPlus, RefreshCw } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 
@@ -16,7 +15,6 @@ export const DuplicatePassageModal = ({
   onSaveCopy,
   onClose,
 }: DuplicatePassageModalProps) => {
-  const { colors, fonts } = useUITheme();
   if (!existingTitle) return null;
 
   return (
@@ -39,27 +37,11 @@ export const DuplicatePassageModal = ({
         </>
       }
     >
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13.5,
-          color: colors.text,
-          marginTop: 0,
-          lineHeight: 1.65,
-        }}
-      >
+      <p className="mt-0 text-[13.5px] leading-[1.65] text-fg">
         "{existingTitle}" is already in your saved passages, but the saved one
         doesn't match what you're saving now.
       </p>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          color: colors.sub,
-          margin: 0,
-          lineHeight: 1.65,
-        }}
-      >
+      <p className="m-0 text-[13px] leading-[1.65] text-sub">
         Overwrite it with this new content, or keep both; the new one is saved
         as a numbered copy like "{existingTitle} (1)".
       </p>

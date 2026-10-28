@@ -28,7 +28,7 @@ const loadTranslation = (version: BibleVersionId): Promise<string[]> => {
   return loading;
 };
 
-export class BibleLoadError extends Error {
+class BibleLoadError extends Error {
   offline: boolean;
 
   constructor(message: string, offline: boolean) {
@@ -81,7 +81,7 @@ export interface BibleSearchResult {
   text: string;
 }
 
-export const SEARCH_PAGE_SIZE = 40;
+const SEARCH_PAGE_SIZE = 40;
 
 export const searchBibleVerses = async (
   version: BibleVersionId,

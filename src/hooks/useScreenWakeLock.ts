@@ -12,7 +12,6 @@ interface ScreenWakeLockApi {
 const getWakeLockApi = (): ScreenWakeLockApi | null =>
   (navigator as Navigator & { wakeLock?: ScreenWakeLockApi }).wakeLock ?? null;
 
-// The browser drops the lock whenever the page is hidden, so it is re-requested each time the page is visible again.
 export const useScreenWakeLock = (isEnabled: boolean): void => {
   useEffect(() => {
     const wakeLockApi = getWakeLockApi();

@@ -93,7 +93,7 @@ export const ManualSenderPanel = ({
   if (!isStreaming) {
     return (
       <div>
-        <Panel style={{ maxWidth: 420, margin: "0 auto" }}>
+        <Panel className="mx-auto max-w-105">
           <PanelTitle
             centered
             title="Scan the other device's code"
@@ -122,14 +122,7 @@ export const ManualSenderPanel = ({
   }
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))",
-        gap: 22,
-        alignItems: "start",
-      }}
-    >
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] items-start gap-5.5">
       <Panel>
         <PanelTitle title="Show this reply to the other device" />
         {reply ? (
@@ -138,7 +131,7 @@ export const ManualSenderPanel = ({
             caption="On the other device, scan or paste this to finish connecting."
           />
         ) : (
-          <div style={{ padding: 24, display: "grid", placeItems: "center" }}>
+          <div className="grid place-items-center p-6">
             <Spinner size={20} />
           </div>
         )}

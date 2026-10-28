@@ -20,7 +20,7 @@ export type StreamOverlayKind = ContentKind | "marquee";
 
 export type OverlayStatus = "draft" | "live";
 
-export type OverlayTextLayout = "block" | "slide";
+type OverlayTextLayout = "block" | "slide";
 
 export interface OverlayVideoPlayback {
   playing: boolean;
@@ -34,7 +34,6 @@ export interface OverlayVideoPlayback {
 
 interface StreamOverlayBase {
   id: string;
-  /** The saved overlay this one keeps in step with, once it has been saved. */
   presetId?: string;
   frame: SlideFrame;
   opacity: number;
@@ -111,14 +110,14 @@ export const overlayVisibility = (
   return overlay.status === "live" ? "live" : "draft";
 };
 
-export const DEFAULT_OVERLAY_OPACITY = 100;
-export const DEFAULT_OVERLAY_RADIUS = 1.4;
-export const DEFAULT_MARQUEE_CROSS_SECONDS = 7;
+const DEFAULT_OVERLAY_OPACITY = 100;
+const DEFAULT_OVERLAY_RADIUS = 1.4;
+const DEFAULT_MARQUEE_CROSS_SECONDS = 7;
 export const MIN_MARQUEE_CROSS_SECONDS = 2;
 export const MAX_MARQUEE_CROSS_SECONDS = 24;
-export const DEFAULT_MARQUEE_FONT_SCALE = 52;
+const DEFAULT_MARQUEE_FONT_SCALE = 52;
 
-export const DEFAULT_OVERLAY_VIDEO_PLAYBACK: OverlayVideoPlayback = {
+const DEFAULT_OVERLAY_VIDEO_PLAYBACK: OverlayVideoPlayback = {
   playing: true,
   muted: false,
   volume: 100,
@@ -136,7 +135,7 @@ const DEFAULT_FRAMES: Record<StreamOverlayKind, SlideFrame> = {
   marquee: { x: 0, y: 88, width: 100, height: 10 },
 };
 
-export const defaultFrameFor = (kind: StreamOverlayKind): SlideFrame =>
+const defaultFrameFor = (kind: StreamOverlayKind): SlideFrame =>
   clampFrame(DEFAULT_FRAMES[kind]);
 
 const base = (

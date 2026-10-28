@@ -13,7 +13,6 @@ const PREFERRED_CODECS: Record<"video" | "audio", readonly string[]> = {
   audio: PREFERRED_AUDIO_CODECS,
 };
 
-// One entry per codec, in the browser's own order, so the offer names a profile the browser actually supports.
 const narrowToPreferredCodecs = (
   codecs: readonly RTCRtpCodec[],
   preferred: readonly string[],
@@ -25,7 +24,6 @@ const narrowToPreferredCodecs = (
     return match ? [match] : [];
   });
 
-// A short codec list keeps the whole description inside one scannable QR; an unknown codec set is left untouched.
 export const preferCompactCodecs = (
   transceiver: RTCRtpTransceiver,
   kind: "video" | "audio",
@@ -100,7 +98,6 @@ const applyEncoderSettings = async (
   }
 };
 
-// setParameters rejects the whole batch on one unsupported field, so settings are retried one at a time.
 export const tuneVideoSender = async (
   connection: RTCPeerConnection,
 ): Promise<void> => {

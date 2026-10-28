@@ -28,10 +28,10 @@ const EDGE_INSET_Y = 4.4;
 
 const STACK_GAP = 2;
 
-export const clampPipSize = (size: number): number =>
+const clampPipSize = (size: number): number =>
   Math.min(PIP_SIZE_MAX, Math.max(PIP_SIZE_MIN, Math.round(size)));
 
-export const isPipCorner = (value: unknown): value is PipCorner =>
+const isPipCorner = (value: unknown): value is PipCorner =>
   typeof value === "string" && PIP_CORNERS.includes(value as PipCorner);
 
 export const normalisePipPlacement = (

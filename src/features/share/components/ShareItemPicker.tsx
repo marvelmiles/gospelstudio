@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import { LayoutGrid, PackageOpen } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { Select } from "../../../components/ui/Field";
 import { LibrarySortSelect } from "../../../components/ui/LibrarySortSelect";
@@ -26,18 +25,12 @@ interface ShareItemPickerProps {
   onChange: (picked: PickedShareItems) => void;
 }
 
-/**
- * Everything this device can hand over, one module at a time. What is chosen
- * is held across every module at once, so a send can carry a manuscript, two
- * clips and a passage together.
- */
 export const ShareItemPicker = ({
   tabs,
   picked,
   disabled,
   onChange,
 }: ShareItemPickerProps) => {
-  const { colors } = useUITheme();
   const [activeTab, setActiveTab] = useState<ShareTabId>(
     tabs[0]?.id ?? "manuscripts",
   );
@@ -94,18 +87,12 @@ export const ShareItemPicker = ({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="ws-row-wrap">
-        <div style={{ position: "relative", flex: "1 1 190px", minWidth: 170 }}>
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="relative min-w-42.5 flex-[1_1_190px]">
           <LayoutGrid
             size={15}
-            style={{
-              position: "absolute",
-              left: 13,
-              top: 13,
-              color: colors.dim,
-              pointerEvents: "none",
-            }}
+            className="pointer-events-none absolute top-3.25 left-3.25 text-dim"
           />
           <Select
             value={activeTab}
@@ -115,7 +102,7 @@ export const ShareItemPicker = ({
               setActiveTab(event.target.value as ShareTabId);
               setQuery("");
             }}
-            style={{ paddingLeft: 38 }}
+            className="pl-9.5"
           />
         </div>
         {tab && tab.items.length > 0 && (
@@ -124,20 +111,20 @@ export const ShareItemPicker = ({
               value={query}
               onChange={setQuery}
               placeholder={`Search ${tab.label.toLowerCase()}…`}
-              style={{ minWidth: 160 }}
+              className="min-w-40"
             />
             <LibrarySortSelect
               value={sort}
               onChange={setSort}
               nameLabel="Name"
-              style={{ minWidth: 168 }}
+              className="min-w-42"
             />
           </>
         )}
       </div>
 
       {tab && shown.length > 0 && (
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div className="flex justify-end">
           <SelectAllAction
             disabled={disabled}
             isClearing={allShownPicked}
@@ -163,13 +150,7 @@ export const ShareItemPicker = ({
           bare
         />
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(146px,1fr))",
-            gap: 10,
-          }}
-        >
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(146px,1fr))] gap-2.5">
           {shown.map((item) => (
             <ShareItemTile
               key={item.key}
@@ -195,25 +176,13 @@ const SelectAllAction = ({
   disabled,
   isClearing,
   onClick,
-}: SelectAllActionProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      style={{
-        background: "transparent",
-        border: "none",
-        padding: 0,
-        cursor: disabled ? "not-allowed" : "pointer",
-        fontFamily: fonts.ui,
-        fontSize: 12,
-        fontWeight: 600,
-        color: disabled ? colors.dim : colors.accentSoft,
-      }}
-    >
-      {isClearing ? "Clear these" : "Select all"}
-    </button>
-  );
-};
+}: SelectAllActionProps) => (
+  <button
+    type="button"
+    disabled={disabled}
+    onClick={onClick}
+    className="border-none bg-transparent p-0 text-xs font-semibold text-accent-soft disabled:cursor-not-allowed disabled:text-dim"
+  >
+    {isClearing ? "Clear these" : "Select all"}
+  </button>
+);

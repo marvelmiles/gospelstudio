@@ -8,7 +8,7 @@ import {
 } from "./inlineStyle";
 import type { InlineTextStyle } from "./inlineStyle";
 
-export interface InlineStyle {
+interface InlineStyle {
   bold?: boolean;
   italic?: boolean;
   underline?: boolean;
@@ -52,18 +52,7 @@ export const WORD_BOUNDARY_TOKENS: string[] = MARKERS.filter(
   (marker) => marker.wordBoundary,
 ).map((marker) => marker.token);
 
-export const ESCAPABLE = new Set([
-  "*",
-  "_",
-  "~",
-  "+",
-  "=",
-  "\\",
-  "[",
-  "]",
-  "#",
-  ">",
-]);
+const ESCAPABLE = new Set(["*", "_", "~", "+", "=", "\\", "[", "]", "#", ">"]);
 
 const WORD_CHARACTER = /[\p{L}\p{N}]/u;
 

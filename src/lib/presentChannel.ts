@@ -8,8 +8,8 @@ import type {
   Theme,
 } from "../types";
 
-export const PRESENT_CHANNEL_NAME = "worship-studio-present";
-export const PRESENT_WINDOW_NAME = "worship-studio-live-output";
+const PRESENT_CHANNEL_NAME = "gospelstudio-present";
+export const PRESENT_WINDOW_NAME = "gospelstudio-live-output";
 
 export interface MediaPlayback {
   playing: boolean;
@@ -30,11 +30,6 @@ export interface SecondaryPresentState {
 
 export type SecondaryModuleKind = "image" | "video" | "stream";
 
-/**
- * The library records a deck leans on, sent along with it because the live
- * window loaded its own copy of the library when it opened and never sees a
- * background, clip or theme change made after that.
- */
 export interface PresentAssets {
   theme?: Theme;
   backgrounds: Background[];
@@ -72,7 +67,7 @@ export const syncedPosition = (sync: MediaSync): number =>
   sync.time +
   (sync.playing ? ((Date.now() - sync.at) / 1000) * (sync.rate || 1) : 0);
 
-export type MediaSyncTarget = "main" | "secondary";
+type MediaSyncTarget = "main" | "secondary";
 
 export type PresentMessage =
   | { type: "state"; state: PresentState }

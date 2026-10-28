@@ -26,7 +26,6 @@ interface UseQrScannerOptions {
   onError?: (message: string) => void;
 }
 
-// The camera is released before onResult runs: most phones hold one camera at a time and open the broadcast camera next.
 export const useQrScanner = ({
   facing,
   onResult,

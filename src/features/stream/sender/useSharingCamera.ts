@@ -113,8 +113,6 @@ export const useSharingCamera = (getSender: () => SenderHandle | null) => {
     }
   }, [getSender, isAudioOn, pushToast]);
 
-  /* Recovery keeps trying for as long as the camera is refused, so the person
-     is told once rather than on every attempt. */
   const hasWarnedRef = useRef(false);
 
   const reopen = useCallback(async () => {

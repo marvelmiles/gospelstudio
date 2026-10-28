@@ -18,7 +18,7 @@ import { SlideCanvas } from "../../components/SlideCanvas";
 import { BgSwatch } from "../../components/controls/BgSwatch";
 import { Button, IconButton } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
 import { PillTabs } from "../../components/ui/PillTabs";
 import { buildSearchIndex, matchesSearch } from "../../lib/search";
 import { formatCountLabel } from "../../lib/formatNumber";
@@ -37,11 +37,20 @@ import {
 import { PinButton } from "../../components/ui/PinControl";
 import {
   CardActions,
+  CardTitle,
+  cardBodyClassName,
+  cardClassName,
+  cardGridClassName,
   cardOpenProps,
+  cardSubClassName,
+  cardThumbBadgeClassName,
 } from "../../components/ui/InteractiveCard";
 import { LibrarySortSelect } from "../../components/ui/LibrarySortSelect";
 import { LayoutToggle } from "../../components/ui/LayoutToggle";
-import { LibraryListRow } from "../../components/ui/LibraryListRow";
+import {
+  LibraryListRow,
+  listClassName,
+} from "../../components/ui/LibraryListRow";
 import { PresentMenu } from "../../components/ui/PresentMenu";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useLibraryLayout } from "../../hooks/useLibraryLayout";
@@ -68,8 +77,7 @@ export const ManuscriptLibrary = () => {
 
   const searching = Boolean(query.trim());
 
-  /* Built once per library rather than per keystroke: the hymnal alone is
-     hundreds of manuscripts and the whole text is searchable. */
+  /* Built once, not on every keystroke: the hymnal alone has hundreds of songs to search. */
   const searchIndex = useMemo(() => {
     const index = new Map<string, string>();
     for (const manuscript of manuscripts)
@@ -109,7 +117,7 @@ export const ManuscriptLibrary = () => {
   };
 
   return (
-    <div className="ws-page">
+    <div className={pageClassName}>
       <PageHeader
         title="Manuscripts"
         subtitle="Turn lyrics, hymns and sermons into slides."
@@ -121,13 +129,13 @@ export const ManuscriptLibrary = () => {
         }
       />
 
-      <div style={{ display: "grid", gap: 12, marginBottom: 18 }}>
+      <div className="mb-4.5 grid gap-3">
         <PillTabs
           tabs={["All", ...COLLECTIONS].map((c) => ({ id: c, label: c }))}
           value={collection}
           onChange={setCollection}
         />
-        <div className="ws-row-wrap">
+        <div className="flex flex-wrap items-center gap-2.5">
           <SearchInput
             value={query}
             onChange={setQuery}
@@ -167,7 +175,7 @@ export const ManuscriptLibrary = () => {
           />
         ))}
 
-      <div className={layout === "grid" ? "ws-card-grid" : "ws-list"}>
+      <div className={layout === "grid" ? cardGridClassName : listClassName}>
         {list.map((manuscript) => {
           const props = {
             manuscript,
@@ -211,8 +219,6 @@ export const ManuscriptLibrary = () => {
   );
 };
 
-const swatchStyle = { aspectRatio: "16/9" } as const;
-
 const manuscriptMenuItems = (
   onOpen: () => void,
   onQuickShare: () => void,
@@ -239,7 +245,6 @@ interface ManuscriptCardProps {
   onDelete: () => void;
 }
 
-/** The first slide as it will look, or its background alone while it loads. */
 const useManuscriptCover = (
   manuscript: Manuscript,
   themes: Theme[],
@@ -255,15 +260,14 @@ const useManuscriptCover = (
     bgMap,
   );
 
-  if (!first)
-    return <BgSwatch bg={background} settings={image} style={swatchStyle} />;
+  const swatch = (
+    <BgSwatch bg={background} settings={image} className="aspect-video" />
+  );
+
+  if (!first) return swatch;
 
   return (
-    <LazyMount
-      placeholder={
-        <BgSwatch bg={background} settings={image} style={swatchStyle} />
-      }
-    >
+    <LazyMount placeholder={swatch}>
       <SlideCanvas
         slide={first}
         bg={background}
@@ -352,22 +356,18 @@ const ManuscriptCard = ({
   const menuItems = manuscriptMenuItems(onOpen, onQuickShare, keepAction);
 
   return (
-    <div
-      className="ws-glass ws-card"
-      {...cardOpenProps(manuscript.title, onOpen)}
-    >
-      <div style={{ position: "relative" }}>
+    <div className={cardClassName} {...cardOpenProps(manuscript.title, onOpen)}>
+      <div className="relative">
         {cover}
-        <div className="ws-thumb-badge">
+        <div className={cardThumbBadgeClassName}>
           {formatCountLabel(manuscript.slides?.length || 0, "slide")}
         </div>
       </div>
-      <div className="ws-card-body">
-        <div className="ws-card-title">
-          <span className="ws-ellipsis">{manuscript.title}</span>
+      <div className={cardBodyClassName}>
+        <CardTitle title={manuscript.title}>
           <KeepOnResetBadge item={manuscript} />
-        </div>
-        <div className="ws-card-sub">
+        </CardTitle>
+        <div className={cardSubClassName}>
           {manuscript.author || "Unknown"}
           {manuscript.collection ? ` · ${manuscript.collection}` : ""}
         </div>

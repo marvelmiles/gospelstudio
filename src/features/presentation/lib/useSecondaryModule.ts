@@ -4,10 +4,6 @@ import { useMediaPlayback } from "../../../hooks/useMediaPlayback";
 import { videoSettingsOf } from "../../../lib/media";
 import type { SecondaryPresentState } from "../../../lib/presentChannel";
 
-/**
- * The second module shown beside the presentation: its library item, and the
- * playback it owns when that item is a clip.
- */
 export const useSecondaryModule = () => {
   const secondary = useStore((s) => s.secondaryPresentation);
   const libraryItem = useStore((s) =>
@@ -18,7 +14,6 @@ export const useSecondaryModule = () => {
       : undefined,
   );
 
-  // The library copy wins only when it is newer than the one presentation started with.
   const item =
     libraryItem && libraryItem.updatedAt !== secondary?.item?.updatedAt
       ? libraryItem

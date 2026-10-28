@@ -2,7 +2,6 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import App from "./App";
-import { UIThemeProvider } from "./theme/ThemeProvider";
 import "./fonts";
 import "./index.css";
 import "./pwa";
@@ -19,9 +18,7 @@ const bootstrap = async () => {
 
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
-      <UIThemeProvider>
-        <RouterProvider router={router} />
-      </UIThemeProvider>
+      <RouterProvider router={router} />
     </React.StrictMode>,
   );
 };

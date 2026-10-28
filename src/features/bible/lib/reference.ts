@@ -12,7 +12,7 @@ export interface ParsedReference {
 
 const normalize = (text: string) => text.toLowerCase().replace(/[\s.]+/g, "");
 
-export const chapterVerseCount = (bookId: number, chapter: number): number =>
+const chapterVerseCount = (bookId: number, chapter: number): number =>
   CHAPTER_VERSE_COUNTS[bookId - 1]?.[chapter - 1] ?? 0;
 
 export interface VerseSpan {
@@ -27,7 +27,7 @@ export const referenceSpan = (ref: ParsedReference): VerseSpan => {
   return { start: ref.verseStart, end: ref.verseEnd ?? ref.verseStart };
 };
 
-export const findBook = (name: string): BibleBook | null => {
+const findBook = (name: string): BibleBook | null => {
   const key = normalize(name);
   if (!key) return null;
   return (

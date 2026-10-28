@@ -21,10 +21,6 @@ export interface SortableLibraryItem {
   updatedAt: string;
 }
 
-/**
- * Titles that do not open with a letter, such as the elided "’Tis" and "’Mid",
- * sort after the plain A to Z run instead of jumping the queue on punctuation.
- */
 const leadingRank = (value: string): number =>
   /^\p{L}/u.test(value.trim()) ? 0 : 1;
 

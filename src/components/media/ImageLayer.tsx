@@ -1,22 +1,26 @@
 import { useRef } from "react";
-import type { CSSProperties } from "react";
 import type { ImageSettings } from "../../types";
 import { buildFilter, imageTransformParts } from "../../lib/media";
-import { useElementSize } from "../../hooks/useElementSize";
+import { useResizeObserver } from "usehooks-ts";
+import { cn } from "../../lib/cn";
 
-export const SCRIM_GRADIENT =
-  "linear-gradient(0deg,rgba(0,0,0,0.55),rgba(0,0,0,0.25))";
+const scrimClassName = "bg-linear-to-t from-black/55 to-black/25";
 
 interface ImageLayerProps {
   src: string | null;
   alt: string;
   settings: ImageSettings;
-  style?: CSSProperties;
+  className?: string;
 }
 
-export const ImageLayer = ({ src, alt, settings, style }: ImageLayerProps) => {
+export const ImageLayer = ({
+  src,
+  alt,
+  settings,
+  className,
+}: ImageLayerProps) => {
   const frameRef = useRef<HTMLDivElement>(null);
-  const { width, height } = useElementSize(frameRef);
+  const { width = 0, height = 0 } = useResizeObserver({ ref: frameRef });
   const swapAxes =
     (settings.rotate === 90 || settings.rotate === 270) &&
     width > 0 &&
@@ -25,13 +29,7 @@ export const ImageLayer = ({ src, alt, settings, style }: ImageLayerProps) => {
   return (
     <div
       ref={frameRef}
-      style={{
-        position: "absolute",
-        inset: 0,
-        overflow: "hidden",
-        background: "#000",
-        ...style,
-      }}
+      className={cn("absolute inset-0 overflow-hidden bg-black", className)}
     >
       {src && (
         <img
@@ -39,9 +37,6 @@ export const ImageLayer = ({ src, alt, settings, style }: ImageLayerProps) => {
           alt={alt}
           draggable={false}
           style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
             width: swapAxes ? height : "100%",
             height: swapAxes ? width : "100%",
             objectFit: settings.fit,
@@ -51,12 +46,11 @@ export const ImageLayer = ({ src, alt, settings, style }: ImageLayerProps) => {
               ...imageTransformParts(settings),
             ].join(" "),
           }}
+          className="absolute top-1/2 left-1/2"
         />
       )}
       {settings.scrim && (
-        <div
-          style={{ position: "absolute", inset: 0, background: SCRIM_GRADIENT }}
-        />
+        <div className={cn("absolute inset-0", scrimClassName)} />
       )}
     </div>
   );

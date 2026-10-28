@@ -32,7 +32,6 @@ export type ShareTabId =
   | "overlays"
   | "settings";
 
-/** How a shareable thing is shown: whatever it actually looks like. */
 export type SharePreview =
   | { kind: "media"; item: MediaItem }
   | {
@@ -41,7 +40,6 @@ export type SharePreview =
       settings?: ImageSettings;
       videoSettings?: VideoSettings;
     }
-  /** A document or passage, over the background and in the theme it uses. */
   | {
       kind: "deck";
       text: string;
@@ -55,14 +53,12 @@ export type SharePreview =
   | { kind: "settings" };
 
 export interface ShareItem {
-  /** Unique across the catalog, so one selection can span every module. */
   key: string;
   name: string;
   detail: string;
   createdAt: string;
   updatedAt: string;
   bytes: number;
-  /** Every record this one thing is made of, wherever it lives. */
   records: BackupRecordRef[];
   preview: SharePreview;
 }
@@ -77,9 +73,6 @@ const EPOCH = "";
 
 const stamp = (value?: string): string => value ?? EPOCH;
 
-/* A picture or clip can be in the media library and attached as a background at
-   once. It is one thing to the person choosing, so it is listed once and
-   carries every record that names its file. */
 const fileKeyOfBackground = (background: Background): string =>
   background.blobId ?? background.mediaId ?? background.id;
 
@@ -114,7 +107,6 @@ const excerpt = (value: string): string =>
     ? `${value.slice(0, EXCERPT_LIMIT).trimEnd()}…`
     : value;
 
-/** The first words a document actually shows, so its cover is its own. */
 const firstLineOf = (doc: SlideDeckDoc): string => {
   for (const slide of doc.slides ?? []) {
     const line = (slide.lines ?? []).find((text) => text.trim().length > 0);
@@ -123,7 +115,6 @@ const firstLineOf = (doc: SlideDeckDoc): string => {
   return doc.title;
 };
 
-/** What a document looks like on screen: its background, theme and first line. */
 const deckPreview = (source: BackupSource, doc: SlideDeckDoc): SharePreview => {
   const theme = themeById(source, doc.defaultThemeId);
   const background =
@@ -155,10 +146,6 @@ interface FileGroup {
   preview: SharePreview;
 }
 
-/**
- * Every picture or clip of one kind, wherever it lives: the media library, the
- * asset library, or both at once.
- */
 const fileItems = (
   source: BackupSource,
   kind: MediaItem["kind"],
@@ -246,8 +233,6 @@ const colourItems = (source: BackupSource): ShareItem[] =>
       preview: { kind: "background", background },
     }));
 
-/* A saved overlay is shown by whatever it puts on screen, so its cover is the
-   picture, clip or document it points at. */
 const overlayPreview = (
   source: BackupSource,
   preset: BackupSource["overlayPresets"][number],
@@ -272,7 +257,6 @@ const overlayPreview = (
     : { kind: "deck", text: preset.name };
 };
 
-/** Everything this library can hand to another device, module by module. */
 export const shareCatalog = (source: BackupSource): ShareTab[] => [
   {
     id: "manuscripts",
@@ -366,17 +350,14 @@ export const shareCatalog = (source: BackupSource): ShareTab[] => [
   },
 ];
 
-/** What a person has ticked, across every module at once. */
 export type PickedShareItems = Readonly<Record<string, ShareItem>>;
 
-/** Unique per module, so two modules can never tick each other's items. */
 export const pickKey = (tab: ShareTabId, item: ShareItem): string =>
   `${tab}:${item.key}`;
 
 export const pickedSelection = (picked: PickedShareItems): BackupSelection =>
   selectionFrom(Object.values(picked).flatMap((item) => item.records));
 
-/** The records behind one library item, so a card can share it on its own. */
 export const recordsForMedia = (
   source: BackupSource,
   mediaId: string,

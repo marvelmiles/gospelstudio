@@ -2,7 +2,6 @@ import { useEffect, useState, type ReactNode, type RefObject } from "react";
 import {
   ChevronLeft,
   ChevronRight,
-  GripHorizontal,
   Maximize2,
   MonitorOff,
   MonitorUp,
@@ -14,18 +13,19 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useFloatingWindow } from "../../hooks/useFloatingWindow";
 import { FloatingWindowTab } from "../../components/ui/FloatingWindowTab";
-import { fade } from "../../theme/uiTheme";
+import { FloatingWindowHeader } from "../../components/ui/FloatingWindowHeader";
 import { videoProgressPercent, type VideoProgress } from "../../lib/media";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
 import { viewCommandTitle } from "../../lib/viewCommands";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import { PortalSlot } from "../../components/ui/PortalSlot";
+import { MiniButton } from "../../components/ui/MiniButton";
 import { VideoTimecode } from "../../components/media/VideoTimecode";
 import type { StageFrame } from "./stageContent";
+import { cn } from "../../lib/cn";
 
 const WIDTH = 320;
 const MARGIN = 16;
@@ -85,7 +85,6 @@ export const PresenterPip = ({
   onStopLive,
   onExit,
 }: PresenterPipProps) => {
-  const { colors, fonts } = useUITheme();
   const [focused, setFocused] = useState(false);
   const { position, handleProps, windowProps, stash, zIndex } =
     useFloatingWindow({
@@ -126,89 +125,19 @@ export const PresenterPip = ({
         }}
         style={{
           ...windowProps.style,
-          position: "fixed",
           left: position.x,
           top: position.y,
           width: WIDTH,
-          borderRadius: 14,
-          overflow: "hidden",
-          background: fade(colors.panelSolid, 0.96),
-          backdropFilter: "blur(18px) saturate(150%)",
-          WebkitBackdropFilter: "blur(18px) saturate(150%)",
-          border: `1px solid ${focused ? fade(colors.accent, 0.55) : colors.border}`,
-          boxShadow: focused
-            ? `0 20px 55px rgba(0,0,0,0.6), 0 0 0 3px ${fade(colors.accent, 0.18)}`
-            : "0 18px 45px rgba(0,0,0,0.5)",
-          outline: "none",
-          transition: "border-color .15s ease, box-shadow .15s ease",
         }}
+        className={floatingPanelClassName(focused)}
       >
-        <div
-          {...handleProps}
-          style={{
-            ...handleProps.style,
-            display: "flex",
-            alignItems: "center",
-            gap: 7,
-            padding: "8px 10px",
-            borderBottom: `1px solid ${colors.border}`,
-          }}
-        >
-          <GripHorizontal
-            size={14}
-            color={colors.dim}
-            style={{ flexShrink: 0 }}
-          />
-          <span
-            className="ws-ellipsis"
-            style={{
-              flex: 1,
-              minWidth: 0,
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              fontWeight: 700,
-              color: colors.text,
-            }}
-          >
-            {title}
-          </span>
-          {isLive && (
-            <span
-              title="Projecting to the audience display"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 4,
-                padding: "2px 7px",
-                borderRadius: 999,
-                fontFamily: fonts.ui,
-                fontSize: 9.5,
-                fontWeight: 800,
-                letterSpacing: 0.5,
-                color: colors.onAccent,
-                background: colors.danger,
-              }}
-            >
-              <span
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: 999,
-                  background: colors.onAccent,
-                }}
-              />
-              LIVE
-            </span>
-          )}
-        </div>
+        <FloatingWindowHeader handleProps={handleProps} title={title}>
+          {isLive && <LiveBadge title="Projecting to the audience display" />}
+        </FloatingWindowHeader>
 
         <div
           {...(isVideo ? mediaSurfaceProps : {})}
-          style={{
-            position: "relative",
-            aspectRatio: "16 / 9",
-            background: "#000",
-          }}
+          className="relative aspect-video bg-black"
         >
           {content.kind === "text" && (
             <SlideCanvas
@@ -230,78 +159,28 @@ export const PresenterPip = ({
             <>
               <VideoTimecode
                 progress={videoProgress}
-                style={{
-                  position: "absolute",
-                  left: 8,
-                  bottom: 10,
-                  padding: "2px 7px",
-                  borderRadius: 999,
-                  fontFamily: fonts.ui,
-                  fontSize: 10.5,
-                  fontWeight: 700,
-                  color: "#fff",
-                  background: "rgba(0,0,0,0.6)",
-                }}
+                className="absolute bottom-2.5 left-2 rounded-full bg-black/60 px-1.75 py-0.5 text-[10.5px] font-bold text-white"
               />
-              <VideoScrubber
-                progress={videoProgress}
-                onSeek={onSeekVideo}
-                accent={colors.accent}
-              />
+              <VideoScrubber progress={videoProgress} onSeek={onSeekVideo} />
             </>
           )}
           {secondaryLayer}
         </div>
 
         {notes && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 7,
-              padding: "8px 10px",
-              borderTop: `1px solid ${colors.border}`,
-              background: fade(colors.accent, 0.09),
-            }}
-          >
-            <StickyNote
-              size={13}
-              color={colors.accentSoft}
-              style={{ flexShrink: 0, marginTop: 1 }}
-            />
-            <div
-              style={{
-                flex: 1,
-                minWidth: 0,
-                maxHeight: 66,
-                overflowY: "auto",
-                fontFamily: fonts.ui,
-                fontSize: 11.5,
-                fontWeight: 500,
-                lineHeight: 1.45,
-                color: colors.text,
-                whiteSpace: "pre-line",
-              }}
-            >
+          <div className="flex items-start gap-1.75 border-t border-line bg-accent/9 px-2.5 py-2">
+            <StickyNote size={13} className="mt-px shrink-0 text-accent-soft" />
+            <div className="max-h-16.5 min-w-0 flex-1 overflow-y-auto text-[11.5px] leading-[1.45] font-medium whitespace-pre-line text-fg">
               {notes}
             </div>
           </div>
         )}
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 5,
-            padding: "8px 9px",
-            borderTop: `1px solid ${colors.border}`,
-          }}
-        >
+        <div className="flex flex-wrap items-center gap-1.25 border-t border-line px-2.25 py-2">
           {navigable && (
             <MiniButton
               icon={ChevronLeft}
-              title="Previous slide (←)"
+              title="Previous slide (Left arrow)"
               onClick={onPrev}
             />
           )}
@@ -322,7 +201,7 @@ export const PresenterPip = ({
           {navigable && (
             <MiniButton
               icon={ChevronRight}
-              title="Next slide (→)"
+              title="Next slide (Right arrow)"
               onClick={onNext}
             />
           )}
@@ -341,19 +220,7 @@ export const PresenterPip = ({
               />
             </>
           )}
-          <span
-            style={{
-              flex: 1,
-              minWidth: 0,
-              textAlign: "center",
-              fontFamily: fonts.ui,
-              fontSize: 10.5,
-              fontWeight: 600,
-              color: colors.dim,
-              fontVariantNumeric: "tabular-nums",
-            }}
-            className="ws-ellipsis"
-          >
+          <span className="min-w-0 flex-1 truncate text-center text-[10.5px] font-semibold text-dim tabular-nums">
             {navigable ? `${slideIndex + 1}/${total}` : ""}
             {navigable && currentLabel ? " · " : ""}
             {currentLabel}
@@ -390,16 +257,13 @@ export const PresenterPip = ({
         </div>
 
         <div
-          style={{
-            padding: "0 10px 9px",
-            fontFamily: fonts.ui,
-            fontSize: 10,
-            lineHeight: 1.45,
-            color: focused ? colors.accentSoft : colors.dim,
-          }}
+          className={cn(
+            "px-2.5 pb-2.25 text-[10px] leading-[1.45]",
+            focused ? "text-accent-soft" : "text-dim",
+          )}
         >
           {focused
-            ? "Shortcuts active — arrows, Ctrl+number, P, Esc."
+            ? "Shortcuts active: arrows, Ctrl+number, P, Esc."
             : "Click this window to use presentation shortcuts."}
         </div>
       </div>
@@ -410,10 +274,9 @@ export const PresenterPip = ({
 interface VideoScrubberProps {
   progress: VideoProgress;
   onSeek: (time: number) => void;
-  accent: string;
 }
 
-const VideoScrubber = ({ progress, onSeek, accent }: VideoScrubberProps) => {
+const VideoScrubber = ({ progress, onSeek }: VideoScrubberProps) => {
   const end = Math.max(progress.end, progress.start + 0.1);
   const position = Math.min(Math.max(progress.time, progress.start), end);
   const filled = videoProgressPercent(progress);
@@ -421,7 +284,7 @@ const VideoScrubber = ({ progress, onSeek, accent }: VideoScrubberProps) => {
   return (
     <input
       type="range"
-      className="ws-scrubber"
+      className="absolute inset-x-0 bottom-0 scrubber w-full"
       aria-label="Clip position"
       min={progress.start}
       max={end}
@@ -430,50 +293,26 @@ const VideoScrubber = ({ progress, onSeek, accent }: VideoScrubberProps) => {
       onChange={(event) => onSeek(Number(event.target.value))}
       onPointerDown={(event) => event.stopPropagation()}
       style={{
-        position: "absolute",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        width: "100%",
-        background: `linear-gradient(90deg, ${accent} 0%, ${accent} ${filled}%, rgba(255,255,255,0.2) ${filled}%)`,
+        background: `linear-gradient(90deg, var(--color-accent) ${filled}%, rgb(255 255 255 / 0.2) ${filled}%)`,
       }}
     />
   );
 };
 
-const MiniButton = ({
-  icon: Icon,
-  title,
-  onClick,
-  active,
-  danger,
-}: {
-  icon: typeof ChevronLeft;
-  title: string;
-  onClick: () => void;
-  active?: boolean;
-  danger?: boolean;
-}) => {
-  const { colors } = useUITheme();
-  return (
-    <button
-      title={title}
-      aria-label={title}
-      onClick={onClick}
-      style={{
-        width: 28,
-        height: 28,
-        flexShrink: 0,
-        borderRadius: 8,
-        cursor: "pointer",
-        display: "grid",
-        placeItems: "center",
-        background: active ? fade(colors.accent, 0.18) : "transparent",
-        color: danger ? colors.danger : active ? colors.accentSoft : colors.sub,
-        border: `1px solid ${active ? fade(colors.accent, 0.3) : "transparent"}`,
-      }}
-    >
-      <Icon size={15} />
-    </button>
+const floatingPanelClassName = (focused: boolean): string =>
+  cn(
+    "fixed overflow-hidden rounded-[14px] border bg-panel-solid/96 backdrop-blur-[18px] backdrop-saturate-150 transition-[border-color,box-shadow] duration-150 outline-none",
+    focused
+      ? "border-accent/55 shadow-[0_20px_55px_rgb(0_0_0/0.6),0_0_0_3px_rgb(37_99_235/0.18)]"
+      : "border-line shadow-[0_18px_45px_rgb(0_0_0/0.5)]",
   );
-};
+
+const LiveBadge = ({ title }: { title: string }) => (
+  <span
+    title={title}
+    className="inline-flex items-center gap-1 rounded-full bg-danger px-1.75 py-0.5 text-[9.5px] font-extrabold tracking-[0.5px] text-on-accent"
+  >
+    <span className="size-1.25 rounded-full bg-on-accent" />
+    LIVE
+  </span>
+);

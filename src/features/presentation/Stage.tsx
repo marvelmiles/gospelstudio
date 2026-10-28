@@ -1,16 +1,12 @@
 import { useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import type { CSSProperties, Ref } from "react";
-import type {
-  AnimationKind,
-  Background,
-  EasingKind,
-  PresentationView,
-} from "../../types";
+import type { Ref } from "react";
+import type { AnimationKind, EasingKind, PresentationView } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { ANIMATION_VARIANTS, buildTransition } from "../../lib/animation";
 import { useBlobUrl } from "../../lib/blobUrls";
 import { isMediaBackground } from "../../lib/media";
+import { cn } from "../../lib/cn";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { PortalSlot } from "../../components/ui/PortalSlot";
 import { BackgroundSurface } from "../../components/media/BackgroundSurface";
@@ -20,6 +16,7 @@ import {
   type VideoSurfaceHandle,
 } from "../../components/media/VideoSurface";
 import type { StageContent } from "./stageContent";
+import { backgroundCssOf } from "./lib/stageBackground";
 
 interface StageProps {
   slideIndex: number;
@@ -39,37 +36,10 @@ interface StageProps {
   videoHost?: HTMLElement | null;
 }
 
-const viewSize = (view: PresentationView): CSSProperties => {
-  if (view === "fill") return { width: "100vw", height: "100vh" };
-  if (view === "cover")
-    return { width: "max(100vw,177.78vh)", height: "max(100vh,56.25vw)" };
-  return { width: "min(100vw,177.78vh)", height: "min(100vh,56.25vw)" };
-};
-
-const backdropLayerStyle = (
-  background: Background | null,
-  ambientUrl: string | null,
-): CSSProperties => {
-  if (background) return resolveBgStyle(background);
-  if (ambientUrl) {
-    return {
-      backgroundImage: `url(${ambientUrl})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      backgroundColor: "#000",
-      filter: "blur(48px) brightness(0.55) saturate(1.1)",
-      transform: "scale(1.12)",
-    };
-  }
-  return { background: "#000" };
-};
-
-const resolveBgStyle = (background: Background | null): CSSProperties => {
-  if (!background) return { background: "#000" };
-  if (background.type === "image" || background.type === "video")
-    return { background: "#000" };
-  if (background.type === "solid") return { background: background.color };
-  return { background: background.css || "#000" };
+const VIEW_SIZE: Record<PresentationView, string> = {
+  fill: "h-screen w-screen",
+  cover: "h-[max(100vh,56.25vw)] w-[max(100vw,177.78vh)]",
+  normal: "h-[min(100vh,56.25vw)] w-[min(100vw,177.78vh)]",
 };
 
 export const Stage = ({
@@ -126,26 +96,26 @@ export const Stage = ({
         dragging.current = false;
         setGrabbing(false);
       }}
-      style={{
-        position: "fixed",
-        inset: 0,
-        background: "#000",
-        overflow: "hidden",
-        display: "grid",
-        placeItems: "center",
-        cursor: grabbing ? "grabbing" : "grab",
-        touchAction: "none",
-        userSelect: "none",
-      }}
+      className={cn(
+        "fixed inset-0 grid touch-none place-items-center overflow-hidden bg-black select-none",
+        grabbing ? "cursor-grabbing" : "cursor-grab",
+      )}
     >
       <div
         aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          ...backdropLayerStyle(backdrop, ambientUrl),
-        }}
+        style={
+          backdrop
+            ? { background: backgroundCssOf(backdrop) }
+            : ambientUrl
+              ? { backgroundImage: `url(${ambientUrl})` }
+              : undefined
+        }
+        className={cn(
+          "pointer-events-none absolute inset-0 bg-black",
+          !backdrop &&
+            ambientUrl &&
+            "scale-112 bg-cover bg-center blur-[48px] brightness-55 saturate-110",
+        )}
       >
         {isMediaBackground(backdrop ?? undefined) && (
           <BackgroundSurface
@@ -163,21 +133,13 @@ export const Stage = ({
           animate={variant.animate}
           exit={{ opacity: 0 }}
           transition={transition}
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "grid",
-            placeItems: "center",
-            pointerEvents: "none",
-          }}
+          className="pointer-events-none absolute inset-0 grid place-items-center"
         >
           <div
             style={{
-              ...viewSize(view),
-              position: "relative",
               transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transformOrigin: "center",
             }}
+            className={cn("relative origin-center", VIEW_SIZE[view])}
           >
             {content.kind === "text" && (
               <SlideCanvas
@@ -192,17 +154,11 @@ export const Stage = ({
               />
             )}
             {content.kind === "image" && (
-              <ImageSurface
-                item={content.item}
-                style={{ background: "transparent" }}
-              />
+              <ImageSurface item={content.item} className="bg-transparent" />
             )}
             {content.kind === "video" &&
               (videoHost ? (
-                <PortalSlot
-                  host={videoHost}
-                  style={{ pointerEvents: "auto" }}
-                />
+                <PortalSlot host={videoHost} className="pointer-events-auto" />
               ) : (
                 <VideoSurface
                   ref={videoRef}
@@ -211,7 +167,7 @@ export const Stage = ({
                   forceMuted={forceMutedVideo}
                   onTimeUpdate={onVideoTime}
                   onEnded={onVideoEnded}
-                  style={{ pointerEvents: "auto" }}
+                  className="pointer-events-auto"
                 />
               ))}
           </div>

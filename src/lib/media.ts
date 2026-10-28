@@ -8,7 +8,7 @@ import type {
   VideoSettings,
 } from "../types";
 
-export const DEFAULT_ADJUSTMENTS: MediaAdjustments = {
+const DEFAULT_ADJUSTMENTS: MediaAdjustments = {
   brightness: 100,
   contrast: 100,
   saturation: 100,
@@ -37,7 +37,6 @@ export const DEFAULT_VIDEO_SETTINGS: VideoSettings = {
   fit: "contain",
 };
 
-/** A moving background fills the frame, runs silently and never stops. */
 export const DEFAULT_BACKGROUND_VIDEO_SETTINGS: VideoSettings = {
   ...DEFAULT_VIDEO_SETTINGS,
   fit: "cover",
@@ -95,9 +94,6 @@ export const backgroundVideoSettings = (item?: MediaItem): VideoSettings => ({
   loop: true,
 });
 
-/* Stored in place of a sound to keep a slide, document or theme silent on
-   purpose, so the choice stops here instead of falling through to whatever it
-   would otherwise inherit. */
 export const NO_AUDIO_ID = "none";
 
 export const DEFAULT_AUDIO_SETTINGS: AudioSettings = {

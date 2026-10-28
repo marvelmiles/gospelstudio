@@ -5,8 +5,7 @@ import {
   Square,
   Unlink,
 } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
-import { fade } from "../../../theme/uiTheme";
+import { cn } from "../../../lib/cn";
 import { IconButton } from "../../../components/ui/Button";
 import { ProgressRing } from "../../../components/ui/ProgressRing";
 import { Spinner } from "../../../components/ui/Spinner";
@@ -22,10 +21,8 @@ import type { ShareDevice } from "../lib/shareSignaling";
 interface ShareDeviceListProps {
   devices: ShareDevice[];
   selectedIds: readonly string[];
-  /** How far each device has got, keyed by device, so none is listed twice. */
   transfers: OutgoingShareMap;
   isSearching: boolean;
-  /** What to say while nothing is listed and nothing is being looked for. */
   emptyHint: string;
   disabled: boolean;
   onToggle: (deviceId: string) => void;
@@ -44,31 +41,13 @@ export const ShareDeviceList = ({
   onStop,
   onForget,
 }: ShareDeviceListProps) => {
-  const { colors, fonts } = useUITheme();
   const selected = new Set(selectedIds);
 
   if (devices.length === 0) {
     return (
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 12,
-          padding: "26px 0",
-          textAlign: "center",
-        }}
-      >
+      <div className="flex flex-col items-center gap-3 py-6.5 text-center">
         {isSearching && <Spinner size={20} />}
-        <span
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            lineHeight: 1.6,
-            color: colors.sub,
-            maxWidth: 320,
-          }}
-        >
+        <span className="max-w-80 text-[13px] leading-[1.6] text-sub">
           {isSearching ? "Looking for devices on this WiFi" : emptyHint}
         </span>
       </div>
@@ -76,7 +55,7 @@ export const ShareDeviceList = ({
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+    <div className="flex flex-col gap-2">
       {devices.map((device) => (
         <ShareDeviceRow
           key={device.id}
@@ -120,7 +99,6 @@ const ShareDeviceRow = ({
   onStop,
   onForget,
 }: ShareDeviceRowProps) => {
-  const { colors, fonts } = useUITheme();
   const isActive = transfer ? isTransferActive(transfer.state) : false;
   const isDone = transfer?.state === "done";
   const isPickable = !transfer && !disabled;
@@ -137,17 +115,11 @@ const ShareDeviceRow = ({
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 11,
-        padding: "11px 12px",
-        borderRadius: 12,
-        background: highlighted ? fade(colors.accent, 0.12) : colors.bg,
-        border: `1px solid ${highlighted ? colors.accent : colors.border}`,
-        opacity: disabled && !transfer ? 0.6 : 1,
-        transition: "opacity .16s ease",
-      }}
+      className={cn(
+        "flex items-center gap-2.75 rounded-xl border px-3 py-2.75 transition-opacity duration-150",
+        highlighted ? "border-accent bg-accent/12" : "border-line bg-canvas",
+        disabled && !transfer && "opacity-60",
+      )}
     >
       <button
         type="button"
@@ -155,57 +127,21 @@ const ShareDeviceRow = ({
         aria-label={device.name}
         disabled={!isPickable}
         onClick={onToggle}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 11,
-          flex: 1,
-          minWidth: 0,
-          padding: 0,
-          background: "transparent",
-          border: "none",
-          textAlign: "left",
-          cursor: isPickable ? "pointer" : "default",
-        }}
+        className="flex min-w-0 flex-1 items-center gap-2.75 border-none bg-transparent p-0 text-left disabled:cursor-default"
       >
-        <span
-          style={{
-            width: 34,
-            height: 34,
-            flexShrink: 0,
-            borderRadius: 10,
-            display: "grid",
-            placeItems: "center",
-            background: fade(colors.accent, 0.14),
-            color: colors.accentSoft,
-          }}
-        >
+        <span className="grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-accent/14 text-accent-soft">
           <MonitorSmartphone size={17} />
         </span>
-        <span style={{ minWidth: 0, flex: 1 }}>
-          <span
-            className="ws-ellipsis"
-            style={{
-              display: "block",
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              fontWeight: 600,
-              color: colors.text,
-            }}
-          >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13.5px] font-semibold text-fg">
             {device.name}
           </span>
           {status && (
             <span
-              className="ws-ellipsis"
-              style={{
-                display: "block",
-                marginTop: 2,
-                fontFamily: fonts.ui,
-                fontSize: 11.5,
-                color: isDone ? colors.accentSoft : colors.dim,
-                fontVariantNumeric: "tabular-nums",
-              }}
+              className={cn(
+                "mt-0.5 block truncate text-[11.5px] tabular-nums",
+                isDone ? "text-accent-soft" : "text-dim",
+              )}
             >
               {status}
             </span>
@@ -214,17 +150,12 @@ const ShareDeviceRow = ({
         {!transfer && (
           <span
             aria-hidden
-            style={{
-              width: 20,
-              height: 20,
-              flexShrink: 0,
-              borderRadius: 7,
-              display: "grid",
-              placeItems: "center",
-              background: isSelected ? colors.accent : "transparent",
-              border: `1px solid ${isSelected ? colors.accent : colors.borderStrong}`,
-              color: colors.onAccent,
-            }}
+            className={cn(
+              "grid size-5 shrink-0 place-items-center rounded-[7px] border text-on-accent",
+              isSelected
+                ? "border-accent bg-accent"
+                : "border-line-strong bg-transparent",
+            )}
           >
             {isSelected && <Check size={13} strokeWidth={3} />}
           </span>
@@ -232,7 +163,7 @@ const ShareDeviceRow = ({
       </button>
 
       {isActive ? (
-        <span style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <span className="flex items-center gap-1.5">
           <ProgressRing
             size={26}
             thickness={2.5}
@@ -249,11 +180,7 @@ const ShareDeviceRow = ({
           />
         </span>
       ) : isDone ? (
-        <CircleCheck
-          size={19}
-          color={colors.accent}
-          style={{ flexShrink: 0 }}
-        />
+        <CircleCheck size={19} className="shrink-0 text-accent" />
       ) : device.isPaired && !disabled ? (
         <IconButton
           icon={Unlink}

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { KeyRound, MonitorSmartphone, RotateCcw } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { useStore } from "../../../store/useStore";
 import { Button } from "../../../components/ui/Button";
 import { Spinner } from "../../../components/ui/Spinner";
@@ -80,8 +79,8 @@ export const AutoReceivePanel = ({
   };
 
   return (
-    <div style={{ maxWidth: 560, margin: "0 auto" }}>
-      <Panel style={{ padding: 20 }}>
+    <div className="mx-auto max-w-140">
+      <Panel className="p-5">
         <PanelTitle
           icon={MonitorSmartphone}
           title="Devices on your WiFi"
@@ -92,7 +91,7 @@ export const AutoReceivePanel = ({
         ) : devices.length === 0 ? (
           <WaitingState>Waiting for a device to start sharing</WaitingState>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <div className="flex flex-col gap-2.5">
             {devices.map((device) => (
               <DeviceRow
                 key={device.id}
@@ -125,21 +124,10 @@ export const AutoReceivePanel = ({
 };
 
 const WaitingState = ({ children }: { children: ReactNode }) => {
-  const { colors, fonts } = useUITheme();
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-        padding: "28px 0",
-      }}
-    >
+    <div className="flex flex-col items-center gap-3 py-7">
       <Spinner size={20} />
-      <span style={{ fontFamily: fonts.ui, fontSize: 13, color: colors.sub }}>
-        {children}
-      </span>
+      <span className="text-[13px] text-sub">{children}</span>
     </div>
   );
 };

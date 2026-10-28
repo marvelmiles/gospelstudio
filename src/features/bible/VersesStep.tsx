@@ -1,11 +1,11 @@
 import { BookOpen, RotateCcw } from "lucide-react";
 import type { BibleVersionId } from "../../types";
 import type { BibleBook } from "../../data/bibleBooks";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Button } from "../../components/ui/Button";
 import { Spinner } from "../../components/ui/Spinner";
 import { useBibleChapter } from "./useBibleChapter";
-import { tileStyle } from "./tileStyle";
+import { tileClassName } from "./tileStyle";
+import { stepNumberGridClassName, stepScrollClassName } from "./ChaptersStep";
 
 export const VersesStep = ({
   version,
@@ -20,7 +20,6 @@ export const VersesStep = ({
   onOpenVerse: (verse: number) => void;
   onReadWholeChapter: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const { verses, loading, error, retry } = useBibleChapter(
     version,
     book.id,
@@ -28,63 +27,28 @@ export const VersesStep = ({
   );
 
   return (
-    <div
-      style={{
-        flex: 1,
-        minHeight: 0,
-        overflowY: "auto",
-        paddingRight: 6,
-        paddingBottom: 12,
-      }}
-    >
-      <div
-        className="ws-row-wrap"
-        style={{ alignItems: "center", marginBottom: 4 }}
-      >
-        <h2
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 22,
-            fontWeight: 600,
-            color: colors.text,
-            margin: "2px 0",
-          }}
-        >
+    <div className={stepScrollClassName}>
+      <div className="mb-1 flex flex-wrap items-center gap-2.5">
+        <h2 className="my-0.5 text-[22px] font-semibold text-fg">
           {book.name} {chapter}
         </h2>
-        <span style={{ flex: 1 }} />
+        <span className="flex-1" />
         <Button variant="primary" onClick={onReadWholeChapter}>
           <BookOpen size={15} />
           Read full chapter
         </Button>
       </div>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          color: colors.sub,
-          margin: "0 0 16px",
-        }}
-      >
+      <p className="mt-0 mb-4 text-[13px] text-sub">
         Jump straight to a verse, or read the whole chapter.
       </p>
       {loading && (
-        <div style={{ padding: 36, display: "grid", placeItems: "center" }}>
+        <div className="grid place-items-center p-9">
           <Spinner size={26} />
         </div>
       )}
       {!loading && error && (
-        <div style={{ padding: 26, textAlign: "center" }}>
-          <p
-            style={{
-              fontFamily: fonts.ui,
-              color: colors.sub,
-              marginTop: 0,
-              lineHeight: 1.6,
-            }}
-          >
-            {error}
-          </p>
+        <div className="p-6.5 text-center">
+          <p className="mt-0 leading-[1.6] text-sub">{error}</p>
           <Button variant="primary" onClick={retry}>
             <RotateCcw size={14} />
             Try again
@@ -92,13 +56,7 @@ export const VersesStep = ({
         </div>
       )}
       {!loading && !error && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(56px,1fr))",
-            gap: 8,
-          }}
-        >
+        <div className={stepNumberGridClassName}>
           {verses.map((verse) => (
             <button
               key={verse.v}
@@ -106,7 +64,7 @@ export const VersesStep = ({
               title={
                 verse.t.length > 140 ? `${verse.t.slice(0, 140)}…` : verse.t
               }
-              style={tileStyle(false)}
+              className={tileClassName(false)}
             >
               {verse.v}
             </button>

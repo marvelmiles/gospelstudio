@@ -16,10 +16,8 @@ import {
 } from "./shareSession";
 import { watchIncomingCalls } from "./shareSignaling";
 
-/** The only stages worth a screen of their own; the rest are over. */
-export type IncomingStage = "asking" | "receiving" | "importing";
+type IncomingStage = "asking" | "receiving" | "importing";
 
-/** What is being offered to this device, and how far it has got. */
 export interface IncomingShare {
   fromName: string;
   summary: string;
@@ -28,7 +26,6 @@ export interface IncomingShare {
   receivedBytes: number;
 }
 
-/** A device that paired with this one by code and can send to it. */
 export interface PairedSender {
   id: string;
   name: string;
@@ -38,16 +35,12 @@ export interface IncomingShares {
   incoming: IncomingShare | null;
   accept: () => void;
   decline: () => void;
-  /** Stops taking in what is already arriving. */
   stop: () => void;
   pairedSenders: PairedSender[];
-  /** Listens on a link paired by code for as long as it stays up. */
   adoptPairedLink: (paired: PairedLink) => void;
   disconnectSender: (senderId: string) => void;
 }
 
-/* Everything shared arrives as a merge, so a device keeps what it already has
-   and the incoming copy wins wherever the two disagree. */
 const IMPORT_MODE = "merge-imported" as const;
 
 const LIVE_STAGES: readonly ReceiveState[] = [
@@ -73,8 +66,6 @@ export const useIncomingShare = (
   const pairedLinksRef = useRef(new Map<string, () => void>());
 
   const isWorking = incoming !== null && incoming.stage !== "asking";
-  /* A locked phone freezes the page, which would otherwise stall what is
-     already arriving until someone picks it up again. */
   useScreenWakeLock(isWorking);
   useBackgroundKeepAlive(isWorking);
 
@@ -84,8 +75,6 @@ export const useIncomingShare = (
 
   const takeIn = useCallback(
     (connect: ShareConnector, offer?: ShareOfferMessage): Promise<void> => {
-      /* One at a time: a second device is turned away rather than left
-         waiting while this one is still being taken in. */
       const busy = isBusyRef.current;
       if (!busy) isBusyRef.current = true;
 
@@ -171,8 +160,6 @@ export const useIncomingShare = (
           try {
             offer = await waitForShareOffer(channel, null, () => isOver);
           } catch (error) {
-            /* A stop that lands between two sends only ends the one that was
-               already over; the link itself is still good for the next. */
             if (error instanceof ShareStoppedError && !isOver) continue;
             break;
           }

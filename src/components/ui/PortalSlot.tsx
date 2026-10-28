@@ -1,19 +1,17 @@
 import { useLayoutEffect, useRef } from "react";
-import type { CSSProperties } from "react";
+import { cn } from "../../lib/cn";
 
 interface PortalSlotProps {
   host: HTMLElement;
-  style?: CSSProperties;
+  className?: string;
 }
 
-export const PortalSlot = ({ host, style }: PortalSlotProps) => {
+export const PortalSlot = ({ host, className }: PortalSlotProps) => {
   const slotRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
     slotRef.current?.appendChild(host);
   }, [host]);
 
-  return (
-    <div ref={slotRef} style={{ position: "absolute", inset: 0, ...style }} />
-  );
+  return <div ref={slotRef} className={cn("absolute inset-0", className)} />;
 };

@@ -1,26 +1,10 @@
 import { forwardRef } from "react";
-import type {
-  ChangeEvent,
-  CSSProperties,
-  InputHTMLAttributes,
-  ReactNode,
-} from "react";
+import type { ChangeEvent, InputHTMLAttributes, ReactNode } from "react";
 import { Check } from "lucide-react";
-import { themeVar } from "../../theme/cssVars";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
+import { cn } from "../../lib/cn";
 
-export const inputStyle: CSSProperties = {
-  width: "100%",
-  padding: "10px 13px",
-  borderRadius: 10,
-  background: "rgba(0,0,0,0.28)",
-  border: `1px solid ${themeVar.border}`,
-  color: themeVar.text,
-  fontFamily: themeVar.fontUi,
-  fontSize: 14,
-  outline: "none",
-};
+export const inputClassName =
+  "w-full rounded-[10px] border border-line bg-black/28 px-3.25 py-2.5 text-sm text-fg outline-none focus:border-line-strong";
 
 interface FieldProps {
   label: string;
@@ -29,91 +13,58 @@ interface FieldProps {
   children: ReactNode;
 }
 
-export const Field = ({ label, info, error, children }: FieldProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <label style={{ display: "block", marginBottom: 13 }}>
-      <span
-        style={{
-          display: "block",
-          fontFamily: fonts.ui,
-          fontSize: 11.5,
-          fontWeight: 600,
-          letterSpacing: 0.4,
-          textTransform: "uppercase",
-          color: error ? colors.danger : colors.dim,
-          marginBottom: 6,
-          ...(info ? { display: "flex", alignItems: "center", gap: 4 } : {}),
-        }}
-      >
-        {label}
-        {info}
-      </span>
-      {children}
-      {error && (
-        <span
-          role="alert"
-          style={{
-            display: "block",
-            marginTop: 6,
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            lineHeight: 1.45,
-            color: colors.danger,
-            textTransform: "none",
-            letterSpacing: 0,
-          }}
-        >
-          {error}
-        </span>
+export const Field = ({ label, info, error, children }: FieldProps) => (
+  <label className="mb-3.25 block">
+    <span
+      className={cn(
+        "mb-1.5 block text-[11.5px] font-semibold tracking-[0.4px] uppercase",
+        error ? "text-danger" : "text-dim",
+        info && "flex items-center gap-1",
       )}
-    </label>
-  );
-};
+    >
+      {label}
+      {info}
+    </span>
+    {children}
+    {error && (
+      <span
+        role="alert"
+        className="mt-1.5 block text-[11.5px] leading-[1.45] text-danger"
+      >
+        {error}
+      </span>
+    )}
+  </label>
+);
 
 interface TextInputProps extends InputHTMLAttributes<HTMLInputElement> {
   invalid?: boolean;
 }
 
 export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(
-  (props, ref) => {
-    const { colors } = useUITheme();
-    const { style, onFocus, onBlur, invalid, ...rest } = props;
-    const resting = invalid ? colors.danger : colors.border;
-    return (
-      <input
-        {...rest}
-        ref={ref}
-        aria-invalid={invalid || undefined}
-        style={{
-          ...inputStyle,
-          ...(invalid ? { borderColor: colors.danger } : {}),
-          ...(style || {}),
-        }}
-        onFocus={(e) => {
-          e.target.style.borderColor = invalid
-            ? colors.danger
-            : colors.borderStrong;
-          onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          e.target.style.borderColor = resting;
-          onBlur?.(e);
-        }}
-      />
-    );
-  },
+  ({ className, invalid, ...rest }, ref) => (
+    <input
+      {...rest}
+      ref={ref}
+      aria-invalid={invalid || undefined}
+      className={cn(
+        inputClassName,
+        invalid && "border-danger focus:border-danger",
+        className,
+      )}
+    />
+  ),
 );
 
 TextInput.displayName = "TextInput";
 
-export type Option = string | { value: string; label: string };
+type Option = string | { value: string; label: string };
 
 interface SelectProps {
   value: string;
   onChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   options: Option[];
-  style?: CSSProperties;
+  className?: string;
   "aria-label"?: string;
 }
 
@@ -121,33 +72,33 @@ export const Select = ({
   value,
   onChange,
   options,
-  style: st,
+  className,
   "aria-label": ariaLabel,
-}: SelectProps) => {
-  const { colors } = useUITheme();
-  return (
-    <select
-      value={value}
-      onChange={onChange}
-      aria-label={ariaLabel}
-      style={{ ...inputStyle, appearance: "none", cursor: "pointer", ...st }}
-    >
-      {options.map((o) => {
-        const val = typeof o === "string" ? o : o.value;
-        const label = typeof o === "string" ? o : o.label;
-        return (
-          <option
-            key={val}
-            value={val}
-            style={{ background: colors.panelSolid }}
-          >
-            {label}
-          </option>
-        );
-      })}
-    </select>
-  );
-};
+}: SelectProps) => (
+  <select
+    value={value}
+    onChange={onChange}
+    aria-label={ariaLabel}
+    className={cn(inputClassName, "cursor-pointer appearance-none", className)}
+  >
+    {options.map((option) => {
+      const optionValue = typeof option === "string" ? option : option.value;
+      const label = typeof option === "string" ? option : option.label;
+      return (
+        <option
+          key={optionValue}
+          value={optionValue}
+          className="bg-panel-solid"
+        >
+          {label}
+        </option>
+      );
+    })}
+  </select>
+);
+
+export const sliderFill = (percent: number): string =>
+  `linear-gradient(90deg, var(--color-accent) 0%, var(--color-accent-soft) ${percent}%, var(--color-track) ${percent}%)`;
 
 interface RangeProps {
   value: number;
@@ -166,33 +117,20 @@ export const Range = ({
   step = 1,
   suffix = "",
 }: RangeProps) => {
-  const { colors, controls, fonts } = useUITheme();
-  const pct = max === min ? 0 : ((value - min) / (max - min)) * 100;
+  const percent = max === min ? 0 : ((value - min) / (max - min)) * 100;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+    <div className="flex items-center gap-2.5">
       <input
         type="range"
-        className="ws-slider"
+        className="slider flex-1"
         min={min}
         max={max}
         step={step}
         value={value}
         onChange={onChange}
-        style={{
-          flex: 1,
-          background: `linear-gradient(90deg, ${colors.accent} 0%, ${colors.accentSoft} ${pct}%, ${controls.track} ${pct}%)`,
-        }}
+        style={{ background: sliderFill(percent) }}
       />
-      <span
-        style={{
-          width: 52,
-          textAlign: "right",
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          color: colors.sub,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
+      <span className="w-13 text-right text-[12.5px] text-sub tabular-nums">
         {value}
         {suffix}
       </span>
@@ -202,55 +140,33 @@ export const Range = ({
 
 interface ToggleProps {
   checked: boolean;
-  onChange: (v: boolean) => void;
+  onChange: (value: boolean) => void;
   label: string;
 }
 
-export const Toggle = ({ checked, onChange, label }: ToggleProps) => {
-  const { colors, controls, fonts } = useUITheme();
-  return (
+export const Toggle = ({ checked, onChange, label }: ToggleProps) => (
+  <div
+    onClick={() => onChange(!checked)}
+    className="flex cursor-pointer items-center justify-between py-1"
+  >
+    <span className="text-[13.5px] text-fg">{label}</span>
     <div
-      onClick={() => onChange(!checked)}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        cursor: "pointer",
-        padding: "4px 0",
-      }}
+      className={cn(
+        "h-5.75 w-10 rounded-full p-0.5 transition-all duration-200",
+        checked
+          ? "bg-accent shadow-[0_2px_12px_rgb(37_99_235/0.45)]"
+          : "bg-toggle-off",
+      )}
     >
-      <span
-        style={{ fontFamily: fonts.ui, fontSize: 13.5, color: colors.text }}
-      >
-        {label}
-      </span>
       <div
-        style={{
-          width: 40,
-          height: 23,
-          borderRadius: 999,
-          padding: 2,
-          background: checked ? colors.accent : controls.toggleOff,
-          boxShadow: checked
-            ? `0 2px 12px ${fade(colors.accent, 0.45)}`
-            : "none",
-          transition: "all .18s",
-        }}
-      >
-        <div
-          style={{
-            width: 19,
-            height: 19,
-            borderRadius: 999,
-            background: controls.thumb,
-            transform: checked ? "translateX(17px)" : "translateX(0)",
-            transition: "all .18s",
-          }}
-        />
-      </div>
+        className={cn(
+          "size-4.75 rounded-full bg-thumb transition-all duration-200",
+          checked && "translate-x-4.25",
+        )}
+      />
     </div>
-  );
-};
+  </div>
+);
 
 interface CheckboxProps {
   checked: boolean;
@@ -258,80 +174,37 @@ interface CheckboxProps {
   label: string;
 }
 
-export const Checkbox = ({ checked, onChange, label }: CheckboxProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <label
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 9,
-        cursor: "pointer",
-        fontFamily: fonts.ui,
-        fontSize: 13,
-        color: colors.sub,
-      }}
+export const Checkbox = ({ checked, onChange, label }: CheckboxProps) => (
+  <label className="inline-flex cursor-pointer items-center gap-2.25 text-[13px] text-sub">
+    <input
+      type="checkbox"
+      checked={checked}
+      onChange={(event) => onChange(event.target.checked)}
+      className="sr-only"
+    />
+    <span
+      aria-hidden
+      className={cn(
+        "grid size-4.5 shrink-0 place-items-center rounded-[5px] border text-on-accent transition-all duration-150",
+        checked
+          ? "border-accent bg-accent"
+          : "border-line-strong bg-transparent",
+      )}
     >
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        style={{
-          position: "absolute",
-          width: 1,
-          height: 1,
-          opacity: 0,
-          pointerEvents: "none",
-        }}
-      />
-      <span
-        aria-hidden
-        style={{
-          width: 18,
-          height: 18,
-          flexShrink: 0,
-          borderRadius: 5,
-          display: "grid",
-          placeItems: "center",
-          background: checked ? colors.accent : "transparent",
-          border: `1px solid ${checked ? colors.accent : colors.borderStrong}`,
-          color: colors.onAccent,
-          transition: "all .15s ease",
-        }}
-      >
-        {checked && <Check size={13} strokeWidth={3} />}
-      </span>
-      {label}
-    </label>
-  );
-};
+      {checked && <Check size={13} strokeWidth={3} />}
+    </span>
+    {label}
+  </label>
+);
 
 interface SectionTitleProps {
   children: ReactNode;
   info?: ReactNode;
 }
 
-export const SectionTitle = ({ children, info }: SectionTitleProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        fontFamily: fonts.ui,
-        fontSize: 12,
-        fontWeight: 700,
-        letterSpacing: 0.6,
-        textTransform: "uppercase",
-        color: colors.accent,
-        margin: "26px 0 14px",
-        paddingBottom: 9,
-        borderBottom: `1px solid ${colors.border}`,
-      }}
-    >
-      {children}
-      {info}
-    </div>
-  );
-};
+export const SectionTitle = ({ children, info }: SectionTitleProps) => (
+  <div className="mt-6.5 mb-3.5 flex items-center gap-1.5 border-b border-line pb-2.25 text-xs font-bold tracking-[0.6px] text-accent uppercase">
+    {children}
+    {info}
+  </div>
+);

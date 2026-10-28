@@ -1,6 +1,5 @@
 import { useEffect, type RefObject } from "react";
 
-// Mobile browsers pause live video while the page is hidden and do not always resume it on return.
 export const useResumePlaybackOnVisible = (
   videoRef: RefObject<HTMLVideoElement>,
 ): void => {

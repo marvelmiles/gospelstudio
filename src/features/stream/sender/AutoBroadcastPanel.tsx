@@ -145,7 +145,6 @@ export const AutoBroadcastPanel = ({
     if (phase === "live") void broadcastRef.current?.clearCall();
   }, [phase]);
 
-  // A failed link waits for the viewer's ICE restart while the device wakes; only a long silence resets the lobby.
   useEffect(() => {
     if (phase !== "failed") return;
     const graceMs = senderRef.current ? RECONNECT_GRACE_MS : 0;
@@ -159,7 +158,7 @@ export const AutoBroadcastPanel = ({
   }, [phase, pushToast, onReset]);
 
   return (
-    <div style={{ maxWidth: 460, margin: "0 auto" }}>
+    <div className="mx-auto max-w-115">
       <SharingCameraCard
         videoRef={camera.videoRef}
         badge={

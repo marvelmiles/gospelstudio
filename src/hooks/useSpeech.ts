@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-export const speechSupported =
+const speechSupported =
   typeof window !== "undefined" && "speechSynthesis" in window;
 
 export const useSpeech = () => {

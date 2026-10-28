@@ -11,7 +11,6 @@ interface BackgroundImageEditorModalProps {
   onClose: () => void;
 }
 
-/** Edits a picture saved straight into the asset library, for the library. */
 export const BackgroundImageEditorModal = ({
   background,
   onClose,

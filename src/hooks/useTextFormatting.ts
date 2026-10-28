@@ -27,7 +27,7 @@ export interface FormattingHost {
   setSelection: (range: TextRange, focus: boolean) => void;
 }
 
-export type TextCommand = (
+type TextCommand = (
   text: string,
   selectionStart: number,
   selectionEnd: number,

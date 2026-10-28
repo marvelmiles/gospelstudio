@@ -9,8 +9,7 @@ import {
   VolumeX,
 } from "lucide-react";
 import type { PipCorner } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
 import { Button } from "../../components/ui/Button";
 import { IconButton } from "../../components/ui/Button";
@@ -37,7 +36,6 @@ interface CameraPanelProps {
 }
 
 export const CameraPanel = ({ isLive = false }: CameraPanelProps) => {
-  const { colors, fonts } = useUITheme();
   const session = useStreamSession();
   const previewIds = useCameraPreviewIds();
   const pushToast = useStore((s) => s.pushToast);
@@ -60,27 +58,10 @@ export const CameraPanel = ({ isLive = false }: CameraPanelProps) => {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-        <span
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 15,
-            fontWeight: 600,
-            color: colors.text,
-          }}
-        >
-          Cameras
-        </span>
-        <span
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            fontWeight: 700,
-            color: colors.dim,
-            fontVariantNumeric: "tabular-nums",
-          }}
-        >
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-baseline gap-2">
+        <span className="text-[15px] font-semibold text-fg">Cameras</span>
+        <span className="text-[11.5px] font-bold text-dim tabular-nums">
           {session.cameras.length} of {MAX_STREAM_CAMERAS}
         </span>
       </div>
@@ -118,7 +99,6 @@ const CameraRow = ({
   previewing: boolean;
   onShowInCorner: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const isPrimary = session.primaryId === camera.deviceId;
   const slot = session.secondaryIds.indexOf(camera.deviceId);
   const isSecondary = slot >= 0;
@@ -130,53 +110,29 @@ const CameraRow = ({
 
   return (
     <div
-      style={{
-        padding: "11px 12px",
-        borderRadius: 12,
-        background: colors.bg,
-        border: `1px solid ${isPrimary ? fade(colors.accent, 0.45) : colors.border}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-      }}
+      className={cn(
+        "flex flex-col gap-2.5 rounded-xl border bg-canvas px-3 py-2.75",
+        isPrimary ? "border-accent/45" : "border-line",
+      )}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      <div className="flex items-center gap-2.5">
         <span
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 9,
-            display: "grid",
-            placeItems: "center",
-            background: colors.raise,
-            color: isPrimary ? colors.accentSoft : colors.sub,
-            flexShrink: 0,
-          }}
+          className={cn(
+            "grid size-8 shrink-0 place-items-center rounded-[9px] bg-raise",
+            isPrimary ? "text-accent-soft" : "text-sub",
+          )}
         >
           <Smartphone size={16} />
         </span>
-        <span style={{ flex: 1, minWidth: 0 }}>
-          <span
-            className="ws-ellipsis"
-            style={{
-              display: "block",
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              fontWeight: 700,
-              color: colors.text,
-            }}
-          >
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13.5px] font-bold text-fg">
             {camera.deviceName}
           </span>
           <span
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: 0.4,
-              textTransform: "uppercase",
-              color: isPrimary ? colors.accentSoft : colors.dim,
-            }}
+            className={cn(
+              "text-[11px] font-bold tracking-[0.4px] uppercase",
+              isPrimary ? "text-accent-soft" : "text-dim",
+            )}
           >
             {role}
           </span>
@@ -187,10 +143,7 @@ const CameraRow = ({
         />
       </div>
 
-      <div
-        className="ws-row-wrap"
-        style={{ display: "flex", alignItems: "center", gap: 7 }}
-      >
+      <div className="flex flex-wrap items-center gap-1.75">
         {!isPrimary && (
           <Button
             variant="primary"
@@ -244,7 +197,7 @@ const CameraRow = ({
             {previewing ? "Close preview" : "Preview"}
           </Button>
         )}
-        <span style={{ flex: 1 }} />
+        <span className="flex-1" />
         <AudioSharingPill
           available={camera.audioShared}
           muted={isPrimary ? false : camera.muted}

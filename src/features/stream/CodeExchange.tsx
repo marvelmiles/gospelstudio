@@ -1,8 +1,8 @@
 import { useRef, useState, type ReactNode } from "react";
 import { QrCode as QrIcon, Clipboard, Check, Camera } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { useElementSize } from "../../hooks/useElementSize";
-import { useViewport } from "../../hooks/useViewport";
+import { inputClassName } from "../../components/ui/Field";
+import { cn } from "../../lib/cn";
+import { useMediaQuery, useResizeObserver } from "usehooks-ts";
 import { useStore } from "../../store/useStore";
 import { Button } from "../../components/ui/Button";
 import { InfoTip } from "../../components/ui/InfoTip";
@@ -12,6 +12,7 @@ import { QrCode } from "./QrCode";
 import { QrScanner } from "./QrScanner";
 import type { ScanFacing } from "./lib/useQrScanner";
 
+const LAPTOP_QUERY = "(max-width: 1204px)";
 const MAX_QR_SIZE = 420;
 const MIN_QR_SIZE = 240;
 const QR_TILE_PADDING = 34;
@@ -20,22 +21,15 @@ const COPIED_FEEDBACK_MS = 1600;
 export type CodePane = "show" | "read";
 
 interface CodeExchangePanesProps {
-  /** Keeps this pair's tab and panel ids apart from any other on the page. */
   idPrefix: string;
   show: ReactNode;
   read: ReactNode;
   showLabel?: string;
   readLabel?: string;
-  /** The pane to hold open, for news the other pane would otherwise hide. */
   focus?: CodePane;
 }
 
-/**
- * The two halves of a pairing: the code this device shows, and the one it
- * reads back. Side by side there is room for both at once. On a narrower
- * screen they would stack into a long scroll with the camera far below the
- * code, so they become tabs and the device shows one at a time.
- */
+/* On narrow screens the "show code" and "scan code" halves become tabs instead of one long scroll. */
 export const CodeExchangePanes = ({
   idPrefix,
   show,
@@ -44,27 +38,20 @@ export const CodeExchangePanes = ({
   readLabel = "Scan code",
   focus,
 }: CodeExchangePanesProps) => {
-  const { isLaptop } = useViewport();
+  const isLaptop = useMediaQuery(LAPTOP_QUERY);
   const [chosenPane, setChosenPane] = useState<CodePane>("show");
   const pane = focus ?? chosenPane;
 
   if (!isLaptop)
     return (
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2,minmax(0,1fr))",
-          gap: 22,
-          alignItems: "stretch",
-        }}
-      >
+      <div className="grid grid-cols-2 items-stretch gap-5.5">
         {show}
         {read}
       </div>
     );
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+    <div className="flex flex-col gap-3">
       <PillTabs<CodePane>
         tabs={[
           { id: "show", label: showLabel, icon: QrIcon },
@@ -88,11 +75,10 @@ interface ShowCodeProps {
 }
 
 export const ShowCode = ({ value, caption }: ShowCodeProps) => {
-  const { colors, fonts } = useUITheme();
   const pushToast = useStore((s) => s.pushToast);
   const [isCopied, setIsCopied] = useState(false);
   const columnRef = useRef<HTMLDivElement>(null);
-  const { width: columnWidth } = useElementSize(columnRef);
+  const { width: columnWidth = 0 } = useResizeObserver({ ref: columnRef });
   const qrSize = Math.round(
     Math.max(MIN_QR_SIZE, Math.min(MAX_QR_SIZE, columnWidth - QR_TILE_PADDING)),
   );
@@ -108,26 +94,9 @@ export const ShowCode = ({ value, caption }: ShowCodeProps) => {
   };
 
   return (
-    <div
-      ref={columnRef}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 12,
-      }}
-    >
+    <div ref={columnRef} className="flex flex-col items-center gap-3">
       <QrCode value={value} size={qrSize} />
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          color: colors.sub,
-        }}
-      >
+      <div className="flex items-center gap-1 text-[13px] text-sub">
         Scan with the other device
         <InfoTip title="Scanning this code" align="center">
           {caption} Hold the code steady in view of the other camera. It does
@@ -153,7 +122,6 @@ export const ReadCode = ({
   scanLabel,
   onCode,
 }: ReadCodeProps) => {
-  const { colors, fonts } = useUITheme();
   const pushToast = useStore((s) => s.pushToast);
   const [mode, setMode] = useState<"scan" | "paste">("scan");
   const [pastedCode, setPastedCode] = useState("");
@@ -164,8 +132,8 @@ export const ReadCode = ({
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <div className="ws-row" style={{ gap: 6 }}>
+    <div className="flex flex-col gap-3">
+      <div className="flex items-center gap-1.5">
         <Button
           variant={mode === "scan" ? "primary" : "ghost"}
           size="sm"
@@ -185,14 +153,7 @@ export const ReadCode = ({
       </div>
 
       {mode === "scan" ? (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 10,
-          }}
-        >
+        <div className="flex flex-col items-center gap-2.5">
           <QrScanner
             key={scanAttempt}
             facing={scanFacing}
@@ -202,39 +163,22 @@ export const ReadCode = ({
               setMode("paste");
             }}
           />
-          <p
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              color: colors.dim,
-              textAlign: "center",
-              margin: 0,
-            }}
-          >
-            <Camera size={12} style={{ verticalAlign: -1, marginRight: 4 }} />
+          <p className="m-0 text-center text-[12.5px] text-dim">
+            <Camera size={12} className="mr-1 inline align-[-1px]" />
             {scanLabel}
           </p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="flex flex-col gap-2">
           <textarea
             value={pastedCode}
             onChange={(event) => setPastedCode(event.target.value)}
             placeholder="Paste the code the other device shared with you"
             rows={4}
-            style={{
-              width: "100%",
-              resize: "vertical",
-              padding: 11,
-              borderRadius: 10,
-              fontFamily: "monospace",
-              fontSize: 12,
-              wordBreak: "break-all",
-              background: colors.raise,
-              color: colors.text,
-              border: `1px solid ${colors.border}`,
-              outline: "none",
-            }}
+            className={cn(
+              inputClassName,
+              "resize-y bg-raise p-2.75 font-mono text-xs break-all",
+            )}
           />
           <Button
             variant="primary"

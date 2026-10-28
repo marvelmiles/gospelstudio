@@ -1,10 +1,8 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect } from "react";
 import type { MouseEvent } from "react";
-import { createPortal } from "react-dom";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { computePlacement } from "../../lib/placement";
-import type { Placement } from "../../lib/placement";
+import { FloatingPortal, useFloating } from "@floating-ui/react";
 import { FormatToolbar } from "./FormatToolbar";
+import { floatingMiddleware } from "../ui/Popover";
 import type { TextFormattingController } from "../../hooks/useTextFormatting";
 
 interface SelectionFormatToolbarProps {
@@ -16,47 +14,30 @@ export const SelectionFormatToolbar = ({
   controller,
   rect,
 }: SelectionFormatToolbarProps) => {
-  const { colors } = useUITheme();
-  const panelRef = useRef<HTMLDivElement>(null);
-  const [placement, setPlacement] = useState<Placement | null>(null);
+  const { refs, floatingStyles, update } = useFloating({
+    placement: "top",
+    strategy: "fixed",
+    middleware: floatingMiddleware,
+  });
 
   useLayoutEffect(() => {
-    const panel = panelRef.current;
-    if (!rect || !panel) {
-      setPlacement(null);
-      return;
-    }
-    setPlacement(
-      computePlacement(
-        rect,
-        { width: panel.offsetWidth, height: panel.offsetHeight },
-        "top",
-        "center",
-      ),
-    );
-  }, [rect]);
+    if (!rect) return;
+    refs.setPositionReference({ getBoundingClientRect: () => rect });
+    update();
+  }, [rect, refs, update]);
 
   if (!rect) return null;
 
-  return createPortal(
-    <div
-      ref={panelRef}
-      onMouseDown={(event: MouseEvent) => event.preventDefault()}
-      style={{
-        position: "fixed",
-        top: placement?.top ?? 0,
-        left: placement?.left ?? 0,
-        zIndex: 400,
-        visibility: placement ? "visible" : "hidden",
-        padding: 6,
-        borderRadius: 12,
-        background: colors.panelSolid,
-        border: `1px solid ${colors.border}`,
-        boxShadow: "0 18px 44px rgba(0,0,0,0.45)",
-      }}
-    >
-      <FormatToolbar controller={controller} />
-    </div>,
-    document.body,
+  return (
+    <FloatingPortal>
+      <div
+        ref={refs.setFloating}
+        style={floatingStyles}
+        onMouseDown={(event: MouseEvent) => event.preventDefault()}
+        className="z-400 rounded-xl border border-line bg-panel-solid p-1.5 shadow-[0_18px_44px_rgb(0_0_0/0.45)]"
+      >
+        <FormatToolbar controller={controller} />
+      </div>
+    </FloatingPortal>
   );
 };

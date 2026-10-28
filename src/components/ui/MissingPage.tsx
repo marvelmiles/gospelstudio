@@ -11,7 +11,6 @@ interface MissingPageProps {
   onAction: () => void;
 }
 
-/** What a page shows when the thing it was opened for is no longer there. */
 export const MissingPage = ({
   icon,
   title,
@@ -19,14 +18,7 @@ export const MissingPage = ({
   actionLabel,
   onAction,
 }: MissingPageProps) => (
-  <div
-    style={{
-      height: "100%",
-      display: "grid",
-      placeItems: "center",
-      padding: 24,
-    }}
-  >
+  <div className="grid h-full place-items-center p-6">
     <EmptyState
       icon={icon}
       title={title}

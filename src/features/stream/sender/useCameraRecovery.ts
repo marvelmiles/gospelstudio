@@ -1,23 +1,14 @@
 import { useEffect, useRef } from "react";
 
-/* A sleeping phone or a minimised browser can end a capture, mute its track or
-   hand back a track that never produces another frame. None of that raises a
-   single reliable event, so the capture is also looked over on a timer. */
 const HEALTH_CHECK_MS = 4000;
 const MUTED_GRACE_MS = 2500;
 
 interface CameraRecoveryOptions {
   isCapturing: boolean;
-  /** The capture on air right now; listeners follow it as it is replaced. */
   stream: MediaStream | null;
   reopen: () => Promise<void>;
 }
 
-/**
- * Watches a shared camera and opens it again as soon as the device comes back,
- * so a screen that locked or a browser that was minimised carries video again
- * without the person having to start the broadcast over.
- */
 export const useCameraRecovery = ({
   isCapturing,
   stream,
@@ -39,8 +30,6 @@ export const useCameraRecovery = ({
         mutedSinceRef.current = null;
         return true;
       }
-      /* A track goes quiet the moment the screen locks and comes back on its
-         own, so only a lasting silence counts as a capture worth reopening. */
       if (mutedSinceRef.current === null) mutedSinceRef.current = Date.now();
       return Date.now() - mutedSinceRef.current < MUTED_GRACE_MS;
     };

@@ -14,8 +14,8 @@ import { afterDelete, afterWrite, blockWrite } from "../helpers";
 import type { PresentStartOptions } from "./presentSlice";
 import type { SliceCreator } from "../storeTypes";
 
-export const QUICK_PASSAGE_ID = "scripture-quick-present";
-export const SCRIPTURE_THEME_ID = "scripture";
+const QUICK_PASSAGE_ID = "scripture-quick-present";
+const SCRIPTURE_THEME_ID = "scripture";
 
 export interface ScriptureSelection {
   version: BibleVersionId;
@@ -31,7 +31,7 @@ export interface SavePassageOptions extends ScriptureSelection {
   splitLongVerses?: boolean;
 }
 
-export interface StageSelectionOptions {
+interface StageSelectionOptions {
   id?: string;
   splitLongVerses?: boolean;
 }

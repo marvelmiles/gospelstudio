@@ -22,7 +22,7 @@ export interface PipPlacement {
   size: number;
 }
 
-export type BgType = "gradient" | "solid" | "image" | "video";
+type BgType = "gradient" | "solid" | "image" | "video";
 
 export type ContentKind = "manuscript" | "scripture" | "image" | "video";
 
@@ -85,7 +85,6 @@ export interface Slide {
   id: string;
   type: string;
   label: string;
-  /** Slides cut from one written section share this, so a size change can re-cut them. */
   flowId?: string;
   lines: string[];
   overrides: SlideOverrides;
@@ -95,7 +94,7 @@ export interface Slide {
   notes: string;
 }
 
-export type ShortcutMode = "all-slides" | "first-slide-per-tag";
+type ShortcutMode = "all-slides" | "first-slide-per-tag";
 
 export type LibraryMarkAction = "pinned" | "unpinned" | "kept" | "unkept";
 
@@ -130,7 +129,6 @@ export interface SlideDeckDoc {
 
 export type ManuscriptFormat = "song" | "sermon";
 
-/** Tune details that ship with a built-in hymn, for the musicians rather than the screen. */
 export interface HymnMusic {
   tune?: string;
   composer?: string;
@@ -301,7 +299,6 @@ export interface Prefs {
   defaultScriptureThemeId: string;
   onboarded: boolean;
   goLiveTipDismissed: boolean;
-  /** Which build of the bundled hymnal is installed; 0 means none yet. */
   hymnalVersion: number;
 }
 
@@ -321,9 +318,7 @@ export interface PresentTarget {
   kind: ContentKind;
   id: string;
   startIndex: number;
-  /** Whether this presentation drives the audience display, or is a local preview. */
   live: boolean;
-  /** Changes every time a presentation is started, even of the same item. */
   session: number;
 }
 

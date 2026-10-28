@@ -29,7 +29,7 @@ const getSavePicker = (): SaveFilePicker | undefined =>
   (window as unknown as { showSaveFilePicker?: SaveFilePicker })
     .showSaveFilePicker;
 
-export const entryNameFor = (fileId: string): string =>
+const entryNameFor = (fileId: string): string =>
   `${FILES_PREFIX}${encodeURIComponent(fileId)}`;
 
 const fileIdFromEntry = (name: string): string | null =>
@@ -51,18 +51,11 @@ export interface ExportResult {
 interface BackupZipOptions {
   payload: unknown;
   fileIds: string[];
-  /** Takes each piece of the archive as it is produced. */
   onChunk: (chunk: Uint8Array) => void | Promise<void>;
   onProgress?: (fraction: number) => void;
 }
 
-/**
- * Writes the backup archive a piece at a time: the records as one JSON entry,
- * then every file it names, streamed rather than held in memory. Whoever asks
- * for it decides where the pieces go, so the same archive can be saved to disk
- * or sent to another device.
- */
-export const writeBackupZip = async ({
+const writeBackupZip = async ({
   payload,
   fileIds,
   onChunk,
@@ -108,7 +101,6 @@ export const writeBackupZip = async ({
   onProgress?.(1);
 };
 
-/** The whole archive in memory, for handing to another device. */
 export const packBackupZip = async (
   payload: unknown,
   fileIds: string[],
@@ -131,7 +123,7 @@ export const exportBackup = async (
   fileIds: string[],
   onProgress?: (fraction: number) => void,
 ): Promise<ExportResult> => {
-  const suggestedName = `worshipstudio-backup-${new Date().toISOString().slice(0, 10)}.zip`;
+  const suggestedName = `gospelstudio-backup-${new Date().toISOString().slice(0, 10)}.zip`;
   const picker = getSavePicker();
   let sink: WritableSink | null = null;
   const fallbackChunks: Uint8Array[] = [];

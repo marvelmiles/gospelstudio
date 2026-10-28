@@ -80,7 +80,6 @@ export const createSender = async (
     sdp: options.offerSdp,
   });
 
-  // addTrack flips the receiver's recvonly video transceiver to send; a bare replaceTrack would leave it recvonly.
   const videoTrack = currentStream.getVideoTracks()[0];
   if (videoTrack) connection.addTrack(videoTrack, currentStream);
 

@@ -4,7 +4,6 @@ import { ArrowRight, BookOpen } from "lucide-react";
 import type { BibleVersionId, ScripturePassage } from "../../types";
 import { bookById } from "../../data/bibleBooks";
 import { useStore, type ScriptureSelection } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -21,6 +20,7 @@ import {
 } from "../bible/lib/reference";
 import { buildScriptureSelection } from "../bible/lib/scriptureSelection";
 import { createOverlayPassage } from "./lib/overlayPassage";
+import { cn } from "../../lib/cn";
 
 export interface OverlayPassageChoice {
   contentId: string;
@@ -36,7 +36,6 @@ export const OverlayPassagePicker = ({
   onClose: () => void;
   onPick: (choice: OverlayPassageChoice) => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const version = useStore((s) => s.prefs.bibleVersion);
   const scriptures = useStore((s) => s.scriptures);
   const [query, setQuery] = useState("");
@@ -74,7 +73,7 @@ export const OverlayPassagePicker = ({
 
   return (
     <Modal open onClose={onClose} title="Add a passage" width={520}>
-      <div style={{ marginBottom: 14 }}>
+      <div className="mb-3.5">
         <SearchInput
           value={query}
           onChange={setQuery}
@@ -82,7 +81,7 @@ export const OverlayPassagePicker = ({
         />
       </div>
 
-      <div style={{ maxHeight: "56vh", overflowY: "auto", paddingRight: 2 }}>
+      <div className="max-h-[56vh] overflow-y-auto pr-0.5">
         {nothingAtAll ? (
           <EmptyState
             icon={BookOpen}
@@ -105,22 +104,14 @@ export const OverlayPassagePicker = ({
 
             {saved.length > 0 && (
               <Section title="Saved passages">
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
+                <div className="flex flex-col gap-1.5">
                   {saved.map((passage) => (
                     <ResultRow
                       key={passage.id}
                       heading={passage.title}
                       onInsert={() => insertPassage(passage)}
                     >
-                      <span
-                        style={{
-                          fontFamily: fonts.ui,
-                          fontSize: 12.5,
-                          color: colors.dim,
-                        }}
-                      >
+                      <span className="text-[12.5px] text-dim">
                         {passage.verses.length} verse
                         {passage.verses.length === 1 ? "" : "s"}
                       </span>
@@ -141,7 +132,7 @@ export const OverlayPassagePicker = ({
                 }`}
               >
                 {search.loading && search.results.length === 0 && (
-                  <div style={{ padding: "12px 2px" }}>
+                  <div className="px-0.5 py-3">
                     <Spinner size={18} />
                   </div>
                 )}
@@ -153,9 +144,7 @@ export const OverlayPassagePicker = ({
                       No verses in {version} contain "{search.term}".
                     </Note>
                   )}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
-                >
+                <div className="flex flex-col gap-1.5">
                   {search.results.map((result) => {
                     const book = bookById(result.bookId);
                     if (!book) return null;
@@ -176,14 +165,7 @@ export const OverlayPassagePicker = ({
                           )
                         }
                       >
-                        <span
-                          style={{
-                            fontFamily: fonts.ui,
-                            fontSize: 13,
-                            lineHeight: 1.55,
-                            color: colors.sub,
-                          }}
-                        >
+                        <span className="text-[13px] leading-[1.55] text-sub">
                           <VerseSnippet text={result.text} term={search.term} />
                         </span>
                       </ResultRow>
@@ -191,7 +173,7 @@ export const OverlayPassagePicker = ({
                   })}
                 </div>
                 {search.hasMore && (
-                  <div style={{ marginTop: 10, textAlign: "center" }}>
+                  <div className="mt-2.5 text-center">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -221,7 +203,6 @@ const ReferenceResult = ({
   version: BibleVersionId;
   onInsert: (selection: ScriptureSelection | null) => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const { verses, loading, error } = useBibleChapter(
     version,
     reference.book.id,
@@ -250,22 +231,9 @@ const ReferenceResult = ({
       }
     >
       {loading && <Spinner size={16} />}
-      {error && (
-        <span
-          style={{ fontFamily: fonts.ui, fontSize: 12.5, color: colors.danger }}
-        >
-          {error}
-        </span>
-      )}
+      {error && <span className="text-[12.5px] text-danger">{error}</span>}
       {!loading && !error && (
-        <span
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            lineHeight: 1.55,
-            color: colors.sub,
-          }}
-        >
+        <span className="text-[13px] leading-[1.55] text-sub">
           {chosen
             .slice(0, 2)
             .map((verse) => verse.t)
@@ -283,27 +251,14 @@ const Section = ({
 }: {
   title: string;
   children: ReactNode;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div style={{ marginBottom: 18 }}>
-      <div
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: 0.4,
-          textTransform: "uppercase",
-          color: colors.dim,
-          marginBottom: 8,
-        }}
-      >
-        {title}
-      </div>
-      {children}
+}) => (
+  <div className="mb-4.5">
+    <div className="mb-2 text-[11px] font-bold tracking-[0.4px] text-dim uppercase">
+      {title}
     </div>
-  );
-};
+    {children}
+  </div>
+);
 
 const Note = ({
   children,
@@ -311,21 +266,16 @@ const Note = ({
 }: {
   children: ReactNode;
   danger?: boolean;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <p
-      style={{
-        fontFamily: fonts.ui,
-        fontSize: 12.5,
-        color: danger ? colors.danger : colors.dim,
-        margin: "0 0 14px",
-      }}
-    >
-      {children}
-    </p>
-  );
-};
+}) => (
+  <p
+    className={cn(
+      "mt-0 mb-3.5 text-[12.5px]",
+      danger ? "text-danger" : "text-dim",
+    )}
+  >
+    {children}
+  </p>
+);
 
 const ResultRow = ({
   heading,
@@ -341,63 +291,36 @@ const ResultRow = ({
   disabled?: boolean;
   onInsert: () => void;
   children: ReactNode;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      type="button"
-      onClick={onInsert}
-      disabled={disabled}
-      title={`Add ${heading} to the broadcast`}
-      style={{
-        display: "block",
-        width: "100%",
-        textAlign: "left",
-        padding: emphasis ? "12px 14px" : "10px 12px",
-        borderRadius: emphasis ? 12 : 10,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.6 : 1,
-        background: colors.bg,
-        border: `1px solid ${emphasis ? colors.accentSoft : colors.border}`,
-      }}
-    >
+}) => (
+  <button
+    type="button"
+    onClick={onInsert}
+    disabled={disabled}
+    title={`Add ${heading} to the broadcast`}
+    className={cn(
+      "block w-full border bg-canvas text-left disabled:cursor-not-allowed disabled:opacity-60",
+      emphasis
+        ? "rounded-xl border-accent-soft px-3.5 py-3"
+        : "rounded-[10px] border-line px-3 py-2.5",
+    )}
+  >
+    <span className="mb-1 flex items-center gap-2">
       <span
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 4,
-        }}
-      >
-        <span
-          className="ws-ellipsis"
-          style={{
-            minWidth: 0,
-            fontFamily: emphasis ? fonts.display : fonts.ui,
-            fontSize: emphasis ? 15 : 12.5,
-            fontWeight: 700,
-            color: colors.accentSoft,
-          }}
-        >
-          {heading}
-        </span>
-        {meta && (
-          <span
-            style={{
-              flexShrink: 0,
-              fontFamily: fonts.ui,
-              fontSize: 11,
-              fontWeight: 600,
-              color: colors.dim,
-            }}
-          >
-            {meta}
-          </span>
+        className={cn(
+          "min-w-0 truncate font-bold text-accent-soft",
+          emphasis ? "text-[15px]" : "text-[12.5px]",
         )}
-        <span style={{ flex: 1 }} />
-        <ArrowRight size={15} color={colors.dim} style={{ flexShrink: 0 }} />
+      >
+        {heading}
       </span>
-      {children}
-    </button>
-  );
-};
+      {meta && (
+        <span className="shrink-0 text-[11px] font-semibold text-dim">
+          {meta}
+        </span>
+      )}
+      <span className="flex-1" />
+      <ArrowRight size={15} className="shrink-0 text-dim" />
+    </span>
+    {children}
+  </button>
+);

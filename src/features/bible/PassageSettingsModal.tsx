@@ -8,7 +8,6 @@ import {
   bookById,
   isBibleVersion,
 } from "../../data/bibleBooks";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
 import { Modal } from "../../components/ui/Modal";
 import { InfoTip } from "../../components/ui/InfoTip";
@@ -42,12 +41,6 @@ interface PassageSettingsModalProps {
   onEditAsset: (request: AssetUsageRequest) => void;
 }
 
-const GRID = {
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
-  gap: 12,
-} as const;
-
 export const PassageSettingsModal = ({
   open,
   onClose,
@@ -55,7 +48,6 @@ export const PassageSettingsModal = ({
   editor,
   onEditAsset,
 }: PassageSettingsModalProps) => {
-  const { colors, fonts } = useUITheme();
   const themes = useStore((s) => s.themes);
   const backgrounds = useStore((s) => s.backgrounds);
   const audio = useStore((s) => s.audio);
@@ -183,7 +175,7 @@ export const PassageSettingsModal = ({
       }
     >
       <SectionTitle>Passage</SectionTitle>
-      <div style={GRID}>
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
         <Field label="Version">
           <Select
             value={version}
@@ -214,7 +206,7 @@ export const PassageSettingsModal = ({
           />
         </Field>
         <Field label="Verses (from – to)" error={rangeError}>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="flex gap-2">
             <Select
               value={String(verseStart)}
               options={Array.from({ length: 176 }, (_, i) => String(i + 1))}
@@ -238,14 +230,14 @@ export const PassageSettingsModal = ({
           onChange={(e) => setVersesPerSlide(Number(e.target.value))}
         />
       </Field>
-      <div style={{ marginBottom: 8 }}>
+      <div className="mb-2">
         <Toggle
           label="Show verse numbers"
           checked={showVerseNumbers}
           onChange={setShowVerseNumbers}
         />
       </div>
-      <div style={{ marginBottom: 12 }}>
+      <div className="mb-3">
         <Toggle
           label="Show reference on each slide"
           checked={showReference}
@@ -262,15 +254,7 @@ export const PassageSettingsModal = ({
         <RefreshCw size={15} />
         Apply & rebuild slides
       </Button>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          color: colors.danger,
-          opacity: 0.85,
-          margin: "10px 0 0",
-        }}
-      >
+      <p className="mt-2.5 mb-0 text-xs text-danger opacity-85">
         Rebuilding refetches the verses and resets per-slide overrides.
       </p>
 

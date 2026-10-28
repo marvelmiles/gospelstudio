@@ -1,8 +1,7 @@
 import { FileText } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { formatCount } from "../../../lib/formatNumber";
-import { rankBarStyle } from "../utils";
+import { RankBar } from "./RankBar";
 import type { CollectionUsage } from "../useDashboardData";
 
 interface ManuscriptsByCategoryProps {
@@ -13,65 +12,31 @@ interface ManuscriptsByCategoryProps {
 export const ManuscriptsByCategory = ({
   data,
   largest,
-}: ManuscriptsByCategoryProps) => {
-  const { colors, glass, controls, fonts } = useUITheme();
-  const UI = fonts.ui;
-  const DISPLAY = fonts.display;
-
-  return (
-    <div style={{ ...glass, padding: 22 }}>
-      <h3
-        style={{
-          margin: "0 0 14px",
-          fontFamily: DISPLAY,
-          fontSize: 18,
-          color: colors.text,
-        }}
-      >
-        Manuscripts by Collection
-      </h3>
-      {data.length === 0 && (
-        <EmptyState
-          bare
-          compact
-          icon={FileText}
-          title="No collections yet"
-          message="Put your manuscripts in a collection and the breakdown appears here."
-        />
-      )}
-      {data.map((c, rank) => (
-        <div key={c.name} style={{ marginBottom: 11 }}>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontFamily: UI,
-              fontSize: 13,
-              color: colors.sub,
-              marginBottom: 5,
-            }}
-          >
-            <span>{c.name}</span>
-            <span style={{ color: colors.text }}>{formatCount(c.count)}</span>
-          </div>
-          <div
-            style={{
-              height: 7,
-              borderRadius: 99,
-              background: controls.track,
-            }}
-          >
-            <div
-              style={{
-                height: "100%",
-                width: `${(c.count / largest) * 100}%`,
-                borderRadius: 99,
-                ...rankBarStyle(colors.accent, colors.accentSoft, rank),
-              }}
-            />
-          </div>
+}: ManuscriptsByCategoryProps) => (
+  <div className="glass p-5.5">
+    <h3 className="mt-0 mb-3.5 text-lg text-fg">Manuscripts by Collection</h3>
+    {data.length === 0 && (
+      <EmptyState
+        bare
+        compact
+        icon={FileText}
+        title="No collections yet"
+        message="Put your manuscripts in a collection and the breakdown appears here."
+      />
+    )}
+    {data.map((collection, rank) => (
+      <div key={collection.name} className="mb-2.75">
+        <div className="mb-1.25 flex justify-between text-[13px] text-sub">
+          <span>{collection.name}</span>
+          <span className="text-fg">{formatCount(collection.count)}</span>
         </div>
-      ))}
-    </div>
-  );
-};
+        <RankBar
+          value={collection.count}
+          max={largest}
+          rank={rank}
+          className="h-1.75"
+        />
+      </div>
+    ))}
+  </div>
+);

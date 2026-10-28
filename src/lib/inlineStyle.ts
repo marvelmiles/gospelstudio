@@ -84,7 +84,7 @@ export const mergeInlineStyle = (
 export const hasInlineStyle = (style: InlineTextStyle | undefined): boolean =>
   Boolean(style && INLINE_STYLE_KEYS.some((key) => style[key] !== undefined));
 
-export const encodeInlineStyle = (
+const encodeInlineStyle = (
   style: InlineTextStyle | undefined,
 ): string | null => {
   if (!style) return null;

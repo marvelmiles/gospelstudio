@@ -14,9 +14,4 @@ export const LAYOUT_OPTIONS = [
   { value: "slide", label: "The document's own slide" },
 ];
 
-export const SPEED_OPTIONS = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => ({
-  value: String(rate),
-  label: `${rate}x`,
-}));
-
 export const VIDEO_JUMP_SECONDS = 5;

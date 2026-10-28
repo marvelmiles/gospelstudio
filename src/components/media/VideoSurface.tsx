@@ -1,9 +1,9 @@
 import { forwardRef } from "react";
-import type { CSSProperties } from "react";
 import type { MediaItem, VideoSettings } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { buildFilter, videoSettingsOf } from "../../lib/media";
 import { useBlobUrl } from "../../lib/blobUrls";
+import { cn } from "../../lib/cn";
 import {
   useMediaElementPlayback,
   type MediaSurfaceHandle,
@@ -18,12 +18,12 @@ interface VideoSurfaceProps {
   forceMuted?: boolean;
   onTimeUpdate?: (time: number, duration: number) => void;
   onEnded?: () => void;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const VideoSurface = forwardRef<VideoSurfaceHandle, VideoSurfaceProps>(
   (
-    { item, settings, playback, forceMuted, onTimeUpdate, onEnded, style },
+    { item, settings, playback, forceMuted, onTimeUpdate, onEnded, className },
     ref,
   ) => {
     const src = useBlobUrl(item.id);
@@ -41,15 +41,10 @@ export const VideoSurface = forwardRef<VideoSurfaceHandle, VideoSurfaceProps>(
 
     return (
       <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          overflow: "hidden",
-          display: "grid",
-          placeItems: "center",
-          background: "#000",
-          ...style,
-        }}
+        className={cn(
+          "absolute inset-0 grid place-items-center overflow-hidden bg-black",
+          className,
+        )}
       >
         {src && (
           <video
@@ -59,12 +54,8 @@ export const VideoSurface = forwardRef<VideoSurfaceHandle, VideoSurfaceProps>(
             onLoadedMetadata={element.onLoadedMetadata}
             onTimeUpdate={element.onTimeUpdate}
             onEnded={element.onEnded}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: applied.fit,
-              filter: buildFilter(applied),
-            }}
+            style={{ objectFit: applied.fit, filter: buildFilter(applied) }}
+            className="size-full"
           />
         )}
       </div>

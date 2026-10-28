@@ -44,21 +44,21 @@ export const PresentationSection = ({
         }
       />
     </Field>
-    <div style={{ marginBottom: 14 }}>
+    <div className="mb-3.5">
       <Toggle
         label="Show presenter bar"
         checked={prefs.showPresenterBar}
         onChange={(checked) => onChange({ showPresenterBar: checked })}
       />
     </div>
-    <div style={{ marginBottom: 10 }}>
+    <div className="mb-2.5">
       <Toggle
         label="Auto-hide controls on mouse leave"
         checked={prefs.autoHideControls}
         onChange={(checked) => onChange({ autoHideControls: checked })}
       />
     </div>
-    <div style={{ marginBottom: 14 }}>
+    <div className="mb-3.5">
       <Toggle
         label="Auto-hide presenter bar on mouse leave"
         checked={prefs.autoHidePresenterBar}
@@ -162,7 +162,7 @@ export const AudioSection = ({ prefs, onChange }: PreferenceSectionProps) => (
         }
       />
     </Field>
-    <div style={{ marginBottom: 6 }}>
+    <div className="mb-1.5">
       <Toggle
         label="Loop background audio"
         checked={prefs.loopAudio}

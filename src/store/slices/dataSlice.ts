@@ -74,8 +74,6 @@ export interface DataSlice {
   resetApp: () => Promise<void>;
 }
 
-/* Zod leaves a rejected preference as undefined; spreading those over the
-   defaults would blank them, so only real values are carried across. */
 const definedOnly = (prefs: ImportedPrefs): Partial<Prefs> =>
   Object.fromEntries(
     Object.entries(prefs).filter(([, value]) => value !== undefined),
@@ -86,8 +84,6 @@ const withSupportedBibleVersion = (prefs: Prefs): Prefs =>
     ? prefs
     : { ...prefs, bibleVersion: DEFAULT_BIBLE_VERSION };
 
-/* Replace clears whatever the file leaves out, so a partial backup cannot
-   strand records whose blobs have just been wiped. */
 const mergeIncoming = <T extends { id: string }>(
   current: T[],
   incoming: T[] | undefined,
@@ -99,7 +95,6 @@ const mergeIncoming = <T extends { id: string }>(
   return mergeById(current, incoming, importedWins);
 };
 
-/** The library as a backup reads it. */
 const backupSource = (state: StoreState): BackupSource => ({
   manuscripts: state.manuscripts,
   scriptures: state.scriptures,
@@ -143,9 +138,6 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
       prefsRows[0] ? { ...DEFAULT_PREFS, ...prefsRows[0] } : DEFAULT_PREFS,
     );
 
-    /* A library seeded from an older hymnal (or none at all) is moved onto the
-       current one here, so an existing install picks up new built-ins instead
-       of keeping whatever it was first seeded with. */
     let manuscripts = storedManuscripts;
     if (prefs.hymnalVersion !== HYMNAL_VERSION) {
       const plan = planDefaultManuscripts(
@@ -281,7 +273,6 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
             })
           : state.prefs;
 
-      // Only files belonging to records that won the merge are unpacked, so "keep mine" never overwrites local files.
       const acceptedFileIds = new Set<string>();
       for (const item of incomingMedia ?? []) {
         if (!media.includes(item)) continue;
@@ -299,7 +290,6 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
         }
       }
 
-      // Quick-present passages are working state, not library content: a merge leaves them alone and a replace clears them with the rest.
       const keptQuickScriptures = isOverride
         ? []
         : state.scriptures.filter((scripture) => scripture.quick);
@@ -327,7 +317,6 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
         (read, total) => onProgress?.(0.1 + 0.7 * (total ? read / total : 1)),
       );
 
-      // Cached object urls still point at the blobs that were just replaced.
       if (isOverride) resetBlobUrls();
       else invalidateBlobUrls(acceptedFileIds);
 
@@ -387,7 +376,6 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
     const startedAt = Date.now();
     let keptTotal = 0;
     try {
-      // Computed before the stores are cleared, so kept items can repoint references at surviving defaults.
       const survivors = survivingAfterReset({
         manuscripts: get().manuscripts,
         themes: get().themes,

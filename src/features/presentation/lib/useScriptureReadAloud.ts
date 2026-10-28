@@ -24,7 +24,6 @@ const verseTextOf = (slide: DeckSlide, dropLastLine: boolean): string => {
     .join("\n");
 };
 
-/** Reads a passage aloud from the current slide, advancing as it goes. */
 export const useScriptureReadAloud = ({
   isScripture,
   doc,

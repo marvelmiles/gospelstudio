@@ -49,7 +49,7 @@ export const matchDelimitedStanzaNumber = (line: string): number | null => {
   return readStanza(line, DELIMITED_STANZA)?.number ?? null;
 };
 
-export const matchBareStanzaNumber = (line: string): number | null => {
+const matchBareStanzaNumber = (line: string): number | null => {
   return readStanza(line, BARE_STANZA)?.number ?? null;
 };
 

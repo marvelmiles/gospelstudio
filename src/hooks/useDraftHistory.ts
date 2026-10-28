@@ -81,8 +81,6 @@ export const useDraftHistory = <T>(initial: T): DraftHistory<T> => {
 
   const markSaved = useCallback(() => setSaved(latest.current), []);
 
-  /* Saving may normalise what it writes, so the draft settles on the value that
-     actually reached the store and the edit history is left untouched. */
   const commit = useCallback((next: T) => {
     setDraft(next);
     setSaved(next);

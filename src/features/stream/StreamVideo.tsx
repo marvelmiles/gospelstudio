@@ -1,21 +1,19 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
-import type { CSSProperties } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useResumePlaybackOnVisible } from "../../hooks/useResumePlaybackOnVisible";
 
 interface StreamVideoProps {
   stream: MediaStream | null;
   muted?: boolean;
   objectFit?: "cover" | "contain";
-  style?: CSSProperties;
+  className?: string;
 }
 
-// Phone encoders pad frames with green (zero YUV) rows; a slight overscan keeps that fringe outside the box.
+/* Phones pad video with thin green edges; zooming in very slightly hides them. */
 const EDGE_OVERSCAN = 1.008;
 
 export const StreamVideo = forwardRef<HTMLVideoElement, StreamVideoProps>(
-  ({ stream, muted, objectFit = "cover", style }, forwardedRef) => {
-    const { stage } = useUITheme();
+  ({ stream, muted, objectFit = "cover", className }, forwardedRef) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     useImperativeHandle(
       forwardedRef,
@@ -37,27 +35,15 @@ export const StreamVideo = forwardRef<HTMLVideoElement, StreamVideoProps>(
 
     return (
       <div
-        style={{
-          position: "relative",
-          width: "100%",
-          height: "100%",
-          overflow: "hidden",
-          background: stage.surface,
-          ...style,
-        }}
+        className={cn("relative size-full overflow-hidden bg-stage", className)}
       >
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted={muted}
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit,
-            display: "block",
-            transform: `scale(${EDGE_OVERSCAN})`,
-          }}
+          style={{ objectFit, transform: `scale(${EDGE_OVERSCAN})` }}
+          className="block size-full"
         />
       </div>
     );

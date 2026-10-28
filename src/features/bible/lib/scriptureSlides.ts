@@ -24,7 +24,6 @@ export interface ScriptureSlideOptions {
   showVerseNumbers: boolean;
   showReference: boolean;
   splitLongVerses?: boolean;
-  /** The passage's resolved text style, which decides how much fits on a slide. */
   style?: Pick<TextStyle, "fontSize" | "lineHeight"> | null;
 }
 
@@ -33,10 +32,6 @@ const REFERENCE_LINE_STYLE: TextStyle = {
   uppercase: false,
 };
 
-/**
- * A passage slide spends one row on its reference, so the verse itself gets
- * whatever is left once the slide has kept its space top and bottom.
- */
 const slideCharacters = (
   metrics: SlideTextMetrics,
   showReference: boolean,
@@ -64,9 +59,6 @@ const chunkParts = (
 ): string[][] => {
   const text = lines.join(" ");
   if (text.length <= budget) return [lines];
-  /* A passage that was never meant to be re-cut still has to fit, so an
-     oversized verse is split either way; the flag only decides whether short
-     ones are broken up as well. */
   if (!split && lines.length > 1) return [lines];
   return splitTextIntoParts(text, budget).map((part) => [part]);
 };

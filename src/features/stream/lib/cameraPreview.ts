@@ -24,11 +24,11 @@ export const useCameraPreviewIds = (): string[] => {
   return useSyncExternalStore(subscribe, getSnapshot);
 };
 
-export const isCameraPreviewOpen = (deviceId: string): boolean => {
+const isCameraPreviewOpen = (deviceId: string): boolean => {
   return previewIds.includes(deviceId);
 };
 
-export const openCameraPreview = (deviceId: string): void => {
+const openCameraPreview = (deviceId: string): void => {
   if (previewIds.includes(deviceId)) return;
   emit([...previewIds, deviceId]);
 };

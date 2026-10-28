@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import {
   APP_DESCRIPTION,
@@ -22,11 +23,6 @@ const HTML_IDENTITY: Record<string, string> = {
   APP_URL,
 };
 
-/**
- * Fills the {{APP_*}} placeholders in index.html from the app's identity, so the
- * shell, the manifest and the app itself all read the name from one place. It
- * runs before the other plugins see the HTML.
- */
 const appHtmlIdentity = (): Plugin => ({
   name: "app-html-identity",
   transformIndexHtml: {
@@ -43,13 +39,12 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
   },
-  // The bundled hymn corpus is large, and JSON.parse beats parsing it as a
-  // JavaScript object literal on startup.
   json: {
     stringify: true,
   },
   plugins: [
     react(),
+    tailwindcss(),
     appHtmlIdentity(),
     VitePWA({
       registerType: "autoUpdate",

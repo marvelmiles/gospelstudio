@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import type { CSSProperties } from "react";
 import type { MediaItem, VideoSettings } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { backgroundVideoSettings } from "../../lib/media";
@@ -7,15 +6,14 @@ import { VideoSurface } from "./VideoSurface";
 
 interface BackgroundVideoLayerProps {
   item: MediaItem;
-  /** Settings for this one use, when the document or slide has its own. */
   settings?: VideoSettings | null;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const BackgroundVideoLayer = ({
   item,
   settings: usage,
-  style,
+  className,
 }: BackgroundVideoLayerProps) => {
   const settings = useMemo(
     () => ({
@@ -40,7 +38,7 @@ export const BackgroundVideoLayer = ({
       item={item}
       settings={settings}
       playback={playback}
-      style={style}
+      className={className}
     />
   );
 };

@@ -1,14 +1,12 @@
 import type { ReactNode } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 
 interface ProgressRingProps {
-  /** How far along, 0 to 100. Ignored while indeterminate. */
   value?: number;
   size?: number;
   thickness?: number;
-  color?: string;
-  trackColor?: string;
-  /** Spins a short arc instead, for work whose end is not yet measurable. */
+  className?: string;
+  trackClassName?: string;
   indeterminate?: boolean;
   label: string;
   children?: ReactNode;
@@ -20,15 +18,12 @@ export const ProgressRing = ({
   value = 0,
   size = 30,
   thickness = 3,
-  color,
-  trackColor,
+  className,
+  trackClassName,
   indeterminate = false,
   label,
   children,
 }: ProgressRingProps) => {
-  const { colors, controls } = useUITheme();
-  const stroke = color ?? colors.accent;
-  const track = trackColor ?? controls.track;
   const radius = (size - thickness) / 2;
   const circumference = 2 * Math.PI * radius;
   const percent = Math.max(0, Math.min(100, value));
@@ -44,25 +39,18 @@ export const ProgressRing = ({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={indeterminate ? undefined : Math.round(percent)}
-      style={{
-        position: "relative",
-        display: "inline-grid",
-        placeItems: "center",
-        width: size,
-        height: size,
-        flexShrink: 0,
-      }}
+      style={{ width: size, height: size }}
+      className={cn(
+        "relative inline-grid shrink-0 place-items-center text-accent",
+        className,
+      )}
     >
       <svg
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
         aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          animation: indeterminate ? "wfSpin 1s linear infinite" : undefined,
-        }}
+        className={cn("absolute inset-0", indeterminate && "animate-spin")}
       >
         <g transform={`rotate(-90 ${centre} ${centre})`}>
           <circle
@@ -70,30 +58,26 @@ export const ProgressRing = ({
             cy={centre}
             r={radius}
             fill="none"
-            stroke={track}
             strokeWidth={thickness}
+            className={cn("stroke-track", trackClassName)}
           />
           <circle
             cx={centre}
             cy={centre}
             r={radius}
             fill="none"
-            stroke={stroke}
+            stroke="currentColor"
             strokeWidth={thickness}
             strokeLinecap="round"
             strokeDasharray={`${sweep} ${circumference}`}
-            style={{
-              transition: indeterminate
-                ? undefined
-                : "stroke-dasharray .2s ease",
-            }}
+            className={cn(
+              !indeterminate && "transition-[stroke-dasharray] duration-200",
+            )}
           />
         </g>
       </svg>
       {children != null && (
-        <span style={{ position: "relative", display: "inline-flex" }}>
-          {children}
-        </span>
+        <span className="relative inline-flex">{children}</span>
       )}
     </span>
   );

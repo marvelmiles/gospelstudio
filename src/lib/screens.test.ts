@@ -46,8 +46,6 @@ describe("pickProjectorScreen", () => {
     const laptop = screen("laptop", { isPrimary: true, isInternal: true });
     const tv = screen("tv", { left: 1920 });
 
-    /* The operator has dragged the app onto the television, so the laptop is
-       the one left to project onto. */
     expect(pickProjectorScreen(details([laptop, tv], 1))?.label).toBe("laptop");
   });
 
@@ -131,8 +129,6 @@ describe("isOnScreen", () => {
     expect(isOnScreen(windowAt(2400, 300), projector!)).toBe(true);
   });
 
-  /* A window filling the display sits above the taskbar, outside the area it
-     was placed in, and is still on the projector. */
   it("counts a window that has gone fullscreen above the taskbar", () => {
     expect(isOnScreen(windowAt(1920, 0), projector!)).toBe(true);
   });

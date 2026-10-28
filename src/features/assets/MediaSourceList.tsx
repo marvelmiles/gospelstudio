@@ -10,8 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { MediaKind } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import {
@@ -29,7 +28,10 @@ import { ImageSurface } from "../../components/media/ImageSurface";
 import { VideoThumb } from "../../components/media/VideoThumb";
 import type { AssetSection } from "./assetLibraryNavigation";
 import { useOpenAssetEditor } from "./assetLibraryNavigation";
-import { CARD_OVERLAY_BUTTON } from "./assetCardStyles";
+import {
+  assetGridClassName,
+  cardOverlayButtonClassName,
+} from "./assetCardStyles";
 import { formatCount } from "../../lib/formatNumber";
 
 type SourceFilter = "all" | "added";
@@ -67,7 +69,6 @@ interface MediaSourceListProps {
   title: string;
   description: string;
   attentionId: string | null;
-  /** Media already pulled into this part of the library, by the id it was given. */
   addedByMediaId: Map<string, string>;
   onAdd: (mediaId: string) => void;
   onRemove: (entryId: string) => void;
@@ -79,12 +80,6 @@ interface MediaSourceListProps {
   emptyMessage: string;
 }
 
-/**
- * The Images or Videos module, shown inside the asset library. Uploading here
- * adds to that module, and the pencil opens that module's own editor page, so
- * there is one library and one editor per kind of file rather than a copy of
- * each living in the asset library.
- */
 export const MediaSourceList = ({
   kind,
   title,
@@ -100,7 +95,6 @@ export const MediaSourceList = ({
   filterable,
   emptyMessage,
 }: MediaSourceListProps) => {
-  const { colors, fonts } = useUITheme();
   const media = useStore((s) => s.media);
   const beginUpload = useStore((s) => s.beginUpload);
   const openEditor = useOpenAssetEditor();
@@ -157,7 +151,7 @@ export const MediaSourceList = ({
       />
 
       {filterable && (
-        <div style={{ marginBottom: 14 }}>
+        <div className="mb-3.5">
           <SegmentedTabs<SourceFilter>
             ariaLabel={`${copy.libraryLabel} filter`}
             tabs={[
@@ -190,13 +184,7 @@ export const MediaSourceList = ({
           bare
         />
       ) : (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))",
-            gap: 10,
-          }}
-        >
+        <div className={assetGridClassName}>
           {items.map((item) => {
             const entryId = addedByMediaId.get(item.id);
             const added = Boolean(entryId);
@@ -204,20 +192,16 @@ export const MediaSourceList = ({
               <div
                 key={item.id}
                 {...attentionAttribute(item.id)}
-                className={
-                  item.id === attentionId ? ATTENTION_CLASS : undefined
-                }
-                style={{ position: "relative", borderRadius: 11 }}
+                className={cn(
+                  "relative rounded-[11px]",
+                  item.id === attentionId && ATTENTION_CLASS,
+                )}
               >
                 <div
-                  style={{
-                    position: "relative",
-                    aspectRatio: "16/9",
-                    borderRadius: 9,
-                    overflow: "hidden",
-                    background: "#000",
-                    border: `1.5px solid ${added ? colors.accent : colors.border}`,
-                  }}
+                  className={cn(
+                    "relative aspect-video overflow-hidden rounded-[9px] border-[1.5px] bg-black",
+                    added ? "border-accent" : "border-line",
+                  )}
                 >
                   <LazyMount>
                     {item.kind === "image" ? (
@@ -232,45 +216,19 @@ export const MediaSourceList = ({
                     }
                     aria-label={`Edit ${item.name}`}
                     title={copy.editTitle}
-                    style={{
-                      ...CARD_OVERLAY_BUTTON,
-                      position: "absolute",
-                      top: 6,
-                      right: 6,
-                    }}
+                    className={cn(
+                      cardOverlayButtonClassName,
+                      "absolute top-1.5 right-1.5",
+                    )}
                   >
                     <Pencil size={13} />
                   </button>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 6,
-                    marginTop: 6,
-                  }}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <div
-                      className="ws-ellipsis"
-                      style={{
-                        fontFamily: fonts.ui,
-                        fontSize: 12,
-                        color: colors.text,
-                      }}
-                    >
-                      {item.name}
-                    </div>
+                <div className="mt-1.5 flex items-center justify-between gap-1.5">
+                  <div className="min-w-0">
+                    <div className="truncate text-xs text-fg">{item.name}</div>
                     {mediaPlayLength(item) ? (
-                      <div
-                        style={{
-                          fontFamily: fonts.ui,
-                          fontSize: 11.5,
-                          color: colors.sub,
-                          fontVariantNumeric: "tabular-nums",
-                        }}
-                      >
+                      <div className="text-[11.5px] text-sub tabular-nums">
                         {formatDuration(mediaPlayLength(item))}
                       </div>
                     ) : null}
@@ -283,23 +241,12 @@ export const MediaSourceList = ({
                     title={
                       added ? `Remove ${item.name}` : `${addLabel} ${item.name}`
                     }
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 5,
-                      flexShrink: 0,
-                      padding: "4px 9px",
-                      borderRadius: 999,
-                      cursor: "pointer",
-                      fontFamily: fonts.ui,
-                      fontSize: 11.5,
-                      fontWeight: 600,
-                      border: `1px solid ${added ? fade(colors.accent, 0.4) : colors.border}`,
-                      background: added
-                        ? fade(colors.accent, 0.16)
-                        : "transparent",
-                      color: added ? colors.accentSoft : colors.sub,
-                    }}
+                    className={cn(
+                      "inline-flex shrink-0 items-center gap-1.25 rounded-full border px-2.25 py-1 text-[11.5px] font-semibold",
+                      added
+                        ? "border-accent/40 bg-accent/16 text-accent-soft"
+                        : "border-line bg-transparent text-sub",
+                    )}
                   >
                     {added ? <Check size={12} /> : <Plus size={12} />}
                     {added ? addedLabel : addLabel}

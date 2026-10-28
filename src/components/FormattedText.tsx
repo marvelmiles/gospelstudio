@@ -31,7 +31,7 @@ const decorationOf = (segment: FormattedSegment): string | undefined => {
   return lines.length ? lines.join(" ") : undefined;
 };
 
-export const boldWeight = (baseWeight: number): number => {
+const boldWeight = (baseWeight: number): number => {
   return Math.min(900, Math.max(700, Math.round(baseWeight) + 200));
 };
 

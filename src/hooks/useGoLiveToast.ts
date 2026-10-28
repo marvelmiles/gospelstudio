@@ -5,9 +5,6 @@ import { useStore } from "../store/useStore";
 const POPUP_BLOCKED_MESSAGE =
   "Popup blocked. Allow popups for this site to go live.";
 
-/* Answering the display prompt takes longer than the click the live window
-   was riding on, so the first Go Live on a machine buys the permission and
-   the second one uses it. */
 const RETRY_MESSAGE =
   "Display access sorted. Press Go Live once more and it fills the projector.";
 

@@ -14,9 +14,8 @@ import {
   Video,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
+import { cn } from "../../lib/cn";
 import { Button } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -99,13 +98,10 @@ export const StreamOverlayPanel = ({
   const stacked = [...overlays].reverse();
 
   return (
-    <div
-      {...keepsSelectionProps}
-      style={{ display: "flex", flexDirection: "column", gap: 14 }}
-    >
+    <div {...keepsSelectionProps} className="flex flex-col gap-3.5">
       <div>
         <OverlaySectionLabel>Add to the broadcast</OverlaySectionLabel>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+        <div className="flex flex-wrap gap-1.75">
           <Button
             variant="subtle"
             size="sm"
@@ -168,16 +164,9 @@ export const StreamOverlayPanel = ({
         />
       ) : (
         <div>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 8,
-            }}
-          >
+          <div className="flex items-center justify-between gap-2">
             <OverlaySectionLabel>Elements</OverlaySectionLabel>
-            <span style={{ display: "flex", gap: 12, marginBottom: 7 }}>
+            <span className="mb-1.75 flex gap-3">
               {anyOnAir && (
                 <TextAction
                   label="Clear the broadcast, keeping every element staged"
@@ -197,7 +186,7 @@ export const StreamOverlayPanel = ({
               </TextAction>
             </span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div className="flex flex-col gap-1.5">
             {stacked.map((overlay) => (
               <OverlayRow
                 key={overlay.id}
@@ -302,27 +291,15 @@ const TextAction = ({
   label: string;
   onClick: () => void;
   children: string;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      title={label}
-      onClick={onClick}
-      style={{
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        fontFamily: fonts.ui,
-        fontSize: 12,
-        fontWeight: 600,
-        color: colors.dim,
-        padding: 0,
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+}) => (
+  <button
+    title={label}
+    onClick={onClick}
+    className="border-none bg-transparent p-0 text-xs font-semibold text-dim"
+  >
+    {children}
+  </button>
+);
 
 const OverlayRow = ({
   overlay,
@@ -337,45 +314,24 @@ const OverlayRow = ({
   onSelect: () => void;
   onToggleSaved: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const Icon = KIND_ICON[overlay.kind];
   const visibility = overlayVisibility(overlay);
   const live = overlay.status === "live";
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "6px 7px 6px 10px",
-        borderRadius: 10,
-        background: colors.bg,
-        border: `1px solid ${selected ? colors.accent : colors.border}`,
-        opacity: overlay.hidden ? 0.55 : 1,
-      }}
+      className={cn(
+        "flex items-center gap-1.5 rounded-[10px] border bg-canvas py-1.5 pr-1.75 pl-2.5",
+        selected ? "border-accent" : "border-line",
+        overlay.hidden && "opacity-55",
+      )}
     >
       <button
         onClick={onSelect}
         aria-pressed={selected}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 9,
-          flex: 1,
-          minWidth: 0,
-          padding: 0,
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          textAlign: "left",
-          color: colors.text,
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          fontWeight: 600,
-        }}
+        className="flex min-w-0 flex-1 items-center gap-2.25 border-none bg-transparent p-0 text-left text-[13px] font-semibold text-fg"
       >
-        <Icon size={14} color={colors.accentSoft} style={{ flexShrink: 0 }} />
-        <span className="ws-ellipsis" style={{ minWidth: 0, flex: 1 }}>
+        <Icon size={14} className="shrink-0 text-accent-soft" />
+        <span className="min-w-0 flex-1 truncate">
           {isMarquee(overlay) ? overlay.text : overlay.label}
         </span>
         <StatusChip visibility={visibility} staged={hasStagedEdits(overlay)} />
@@ -428,10 +384,8 @@ const StatusChip = ({
   visibility: OverlayVisibility;
   staged: boolean;
 }) => {
-  const { colors, fonts } = useUITheme();
   const onAir = visibility === "live";
   const waiting = onAir && staged;
-  const tone = waiting ? colors.warning : colors.accent;
   return (
     <span
       title={
@@ -439,22 +393,12 @@ const StatusChip = ({
           ? "Changes are waiting to be applied to the broadcast"
           : undefined
       }
-      style={{
-        flexShrink: 0,
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 4,
-        padding: "1px 7px",
-        borderRadius: 999,
-        background: onAir ? fade(tone, 0.18) : "transparent",
-        border: `1px solid ${onAir ? tone : colors.border}`,
-        color: onAir ? tone : colors.dim,
-        fontFamily: fonts.ui,
-        fontSize: 9.5,
-        fontWeight: 700,
-        letterSpacing: 0.3,
-        textTransform: "uppercase",
-      }}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full border px-1.75 py-px text-[9.5px] font-bold tracking-[0.3px] uppercase",
+        !onAir && "border-line bg-transparent text-dim",
+        onAir && !waiting && "border-accent bg-accent/18 text-accent",
+        waiting && "border-warning bg-warning/18 text-warning",
+      )}
     >
       {waiting ? "Not applied" : VISIBILITY_LABEL[visibility]}
     </span>
@@ -476,29 +420,21 @@ const RowButton = ({
   accent?: boolean;
   active?: boolean;
 }) => {
-  const { colors } = useUITheme();
   return (
     <button
       title={label}
       aria-label={label}
       aria-pressed={active}
       onClick={onClick}
-      style={{
-        width: 25,
-        height: 25,
-        flexShrink: 0,
-        display: "grid",
-        placeItems: "center",
-        borderRadius: 7,
-        border: "none",
-        cursor: "pointer",
-        background: active ? fade(colors.accent, 0.16) : "transparent",
-        color: danger
-          ? colors.danger
+      className={cn(
+        "grid size-6.25 shrink-0 place-items-center rounded-[7px] border-none",
+        active ? "bg-accent/16" : "bg-transparent",
+        danger
+          ? "text-danger"
           : accent || active
-            ? colors.accentSoft
-            : colors.sub,
-      }}
+            ? "text-accent-soft"
+            : "text-sub",
+      )}
     >
       <Icon size={13} fill={active ? "currentColor" : "none"} />
     </button>

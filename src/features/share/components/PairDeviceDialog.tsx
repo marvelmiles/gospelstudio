@@ -28,10 +28,6 @@ interface PairDeviceDialogProps {
   onPaired: (device: ShareDevice) => void;
 }
 
-/**
- * Pairs the sending device with another one by trading two codes, so the two
- * can share with no internet at all: only the same WiFi or hotspot.
- */
 export const PairDeviceDialog = ({
   open,
   deviceName,
@@ -132,7 +128,7 @@ const PairingSteps = ({
 
   if (phase === "failed") {
     return (
-      <div style={{ display: "grid", justifyItems: "center", gap: 14 }}>
+      <div className="grid justify-items-center gap-3.5">
         <StreamStatusLine tone="danger">{failure}</StreamStatusLine>
         <Button variant="primary" onClick={startAgain}>
           <RotateCcw size={14} />
@@ -155,7 +151,7 @@ const PairingSteps = ({
               caption="On the other device, open Quick Share, choose Receive with a code, then scan or paste this."
             />
           ) : (
-            <div style={{ padding: 30, display: "grid", placeItems: "center" }}>
+            <div className="grid place-items-center p-7.5">
               <Spinner size={22} />
             </div>
           )}

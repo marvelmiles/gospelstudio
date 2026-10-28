@@ -1,26 +1,18 @@
-import type { CSSProperties } from "react";
 import {
   formatDuration,
   videoPosition,
   type VideoProgress,
 } from "../../lib/media";
+import { cn } from "../../lib/cn";
 
 interface VideoTimecodeProps {
   progress: VideoProgress;
-  style?: CSSProperties;
+  className?: string;
 }
 
-export const VideoTimecode = ({ progress, style }: VideoTimecodeProps) => {
-  return (
-    <span
-      style={{
-        fontVariantNumeric: "tabular-nums",
-        whiteSpace: "nowrap",
-        ...style,
-      }}
-    >
-      {formatDuration(videoPosition(progress) - progress.start)} /{" "}
-      {formatDuration(Math.max(progress.end - progress.start, 0))}
-    </span>
-  );
-};
+export const VideoTimecode = ({ progress, className }: VideoTimecodeProps) => (
+  <span className={cn("whitespace-nowrap tabular-nums", className)}>
+    {formatDuration(videoPosition(progress) - progress.start)} /{" "}
+    {formatDuration(Math.max(progress.end - progress.start, 0))}
+  </span>
+);

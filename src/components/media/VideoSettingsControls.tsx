@@ -6,19 +6,13 @@ import {
 } from "../../lib/media";
 import { Field, Range, SectionTitle, Select, Toggle } from "../ui/Field";
 import { InfoTip } from "../ui/InfoTip";
-import { AdjustmentControls } from "./AdjustmentControls";
+import {
+  PLAYBACK_RATE_OPTIONS,
+  SCREEN_FIT_OPTIONS,
+} from "../../lib/mediaOptions";
+import { cn } from "../../lib/cn";
+import { AdjustmentControls, settingsColumns } from "./AdjustmentControls";
 import { TrimFields } from "./TrimFields";
-
-const FIT_OPTIONS = [
-  { value: "contain", label: "Contain (fit, letterboxed)" },
-  { value: "cover", label: "Cover (fill, may crop)" },
-  { value: "fill", label: "Fill (stretch)" },
-];
-
-const RATE_OPTIONS = ["0.5", "0.75", "1", "1.25", "1.5", "2"].map((value) => ({
-  value,
-  label: `${value}×`,
-}));
 
 interface VideoSettingsControlsProps {
   settings: VideoSettings;
@@ -37,7 +31,7 @@ export const VideoSettingsControls = ({
   onIssueChange,
   narrow,
 }: VideoSettingsControlsProps) => {
-  const columns = narrow ? "1fr" : "repeat(auto-fit,minmax(200px,1fr))";
+  const columns = settingsColumns(narrow);
   const shape = timecodeShape(needsHoursField(duration));
 
   return (
@@ -59,14 +53,12 @@ export const VideoSettingsControls = ({
         onChange={onChange}
         duration={duration}
         playhead={playhead}
-        columns={columns}
+        className={columns}
         onIssueChange={onIssueChange}
       />
 
       <SectionTitle>Playback</SectionTitle>
-      <div
-        style={{ display: "grid", gridTemplateColumns: columns, gap: "0 16px" }}
-      >
+      <div className={cn("grid gap-x-4", columns)}>
         <Field label={`Volume (${settings.volume}%)`}>
           <Range
             value={settings.volume}
@@ -81,7 +73,7 @@ export const VideoSettingsControls = ({
         <Field label="Speed">
           <Select
             value={String(settings.playbackRate)}
-            options={RATE_OPTIONS}
+            options={PLAYBACK_RATE_OPTIONS}
             onChange={(event) =>
               onChange({ playbackRate: Number(event.target.value) })
             }
@@ -90,24 +82,22 @@ export const VideoSettingsControls = ({
         <Field label="Screen fit">
           <Select
             value={settings.fit}
-            options={FIT_OPTIONS}
+            options={SCREEN_FIT_OPTIONS}
             onChange={(event) =>
               onChange({ fit: event.target.value as VideoSettings["fit"] })
             }
           />
         </Field>
       </div>
-      <div
-        style={{ display: "flex", gap: 24, flexWrap: "wrap", marginBottom: 4 }}
-      >
-        <div style={{ flex: 1, minWidth: 180 }}>
+      <div className="mb-1 flex flex-wrap gap-6">
+        <div className="min-w-45 flex-1">
           <Toggle
             label="Muted"
             checked={settings.muted}
             onChange={(muted) => onChange({ muted })}
           />
         </div>
-        <div style={{ flex: 1, minWidth: 180 }}>
+        <div className="min-w-45 flex-1">
           <Toggle
             label="Loop"
             checked={settings.loop}

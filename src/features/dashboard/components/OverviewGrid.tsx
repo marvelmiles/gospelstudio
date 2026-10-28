@@ -10,7 +10,6 @@ import {
   Upload,
   Volume2,
 } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { useStore } from "../../../store/useStore";
 import { overlayTarget } from "../../../lib/overlayTarget";
 import { DashboardTile, type DashboardTileProps } from "./DashboardTile";
@@ -22,7 +21,6 @@ interface OverviewGridProps {
 }
 
 export const OverviewGrid = ({ counts }: OverviewGridProps) => {
-  const { charts } = useUITheme();
   const navigate = useNavigate();
   const openOverlay = useStore((s) => s.openOverlay);
 
@@ -33,7 +31,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: FileText,
       label: "Manuscripts",
       value: counts.manuscripts,
-      color: charts[0],
+      tone: "chart-1",
       title: "Open the manuscript library",
       onClick: () => navigate(routes.manuscripts()),
     },
@@ -41,7 +39,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: Layers,
       label: "Slides",
       value: counts.totalSlides,
-      color: charts[1],
+      tone: "chart-2",
       title: "Open the manuscript library",
       onClick: () => navigate(routes.manuscripts()),
     },
@@ -49,7 +47,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: BookOpen,
       label: "Passages",
       value: counts.savedPassages,
-      color: charts[2],
+      tone: "chart-3",
       title: "Open your saved Bible passages",
       onClick: () => navigate(routes.bible(), { state: { tab: "saved" } }),
     },
@@ -57,7 +55,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: ImageIcon,
       label: "Images",
       value: counts.imageCount,
-      color: charts[3],
+      tone: "chart-4",
       title: "Open the image library",
       onClick: () => navigate(routes.images()),
     },
@@ -65,7 +63,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: Film,
       label: "Videos",
       value: counts.videoCount,
-      color: charts[4],
+      tone: "chart-5",
       title: "Open the video library",
       onClick: () => navigate(routes.videos()),
     },
@@ -73,7 +71,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: Palette,
       label: "Themes",
       value: counts.themes,
-      color: charts[5],
+      tone: "chart-6",
       title: "Open the themes page",
       onClick: () => navigate(routes.themes()),
     },
@@ -81,7 +79,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
       icon: Volume2,
       label: "Sounds",
       value: counts.sounds,
-      color: charts[6],
+      tone: "chart-7",
       title: "Open the sounds in the asset library",
       onClick: () => openOverlay("assets", overlayTarget("audio")),
     },
@@ -110,7 +108,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
   ];
 
   return (
-    <div className="ws-dash-grid">
+    <div className="mb-6.5 grid grid-cols-2 gap-3.5 min-[620px]:grid-cols-3 min-[900px]:grid-cols-4 min-[1140px]:grid-cols-5">
       {tiles.map((tile) => (
         <DashboardTile key={tile.label} {...tile} />
       ))}

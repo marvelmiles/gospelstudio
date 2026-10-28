@@ -15,7 +15,8 @@ import type {
   VerticalAlign,
   VideoSettings,
 } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
+import { PLAYBACK_RATE_OPTIONS } from "../../lib/mediaOptions";
 import { useStore } from "../../store/useStore";
 import { formatDuration, trimmedDuration } from "../../lib/media";
 import {
@@ -42,11 +43,6 @@ const FIT_OPTIONS = [
   { value: "contain", label: "Contain (fit inside the box)" },
   { value: "fill", label: "Fill (stretch)" },
 ];
-
-const RATE_OPTIONS = ["0.5", "0.75", "1", "1.25", "1.5", "2"].map((value) => ({
-  value,
-  label: `${value}×`,
-}));
 
 const VERTICAL_ALIGN_OPTIONS: { value: VerticalAlign; label: string }[] = [
   { value: "top", label: "Top of the box" },
@@ -104,7 +100,6 @@ export const SlideElementsPanel = ({
   capabilities,
   onAddTextBox,
 }: SlideElementsPanelProps) => {
-  const { colors, fonts } = useUITheme();
   const library = useStore((s) => s.media);
   const [picking, setPicking] = useState<"image" | "video" | null>(null);
 
@@ -165,7 +160,7 @@ export const SlideElementsPanel = ({
   return (
     <>
       {canPlace && (
-        <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+        <div className="flex flex-wrap gap-1.75">
           {capabilities.images && (
             <Button
               variant="ghost"
@@ -196,19 +191,16 @@ export const SlideElementsPanel = ({
       )}
 
       <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 11.5,
-          color: colors.dim,
-          margin: canPlace ? "10px 0 0" : 0,
-          lineHeight: 1.55,
-        }}
+        className={cn(
+          "m-0 text-[11.5px] leading-[1.55] text-dim",
+          canPlace && "mt-2.5",
+        )}
       >
         {hint}
       </p>
 
       {media && (
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-4">
           <Field label="Fit inside its box">
             <Select
               value={
@@ -250,7 +242,7 @@ export const SlideElementsPanel = ({
           </Field>
 
           {media.kind === "image" ? (
-            <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+            <div className="flex flex-wrap gap-1.75">
               <Button
                 variant="ghost"
                 size="sm"
@@ -292,7 +284,7 @@ export const SlideElementsPanel = ({
             />
           )}
 
-          <div style={{ marginTop: 14 }}>
+          <div className="mt-3.5">
             <AdjustmentControls
               value={
                 media.kind === "image"
@@ -310,7 +302,7 @@ export const SlideElementsPanel = ({
       )}
 
       {textBox && (
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-4">
           <Field label="Text sits at">
             <Select
               value={textBox.verticalAlign ?? "middle"}
@@ -365,7 +357,7 @@ const VideoPlacementControls = ({
       >
         <Select
           value={String(settings.playbackRate)}
-          options={RATE_OPTIONS}
+          options={PLAYBACK_RATE_OPTIONS}
           onChange={(event) =>
             onChange({ playbackRate: Number(event.target.value) })
           }

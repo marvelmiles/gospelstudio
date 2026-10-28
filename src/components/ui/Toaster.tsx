@@ -2,27 +2,14 @@ import { useEffect } from "react";
 import { AlertCircle, CheckCircle2, X } from "lucide-react";
 import type { Toast } from "../../types";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 
 export const Toaster = () => {
   const toasts = useStore((s) => s.toasts);
   const dismiss = useStore((s) => s.dismissToast);
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        bottom: 20,
-        left: "50%",
-        transform: "translateX(-50%)",
-        zIndex: 400,
-        display: "flex",
-        flexDirection: "column",
-        gap: 10,
-        width: "min(420px, calc(100vw - 32px))",
-        pointerEvents: "none",
-      }}
-    >
+    <div className="pointer-events-none fixed bottom-5 left-1/2 z-400 flex w-[min(420px,calc(100vw-32px))] -translate-x-1/2 flex-col gap-2.5">
       {toasts.map((toast) => (
         <ToastItem
           key={toast.id}
@@ -41,8 +28,6 @@ const ToastItem = ({
   toast: Toast;
   onDismiss: () => void;
 }) => {
-  const { colors, fonts, glass, shadows } = useUITheme();
-  const UI = fonts.ui;
   useEffect(() => {
     const timer = window.setTimeout(onDismiss, 3400);
     return () => window.clearTimeout(timer);
@@ -50,43 +35,20 @@ const ToastItem = ({
 
   const success = toast.kind === "success";
   const Icon = success ? CheckCircle2 : AlertCircle;
-  const accent = success ? colors.success : colors.danger;
 
   return (
     <div
-      style={{
-        pointerEvents: "auto",
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "13px 14px",
-        borderRadius: 13,
-        background: colors.panel,
-        backdropFilter: glass.backdropFilter,
-        WebkitBackdropFilter: glass.WebkitBackdropFilter,
-        border: `1px solid ${colors.border}`,
-        borderLeft: `3px solid ${accent}`,
-        boxShadow: shadows.overlay,
-        animation: "wfToastIn 0.28s cubic-bezier(0.2,0.9,0.3,1)",
-      }}
+      className={cn(
+        "pointer-events-auto flex animate-toast-in items-center gap-3 rounded-[13px] border border-l-3 border-line bg-panel px-3.5 py-3.25 shadow-overlay backdrop-blur-sm",
+        success ? "border-l-success" : "border-l-danger",
+      )}
     >
-      <Icon size={19} color={accent} />
-      <span
-        style={{ flex: 1, fontFamily: UI, fontSize: 13.5, color: colors.text }}
-      >
-        {toast.message}
-      </span>
+      <Icon size={19} className={success ? "text-success" : "text-danger"} />
+      <span className="flex-1 text-[13.5px] text-fg">{toast.message}</span>
       <button
         onClick={onDismiss}
         aria-label="Dismiss"
-        style={{
-          background: "transparent",
-          border: "none",
-          color: colors.dim,
-          cursor: "pointer",
-          display: "grid",
-          placeItems: "center",
-        }}
+        className="grid place-items-center border-none bg-transparent text-dim"
       >
         <X size={15} />
       </button>

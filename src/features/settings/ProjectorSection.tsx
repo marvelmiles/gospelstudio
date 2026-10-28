@@ -1,9 +1,8 @@
 import { Monitor, MonitorPlay, MonitorX } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { SectionTitle } from "../../components/ui/Field";
 import { Button } from "../../components/ui/Button";
 import { useScreenAccess, type DisplayInfo } from "../../hooks/useScreenAccess";
+import { cn } from "../../lib/cn";
 
 const NOTE_BY_ACCESS = {
   unsupported:
@@ -16,7 +15,6 @@ const NOTE_BY_ACCESS = {
 } as const;
 
 export const ProjectorSection = () => {
-  const { colors, fonts } = useUITheme();
   const { access, isExtended, displays, isAsking, allowDisplays } =
     useScreenAccess();
 
@@ -25,17 +23,9 @@ export const ProjectorSection = () => {
   return (
     <>
       <SectionTitle>Projector</SectionTitle>
-      <div style={{ marginBottom: 18 }}>
+      <div className="mb-4.5">
         {note && (
-          <p
-            style={{
-              margin: "0 0 12px",
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              lineHeight: 1.65,
-              color: colors.sub,
-            }}
-          >
+          <p className="mt-0 mb-3 text-[12.5px] leading-[1.65] text-sub">
             {note}
           </p>
         )}
@@ -48,7 +38,7 @@ export const ProjectorSection = () => {
         )}
 
         {access === "granted" && displays.length > 0 && (
-          <div style={{ display: "grid", gap: 8 }}>
+          <div className="grid gap-2">
             {displays.map((display) => (
               <DisplayRow key={display.id} display={display} />
             ))}
@@ -56,15 +46,7 @@ export const ProjectorSection = () => {
         )}
 
         {access === "granted" && !isExtended && (
-          <p
-            style={{
-              margin: "10px 0 0",
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              lineHeight: 1.65,
-              color: colors.sub,
-            }}
-          >
+          <p className="mt-2.5 mb-0 text-[12.5px] leading-[1.65] text-sub">
             Only this display is connected. Plug the projector in and set
             Windows to Extend, rather than Duplicate, to keep the running order
             on the laptop while the audience sees the slides.
@@ -72,17 +54,7 @@ export const ProjectorSection = () => {
         )}
 
         {access === "denied" && (
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 7,
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              fontWeight: 600,
-              color: colors.danger,
-            }}
-          >
+          <span className="inline-flex items-center gap-1.75 text-[12.5px] font-semibold text-danger">
             <MonitorX size={15} />
             Blocked by this browser
           </span>
@@ -93,7 +65,6 @@ export const ProjectorSection = () => {
 };
 
 const DisplayRow = ({ display }: { display: DisplayInfo }) => {
-  const { colors, fonts } = useUITheme();
   const Icon = display.isProjector ? MonitorPlay : Monitor;
   const badge = display.isProjector
     ? "Live output"
@@ -103,57 +74,32 @@ const DisplayRow = ({ display }: { display: DisplayInfo }) => {
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 11,
-        padding: "10px 12px",
-        borderRadius: 11,
-        background: colors.raise,
-        border: `1px solid ${display.isProjector ? fade(colors.accent, 0.4) : colors.border}`,
-      }}
+      className={cn(
+        "flex items-center gap-2.75 rounded-[11px] border bg-raise px-3 py-2.5",
+        display.isProjector ? "border-accent/40" : "border-line",
+      )}
     >
       <Icon
         size={17}
-        color={display.isProjector ? colors.accentSoft : colors.sub}
-        style={{ flexShrink: 0 }}
+        className={cn(
+          "shrink-0",
+          display.isProjector ? "text-accent-soft" : "text-sub",
+        )}
       />
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span
-          style={{
-            display: "block",
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            fontWeight: 600,
-            color: colors.text,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] font-semibold text-fg">
           {display.label}
         </span>
-        <span
-          style={{ fontFamily: fonts.ui, fontSize: 11.5, color: colors.sub }}
-        >
-          {display.size}
-        </span>
+        <span className="text-[11.5px] text-sub">{display.size}</span>
       </span>
       {badge && (
         <span
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 11,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            padding: "4px 9px",
-            borderRadius: 99,
-            whiteSpace: "nowrap",
-            color: display.isProjector ? colors.accentSoft : colors.sub,
-            background: display.isProjector
-              ? fade(colors.accent, 0.16)
-              : fade(colors.text, 0.07),
-          }}
+          className={cn(
+            "rounded-full px-2.25 py-1 text-[11px] font-bold tracking-[0.3px] whitespace-nowrap",
+            display.isProjector
+              ? "bg-accent/16 text-accent-soft"
+              : "bg-fg/7 text-sub",
+          )}
         >
           {badge}
         </span>

@@ -17,9 +17,9 @@ import {
 } from "../../lib/pipPlacement";
 import type { SliceCreator } from "../storeTypes";
 
-export type PresentationMode = "stage" | "pip";
+type PresentationMode = "stage" | "pip";
 
-export interface PresentedDeck {
+interface PresentedDeck {
   kind: ContentKind;
   id: string;
   doc?: SlideDeckDoc;
@@ -38,7 +38,7 @@ export interface PresentedMedia {
   sync: MediaSync;
 }
 
-export interface SecondaryPresentation {
+interface SecondaryPresentation {
   kind: SecondaryModuleKind;
   id: string;
   item?: MediaItem;
@@ -46,17 +46,14 @@ export interface SecondaryPresentation {
   muted: boolean;
 }
 
-export const LIVE_CAMERA_ID = "live-camera";
+const LIVE_CAMERA_ID = "live-camera";
 
 export interface PresentStartOptions {
-  /** Drive the audience display rather than preview on this screen only. */
   live?: boolean;
-  /** The document as it stands in the editor, which may be newer than the saved one. */
   doc?: SlideDeckDoc;
   item?: MediaItem;
 }
 
-/** The live presentation set aside while something else is previewed here. */
 interface HeldLivePresentation {
   target: PresentTarget;
   index: number;
@@ -99,8 +96,6 @@ export interface PresentSlice {
   stopPresent: () => void;
 }
 
-/* Previewing while the audience display is showing something keeps that live
-   presentation aside, so leaving the preview hands control of it back. */
 const holdLivePresentation = (
   state: PresentSlice,
 ): HeldLivePresentation | null =>

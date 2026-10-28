@@ -29,8 +29,6 @@ import {
   sectionMetaFor,
 } from "./manuscript/sections";
 
-export { SECTION_MAP } from "./manuscript/sections";
-
 const HORIZONTAL_RULE = /^\s*([-*_])\s*(?:\1\s*){2,}$/;
 const BLOCK_QUOTE = /^\s*>\s?/;
 
@@ -227,10 +225,6 @@ const compactSections = (sections: Section[]): Section[] => {
   return kept;
 };
 
-/**
- * Blank lines still break a stanza by hand; within a stanza the slide is cut
- * wherever the next line would no longer fit at the deck's text size.
- */
 const chunkSection = (
   lines: LyricLine[],
   maxLines: number,
@@ -319,11 +313,9 @@ export interface ParsedManuscript {
 export interface ParseManuscriptOptions {
   maxLines?: number;
   format?: ManuscriptFormat;
-  /** The deck's resolved text style, which decides how much fits on a slide. */
   style?: SlideTextStyle | null;
 }
 
-/** How many written lines a slide holds at the default text size. */
 export const defaultMaxLines = (style?: SlideTextStyle | null): number =>
   slideRowCapacity(slideTextMetrics(style));
 

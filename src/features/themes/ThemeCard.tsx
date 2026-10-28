@@ -1,8 +1,7 @@
 import type { Background, Theme } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import { resolveStyle } from "../../lib/resolve";
+import { cn } from "../../lib/cn";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { KeepOnResetBadge } from "../../components/ui/KeepOnResetToggle";
 import { THEME_SAMPLE_SLIDE } from "./themeSample";
@@ -21,52 +20,40 @@ export const ThemeCard = ({
   active,
   attention,
   onSelect,
-}: ThemeCardProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      onClick={onSelect}
-      aria-current={active}
-      {...attentionAttribute(theme.id)}
-      className={attention ? ATTENTION_CLASS : undefined}
-      style={{
-        display: "block",
-        width: "100%",
-        padding: 6,
-        borderRadius: 11,
-        cursor: "pointer",
-        textAlign: "left",
-        background: active ? fade(colors.accent, 0.12) : colors.raise,
-        border: `1px solid ${active ? fade(colors.accent, 0.4) : colors.border}`,
-      }}
+}: ThemeCardProps) => (
+  <button
+    onClick={onSelect}
+    aria-current={active}
+    {...attentionAttribute(theme.id)}
+    className={cn(
+      "block w-full rounded-[11px] border p-1.5 text-left",
+      active ? "border-accent/40 bg-accent/12" : "border-line bg-raise",
+      attention && ATTENTION_CLASS,
+    )}
+  >
+    <div className="overflow-hidden rounded-[7px]">
+      <SlideCanvas
+        slide={THEME_SAMPLE_SLIDE}
+        style={resolveStyle(undefined, undefined, theme)}
+        bg={background}
+        radius={7}
+      />
+    </div>
+    <div
+      className={cn(
+        "px-1 pt-1.75 pb-0.75 text-[12.5px] font-semibold",
+        active ? "text-accent-soft" : "text-fg",
+      )}
     >
-      <div style={{ borderRadius: 7, overflow: "hidden" }}>
-        <SlideCanvas
-          slide={THEME_SAMPLE_SLIDE}
-          style={resolveStyle(undefined, undefined, theme)}
-          bg={background}
-          radius={7}
-        />
-      </div>
-      <div
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          fontWeight: 600,
-          color: active ? colors.accentSoft : colors.text,
-          padding: "7px 4px 3px",
-        }}
-      >
-        {theme.name}
-        {theme.builtIn && (
-          <span style={{ color: colors.dim, fontWeight: 500 }}> · default</span>
-        )}
-        {theme.keepOnReset && !theme.builtIn && (
-          <span style={{ marginLeft: 6, verticalAlign: "middle" }}>
-            <KeepOnResetBadge item={theme} />
-          </span>
-        )}
-      </div>
-    </button>
-  );
-};
+      {theme.name}
+      {theme.builtIn && (
+        <span className="font-medium text-dim"> · default</span>
+      )}
+      {theme.keepOnReset && !theme.builtIn && (
+        <span className="ml-1.5 align-middle">
+          <KeepOnResetBadge item={theme} />
+        </span>
+      )}
+    </div>
+  </button>
+);

@@ -35,11 +35,6 @@ const buildManuscript = (hymn: HymnSource, timestamp: string): Manuscript => ({
 
 const STAMP_GAP_MS = 1000;
 
-/**
- * The library sorts newest first, so the hymns are stamped backwards from now:
- * the first title alphabetically is the newest and the last is the oldest. That
- * makes the default sort read A to Z without treating hymns as a special case.
- */
 export const seedManuscripts = async (): Promise<Manuscript[]> => {
   const hymns = await loadHymns();
   const newest = Date.parse(now());
@@ -51,10 +46,6 @@ export const seedManuscripts = async (): Promise<Manuscript[]> => {
   );
 };
 
-/**
- * The manuscript as it ships, for putting a built-in back the way it came. The
- * library's own marks are left to the caller to carry over.
- */
 export const defaultManuscript = async (
   id: string,
 ): Promise<Manuscript | null> => {

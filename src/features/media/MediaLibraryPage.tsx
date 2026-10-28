@@ -25,7 +25,7 @@ import {
   type LibrarySortOption,
 } from "../../lib/librarySort";
 import { imageDeckIndex } from "../presentation/useDeck";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
 import { SearchInput } from "../../components/ui/SearchInput";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -35,11 +35,21 @@ import { MoreMenu } from "../../components/ui/MoreMenu";
 import { PinButton } from "../../components/ui/PinControl";
 import {
   CardActions,
+  CardTitle,
+  cardBodyClassName,
+  cardClassName,
+  cardGridClassName,
   cardOpenProps,
+  cardSubClassName,
+  cardThumbBadgeClassName,
+  cardThumbClassName,
 } from "../../components/ui/InteractiveCard";
 import { LibrarySortSelect } from "../../components/ui/LibrarySortSelect";
 import { LayoutToggle } from "../../components/ui/LayoutToggle";
-import { LibraryListRow } from "../../components/ui/LibraryListRow";
+import {
+  LibraryListRow,
+  listClassName,
+} from "../../components/ui/LibraryListRow";
 import { PresentMenu } from "../../components/ui/PresentMenu";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useBackupSource } from "../share/lib/useBackupSource";
@@ -83,7 +93,7 @@ const CONFIGS: Record<MediaKind, MediaPageConfig> = {
   },
 };
 
-export const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
+const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
   const config = CONFIGS[kind];
   useDocumentTitle(config.title);
 
@@ -161,7 +171,7 @@ export const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
   };
 
   return (
-    <div className="ws-page">
+    <div className={pageClassName}>
       <PageHeader
         title={config.title}
         subtitle={config.subtitle}
@@ -185,7 +195,7 @@ export const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
         }}
       />
 
-      <div className="ws-row-wrap" style={{ marginBottom: 18 }}>
+      <div className="mb-4.5 flex flex-wrap items-center gap-2.5">
         <SearchInput
           value={query}
           onChange={setQuery}
@@ -223,7 +233,7 @@ export const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
           />
         )
       ) : (
-        <div className={layout === "grid" ? "ws-card-grid" : "ws-list"}>
+        <div className={layout === "grid" ? cardGridClassName : listClassName}>
           {list.map((item) => {
             const props = {
               item,
@@ -292,7 +302,7 @@ const MediaThumb = ({ item }: { item: MediaItem }) => (
       <>
         <VideoThumb item={item} />
         {mediaPlayLength(item) !== undefined && (
-          <div className="ws-thumb-badge">
+          <div className={cardThumbBadgeClassName}>
             {formatDuration(mediaPlayLength(item))}
           </div>
         )}
@@ -398,15 +408,13 @@ const MediaCard = ({
   onDelete,
 }: MediaCardProps) => {
   return (
-    <div className="ws-glass ws-card" {...cardOpenProps(item.name, onOpen)}>
-      <div className="ws-thumb" title="Open editor">
+    <div className={cardClassName} {...cardOpenProps(item.name, onOpen)}>
+      <div className={cardThumbClassName} title="Open editor">
         <MediaThumb item={item} />
       </div>
-      <div className="ws-card-body">
-        <div className="ws-card-title">
-          <span className="ws-ellipsis">{item.name}</span>
-        </div>
-        <div className="ws-card-sub">
+      <div className={cardBodyClassName}>
+        <CardTitle title={item.name} />
+        <div className={cardSubClassName}>
           {item.width && item.height ? `${item.width}×${item.height} · ` : ""}
           {formatBytes(item.size || 0)}
         </div>

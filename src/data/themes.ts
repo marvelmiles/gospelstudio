@@ -1,10 +1,6 @@
 import type { Theme } from "../types";
 import { DEFAULT_SLIDE_FONT_SIZE } from "../lib/slideLayout";
 
-/**
- * Passages read at the same size as everything else; the reference under them
- * is a caption, so it sits a step down.
- */
 export const SCRIPTURE_PASSAGE_FONT_SIZE = DEFAULT_SLIDE_FONT_SIZE;
 export const SCRIPTURE_REFERENCE_FONT_SIZE = 4.2;
 

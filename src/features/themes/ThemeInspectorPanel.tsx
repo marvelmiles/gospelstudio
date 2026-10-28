@@ -1,5 +1,4 @@
 import type { Theme } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
 import { resolveStyle } from "../../lib/resolve";
 import { Field, Range, SectionTitle, Toggle } from "../../components/ui/Field";
@@ -21,7 +20,6 @@ interface ThemeInspectorPanelProps {
 export const ThemeInspectorPanel = ({
   controller,
 }: ThemeInspectorPanelProps) => {
-  const { colors, fonts } = useUITheme();
   const backgrounds = useStore((s) => s.backgrounds);
   const audio = useStore((s) => s.audio);
   const openAssetLibrary = useOpenAssetLibrary();
@@ -30,7 +28,7 @@ export const ThemeInspectorPanel = ({
   if (!draft) return null;
 
   return (
-    <div style={{ padding: 18 }}>
+    <div className="p-4.5">
       <SectionTitle
         info={
           <InfoTip title="Text" align="end">
@@ -58,7 +56,7 @@ export const ThemeInspectorPanel = ({
         onSelect={(id) => patch({ backgroundId: id })}
         onManage={() => openAssetLibrary("backgrounds", { locked: true })}
       />
-      <div style={{ marginTop: 16 }}>
+      <div className="mt-4">
         <AnimationPicker
           value={draft.animation || ""}
           inheritLabel="App default"
@@ -78,7 +76,7 @@ export const ThemeInspectorPanel = ({
       >
         Playback
       </SectionTitle>
-      <div style={{ marginBottom: 12 }}>
+      <div className="mb-3">
         <Toggle
           label="Auto-play slides"
           checked={Boolean(draft.autoPlay)}
@@ -111,24 +109,14 @@ export const ThemeInspectorPanel = ({
       />
 
       {draft.builtIn ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            fontFamily: fonts.ui,
-            fontSize: 12.5,
-            color: colors.dim,
-            margin: "18px 0 0",
-          }}
-        >
+        <div className="mt-4.5 flex items-center gap-1 text-[12.5px] text-dim">
           Default theme
           <InfoTip title="Default theme" align="end">
             You can edit a default theme, but it can&apos;t be deleted.
           </InfoTip>
         </div>
       ) : (
-        <div style={{ marginTop: 18 }}>
+        <div className="mt-4.5">
           <KeepOnResetToggle
             kind="theme"
             item={saved ?? draft}

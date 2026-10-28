@@ -119,10 +119,6 @@ export const createAssetsSlice: SliceCreator<AssetsSlice> = (set, get) => ({
     afterDelete(get);
   },
 
-  /**
-   * Makes a picture from the Images module usable as a background, reusing the
-   * one already attached so the same picture never lands in the library twice.
-   */
   attachImageBackground: (mediaId) => {
     const attached = get().backgrounds.find(
       (b) => b.type === "image" && b.blobId === mediaId,

@@ -1,14 +1,34 @@
 import type { LucideIcon } from "lucide-react";
-import { fade } from "../../../theme/uiTheme";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { formatCount } from "../../../lib/formatNumber";
+import { cn } from "../../../lib/cn";
+
+type TileTone =
+  | "accent"
+  | "chart-1"
+  | "chart-2"
+  | "chart-3"
+  | "chart-4"
+  | "chart-5"
+  | "chart-6"
+  | "chart-7";
+
+const TONE_CLASSES: Record<TileTone, string> = {
+  accent: "bg-accent-soft/13 text-accent-soft",
+  "chart-1": "bg-chart-1/13 text-chart-1",
+  "chart-2": "bg-chart-2/13 text-chart-2",
+  "chart-3": "bg-chart-3/13 text-chart-3",
+  "chart-4": "bg-chart-4/13 text-chart-4",
+  "chart-5": "bg-chart-5/13 text-chart-5",
+  "chart-6": "bg-chart-6/13 text-chart-6",
+  "chart-7": "bg-chart-7/13 text-chart-7",
+};
 
 export interface DashboardTileProps {
   icon: LucideIcon;
   label: string;
   value?: number;
   sub?: string;
-  color?: string;
+  tone?: TileTone;
   primary?: boolean;
   title: string;
   onClick: () => void;
@@ -19,123 +39,62 @@ export const DashboardTile = ({
   label,
   value,
   sub,
-  color,
+  tone = "accent",
   primary,
   title,
   onClick,
-}: DashboardTileProps) => {
-  const { colors, glass, fonts, shadows } = useUITheme();
-  const accent = color ?? colors.accentSoft;
-  const iconBackground = primary
-    ? "rgba(255,255,255,0.18)"
-    : fade(accent, 0.13);
-  const iconColor = primary ? colors.onAccent : accent;
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      style={{
-        ...glass,
-        display: "flex",
-        alignItems: "center",
-        gap: 13,
-        width: "100%",
-        minHeight: 84,
-        padding: "16px 17px",
-        textAlign: "left",
-        cursor: "pointer",
-        transition: "transform .16s ease, border-color .16s ease",
-        background: primary ? colors.accent : colors.panel,
-        border: `1px solid ${primary ? fade(colors.accentSoft, 0.45) : colors.border}`,
-        boxShadow: primary
-          ? `${shadows.cta}, inset 0 1px 0 rgba(255,255,255,0.12)`
-          : glass.boxShadow,
-      }}
-      onMouseEnter={(event) => {
-        event.currentTarget.style.transform = "translateY(-2px)";
-        if (!primary)
-          event.currentTarget.style.borderColor = colors.borderStrong;
-      }}
-      onMouseLeave={(event) => {
-        event.currentTarget.style.transform = "none";
-        if (!primary) event.currentTarget.style.borderColor = colors.border;
-      }}
+}: DashboardTileProps) => (
+  <button
+    type="button"
+    onClick={onClick}
+    title={title}
+    className={cn(
+      "flex min-h-21 w-full items-center gap-3.25 glass px-4.25 py-4 text-left transition-[translate,border-color] duration-150 hover:-translate-y-0.5",
+      primary
+        ? "border-accent-soft/45 bg-accent shadow-[0_4px_12px_rgb(37_99_235/0.25),inset_0_1px_0_rgb(255_255_255/0.12)]"
+        : "bg-panel hover:border-line-strong",
+    )}
+  >
+    <span
+      className={cn(
+        "grid size-10.5 shrink-0 place-items-center rounded-xl",
+        primary ? "bg-white/18 text-on-accent" : TONE_CLASSES[tone],
+      )}
     >
-      <span
-        style={{
-          width: 42,
-          height: 42,
-          borderRadius: 12,
-          flexShrink: 0,
-          display: "grid",
-          placeItems: "center",
-          background: iconBackground,
-          color: iconColor,
-        }}
-      >
-        <Icon size={20} />
-      </span>
-      <span style={{ minWidth: 0, flex: 1 }}>
-        {value === undefined ? (
-          <>
-            <span
-              style={{
-                display: "block",
-                fontFamily: fonts.ui,
-                fontSize: 14.5,
-                fontWeight: 600,
-                lineHeight: 1.25,
-                color: primary ? colors.onAccent : colors.text,
-              }}
-            >
-              {label}
-            </span>
-            {sub && (
-              <span
-                className="ws-ellipsis"
-                style={{
-                  display: "block",
-                  fontFamily: fonts.ui,
-                  fontSize: 12.5,
-                  marginTop: 3,
-                  color: primary ? "rgba(255,255,255,0.78)" : colors.sub,
-                }}
-              >
-                {sub}
-              </span>
+      <Icon size={20} />
+    </span>
+    <span className="min-w-0 flex-1">
+      {value === undefined ? (
+        <>
+          <span
+            className={cn(
+              "block text-[14.5px] leading-tight font-semibold",
+              primary ? "text-on-accent" : "text-fg",
             )}
-          </>
-        ) : (
-          <>
+          >
+            {label}
+          </span>
+          {sub && (
             <span
-              style={{
-                display: "block",
-                fontFamily: fonts.display,
-                fontSize: 28,
-                fontWeight: 600,
-                lineHeight: 1,
-                color: colors.text,
-              }}
+              className={cn(
+                "mt-0.75 block truncate text-[12.5px]",
+                primary ? "text-white/78" : "text-sub",
+              )}
             >
-              {formatCount(value)}
+              {sub}
             </span>
-            <span
-              className="ws-ellipsis"
-              style={{
-                display: "block",
-                fontFamily: fonts.ui,
-                fontSize: 13,
-                marginTop: 5,
-                color: colors.sub,
-              }}
-            >
-              {label}
-            </span>
-          </>
-        )}
-      </span>
-    </button>
-  );
-};
+          )}
+        </>
+      ) : (
+        <>
+          <span className="block text-[28px] leading-none font-semibold text-fg">
+            {formatCount(value)}
+          </span>
+          <span className="mt-1.25 block truncate text-[13px] text-sub">
+            {label}
+          </span>
+        </>
+      )}
+    </span>
+  </button>
+);

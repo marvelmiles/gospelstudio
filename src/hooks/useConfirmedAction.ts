@@ -7,7 +7,6 @@ export interface ConfirmedAction {
   cancel: () => void;
 }
 
-/** Puts a confirmation step in front of an action that cannot be undone lightly. */
 export const useConfirmedAction = (run: () => void): ConfirmedAction => {
   const [prompting, setPrompting] = useState(false);
 

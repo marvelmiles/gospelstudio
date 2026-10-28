@@ -75,7 +75,7 @@ export const SavePassageModal = ({
           onChange={(e) => setVersesPerSlide(Number(e.target.value))}
         />
       </Field>
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <Toggle
           label="Show verse numbers"
           checked={showVerseNumbers}

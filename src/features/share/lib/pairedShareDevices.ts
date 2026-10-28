@@ -8,8 +8,6 @@ interface PairedEntry {
   paired: PairedLink;
 }
 
-/* Held for the whole app rather than one screen, so a device paired on the
-   Quick Share page can still be sent a single item from any library. */
 const entries = new Map<string, PairedEntry>();
 const listeners = new Set<() => void>();
 let snapshot: ShareDevice[] = [];
@@ -34,7 +32,6 @@ export const forgetPairedDevice = (deviceId: string): void => {
   publish();
 };
 
-/** Lists a freshly paired device, and drops it again once its link goes. */
 export const addPairedDevice = (paired: PairedLink): ShareDevice => {
   const device: ShareDevice = {
     id: `paired-${crypto.randomUUID()}`,
@@ -60,7 +57,6 @@ export const addPairedDevice = (paired: PairedLink): ShareDevice => {
   return device;
 };
 
-/** Reaches a paired device over its open link, which outlasts each send. */
 export const pairedDeviceConnector = (
   deviceId: string,
 ): ShareConnector | null => {

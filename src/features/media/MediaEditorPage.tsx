@@ -2,9 +2,9 @@ import { useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Film, Image as ImageIcon, Undo2 } from "lucide-react";
 import type { MediaItem, MediaKind } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
-import { useViewport } from "../../hooks/useViewport";
+import { useWindowSize } from "usehooks-ts";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useMediaPlayback } from "../../hooks/useMediaPlayback";
@@ -46,7 +46,7 @@ const BACK_TITLE: Record<MediaKind, string> = {
   video: "Back to videos",
 };
 
-export const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
+const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
   const { mediaId } = useParams();
   const navigate = useNavigate();
   const item = useStore((s) =>
@@ -70,13 +70,12 @@ export const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
 };
 
 const MediaWorkspace = ({ item }: { item: MediaItem }) => {
-  const { colors, fonts } = useUITheme();
   const editorReturn = useEditorReturn(
     routes.mediaLibrary(item.kind),
     item.id,
     BACK_TITLE[item.kind],
   );
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const stacked = width < 1080;
   const compact = width < 560;
   const pushToast = useStore((s) => s.pushToast);
@@ -159,37 +158,16 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
 
   const preview = (
     <div
-      style={{
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        padding: stacked ? 16 : 24,
-        minHeight: 0,
-      }}
+      className={cn(
+        "flex h-full min-h-0 flex-col gap-3",
+        stacked ? "p-4" : "p-6",
+      )}
     >
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
+      <div className="flex min-h-0 flex-1 items-center justify-center">
         <div
           ref={surfaceRef}
           {...(isImage ? {} : mediaSurfaceProps)}
-          style={{
-            position: "relative",
-            width: "100%",
-            maxHeight: "100%",
-            aspectRatio: "16/9",
-            borderRadius: 14,
-            overflow: "hidden",
-            border: `1px solid ${colors.border}`,
-            background: "#000",
-          }}
+          className="relative aspect-video max-h-full w-full overflow-hidden rounded-[14px] border border-line bg-black"
         >
           {isImage ? (
             <ImageLayer
@@ -224,12 +202,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
                 }
                 onVolume={(volume) => editor.patchVideo({ volume })}
                 onSeek={video.seekTo}
-                style={{
-                  position: "absolute",
-                  left: 12,
-                  right: 12,
-                  bottom: 12,
-                }}
+                className="absolute inset-x-3 bottom-3"
               />
             </>
           )}
@@ -239,16 +212,8 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
   );
 
   const sidebar = (
-    <div style={{ padding: 18 }}>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          color: colors.dim,
-          margin: "0 0 4px",
-          lineHeight: 1.6,
-        }}
-      >
+    <div className="p-4.5">
+      <p className="mt-0 mb-1 text-xs leading-[1.6] text-dim">
         {item.width && item.height ? `${item.width}×${item.height} · ` : ""}
         {formatBytes(item.size || 0)}
         {duration ? ` · ${formatTrimmedDuration(duration, videoSettings)}` : ""}
@@ -273,14 +238,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col">
       <EditorTopBar
         title={editor.draft.name}
         onTitle={editor.setName}

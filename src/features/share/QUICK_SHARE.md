@@ -9,7 +9,7 @@ It works with no internet at all. With internet, devices on the same WiFi find
 each other on their own; without it, two devices pair by reading each other's
 code (see **Sharing with no internet**) and everything else is the same.
 
-Open it from the share icon in the header, or from **Settings → Data → Quick
+Open it from the share icon in the header, or from **Settings, then Data, then Quick
 Share**.
 
 ## What happens, step by step

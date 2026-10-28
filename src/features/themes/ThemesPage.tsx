@@ -2,11 +2,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Palette, Plus, RotateCcw, Trash2 } from "lucide-react";
 import type { Background } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
 import { useAttention } from "../../hooks/useAttention";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
-import { useViewport } from "../../hooks/useViewport";
+import { useWindowSize } from "usehooks-ts";
 import { useUndoRedoShortcuts } from "../../hooks/useUndoRedoShortcuts";
 import {
   useUnsavedChanges,
@@ -15,7 +14,12 @@ import {
 import { Button, IconButton } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { EmptyState } from "../../components/ui/EmptyState";
+import { pageClassName } from "../../components/ui/PageHeader";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
+import {
+  EditorColumns,
+  EditorStackedBody,
+} from "../../components/layout/EditorColumns";
 import { PanelTabs, type PanelTab } from "../../components/ui/PanelTabs";
 import { ThemeListPanel } from "./ThemeListPanel";
 import { ThemeInspectorPanel } from "./ThemeInspectorPanel";
@@ -40,14 +44,13 @@ const TABS: PanelTab<ThemesTab>[] = [
 ];
 
 export const ThemesPage = () => {
-  const { colors } = useUITheme();
   const { themeId } = useParams();
   const navigate = useNavigate();
   const themes = useStore((s) => s.themes);
   const backgrounds = useStore((s) => s.backgrounds);
   const createTheme = useStore((s) => s.createTheme);
   const deleteTheme = useStore((s) => s.deleteTheme);
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const isStacked = width < STACKED_WIDTH;
   const compact = width < COMPACT_WIDTH;
 
@@ -110,7 +113,7 @@ export const ThemesPage = () => {
 
   if (themes.length === 0)
     return (
-      <div className="ws-page">
+      <div className={pageClassName}>
         <EmptyState
           icon={Palette}
           title="No themes yet"
@@ -150,14 +153,7 @@ export const ThemesPage = () => {
   const inspectorPanel = <ThemeInspectorPanel controller={controller} />;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col">
       <EditorTopBar
         title={draft?.name ?? ""}
         titleLabel="Theme name"
@@ -223,39 +219,18 @@ export const ThemesPage = () => {
             onChange={setTab}
             ariaLabel="Theme panels"
           />
-          <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+          <EditorStackedBody>
             {tab === "themes" && listPanel}
             {tab === "preview" && previewPanel}
             {tab === "style" && inspectorPanel}
-          </div>
+          </EditorStackedBody>
         </>
       ) : (
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            display: "grid",
-            gridTemplateColumns: "292px 1fr 308px",
-          }}
-        >
-          <div
-            style={{
-              overflow: "auto",
-              borderRight: `1px solid ${colors.border}`,
-            }}
-          >
-            {listPanel}
-          </div>
-          <div style={{ overflow: "auto" }}>{previewPanel}</div>
-          <div
-            style={{
-              overflow: "auto",
-              borderLeft: `1px solid ${colors.border}`,
-            }}
-          >
-            {inspectorPanel}
-          </div>
-        </div>
+        <EditorColumns
+          list={listPanel}
+          preview={previewPanel}
+          inspector={inspectorPanel}
+        />
       )}
 
       <ConfirmDialog

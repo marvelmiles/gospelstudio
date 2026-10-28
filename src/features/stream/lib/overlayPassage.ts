@@ -17,11 +17,6 @@ export const createOverlayPassage = (
   });
 };
 
-/**
- * Drops the passages an overlay staged for itself once nothing needs them any
- * more. A saved overlay counts as a holder, so putting one away keeps its
- * passage for the next time it is used.
- */
 export const releaseOverlayPassages = (
   removed: readonly OverlayContentRef[],
   remaining: readonly OverlayContentRef[],

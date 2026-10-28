@@ -6,9 +6,8 @@ import type {
   MediaItem,
   VideoSettings,
 } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
+import { cn } from "../../lib/cn";
 import {
   DEFAULT_BACKGROUND_IMAGE_SETTINGS,
   backgroundImageSettings,
@@ -27,12 +26,7 @@ import { CustomColorPicker } from "./CustomColorPicker";
 import { BgSwatch } from "./BgSwatch";
 import { RadioDot } from "./RadioDot";
 
-/** The tiles scroll rather than run down the panel, so the whole library is
- *  one list however long it gets. */
-const GRID_MAX_HEIGHT = 244;
-
-/** The choice that hands the background back to whatever this place inherits. */
-export interface InheritedBackground {
+interface InheritedBackground {
   label: string;
   background?: Background;
   imageSettings?: ImageSettings | null;
@@ -50,11 +44,9 @@ interface BackgroundPickerProps {
   onManage?: () => void;
   imageSettings?: ImageSettings | null;
   videoSettings?: VideoSettings | null;
-  /** Opens the asset's own editor for the one place this picker edits. */
   onEditUsage?: (request: AssetUsageRequest) => void;
 }
 
-/** A background in the library, or a picture or clip that can become one. */
 type PickerEntry =
   | { source: "library"; background: Background }
   | { source: "module"; item: MediaItem };
@@ -70,9 +62,6 @@ const entryCreatedAt = (entry: PickerEntry): string | undefined =>
     ? entry.background.createdAt
     : entry.item.createdAt;
 
-/* Which file an entry stands for, so the same picture or clip is listed once
-   however it got here. A background names its file with blobId or mediaId
-   depending on when it was made, and a colour stands only for itself. */
 const entryFileId = (entry: PickerEntry): string =>
   entry.source === "library"
     ? (entry.background.blobId ??
@@ -89,9 +78,6 @@ const backgroundFileIds = (backgrounds: Background[]): Set<string> =>
     ),
   );
 
-/* The same file uploaded twice, or brought in once as a background and again
-   into its module, is stored under two ids, so its kind, name and size stand
-   in for the file itself. */
 const entryFingerprint = (entry: PickerEntry): string | null => {
   const { kind, name, size } =
     entry.source === "library"
@@ -105,8 +91,6 @@ const entryFingerprint = (entry: PickerEntry): string | null => {
   return `${kind}:${size}:${name.trim().toLowerCase()}`;
 };
 
-/** The entry in use wins, then the library entry, so its name and settings
- *  are the ones on show. */
 const withoutRepeats = (
   entries: PickerEntry[],
   activeId: string,
@@ -153,8 +137,6 @@ export const BackgroundPicker = ({
       ? media.find((item) => item.id === background.mediaId)
       : undefined;
 
-  /* Pictures and clips already attached as backgrounds are listed once, so the
-     modules below only offer what is not in the library yet. */
   const attachedFileIds = useMemo(
     () => backgroundFileIds(backgrounds),
     [backgrounds],
@@ -165,8 +147,6 @@ export const BackgroundPicker = ({
     [media, attachedFileIds],
   );
 
-  /* Colors, pictures and clips share one newest-first list: what a background
-     is made of is a detail of the tile, not a reason to split the panel up. */
   const entries = useMemo<PickerEntry[]>(() => {
     const all: PickerEntry[] = [
       ...backgrounds.map(
@@ -184,10 +164,6 @@ export const BackgroundPicker = ({
     onSelect(id, snapshotBackgroundImage(background));
   };
 
-  /**
-   * Editing a background hands the whole choice over: the settings come back
-   * with the background itself, so what is tuned is what ends up in use.
-   */
   const editBackground = (background: Background) => {
     if (!onEditUsage) return;
     const inUse = background.id === activeId;
@@ -214,7 +190,6 @@ export const BackgroundPicker = ({
     });
   };
 
-  /** Brings a picture or clip in from its module as a background. */
   const attachFromModule = (item: MediaItem): string =>
     item.kind === "image"
       ? attachImageBackground(item.id)
@@ -231,8 +206,6 @@ export const BackgroundPicker = ({
     );
   };
 
-  /* A picture or clip has to be a background before it can carry settings for
-     one slide, so the pencil attaches it first and then opens its editor. */
   const editFromModule = (item: MediaItem) => {
     if (!onEditUsage) return;
     const assetId = attachFromModule(item);
@@ -308,7 +281,7 @@ export const BackgroundPicker = ({
                 settings={
                   activeId === entry.background.id ? imageSettings : undefined
                 }
-                style={{ width: "100%", height: "100%" }}
+                className="size-full"
               />
             ) : (
               <ModuleThumb item={entry.item} />
@@ -317,7 +290,7 @@ export const BackgroundPicker = ({
         ))}
       </SwatchGrid>
 
-      <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+      <div className="flex flex-wrap gap-1.75">
         {onManage && (
           <Button variant="ghost" size="sm" onClick={onManage}>
             <Library size={14} />
@@ -347,7 +320,7 @@ export const BackgroundPicker = ({
       </div>
 
       {onAddColor && showColor && (
-        <div style={{ marginTop: 10 }}>
+        <div className="mt-2.5">
           <CustomColorPicker
             onAdd={(value, name) => {
               onAddColor(value, name);
@@ -383,17 +356,7 @@ export const BackgroundPicker = ({
 };
 
 const SwatchGrid = ({ children }: { children: ReactNode }) => (
-  <div
-    style={{
-      display: "grid",
-      gridTemplateColumns: "repeat(4,1fr)",
-      gap: 6,
-      marginBottom: 12,
-      maxHeight: GRID_MAX_HEIGHT,
-      overflowY: "auto",
-      alignContent: "start",
-    }}
-  >
+  <div className="mb-3 grid max-h-61 grid-cols-4 content-start gap-1.5 overflow-y-auto">
     {children}
   </div>
 );
@@ -404,51 +367,27 @@ interface InheritOptionProps {
   onSelect: () => void;
 }
 
-/** Hands the choice back to whatever this slide, document or theme inherits,
- *  previewing the background that would take over. */
-const InheritOption = ({ inherit, selected, onSelect }: InheritOptionProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      aria-pressed={selected}
-      onClick={onSelect}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 9,
-        width: "100%",
-        marginBottom: 8,
-        padding: "8px 10px",
-        borderRadius: 10,
-        cursor: "pointer",
-        textAlign: "left",
-        background: selected ? fade(colors.accent, 0.12) : "transparent",
-        border: `1px solid ${selected ? colors.accent : colors.border}`,
-        color: selected ? colors.accentSoft : colors.text,
-        fontFamily: fonts.ui,
-        fontSize: 12.5,
-        fontWeight: 600,
-      }}
-    >
-      <RadioDot selected={selected} />
-      <span className="ws-ellipsis" style={{ flex: 1, minWidth: 0 }}>
-        {inherit.label}
-      </span>
-      <BgSwatch
-        bg={inherit.background}
-        settings={inherit.imageSettings}
-        videoSettings={inherit.videoSettings}
-        style={{
-          width: 34,
-          height: 20,
-          flexShrink: 0,
-          borderRadius: 5,
-          border: `1px solid ${colors.border}`,
-        }}
-      />
-    </button>
-  );
-};
+const InheritOption = ({ inherit, selected, onSelect }: InheritOptionProps) => (
+  <button
+    aria-pressed={selected}
+    onClick={onSelect}
+    className={cn(
+      "mb-2 flex w-full items-center gap-2.25 rounded-[10px] border px-2.5 py-2 text-left text-[12.5px] font-semibold",
+      selected
+        ? "border-accent bg-accent/12 text-accent-soft"
+        : "border-line bg-transparent text-fg",
+    )}
+  >
+    <RadioDot selected={selected} />
+    <span className="min-w-0 flex-1 truncate">{inherit.label}</span>
+    <BgSwatch
+      bg={inherit.background}
+      settings={inherit.imageSettings}
+      videoSettings={inherit.videoSettings}
+      className="h-5 w-8.5 shrink-0 rounded-[5px] border border-line"
+    />
+  </button>
+);
 
 interface SwatchTileProps {
   name: string;
@@ -464,69 +403,34 @@ const SwatchTile = ({
   onPick,
   onEdit,
   children,
-}: SwatchTileProps) => {
-  const { colors } = useUITheme();
-  return (
-    <div
-      className={`ws-reveal-host${active ? " is-active" : ""}`}
-      style={{ position: "relative" }}
-    >
-      <button
-        title={name}
-        aria-pressed={active}
-        onClick={onPick}
-        style={{
-          display: "block",
-          width: "100%",
-          aspectRatio: "16/9",
-          borderRadius: 7,
-          cursor: "pointer",
-          padding: 0,
-          overflow: "hidden",
-          background: "transparent",
-          border: `1.5px solid ${active ? colors.accent : colors.border}`,
-        }}
-      >
-        {children}
-      </button>
-      {onEdit && (
-        <button
-          className="ws-reveal"
-          onClick={onEdit}
-          title="Edit for this use"
-          aria-label={`Edit ${name} for this use`}
-          style={{
-            position: "absolute",
-            top: 4,
-            right: 4,
-            width: 20,
-            height: 20,
-            borderRadius: 6,
-            background: "rgba(0,0,0,0.62)",
-            border: "none",
-            color: "#fff",
-            cursor: "pointer",
-            display: "grid",
-            placeItems: "center",
-            padding: 0,
-          }}
-        >
-          <Pencil size={11} />
-        </button>
+}: SwatchTileProps) => (
+  <div data-active={active || undefined} className="group relative">
+    <button
+      title={name}
+      aria-pressed={active}
+      onClick={onPick}
+      className={cn(
+        "block aspect-video w-full overflow-hidden rounded-[7px] border-[1.5px] bg-transparent p-0",
+        active ? "border-accent" : "border-line",
       )}
-    </div>
-  );
-};
+    >
+      {children}
+    </button>
+    {onEdit && (
+      <button
+        onClick={onEdit}
+        title="Edit for this use"
+        aria-label={`Edit ${name} for this use`}
+        className="absolute top-1 right-1 grid size-5 place-items-center rounded-md border-none bg-black/62 p-0 text-white reveal"
+      >
+        <Pencil size={11} />
+      </button>
+    )}
+  </div>
+);
 
 const ModuleThumb = ({ item }: { item: MediaItem }) => (
-  <div
-    style={{
-      position: "relative",
-      width: "100%",
-      height: "100%",
-      background: "#000",
-    }}
-  >
+  <div className="relative size-full bg-black">
     <LazyMount>
       {item.kind === "image" ? (
         <ImageSurface item={item} variant="thumb" />

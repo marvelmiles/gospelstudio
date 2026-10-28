@@ -1,8 +1,7 @@
 import { useMemo } from "react";
-import type { CSSProperties, PointerEvent, ReactNode } from "react";
+import type { PointerEvent, ReactNode } from "react";
 import type { Align, ResolvedStyle, VerticalAlign } from "../types";
-import { fade } from "../theme/uiTheme";
-import { useUITheme } from "../theme/ThemeProvider";
+import { cn } from "../lib/cn";
 import { lineContentOffsets } from "../lib/inlineDocument";
 import { analyzeLines, listMarkerLabel } from "../lib/lists";
 import type { ListKind, ListLine } from "../lib/lists";
@@ -12,9 +11,9 @@ import { FormattedText } from "./FormattedText";
 const INDENT_STEP_CQW = 3.2;
 
 const FLEX_VERTICAL: Record<VerticalAlign, string> = {
-  top: "flex-start",
-  middle: "center",
-  bottom: "flex-end",
+  top: "items-start",
+  middle: "items-center",
+  bottom: "items-end",
 };
 
 interface ListItemLineProps {
@@ -31,10 +30,7 @@ const ListItemLine = ({
   editable,
 }: ListItemLineProps) => {
   const label = listMarkerLabel(item.kind, item.index, item.level);
-  const markerStyle: CSSProperties = {
-    fontVariantNumeric: "tabular-nums",
-    userSelect: editable ? "none" : undefined,
-  };
+  const marker = cn("tabular-nums", editable && "select-none");
 
   if (align !== "left")
     return (
@@ -42,7 +38,7 @@ const ListItemLine = ({
         <span
           aria-hidden
           contentEditable={false}
-          style={{ ...markerStyle, marginInlineEnd: "0.9cqw" }}
+          className={cn(marker, "me-[0.9cqw]")}
         >
           {label}
         </span>
@@ -51,20 +47,15 @@ const ListItemLine = ({
     );
 
   return (
-    <span style={{ display: "flex", alignItems: "baseline", gap: "0.9cqw" }}>
+    <span className="flex items-baseline gap-[0.9cqw]">
       <span
         aria-hidden
         contentEditable={false}
-        style={{
-          ...markerStyle,
-          flex: "none",
-          minWidth: "2.6cqw",
-          textAlign: "end",
-        }}
+        className={cn(marker, "min-w-[2.6cqw] flex-none text-end")}
       >
         {label}
       </span>
-      <span style={{ flex: 1, textAlign: "start" }}>{painted}</span>
+      <span className="flex-1 text-start">{painted}</span>
     </span>
   );
 };
@@ -92,7 +83,6 @@ export const SlideTextBlock = ({
   padding,
   onPointerDown,
 }: SlideTextBlockProps) => {
-  const { colors } = useUITheme();
   const editable = Boolean(editing);
   const content = useMemo(() => (lines.length ? lines : [""]), [lines]);
   const items = useMemo(() => analyzeLines(content), [content]);
@@ -101,16 +91,6 @@ export const SlideTextBlock = ({
     [editable, content],
   );
   const outlined = Boolean(marked) || selectedLine != null;
-
-  const blockStyle: CSSProperties = {
-    position: "absolute",
-    inset: 0,
-    display: "flex",
-    alignItems: FLEX_VERTICAL[verticalAlign],
-    padding,
-    outline: "none",
-    cursor: editable ? "text" : undefined,
-  };
 
   return (
     <div
@@ -123,9 +103,14 @@ export const SlideTextBlock = ({
       aria-label={editable ? "Slide text" : undefined}
       onKeyDown={editing?.onKeyDown}
       onPointerDown={onPointerDown}
-      style={blockStyle}
+      style={{ padding }}
+      className={cn(
+        "absolute inset-0 flex outline-none",
+        FLEX_VERTICAL[verticalAlign],
+        editable && "cursor-text",
+      )}
     >
-      <div style={{ width: "100%" }}>
+      <div className="w-full">
         {items.map((item, index) => {
           const lineStyle = lineStyles?.[index] ?? style;
           const selected = selectedLine === index;
@@ -152,25 +137,20 @@ export const SlideTextBlock = ({
                 lineHeight: lineStyle.lineHeight,
                 letterSpacing: `${lineStyle.letterSpacing || 0}cqw`,
                 textShadow: lineStyle.textShadow,
-                textTransform: lineStyle.uppercase ? "uppercase" : "none",
-                whiteSpace: editable ? "pre-wrap" : undefined,
-                borderRadius: 6,
-                padding: outlined ? "0.3cqw 0.6cqw" : undefined,
-                margin: outlined ? "-0.3cqw -0.6cqw" : undefined,
                 paddingInlineStart: item.level
                   ? `${item.level * INDENT_STEP_CQW + (outlined ? 0.6 : 0)}cqw`
                   : undefined,
-                outline: selected
-                  ? `0.25cqw solid ${colors.accent}`
-                  : outlined
-                    ? "0.25cqw dashed transparent"
-                    : undefined,
-                outlineOffset: 2,
-                background: selected ? fade(colors.accent, 0.14) : undefined,
-                transition: outlined
-                  ? "outline-color .15s ease, background .15s ease"
-                  : undefined,
               }}
+              className={cn(
+                "rounded-md outline-offset-2",
+                lineStyle.uppercase && "uppercase",
+                editable && "whitespace-pre-wrap",
+                outlined &&
+                  "mx-[-0.6cqw] my-[-0.3cqw] px-[0.6cqw] py-[0.3cqw] outline-[0.25cqw] transition-[outline-color,background-color] duration-150",
+                selected
+                  ? "bg-accent/14 outline-accent"
+                  : outlined && "outline-transparent outline-dashed",
+              )}
             >
               {item.kind ? (
                 <ListItemLine

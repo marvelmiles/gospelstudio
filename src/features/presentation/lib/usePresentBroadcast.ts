@@ -34,10 +34,6 @@ const useMediaSync = (
   }, [channelRef, isLive, isActive, playing, rate, getTime, target]);
 };
 
-/**
- * Keeps the projected window in step: it answers a window that asks for the
- * state on open, and ticks clip positions out while one is playing.
- */
 export const usePresentBroadcast = (
   isLive: boolean,
   state: PresentState | null,

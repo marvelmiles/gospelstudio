@@ -2,8 +2,6 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { AlertTriangle, BookOpen, Music } from "lucide-react";
 import type { ManuscriptFormat } from "../../types";
-import { feedbackTone } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { PillTabs } from "../../components/ui/PillTabs";
@@ -46,7 +44,7 @@ export const ManuscriptFormatGuideModal = ({
         becoming a slide.
       </GuideSection>
 
-      <div style={{ margin: "4px 0 14px" }}>
+      <div className="mt-1 mb-3.5">
         <PillTabs<ManuscriptFormat>
           tabs={FORMAT_TABS}
           value={tab}
@@ -130,64 +128,24 @@ const GuideSection = ({
 }: {
   title: string;
   children: ReactNode;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <section style={{ marginBottom: 14 }}>
-      <h4
-        style={{
-          margin: "0 0 5px",
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          fontWeight: 600,
-          color: colors.text,
-        }}
-      >
-        {title}
-      </h4>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          lineHeight: 1.65,
-          color: colors.sub,
-        }}
-      >
-        {children}
-      </p>
-    </section>
-  );
-};
+}) => (
+  <section className="mb-3.5">
+    <h4 className="mt-0 mb-1.25 text-[13px] font-semibold text-fg">{title}</h4>
+    <p className="m-0 text-[12.5px] leading-[1.65] text-sub">{children}</p>
+  </section>
+);
 
-const Mark = ({ children }: { children: ReactNode }) => {
-  const { colors } = useUITheme();
-  return <code style={{ color: colors.accentSoft }}>{children}</code>;
-};
+const Mark = ({ children }: { children: ReactNode }) => (
+  <code className="text-accent-soft">{children}</code>
+);
 
-const RegenerateWarning = () => {
-  const { colors, fonts } = useUITheme();
-  const tone = feedbackTone(colors.danger, colors.text);
-  return (
-    <div
-      role="note"
-      style={{
-        display: "flex",
-        gap: 9,
-        alignItems: "flex-start",
-        padding: "10px 12px",
-        borderRadius: 11,
-        background: tone.bg,
-        border: `1px solid ${tone.border}`,
-        color: tone.text,
-        fontFamily: fonts.ui,
-        fontSize: 12.5,
-        lineHeight: 1.55,
-      }}
-    >
-      <AlertTriangle size={15} style={{ flexShrink: 0, marginTop: 2 }} />
-      Regenerating rebuilds every slide from the text and resets per-slide
-      styling and overrides.
-    </div>
-  );
-};
+const RegenerateWarning = () => (
+  <div
+    role="note"
+    className="flex items-start gap-2.25 rounded-[11px] border border-danger/42 bg-danger/15 px-3 py-2.5 text-[12.5px] leading-[1.55] text-danger-fg"
+  >
+    <AlertTriangle size={15} className="mt-0.5 shrink-0" />
+    Regenerating rebuilds every slide from the text and resets per-slide styling
+    and overrides.
+  </div>
+);

@@ -4,7 +4,6 @@ import { Image as ImageIcon, Library, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { SlideMediaSource } from "../../types";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { isImageBackground } from "../../lib/media";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
@@ -57,7 +56,6 @@ export const OverlayImagePicker = ({
   onClose: () => void;
   onClear?: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const media = useStore((s) => s.media);
   const backgrounds = useStore((s) => s.backgrounds);
   const [source, setSource] = useState<SlideMediaSource>("media");
@@ -82,9 +80,7 @@ export const OverlayImagePicker = ({
         id: background.id,
         name: background.name,
         source: "background" as const,
-        preview: (
-          <BgSwatch bg={background} style={{ width: "100%", height: "100%" }} />
-        ),
+        preview: <BgSwatch bg={background} className="size-full" />,
       })),
     [backgrounds],
   );
@@ -116,7 +112,7 @@ export const OverlayImagePicker = ({
 
   return (
     <Modal open onClose={onClose} title={title} width={520}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div className="flex flex-col gap-3.5">
         <SegmentedTabs<SlideMediaSource>
           ariaLabel="Picture sources"
           tabs={tabs}
@@ -144,7 +140,7 @@ export const OverlayImagePicker = ({
             )
           }
         >
-          <div style={{ marginBottom: 12 }}>
+          <div className="mb-3">
             <SearchInput
               value={query}
               onChange={setQuery}
@@ -165,52 +161,17 @@ export const OverlayImagePicker = ({
               bare
             />
           ) : (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: 6,
-                maxHeight: 340,
-                overflowY: "auto",
-              }}
-            >
+            <div className="flex max-h-85 flex-col gap-1.5 overflow-y-auto">
               {filtered.map((item) => (
                 <button
                   key={`${item.source}:${item.id}`}
                   onClick={() => onPick(item)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 11,
-                    width: "100%",
-                    textAlign: "left",
-                    padding: 7,
-                    borderRadius: 11,
-                    cursor: "pointer",
-                    background: colors.bg,
-                    border: `1px solid ${colors.border}`,
-                    color: colors.text,
-                    fontFamily: fonts.ui,
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                  }}
+                  className="flex w-full items-center gap-2.75 rounded-[11px] border border-line bg-canvas p-1.75 text-left text-[13.5px] font-semibold text-fg"
                 >
-                  <span
-                    style={{
-                      position: "relative",
-                      width: 60,
-                      height: 34,
-                      flexShrink: 0,
-                      borderRadius: 7,
-                      overflow: "hidden",
-                      background: colors.raise,
-                    }}
-                  >
+                  <span className="relative h-8.5 w-15 shrink-0 overflow-hidden rounded-[7px] bg-raise">
                     {item.preview}
                   </span>
-                  <span className="ws-ellipsis" style={{ minWidth: 0 }}>
-                    {item.name}
-                  </span>
+                  <span className="min-w-0 truncate">{item.name}</span>
                 </button>
               ))}
             </div>

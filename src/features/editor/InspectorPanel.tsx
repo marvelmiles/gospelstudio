@@ -8,8 +8,6 @@ import type {
   TextStyle,
   Theme,
 } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import {
   layerTextStyle,
   resolveAudioSettings,
@@ -25,7 +23,8 @@ import {
 } from "../../lib/slideElements";
 import type { SlideElementCapabilities } from "../../lib/slideElements";
 import { Button } from "../../components/ui/Button";
-import { inputStyle, SectionTitle } from "../../components/ui/Field";
+import { inputClassName, SectionTitle } from "../../components/ui/Field";
+import { cn } from "../../lib/cn";
 import { PillTabs } from "../../components/ui/PillTabs";
 import { InfoTip } from "../../components/ui/InfoTip";
 import { StyleControls } from "../../components/controls/StyleControls";
@@ -55,17 +54,13 @@ interface InspectorPanelProps {
   activeTextBoxId: string | null;
   elements: SlideElementCapabilities;
   onAddTextBox: () => void;
-  /** Opens a picture, clip or sound in its own editor for one place here. */
   onEditAsset: (request: AssetUsageRequest, slideId: string | null) => void;
 }
 
 type StyleScope = "slide" | "line";
 
-/** Whether a background or sound is being set for one slide or the whole document. */
 type AssetScope = "slide" | "document";
 
-/* Each picker is mounted once and told what it is editing, so the panel can
-   never end up showing the same list twice. */
 type ScopedBackgroundProps = Pick<
   ComponentProps<typeof BackgroundPicker>,
   | "value"
@@ -99,7 +94,6 @@ export const InspectorPanel = ({
   onAddTextBox,
   onEditAsset,
 }: InspectorPanelProps) => {
-  const { colors, fonts } = useUITheme();
   const { selectedSlide: slide, selectedIndex } = editor;
   const openAssetLibrary = useOpenAssetLibrary();
   const bgMap = useBgMap();
@@ -246,7 +240,7 @@ export const InspectorPanel = ({
       : `Lines ${formatting.lines.first + 1}–${formatting.lines.last + 1}`;
 
   return (
-    <div style={{ padding: 18 }}>
+    <div className="p-4.5">
       <SectionTitle>
         {selectionMode
           ? "Selected Text"
@@ -266,15 +260,7 @@ export const InspectorPanel = ({
         </ScopeBanner>
       )}
       {!selectionMode && (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-            marginBottom: 12,
-          }}
-        >
+        <div className="mb-3 flex items-center justify-between gap-2">
           <PillTabs<StyleScope>
             tabs={[
               { id: "slide", label: textBox ? "Whole box" : "Whole slide" },
@@ -293,16 +279,7 @@ export const InspectorPanel = ({
                   ? "Reset this line to the box's style"
                   : "Reset this line to the slide's style"
               }
-              style={{
-                fontFamily: fonts.ui,
-                fontSize: 11.5,
-                color: colors.sub,
-                background: "transparent",
-                border: "none",
-                cursor: "pointer",
-                textDecoration: "underline",
-                padding: 0,
-              }}
+              className="border-none bg-transparent p-0 text-[11.5px] text-sub underline"
             >
               Reset line
             </button>
@@ -317,13 +294,13 @@ export const InspectorPanel = ({
       <SectionTitle
         info={
           <InfoTip title="Formatting" variant="modal">
-            <p style={{ marginTop: 0 }}>
+            <p className="mt-0">
               Write straight onto the slide. Highlight a word, phrase or whole
               line there, then apply emphasis, turn it into a bulleted,
               numbered, lettered or roman-numeral list, or change its font, size
               and colour above.
             </p>
-            <p style={{ marginBottom: 0 }}>
+            <p className="mb-0">
               Ctrl+B, Ctrl+I and Ctrl+U work while typing, and Tab and Shift+Tab
               move a point in and out.
             </p>
@@ -335,7 +312,7 @@ export const InspectorPanel = ({
       <FormatToolbar controller={formatting} block />
 
       <SectionTitle>Background</SectionTitle>
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <ScopeTabs
           documentNoun={documentNoun}
           value={backgroundScope}
@@ -364,7 +341,7 @@ export const InspectorPanel = ({
       )}
 
       <SectionTitle>Audio</SectionTitle>
-      <div style={{ marginBottom: 10 }}>
+      <div className="mb-2.5">
         <ScopeTabs
           documentNoun={documentNoun}
           value={audioScope}
@@ -396,15 +373,10 @@ export const InspectorPanel = ({
           )
         }
         placeholder="Notes for the presenter (cues, transitions…)"
-        style={{
-          ...inputStyle,
-          minHeight: 70,
-          resize: "vertical",
-          fontSize: 13,
-        }}
+        className={cn(inputClassName, "min-h-17.5 resize-y text-[13px]")}
       />
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 14 }}>
+      <div className="mt-3.5 flex flex-wrap gap-1.5">
         <Button
           size="sm"
           variant="ghost"
@@ -458,27 +430,8 @@ const ScopeTabs = ({ documentNoun, value, onChange }: ScopeTabsProps) => (
   />
 );
 
-const ScopeBanner = ({ children }: { children: ReactNode }) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div
-      style={{
-        marginBottom: 10,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 6,
-        padding: "5px 6px 5px 9px",
-        borderRadius: 9,
-        background: fade(colors.accent, 0.1),
-        border: `1px solid ${fade(colors.accent, 0.3)}`,
-        fontFamily: fonts.ui,
-        fontSize: 12,
-        lineHeight: 1.5,
-        color: colors.accentSoft,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
+const ScopeBanner = ({ children }: { children: ReactNode }) => (
+  <div className="mb-2.5 flex items-center justify-between gap-1.5 rounded-[9px] border border-accent/30 bg-accent/10 py-1.25 pr-1.5 pl-2.25 text-xs leading-normal text-accent-soft">
+    {children}
+  </div>
+);

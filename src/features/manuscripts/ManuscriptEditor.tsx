@@ -1,15 +1,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { FileText } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { buildNewManuscript } from "../../lib/manuscript/newManuscript";
-import { Button } from "../../components/ui/Button";
+import { MissingPage } from "../../components/ui/MissingPage";
 import { ManuscriptWorkspace } from "./ManuscriptWorkspace";
 import routes, { NEW_MANUSCRIPT_ID } from "../../routes";
 
 export const ManuscriptEditor = () => {
-  const { colors, fonts } = useUITheme();
   const { manuscriptId } = useParams();
   const navigate = useNavigate();
   const defaultThemeId = useStore(
@@ -20,8 +18,7 @@ export const ManuscriptEditor = () => {
   );
 
   const starting = manuscriptId === NEW_MANUSCRIPT_ID;
-  /* Held here rather than written to the library: a manuscript nobody typed
-     into should leave nothing behind. */
+  /* A new manuscript stays here until it is saved, so an empty one leaves nothing behind. */
   const [draft] = useState(() =>
     starting ? buildNewManuscript(defaultThemeId) : null,
   );
@@ -36,34 +33,16 @@ export const ManuscriptEditor = () => {
 
   const manuscript = stored ?? saved ?? draft;
 
-  if (!manuscript) {
+  if (!manuscript)
     return (
-      <div
-        style={{
-          height: "100%",
-          display: "grid",
-          placeItems: "center",
-          padding: 24,
-        }}
-      >
-        <div style={{ textAlign: "center" }}>
-          <h2 style={{ fontFamily: fonts.display, color: colors.text }}>
-            Manuscript not found
-          </h2>
-          <p style={{ fontFamily: fonts.ui, color: colors.sub }}>
-            It may have been deleted.
-          </p>
-          <Button
-            variant="primary"
-            onClick={() => navigate(routes.manuscripts())}
-          >
-            <ArrowLeft size={15} />
-            Back to manuscripts
-          </Button>
-        </div>
-      </div>
+      <MissingPage
+        icon={FileText}
+        title="Manuscript not found"
+        message="It may have been deleted."
+        actionLabel="Back to manuscripts"
+        onAction={() => navigate(routes.manuscripts())}
+      />
     );
-  }
 
   return (
     <ManuscriptWorkspace

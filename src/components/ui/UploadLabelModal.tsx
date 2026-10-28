@@ -1,9 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
 import { Check, Clock, Film, Music } from "lucide-react";
 import { useStore, type UploadKind } from "../../store/useStore";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { Modal } from "./Modal";
 import { Button } from "./Button";
 import { TextInput } from "./Field";
@@ -24,33 +22,23 @@ const visualKinds: UploadKind[] = ["background", "image"];
 type RowStatus = "saved" | "saving" | "waiting" | "naming";
 
 const StatusBadge = ({ status }: { status: RowStatus }) => {
-  const { colors } = useUITheme();
   if (status === "naming") return null;
-  const box = (background: string, color: string, child: ReactNode) => (
+  return (
     <div
-      style={{
-        width: 26,
-        height: 26,
-        borderRadius: 8,
-        flexShrink: 0,
-        display: "grid",
-        placeItems: "center",
-        background,
-        color,
-      }}
+      className={cn(
+        "grid size-6.5 shrink-0 place-items-center rounded-lg",
+        status === "saved" && "bg-accent/18 text-accent",
+        status === "waiting" && "text-dim",
+      )}
     >
-      {child}
+      {status === "saved" && <Check size={15} />}
+      {status === "saving" && <Spinner size={16} />}
+      {status === "waiting" && <Clock size={15} />}
     </div>
   );
-  if (status === "saved")
-    return box(fade(colors.accent, 0.18), colors.accent, <Check size={15} />);
-  if (status === "saving")
-    return box("transparent", colors.accent, <Spinner size={16} />);
-  return box("transparent", colors.dim, <Clock size={15} />);
 };
 
 export const UploadLabelModal = () => {
-  const { colors, fonts } = useUITheme();
   const pending = useStore((s) => s.pendingUpload);
   const commit = useStore((s) => s.commitUpload);
   const cancel = useStore((s) => s.cancelUpload);
@@ -93,7 +81,9 @@ export const UploadLabelModal = () => {
   };
 
   const setLabel = (index: number, value: string) =>
-    setLabels((prev) => prev.map((label, i) => (i === index ? value : label)));
+    setLabels((previous) =>
+      previous.map((label, i) => (i === index ? value : label)),
+    );
 
   return (
     <Modal
@@ -124,58 +114,30 @@ export const UploadLabelModal = () => {
       }
     >
       {saving && count > 1 ? (
-        <p
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 13,
-            color: colors.sub,
-            marginTop: 0,
-            lineHeight: 1.6,
-          }}
-        >
+        <p className="mt-0 text-[13px] leading-[1.6] text-sub">
           {pending.savedCount} of {count} uploaded. Please keep this window
           open. Cancelling stops the upload and removes everything this batch
           has already added.
         </p>
       ) : null}
-      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-        {pending.files.map((file, i) => {
-          const status = rowStatus(i);
+      <div className="flex flex-col gap-3">
+        {pending.files.map((file, index) => {
+          const status = rowStatus(index);
           return (
             <div
-              key={i}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                opacity: status === "waiting" ? 0.5 : 1,
-                transition: "opacity .2s ease",
-              }}
+              key={index}
+              className={cn(
+                "flex items-center gap-3 transition-opacity duration-200",
+                status === "waiting" && "opacity-50",
+              )}
             >
               {showPreviews ? (
                 <div
-                  style={{
-                    width: 64,
-                    height: 38,
-                    borderRadius: 7,
-                    flexShrink: 0,
-                    background: `center/cover url(${previews[i]})`,
-                    border: `1px solid ${colors.border}`,
-                  }}
+                  style={{ backgroundImage: `url(${previews[index]})` }}
+                  className="h-9.5 w-16 shrink-0 rounded-[7px] border border-line bg-cover bg-center"
                 />
               ) : (
-                <div
-                  style={{
-                    width: 44,
-                    height: 38,
-                    borderRadius: 7,
-                    flexShrink: 0,
-                    display: "grid",
-                    placeItems: "center",
-                    background: fade(colors.accent, 0.14),
-                    color: colors.accentSoft,
-                  }}
-                >
+                <div className="grid h-9.5 w-11 shrink-0 place-items-center rounded-[7px] bg-accent/14 text-accent-soft">
                   {pending.kind === "video" ? (
                     <Film size={17} />
                   ) : (
@@ -183,24 +145,14 @@ export const UploadLabelModal = () => {
                   )}
                 </div>
               )}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div className="min-w-0 flex-1">
                 <TextInput
-                  value={labels[i] ?? ""}
+                  value={labels[index] ?? ""}
                   placeholder={stripExtension(file.name)}
                   disabled={saving}
-                  onChange={(e) => setLabel(i, e.target.value)}
+                  onChange={(event) => setLabel(index, event.target.value)}
                 />
-                <div
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 11.5,
-                    color: colors.dim,
-                    marginTop: 3,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
-                >
+                <div className="mt-0.75 truncate text-[11.5px] text-dim">
                   {file.name}
                 </div>
               </div>

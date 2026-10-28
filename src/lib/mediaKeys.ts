@@ -1,4 +1,4 @@
-export const MEDIA_SURFACE_ATTR = "data-media-surface";
+const MEDIA_SURFACE_ATTR = "data-media-surface";
 
 export const mediaSurfaceProps = { [MEDIA_SURFACE_ATTR]: "" } as const;
 
@@ -31,13 +31,12 @@ const SPACE_ACTIVATED_SELECTOR = [
   'input[type="file"]',
 ].join(", ");
 
-export const isSpaceKey = (key: string): boolean =>
-  key === " " || key === "Spacebar";
+const isSpaceKey = (key: string): boolean => key === " " || key === "Spacebar";
 
 const asElement = (target: EventTarget | null): HTMLElement | null =>
   target instanceof HTMLElement ? target : null;
 
-export const isTextEntryTarget = (target: EventTarget | null): boolean => {
+const isTextEntryTarget = (target: EventTarget | null): boolean => {
   const element = asElement(target);
   if (!element) return false;
   if (element.isContentEditable) return true;
@@ -47,7 +46,7 @@ export const isTextEntryTarget = (target: EventTarget | null): boolean => {
   return !NON_TEXT_INPUT_TYPES.has((element as HTMLInputElement).type);
 };
 
-export const isInsideMediaSurface = (target: EventTarget | null): boolean => {
+const isInsideMediaSurface = (target: EventTarget | null): boolean => {
   return Boolean(asElement(target)?.closest(MEDIA_SURFACE_SELECTOR));
 };
 
@@ -74,7 +73,7 @@ const SLIDER_OWNED_KEYS = new Set([
   "PageDown",
 ]);
 
-export const isSliderTarget = (target: EventTarget | null): boolean => {
+const isSliderTarget = (target: EventTarget | null): boolean => {
   const element = asElement(target);
   return (
     element?.tagName === "INPUT" &&

@@ -11,7 +11,6 @@ import {
 import type { DeckDocument } from "./useDeckDocument";
 import { blankSlide } from "./slideEditHelpers";
 
-/** Ordering, splitting and merging the deck's slides, plus deck-wide styling. */
 export const useSlideArrangement = <T extends SlideDeckDoc>(
   deck: DeckDocument<T>,
 ) => {
@@ -24,7 +23,6 @@ export const useSlideArrangement = <T extends SlideDeckDoc>(
     setSelectedId,
   } = deck;
 
-  /** Puts the whole document back to a known state, such as a built-in's defaults. */
   const replaceDoc = useCallback(
     (next: Partial<T>) => {
       patchDoc(next);
@@ -33,11 +31,6 @@ export const useSlideArrangement = <T extends SlideDeckDoc>(
     [patchDoc, setSelectedId],
   );
 
-  /**
-   * Re-cuts the automatically built runs of slides for the size the text is at
-   * now, so raising the size moves the overflow onto another slide instead of
-   * filling the frame edge to edge.
-   */
   const refitSlides = useCallback(
     (metrics: SlideTextMetrics, options?: ReflowOptions): boolean => {
       const slides = currentSlides();

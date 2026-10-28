@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { IconButton } from "./Button";
 
 interface ModalProps {
@@ -12,7 +11,6 @@ interface ModalProps {
   width?: number;
   footer?: ReactNode;
   info?: ReactNode;
-  /** Controls that sit beside the close button and stay put while the body scrolls. */
   headerActions?: ReactNode;
   dismissible?: boolean;
 }
@@ -28,76 +26,24 @@ export const Modal = ({
   headerActions,
   dismissible = true,
 }: ModalProps) => {
-  const { colors, fonts, glass, shadows } = useUITheme();
   if (!open) return null;
   return createPortal(
     <div
       role="dialog"
       aria-modal="true"
       onClick={dismissible ? onClose : undefined}
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 200,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 20,
-        background: colors.scrim,
-        backdropFilter: "blur(10px)",
-        animation: "wfFade .18s ease",
-      }}
+      className="fixed inset-0 z-200 flex animate-fade-in items-center justify-center bg-scrim p-5 backdrop-blur-[10px]"
     >
       <div
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          width: "100%",
-          maxWidth: width,
-          maxHeight: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          overflow: "hidden",
-          ...glass,
-          borderRadius: 20,
-          background: colors.panel,
-          boxShadow: `${shadows.overlay}, inset 0 1px 0 rgba(255,255,255,0.06)`,
-        }}
+        onClick={(event) => event.stopPropagation()}
+        style={{ maxWidth: width }}
+        className="flex max-h-[90vh] w-full flex-col overflow-hidden glass rounded-[20px] bg-panel shadow-[0_16px_32px_rgb(0_0_0/0.35),inset_0_1px_0_rgb(255_255_255/0.06)]"
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 8,
-            padding: "18px 22px",
-            borderBottom: `1px solid ${colors.border}`,
-            flexShrink: 0,
-          }}
-        >
-          <h3
-            style={{
-              margin: 0,
-              fontFamily: fonts.display,
-              fontSize: 19,
-              fontWeight: 600,
-              color: colors.text,
-            }}
-          >
-            {title}
-          </h3>
-          {info && (
-            <div style={{ marginRight: "auto", marginLeft: 6 }}>{info}</div>
-          )}
+        <div className="flex shrink-0 items-center justify-between gap-2 border-b border-line px-5.5 py-4.5">
+          <h3 className="m-0 text-[19px] font-semibold text-fg">{title}</h3>
+          {info && <div className="mr-auto ml-1.5">{info}</div>}
           {(headerActions || dismissible) && (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-                marginLeft: "auto",
-                flexShrink: 0,
-              }}
-            >
+            <div className="ml-auto flex shrink-0 items-center gap-1">
               {headerActions}
               {dismissible && (
                 <IconButton icon={X} onClick={onClose} title="Close" />
@@ -105,30 +51,11 @@ export const Modal = ({
             </div>
           )}
         </div>
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            overflowY: "auto",
-            overscrollBehavior: "contain",
-            padding: 22,
-          }}
-        >
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-5.5">
           {children}
         </div>
         {footer && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "flex-end",
-              flexWrap: "wrap",
-              gap: 10,
-              padding: "16px 22px",
-              borderTop: `1px solid ${colors.border}`,
-              flexShrink: 0,
-            }}
-          >
+          <div className="flex shrink-0 flex-wrap items-center justify-end gap-2.5 border-t border-line px-5.5 py-4">
             {footer}
           </div>
         )}

@@ -17,10 +17,8 @@ import {
   type BackupSelection,
 } from "./shareSelection";
 
-/** The backup file format, versioned on its own so a later reader can migrate. */
-export const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 1;
 
-/** What a backup is built from: the library as it stands in the store. */
 export interface BackupSource {
   manuscripts: Manuscript[];
   scriptures: ScripturePassage[];
@@ -32,7 +30,7 @@ export interface BackupSource {
   prefs: Prefs;
 }
 
-export interface BackupPayload {
+interface BackupPayload {
   version: number;
   exportedAt: string;
   manuscripts?: Manuscript[];
@@ -47,7 +45,6 @@ export interface BackupPayload {
 
 export interface BackupContents {
   payload: BackupPayload;
-  /** Every stored file the payload's records need, once each. */
   fileIds: string[];
 }
 
@@ -63,11 +60,6 @@ const pick = <T extends { id: string }>(
 const entry = <T>(key: string, values: T[]): Record<string, T[]> =>
   values.length > 0 ? { [key]: values } : {};
 
-/**
- * Every file the chosen records need, once each. An asset that borrows a media
- * item's file rides along with that item; the rest, including assets whose
- * source media is not travelling, are collected on their own.
- */
 const fileIdsFor = (
   media: MediaItem[],
   backgrounds: Background[],
@@ -92,7 +84,6 @@ const fileIdsFor = (
   return [...fileIds];
 };
 
-/** The records and files behind a selection, with what they need added in. */
 export const buildBackup = (
   source: BackupSource,
   selection: BackupSelection,
@@ -123,7 +114,6 @@ export const buildBackup = (
   return { payload, fileIds: fileIdsFor(media, backgrounds, audio) };
 };
 
-/** Roughly how much has to travel, for a person deciding whether to wait. */
 export const selectionBytes = (
   source: BackupSource,
   selection: BackupSelection,
@@ -144,7 +134,6 @@ export const selectionBytes = (
   ].reduce((total, item) => total + (item.size ?? 0), 0);
 };
 
-/** "3 manuscripts, 1 video and settings", for saying what is on its way. */
 export const describeSelection = (
   source: BackupSource,
   selection: BackupSelection,

@@ -69,7 +69,7 @@ export const backgroundChoice = (background: Background): SlideMediaChoice => ({
 const ratioOf = (size?: Dimensions): number =>
   size?.width && size?.height ? size.width / size.height : SLIDE_ASPECT;
 
-export const frameForItem = (size?: Dimensions): SlideFrame => {
+const frameForItem = (size?: Dimensions): SlideFrame => {
   const width = DEFAULT_WIDTH;
   const height = clamp(
     (width / ratioOf(size)) * SLIDE_ASPECT,
@@ -95,13 +95,13 @@ export const clampFrame = (frame: SlideFrame): SlideFrame => {
   };
 };
 
-export const slideImageSettings = (base?: ImageSettings): ImageSettings => ({
+const slideImageSettings = (base?: ImageSettings): ImageSettings => ({
   ...(base ?? DEFAULT_IMAGE_SETTINGS),
   fit: "cover",
   scrim: false,
 });
 
-export const slideVideoSettings = (base?: VideoSettings): VideoSettings => ({
+const slideVideoSettings = (base?: VideoSettings): VideoSettings => ({
   ...(base ?? DEFAULT_VIDEO_SETTINGS),
   fit: "cover",
   loop: true,

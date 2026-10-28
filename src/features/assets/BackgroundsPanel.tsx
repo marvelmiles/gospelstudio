@@ -1,7 +1,6 @@
 import { useMemo, useState } from "react";
 import { Film, Image as ImageIcon, Palette, Pencil, X } from "lucide-react";
 import type { Background } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import { isImageBackground, isVideoBackground } from "../../lib/media";
@@ -13,7 +12,11 @@ import { BgSwatch } from "../../components/controls/BgSwatch";
 import { CustomColorPicker } from "../../components/controls/CustomColorPicker";
 import { BackgroundImageEditorModal } from "../../components/media/BackgroundImageEditorModal";
 import { MediaSourceList } from "./MediaSourceList";
-import { CARD_OVERLAY_BUTTON } from "./assetCardStyles";
+import {
+  assetGridClassName,
+  cardOverlayButtonClassName,
+} from "./assetCardStyles";
+import { cn } from "../../lib/cn";
 import { formatCount } from "../../lib/formatNumber";
 
 type BackgroundTab = "images" | "colors" | "videos";
@@ -41,7 +44,6 @@ export const BackgroundsPanel = ({
 }: BackgroundsPanelProps) => {
   const backgrounds = useStore((s) => s.backgrounds);
   const media = useStore((s) => s.media);
-  /* Coming back from a media editor, open the tab that file lives on. */
   const [tab, setTab] = useState<BackgroundTab>(() => {
     const target = backgrounds.find((bg) => bg.id === targetItemId);
     if (target) return tabOf(target);
@@ -69,7 +71,7 @@ export const BackgroundsPanel = ({
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+    <div className="flex flex-col gap-3.5">
       <SegmentedTabs<BackgroundTab>
         ariaLabel="Background kinds"
         idPrefix={TAB_PREFIX}
@@ -120,8 +122,6 @@ const ImagesTab = ({
     return map;
   }, [images, pictureIds]);
 
-  /* Pictures saved straight into the asset library have no entry on the Images
-     page, so they are listed on their own and keep their own editor. */
   const standalone = useMemo(
     () =>
       images.filter(
@@ -149,7 +149,7 @@ const ImagesTab = ({
         emptyMessage="Upload a picture and it is attached as a background."
       />
       {standalone.length > 0 && (
-        <div style={{ marginTop: 14 }}>
+        <div className="mt-3.5">
           <LibrarySection
             title="Saved pictures"
             meta={`${formatCount(standalone.length)} saved`}
@@ -235,60 +235,32 @@ const BackgroundGrid = ({
   attentionId,
   onEditImage,
 }: BackgroundGridProps) => {
-  const { colors, fonts } = useUITheme();
   const removeBackground = useStore((s) => s.removeBackground);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill,minmax(140px,1fr))",
-        gap: 10,
-      }}
-    >
+    <div className={assetGridClassName}>
       {backgrounds.map((bg) => (
         <div
           key={bg.id}
           {...attentionAttribute(bg.id)}
-          className={bg.id === attentionId ? ATTENTION_CLASS : undefined}
-          style={{ position: "relative", borderRadius: 11 }}
+          className={cn(
+            "relative rounded-[11px]",
+            bg.id === attentionId && ATTENTION_CLASS,
+          )}
         >
           <BgSwatch
             bg={bg}
-            style={{
-              aspectRatio: "16/9",
-              borderRadius: 9,
-              overflow: "hidden",
-              border: `1px solid ${colors.border}`,
-            }}
+            className="aspect-video rounded-[9px] border border-line"
           />
-          <div
-            className="ws-ellipsis"
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 12,
-              color: colors.text,
-              marginTop: 5,
-            }}
-          >
-            {bg.name}
-          </div>
+          <div className="mt-1.25 truncate text-xs text-fg">{bg.name}</div>
           {!bg.builtIn && (
-            <div
-              style={{
-                position: "absolute",
-                top: 6,
-                right: 6,
-                display: "flex",
-                gap: 5,
-              }}
-            >
+            <div className="absolute top-1.5 right-1.5 flex gap-1.25">
               {onEditImage && (
                 <button
                   onClick={() => onEditImage(bg)}
                   aria-label={`Edit ${bg.name}`}
                   title="Edit image"
-                  style={CARD_OVERLAY_BUTTON}
+                  className={cardOverlayButtonClassName}
                 >
                   <Pencil size={13} />
                 </button>
@@ -297,7 +269,7 @@ const BackgroundGrid = ({
                 onClick={() => void removeBackground(bg.id)}
                 aria-label={`Remove ${bg.name}`}
                 title="Remove"
-                style={CARD_OVERLAY_BUTTON}
+                className={cardOverlayButtonClassName}
               >
                 <X size={13} />
               </button>

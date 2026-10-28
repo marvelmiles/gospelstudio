@@ -4,7 +4,7 @@ import { deleteRecord, saveRecord } from "../../lib/storage";
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
 import type { SliceCreator } from "../storeTypes";
 
-export interface ThemeUpdateOptions {
+interface ThemeUpdateOptions {
   touch?: boolean;
 }
 

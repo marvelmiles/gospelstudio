@@ -2,7 +2,7 @@ import type { PipPlacement } from "../../../types";
 import { createLiveWindow } from "../../../lib/liveWindow";
 import routes from "../../../routes";
 
-const STREAM_WINDOW_NAME = "worship-studio-stream-output";
+const STREAM_WINDOW_NAME = "gospelstudio-stream-output";
 
 export interface LiveStreamWindow {
   id: string;
@@ -22,7 +22,7 @@ export const EMPTY_LIVE_COMPOSITION: LiveComposition = {
   secondaries: [],
 };
 
-export interface StreamLiveBridge {
+interface StreamLiveBridge {
   version: number;
   getComposition: () => LiveComposition;
 }

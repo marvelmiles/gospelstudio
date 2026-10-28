@@ -81,15 +81,7 @@ export const ImageEditorModal = ({
         </>
       }
     >
-      <div
-        style={{
-          position: "relative",
-          aspectRatio: "16/9",
-          borderRadius: 12,
-          overflow: "hidden",
-          border: "1px solid rgba(255,255,255,0.1)",
-        }}
-      >
+      <div className="relative aspect-video overflow-hidden rounded-xl border border-white/10">
         <ImageLayer
           src={blobUrl ?? fallbackSrc ?? null}
           alt={alt}
@@ -98,7 +90,7 @@ export const ImageEditorModal = ({
       </div>
 
       {initialName !== undefined && (
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-4">
           <Field label="Name">
             <TextInput value={name} onChange={(e) => setName(e.target.value)} />
           </Field>

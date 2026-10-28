@@ -4,22 +4,14 @@ import {
 } from "../../../lib/webrtcPeer";
 import { SHARE_CHANNEL_LABEL } from "./shareProtocol";
 
-/* Long enough for a phone to wake its radio and gather candidates, short
-   enough that a device which never answers stops holding up the queue. */
 export const LINK_TIMEOUT_MS = 25000;
 
 export interface ShareLinkOptions {
-  /**
-   * How long the channel has to open, or null to wait for as long as it takes.
-   * A link paired by hand waits on a person lining up a camera, so it only
-   * starts counting once both codes have been read.
-   */
   timeoutMs?: number | null;
 }
 
 export interface ShareLink {
   connection: RTCPeerConnection;
-  /** The open channel, once the two devices are talking to each other. */
   ready: Promise<RTCDataChannel>;
   close: () => void;
 }
@@ -78,7 +70,6 @@ const closeLink = (connection: RTCPeerConnection) => () => {
   }
 };
 
-/** The sending side: it opens the channel the archive travels down. */
 export const openShareLink = async ({
   timeoutMs = LINK_TIMEOUT_MS,
 }: ShareLinkOptions = {}): Promise<{
@@ -113,7 +104,6 @@ export const completeShareLink = async (
   });
 };
 
-/** The receiving side: it waits for the channel the sender opens. */
 export const acceptShareLink = async (
   offerSdp: string,
   { timeoutMs = LINK_TIMEOUT_MS }: ShareLinkOptions = {},

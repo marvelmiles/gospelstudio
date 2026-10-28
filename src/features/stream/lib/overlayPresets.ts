@@ -14,7 +14,6 @@ import {
   type StreamOverlayKind,
 } from "./streamOverlay";
 
-/** An overlay as it is kept for later: everything but where it is right now. */
 type Reusable<TOverlay extends StreamOverlay> = Omit<
   TOverlay,
   "id" | "status" | "pending" | "presetId"
@@ -30,7 +29,6 @@ export interface StreamOverlayPreset {
   updatedAt: string;
 }
 
-/** Anything that may point at a document, passage, picture or clip. */
 export interface OverlayContentRef {
   kind: StreamOverlayKind;
   contentId?: string;
@@ -56,7 +54,6 @@ export const toSavedOverlay = (overlay: StreamOverlay): SavedOverlay => {
   return settled as SavedOverlay;
 };
 
-/** A fresh, off-air overlay built from what was saved. */
 export const fromSavedOverlay = (
   saved: SavedOverlay,
   presetId?: string,
@@ -77,11 +74,6 @@ export interface OverlayContentLibrary {
   backgrounds: Background[];
 }
 
-/**
- * Whether what a saved overlay stands on is still here. An announcement always
- * is; everything else is only as good as the document, passage, picture or
- * clip it was saved from.
- */
 export const isSavedOverlayReady = (
   saved: SavedOverlay,
   library: OverlayContentLibrary,
@@ -101,7 +93,6 @@ export const isSavedOverlayReady = (
 
 const MAX_PRESET_NAME_LENGTH = 60;
 
-/** What to call an overlay before the person types a name of their own. */
 export const suggestedPresetName = (overlay: StreamOverlay): string => {
   const source = isMarquee(overlay) ? overlay.text : overlay.label;
   const trimmed = source.trim();

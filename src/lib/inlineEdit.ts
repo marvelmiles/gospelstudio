@@ -195,7 +195,7 @@ const patchStyle = (
   return Object.keys(next).length ? (next as InlineTextStyle) : undefined;
 };
 
-export type SegmentPatch = (segment: FormattedSegment) => FormattedSegment;
+type SegmentPatch = (segment: FormattedSegment) => FormattedSegment;
 
 interface LineEdit {
   text: string;
@@ -229,7 +229,7 @@ const editLine = (
   };
 };
 
-export const applyToSelection = (
+const applyToSelection = (
   text: string,
   selectionStart: number,
   selectionEnd: number,
@@ -272,7 +272,7 @@ export const applyToSelection = (
   };
 };
 
-export const coveredSegments = (
+const coveredSegments = (
   text: string,
   selectionStart: number,
   selectionEnd: number,

@@ -1,7 +1,6 @@
 export type ViewCommand = "popOut" | "fullscreen";
 
 export interface ViewCommandDefinition {
-  /** The bare key, lowercased, that toggles the command. */
   key: string;
   keys: string[];
   hint: string;

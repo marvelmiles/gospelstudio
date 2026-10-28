@@ -2,8 +2,6 @@ import { useMemo, useState, type ReactNode } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import type { BibleVersionId } from "../../types";
 import { BIBLE_BOOKS, bookById } from "../../data/bibleBooks";
-
-import { useUITheme } from "../../theme/ThemeProvider";
 import type { ScriptureSelection } from "../../store/useStore";
 import { Button } from "../../components/ui/Button";
 import { SearchInput } from "../../components/ui/SearchInput";
@@ -12,7 +10,7 @@ import { useBibleSearch } from "./useBibleSearch";
 import { useBibleChapter } from "./useBibleChapter";
 import { PresentButton } from "./PresentButton";
 import { VerseSnippet } from "./VerseSnippet";
-import { tileStyle } from "./tileStyle";
+import { tileClassName } from "./tileStyle";
 import {
   formatParsedReference,
   parseReference,
@@ -22,6 +20,7 @@ import {
 } from "./lib/reference";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
 import type { ReadingPosition } from "./lib/readingPosition";
+import { cn } from "../../lib/cn";
 
 export const BooksStep = ({
   position,
@@ -42,7 +41,6 @@ export const BooksStep = ({
     span: VerseSpan,
   ) => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const [query, setQuery] = useState("");
 
   const reference = useMemo(() => {
@@ -69,15 +67,8 @@ export const BooksStep = ({
   ];
 
   return (
-    <div
-      style={{
-        flex: 1,
-        minHeight: 0,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div className="ws-row-wrap" style={{ marginBottom: 16 }}>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-4 flex flex-wrap items-center gap-2.5">
         <SearchInput
           value={query}
           onChange={setQuery}
@@ -94,15 +85,7 @@ export const BooksStep = ({
           </Button>
         )}
       </div>
-      <div
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowY: "auto",
-          paddingRight: 6,
-          paddingBottom: 12,
-        }}
-      >
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1.5 pb-3">
         {reference && (
           <PassageJump
             reference={reference}
@@ -117,14 +100,7 @@ export const BooksStep = ({
           />
         )}
         {matchingBooks.length === 0 && !search.enabled && (
-          <p
-            style={{
-              fontFamily: fonts.ui,
-              color: colors.dim,
-              textAlign: "center",
-              padding: 30,
-            }}
-          >
+          <p className="p-7.5 text-center text-dim">
             No book matches "{query}".
           </p>
         )}
@@ -132,52 +108,30 @@ export const BooksStep = ({
           const books = matchingBooks.filter((b) => b.testament === key);
           if (!books.length) return null;
           return (
-            <div key={key} style={{ marginBottom: 20 }}>
-              <div
-                className="ws-section-label"
-                style={{ margin: "6px 0 10px" }}
-              >
+            <div key={key} className="mb-5">
+              <div className="mt-1.5 mb-2.5 section-label">
                 {query.trim() ? `${label}: matching books` : label}
               </div>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))",
-                  gap: 8,
-                }}
-              >
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
                 {books.map((b) => {
                   const active = b.id === position.bookId;
                   return (
                     <button
                       key={b.id}
                       onClick={() => onOpenBook(b.id)}
-                      style={{
-                        ...tileStyle(active),
-                        textAlign: "left",
-                        padding: "11px 13px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 3,
-                      }}
+                      className={cn(
+                        tileClassName(active),
+                        "flex flex-col gap-0.75 px-3.25 py-2.75 text-left",
+                      )}
                     >
-                      <span
-                        className="ws-ellipsis"
-                        style={{
-                          fontFamily: fonts.display,
-                          fontSize: 15,
-                          maxWidth: "100%",
-                        }}
-                      >
+                      <span className="max-w-full truncate text-[15px]">
                         {b.name}
                       </span>
                       <span
-                        style={{
-                          fontFamily: fonts.ui,
-                          fontSize: 11,
-                          fontWeight: 500,
-                          color: active ? colors.accentSoft : colors.dim,
-                        }}
+                        className={cn(
+                          "text-[11px] font-medium",
+                          active ? "text-accent-soft" : "text-dim",
+                        )}
                       >
                         {b.chapters} chapter{b.chapters === 1 ? "" : "s"}
                       </span>
@@ -190,45 +144,31 @@ export const BooksStep = ({
         })}
 
         {search.enabled && (
-          <div style={{ marginBottom: 20 }}>
-            <div className="ws-section-label" style={{ margin: "6px 0 10px" }}>
+          <div className="mb-5">
+            <div className="mt-1.5 mb-2.5 section-label">
               Verses matching "{search.term}"
               {search.total > 0
                 ? ` (${search.total.toLocaleString()} found)`
                 : ""}
             </div>
             {search.loading && search.results.length === 0 && (
-              <div style={{ padding: "14px 2px" }}>
+              <div className="px-0.5 py-3.5">
                 <Spinner size={20} />
               </div>
             )}
             {search.error && (
-              <p
-                style={{
-                  fontFamily: fonts.ui,
-                  fontSize: 13,
-                  color: colors.danger,
-                  padding: "10px 2px",
-                }}
-              >
+              <p className="px-0.5 py-2.5 text-[13px] text-danger">
                 {search.error}
               </p>
             )}
             {!search.loading &&
               !search.error &&
               search.results.length === 0 && (
-                <p
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 13,
-                    color: colors.dim,
-                    padding: "10px 2px",
-                  }}
-                >
+                <p className="px-0.5 py-2.5 text-[13px] text-dim">
                   No verses in {version} contain "{search.term}".
                 </p>
               )}
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div className="flex flex-col gap-1.5">
               {search.results.map((result) => {
                 const resultBook = bookById(result.bookId);
                 if (!resultBook) return null;
@@ -254,14 +194,7 @@ export const BooksStep = ({
                     }
                     presentTitle={`Present ${resultBook.name} ${result.chapter}:${result.verse}`}
                   >
-                    <span
-                      style={{
-                        fontFamily: fonts.ui,
-                        fontSize: 13.5,
-                        lineHeight: 1.55,
-                        color: colors.sub,
-                      }}
-                    >
+                    <span className="text-[13.5px] leading-[1.55] text-sub">
                       <VerseSnippet text={result.text} term={search.term} />
                     </span>
                   </ResultRow>
@@ -269,7 +202,7 @@ export const BooksStep = ({
               })}
             </div>
             {search.hasMore && (
-              <div style={{ marginTop: 12, textAlign: "center" }}>
+              <div className="mt-3 text-center">
                 <Button
                   variant="ghost"
                   onClick={search.loadMore}
@@ -307,61 +240,46 @@ const ResultRow = ({
   presentDisabled?: boolean;
   emphasis?: boolean;
   children: ReactNode;
-}) => {
-  const { colors, fonts } = useUITheme();
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onOpen();
-        }
-      }}
-      title={title}
-      style={{
-        textAlign: "left",
-        padding: emphasis ? "13px 15px" : "10px 13px",
-        borderRadius: emphasis ? 12 : 10,
-        cursor: "pointer",
-        border: `1px solid ${emphasis ? colors.accentSoft : colors.border}`,
-        background: colors.raise,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 4,
-        }}
+}) => (
+  <div
+    role="button"
+    tabIndex={0}
+    onClick={onOpen}
+    onKeyDown={(e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onOpen();
+      }
+    }}
+    title={title}
+    className={cn(
+      "cursor-pointer border bg-raise text-left",
+      emphasis
+        ? "rounded-xl border-accent-soft px-3.75 py-3.25"
+        : "rounded-[10px] border-line px-3.25 py-2.5",
+    )}
+  >
+    <div className="mb-1 flex items-center gap-2">
+      <span
+        className={cn(
+          "font-bold text-accent-soft",
+          emphasis ? "text-[15.5px]" : "text-[12.5px]",
+        )}
       >
-        <span
-          style={{
-            fontFamily: emphasis ? fonts.display : fonts.ui,
-            fontSize: emphasis ? 15.5 : 12.5,
-            fontWeight: 700,
-            color: colors.accentSoft,
-          }}
-        >
-          {heading}
-        </span>
-        {meta}
-        <span style={{ flex: 1 }} />
-        <PresentButton
-          selection={selection}
-          title={presentTitle}
-          disabled={presentDisabled}
-        />
-        <ArrowRight size={15} color={colors.dim} style={{ flexShrink: 0 }} />
-      </div>
-      {children}
+        {heading}
+      </span>
+      {meta}
+      <span className="flex-1" />
+      <PresentButton
+        selection={selection}
+        title={presentTitle}
+        disabled={presentDisabled}
+      />
+      <ArrowRight size={15} className="shrink-0 text-dim" />
     </div>
-  );
-};
+    {children}
+  </div>
+);
 
 const PassageJump = ({
   reference,
@@ -372,7 +290,6 @@ const PassageJump = ({
   version: BibleVersionId;
   onOpen: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const { verses, loading, error } = useBibleChapter(
     version,
     reference.book.id,
@@ -385,24 +302,15 @@ const PassageJump = ({
     : verses.slice(0, 1);
 
   return (
-    <div style={{ marginBottom: 20 }}>
-      <div className="ws-section-label" style={{ margin: "6px 0 10px" }}>
-        Go to passage
-      </div>
+    <div className="mb-5">
+      <div className="mt-1.5 mb-2.5 section-label">Go to passage</div>
       <ResultRow
         onOpen={onOpen}
         title={`Open ${formatParsedReference(reference)}`}
         heading={formatParsedReference(reference)}
         emphasis
         meta={
-          <span
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 11.5,
-              fontWeight: 600,
-              color: colors.dim,
-            }}
-          >
+          <span className="text-[11.5px] font-semibold text-dim">
             {version}
             {!verseStart && verses.length ? ` · ${verses.length} verses` : ""}
           </span>
@@ -422,22 +330,9 @@ const PassageJump = ({
         }}
       >
         {loading && <Spinner size={16} />}
-        {error && (
-          <span
-            style={{ fontFamily: fonts.ui, fontSize: 13, color: colors.danger }}
-          >
-            {error}
-          </span>
-        )}
+        {error && <span className="text-[13px] text-danger">{error}</span>}
         {!loading && !error && (
-          <span
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              lineHeight: 1.55,
-              color: colors.sub,
-            }}
-          >
+          <span className="text-[13.5px] leading-[1.55] text-sub">
             {preview.map((v) => v.t).join(" ")}
           </span>
         )}

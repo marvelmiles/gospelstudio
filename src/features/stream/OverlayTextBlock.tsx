@@ -1,9 +1,9 @@
-import type { CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Align } from "../../types";
 import { useStore } from "../../store/useStore";
 import { ANIMATION_VARIANTS, buildTransition } from "../../lib/animation";
 import { FormattedText } from "../../components/FormattedText";
+import { cn } from "../../lib/cn";
 import { OverlayPicture } from "./OverlayPicture";
 import {
   BADGE_GAP_RATIO,
@@ -14,10 +14,10 @@ import {
 import type { ContentOverlay } from "./lib/streamOverlay";
 import { useOverlayBlocks } from "./lib/useOverlayBlocks";
 
-const FLEX_ALIGN: Record<Align, CSSProperties["alignItems"]> = {
-  left: "flex-start",
-  center: "center",
-  right: "flex-end",
+const FLEX_ALIGN: Record<Align, string> = {
+  left: "items-start",
+  center: "items-center",
+  right: "items-end",
 };
 
 export const OverlayTextBlock = ({ overlay }: { overlay: ContentOverlay }) => {
@@ -34,7 +34,7 @@ export const OverlayTextBlock = ({ overlay }: { overlay: ContentOverlay }) => {
   const showBadge = badge.show && current.badge.trim() !== "";
 
   return (
-    <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+    <div className="absolute inset-0 overflow-hidden">
       <Backdrop style={block} />
       <AnimatePresence initial={false}>
         <motion.div
@@ -44,20 +44,18 @@ export const OverlayTextBlock = ({ overlay }: { overlay: ContentOverlay }) => {
           exit={{ opacity: 0 }}
           transition={transition}
           style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: FLEX_ALIGN[block.align],
             gap: `${badge.fontSize * BADGE_GAP_RATIO}cqw`,
             padding: `${block.padding}cqw`,
           }}
+          className={cn(
+            "absolute inset-0 flex flex-col justify-center",
+            FLEX_ALIGN[block.align],
+          )}
         >
           {showBadge && <Badge text={current.badge} style={badge} />}
           <div
+            className="w-full"
             style={{
-              width: "100%",
               fontFamily: `'${block.fontFamily}', serif`,
               fontSize: `${block.fontSize}cqw`,
               fontWeight: block.fontWeight,
@@ -81,9 +79,7 @@ export const OverlayTextBlock = ({ overlay }: { overlay: ContentOverlay }) => {
 const Backdrop = ({ style }: { style: OverlayBlockStyle }) => {
   if (!style.background && !style.backgroundImage) return null;
   return (
-    <div
-      style={{ position: "absolute", inset: 0, background: style.background }}
-    >
+    <div style={{ background: style.background }} className="absolute inset-0">
       {style.backgroundImage && (
         <OverlayPicture image={style.backgroundImage} fit="cover" />
       )}
@@ -94,28 +90,20 @@ const Backdrop = ({ style }: { style: OverlayBlockStyle }) => {
 const Badge = ({ text, style }: { text: string; style: OverlayBadgeStyle }) => {
   return (
     <span
+      className="relative inline-flex max-w-full items-center overflow-hidden rounded-full leading-[1.15] tracking-[0.04em] whitespace-nowrap"
       style={{
-        position: "relative",
-        display: "inline-flex",
-        alignItems: "center",
-        maxWidth: "100%",
-        overflow: "hidden",
         padding: `${style.fontSize * BADGE_PADDING_RATIO}cqw ${style.fontSize * 0.95}cqw`,
-        borderRadius: 999,
         background: style.background,
         fontFamily: `'${style.fontFamily}', sans-serif`,
         fontSize: `${style.fontSize}cqw`,
         fontWeight: style.fontWeight,
-        letterSpacing: "0.04em",
-        lineHeight: 1.15,
         color: style.textColor,
-        whiteSpace: "nowrap",
       }}
     >
       {style.backgroundImage && (
         <OverlayPicture image={style.backgroundImage} fit="cover" />
       )}
-      <span style={{ position: "relative" }}>{text}</span>
+      <span className="relative">{text}</span>
     </span>
   );
 };

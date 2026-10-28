@@ -22,7 +22,6 @@ interface SlideTextBoxLayersProps {
 }
 
 const frameStyle = (box: SlideTextBox): CSSProperties => ({
-  position: "absolute",
   left: `${box.frame.x}%`,
   top: `${box.frame.y}%`,
   width: `${box.frame.width}%`,
@@ -43,7 +42,7 @@ export const SlideTextBoxLayers = ({
       {boxes.map((box) => {
         const active = Boolean(editing) && box.id === editingBoxId;
         return (
-          <div key={box.id} style={frameStyle(box)}>
+          <div key={box.id} style={frameStyle(box)} className="absolute">
             <SlideTextBlock
               lines={box.lines}
               style={textBoxStyle(box, style)}

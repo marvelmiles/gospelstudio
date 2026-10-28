@@ -5,7 +5,7 @@ export interface SectionMeta {
   label: string;
 }
 
-export const SECTION_MAP: Record<string, SectionMeta> = {
+const SECTION_MAP: Record<string, SectionMeta> = {
   intro: { type: "intro", label: "Intro" },
   introduction: { type: "intro", label: "Introduction" },
   prelude: { type: "intro", label: "Prelude" },
@@ -67,7 +67,7 @@ const DASH_FORM = /^([a-zA-Z][a-zA-Z0-9 '()/-]{0,31}?)\s*[-–—]\s+(\S.*)$/;
 const PAREN_FORM = /^\(\s*([a-zA-Z][^()]{0,30}?)\s*\)$/;
 const BARE_FORM = /^([a-zA-Z][a-zA-Z0-9 '/-]{0,31})$/;
 
-export const splitTagNumber = (
+const splitTagNumber = (
   raw: string,
 ): {
   base: string;

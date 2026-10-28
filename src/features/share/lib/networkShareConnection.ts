@@ -15,7 +15,6 @@ interface CallDeviceOptions {
   target: ShareDevice;
 }
 
-/** Reaches a device found on the network list, through the handshake relay. */
 export const connectToNetworkDevice =
   ({ room, fromId, fromName, target }: CallDeviceOptions): ShareConnector =>
   async () => {
@@ -55,7 +54,6 @@ interface AnswerCallOptions {
   call: IncomingCall;
 }
 
-/** Answers an offer that arrived in this device's inbox on the relay. */
 export const connectFromNetworkCall =
   ({ room, deviceId, call }: AnswerCallOptions): ShareConnector =>
   async () => {

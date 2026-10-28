@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
-import { fade } from "./theme/uiTheme";
-import { useUITheme } from "./theme/ThemeProvider";
 import { useStore } from "./store/useStore";
+import { cn } from "./lib/cn";
 import { AppHeader } from "./components/layout/AppHeader";
 import { Toaster } from "./components/ui/Toaster";
 import { AlertBar } from "./components/ui/AlertBar";
@@ -35,13 +34,9 @@ import { SettingsModal } from "./features/settings/SettingsModal";
 import { ThemesPage } from "./features/themes/ThemesPage";
 import { ShortcutsModal } from "./features/shortcuts/ShortcutsModal";
 import { AboutModal } from "./features/about/AboutModal";
-import { UpdateModal } from "./features/updates/UpdateModal";
 import routes, { isSelfScrollingRoute } from "./routes";
-import { PlayGround } from "./Playground";
 
 const App = () => {
-  const { colors, fonts } = useUITheme();
-  const UI = fonts.ui;
   const load = useStore((s) => s.load);
   const loading = useStore((s) => s.loading);
   const presentation = useStore((s) => s.presentation);
@@ -55,35 +50,22 @@ const App = () => {
   if (location.pathname === routes.streamWindow()) return <StreamWindow />;
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        background: `radial-gradient(1100px 520px at 80% -12%, ${fade(colors.accent, 0.1)}, transparent 65%), radial-gradient(1200px 500px at 50% -15%, rgba(255,255,255,0.02), transparent 70%), ${colors.bg}`,
-        color: colors.text,
-        fontFamily: UI,
-        overflow: "hidden",
-      }}
-    >
+    <div className="flex h-screen flex-col overflow-hidden bg-canvas bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-fg">
       <AlertBar />
       <AppHeader />
 
       <main
-        style={{
-          flex: 1,
-          minHeight: 0,
-          overflowX: "hidden",
-          overflowY: isSelfScrollingRoute(location.pathname)
-            ? "hidden"
-            : "auto",
-        }}
+        className={cn(
+          "min-h-0 flex-1 overflow-x-hidden",
+          isSelfScrollingRoute(location.pathname)
+            ? "overflow-y-hidden"
+            : "overflow-y-auto",
+        )}
       >
         {loading ? (
           <LoadingArea size={30} />
         ) : (
           <Routes>
-            <Route path="/playground" element={<PlayGround />} />
             <Route path={routes.dashboard()} element={<Dashboard />} />
             <Route
               path={routes.manuscripts()}
@@ -124,7 +106,6 @@ const App = () => {
       <UploadLabelModal />
       <GoLiveTipDialog />
       <GuideModal />
-      <UpdateModal />
       <ResetOverlay />
       <StorageGate />
       <Toaster />

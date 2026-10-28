@@ -2,10 +2,6 @@ import { useMemo } from "react";
 import { useStore } from "../../../store/useStore";
 import type { BackupSource } from "../../../lib/backupPayload";
 
-/**
- * The library as anything that sends it reads it. Each slice is taken on its
- * own so the snapshot only changes when its contents do.
- */
 export const useBackupSource = (): BackupSource => {
   const manuscripts = useStore((state) => state.manuscripts);
   const scriptures = useStore((state) => state.scriptures);

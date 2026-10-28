@@ -1,9 +1,8 @@
 import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Align, ResolvedStyle, TextStyle } from "../../types";
-import { fade } from "../../theme/uiTheme";
 import { FONTS, FONT_WEIGHT_OPTIONS } from "../../data/slideFonts";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { TEXT_SHADOW_PRESET } from "../../lib/inlineStyle";
 import { Field, Range, Select, TextInput, Toggle } from "../ui/Field";
 
@@ -19,7 +18,6 @@ const ALIGNMENTS: [Align, LucideIcon][] = [
 ];
 
 export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
-  const { colors } = useUITheme();
   return (
     <>
       <Field label="Font Family">
@@ -46,24 +44,19 @@ export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
         />
       </Field>
       <Field label="Alignment">
-        <div style={{ display: "flex", gap: 6 }}>
+        <div className="flex gap-1.5">
           {ALIGNMENTS.map(([value, Icon]) => {
             const active = style.align === value;
             return (
               <button
                 key={value}
                 onClick={() => onChange("align", value)}
-                style={{
-                  flex: 1,
-                  padding: 9,
-                  borderRadius: 9,
-                  cursor: "pointer",
-                  background: active ? fade(colors.accent, 0.16) : colors.raise,
-                  border: `1px solid ${active ? fade(colors.accent, 0.35) : colors.border}`,
-                  color: active ? colors.accentSoft : colors.sub,
-                  display: "grid",
-                  placeItems: "center",
-                }}
+                className={cn(
+                  "grid flex-1 place-items-center rounded-[9px] border p-2.25",
+                  active
+                    ? "border-accent/35 bg-accent/16 text-accent-soft"
+                    : "border-line bg-raise text-sub",
+                )}
               >
                 <Icon size={16} />
               </button>
@@ -72,19 +65,12 @@ export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
         </div>
       </Field>
       <Field label="Text Color">
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+        <div className="flex items-center gap-2">
           <input
             type="color"
             value={style.color}
             onChange={(e) => onChange("color", e.target.value)}
-            style={{
-              width: 42,
-              height: 38,
-              borderRadius: 9,
-              border: `1px solid ${colors.border}`,
-              background: "transparent",
-              cursor: "pointer",
-            }}
+            className="h-9.5 w-10.5 cursor-pointer rounded-[9px] border border-line bg-transparent"
           />
           <TextInput
             value={style.color}
@@ -110,14 +96,14 @@ export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
           onChange={(e) => onChange("letterSpacing", Number(e.target.value))}
         />
       </Field>
-      <div style={{ marginBottom: 6 }}>
+      <div className="mb-1.5">
         <Toggle
           label="Uppercase"
           checked={Boolean(style.uppercase)}
           onChange={(checked) => onChange("uppercase", checked)}
         />
       </div>
-      <div style={{ marginBottom: 4 }}>
+      <div className="mb-1">
         <Toggle
           label="Text shadow"
           checked={style.textShadow !== "none"}

@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { MediaFit } from "../../types";
 import { useStore } from "../../store/useStore";
 import {
@@ -13,11 +12,9 @@ import type { OverlayImageRef } from "./lib/overlayAppearance";
 export const OverlayPicture = ({
   image,
   fit,
-  style,
 }: {
   image: OverlayImageRef;
   fit?: MediaFit;
-  style?: CSSProperties;
 }) => {
   const media = useStore((s) => s.media);
   const backgrounds = useStore((s) => s.backgrounds);
@@ -36,7 +33,7 @@ export const OverlayPicture = ({
       <BackgroundSurface
         background={background}
         settings={settings}
-        style={{ background: "transparent", ...style }}
+        className="bg-transparent"
       />
     );
   }
@@ -49,7 +46,7 @@ export const OverlayPicture = ({
     <ImageSurface
       item={item}
       settings={fit ? { ...imageSettingsOf(item), fit } : undefined}
-      style={{ background: "transparent", ...style }}
+      className="bg-transparent"
     />
   );
 };

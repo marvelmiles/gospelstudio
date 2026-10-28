@@ -10,14 +10,10 @@ import {
   whenFlushed,
 } from "./shareTransfer";
 
-/** How long the other side has to say yes or no before the send gives up. */
 const DECISION_TIMEOUT_MS = 90 * 1000;
-/** How long to wait for the receiving device to finish taking it in. */
 const IMPORT_TIMEOUT_MS = 10 * 60 * 1000;
-/** How often a wait checks whether the person here has stopped it. */
 const STOP_POLL_MS = 250;
 
-/** Raised wherever a wait ends because either side stopped the transfer. */
 export class ShareStoppedError extends Error {
   constructor() {
     super("The transfer was stopped.");
@@ -56,20 +52,13 @@ export interface SendOutcome {
   message: string;
 }
 
-/** An open channel to another device, held for one conversation. */
 export interface ShareConnection {
   channel: RTCDataChannel;
-  /** Ends the conversation. A link paired with a code stays up for the next one. */
   release: () => Promise<void>;
 }
 
-/**
- * Reaches the other device however this pair of devices found each other, and
- * throws a message fit to show when it cannot.
- */
 export type ShareConnector = () => Promise<ShareConnection>;
 
-/** Waits for the next control message the other side sends. */
 const nextControl = (
   channel: RTCDataChannel,
   wanted: ShareMessage["type"][],
@@ -116,7 +105,6 @@ const nextControl = (
     if (channel.readyState !== "open") onClose();
   });
 
-/** Waits for the other side to say what it wants to send, or null to wait on. */
 export const waitForShareOffer = async (
   channel: RTCDataChannel,
   timeoutMs: number | null,
@@ -127,7 +115,6 @@ export const waitForShareOffer = async (
   return message;
 };
 
-/** Waits for the other side to say who it is, once a link is first opened. */
 export const waitForShareHello = async (
   channel: RTCDataChannel,
   timeoutMs: number,
@@ -160,10 +147,6 @@ interface SendOptions {
   shouldStop: () => boolean;
 }
 
-/**
- * Hands one device the archive: the two link up, the other side is told what
- * is coming, and nothing moves until it says yes.
- */
 export const sendLibraryTo = async ({
   connect,
   fromName,
@@ -190,8 +173,6 @@ export const sendLibraryTo = async ({
   const { channel } = connection;
 
   const finish = async (outcome: SendOutcome): Promise<SendOutcome> => {
-    /* Saying so first spares the other side a wait that would otherwise only
-       end when the link times out. */
     if (outcome.state === "stopped") {
       sendShareMessage(channel, { type: "cancel" });
       await whenFlushed(channel);
@@ -269,20 +250,15 @@ export const sendLibraryTo = async ({
 
 interface ReceiveOptions {
   connect: ShareConnector;
-  /** What is on offer, when it has already been read off a link that stays up. */
   offer?: ShareOfferMessage;
-  /** Asks the person whether to take what is being offered. */
   onOffer: (details: ShareOfferDetails) => Promise<boolean>;
   onState: (state: ReceiveState) => void;
   onProgress: (receivedBytes: number) => void;
-  /** Reads the archive into the library, and says how it went. */
   importArchive: (file: File) => Promise<{ ok: boolean; message: string }>;
   onFinished: (state: ReceiveState, message: string) => void;
-  /** Whether the person here has stopped taking it in. */
   shouldStop: () => boolean;
 }
 
-/** Takes one offered library in, once the person here has accepted it. */
 export const receiveLibraryFrom = async ({
   connect,
   offer: knownOffer,

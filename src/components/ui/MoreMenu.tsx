@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { MoreHorizontal } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
+import { cn } from "../../lib/cn";
 import { IconButton } from "./Button";
 import { Popover } from "./Popover";
 import type { PopoverAlign, PopoverSide } from "./Popover";
@@ -27,6 +26,9 @@ interface MoreMenuProps {
   filled?: boolean;
 }
 
+export const menuSurfaceClassName =
+  "rounded-xl border border-line bg-panel-solid/97 p-1.5 shadow-[0_18px_50px_rgb(0_0_0/0.55)] backdrop-blur-[18px] backdrop-saturate-150";
+
 export const MoreMenu = ({
   items,
   title = "More actions",
@@ -35,7 +37,6 @@ export const MoreMenu = ({
   size = "md",
   filled,
 }: MoreMenuProps) => {
-  const { colors } = useUITheme();
   const [open, setOpen] = useState(false);
 
   return (
@@ -54,29 +55,10 @@ export const MoreMenu = ({
         />
       }
     >
-      <div
-        role="menu"
-        style={{
-          minWidth: 210,
-          padding: 6,
-          borderRadius: 12,
-          background: fade(colors.panelSolid, 0.97),
-          backdropFilter: "blur(18px) saturate(150%)",
-          WebkitBackdropFilter: "blur(18px) saturate(150%)",
-          border: `1px solid ${colors.border}`,
-          boxShadow: "0 18px 50px rgba(0,0,0,0.55)",
-        }}
-      >
+      <div role="menu" className={cn(menuSurfaceClassName, "min-w-52.5")}>
         {items.map((item, index) =>
           item.divider ? (
-            <div
-              key={index}
-              style={{
-                height: 1,
-                background: colors.border,
-                margin: "5px 8px",
-              }}
-            />
+            <div key={index} className="mx-2 my-1.25 h-px bg-line" />
           ) : (
             <MoreMenuButton
               key={index}
@@ -97,17 +79,7 @@ const MoreMenuButton = ({
   item: MoreMenuItem;
   onDone: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const Icon = item.icon;
-  const rest = item.active ? fade(colors.accent, 0.12) : "transparent";
-  const color = item.disabled
-    ? colors.dim
-    : item.danger
-      ? colors.danger
-      : item.active
-        ? colors.accentSoft
-        : colors.text;
-
   return (
     <button
       role="menuitem"
@@ -117,33 +89,17 @@ const MoreMenuButton = ({
         item.onClick?.();
         onDone();
       }}
-      onMouseEnter={(event) => {
-        if (item.disabled) return;
-        event.currentTarget.style.background = item.danger
-          ? fade(colors.danger, 0.12)
+      className={cn(
+        "flex w-full items-center gap-2.5 rounded-[9px] border-none px-2.75 py-2.25 text-left text-[13.5px] font-semibold disabled:cursor-not-allowed disabled:text-dim",
+        item.active ? "bg-accent/12" : "bg-transparent",
+        item.danger
+          ? "text-danger enabled:hover:bg-danger/12"
           : item.active
-            ? fade(colors.accent, 0.2)
-            : colors.raise;
-      }}
-      onMouseLeave={(event) => (event.currentTarget.style.background = rest)}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        width: "100%",
-        padding: "9px 11px",
-        borderRadius: 9,
-        background: rest,
-        border: "none",
-        cursor: item.disabled ? "not-allowed" : "pointer",
-        fontFamily: fonts.ui,
-        fontSize: 13.5,
-        fontWeight: 600,
-        textAlign: "left",
-        color,
-      }}
+            ? "text-accent-soft enabled:hover:bg-accent/20"
+            : "text-fg enabled:hover:bg-raise",
+      )}
     >
-      {Icon && <Icon size={15} style={{ flexShrink: 0 }} />}
+      {Icon && <Icon size={15} className="shrink-0" />}
       {item.label}
     </button>
   );

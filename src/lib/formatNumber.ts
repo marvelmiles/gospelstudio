@@ -1,8 +1,3 @@
-/**
- * Stat numbers everywhere in the app read the same way: exact while they are
- * small enough to take in at a glance, and shortened once they are not.
- */
-
 const COMPACT = new Intl.NumberFormat("en-US", {
   notation: "compact",
   maximumFractionDigits: 1,

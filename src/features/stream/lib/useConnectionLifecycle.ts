@@ -4,7 +4,6 @@ import type { PeerStatus } from "./peerStatus";
 export type ConnectionPhase =
   "waiting" | "connected" | "reconnecting" | "disconnected";
 
-// A failure before the first connection only means the other device has not joined yet; only a drop after going live is a disconnect.
 export const useConnectionLifecycle = (
   status: PeerStatus,
   onDisconnected?: () => void,

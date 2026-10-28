@@ -1,11 +1,10 @@
 import { useState } from "react";
-import { Layers, Volume2 } from "lucide-react";
-import { fade } from "../../../theme/uiTheme";
-import { useUITheme } from "../../../theme/ThemeProvider";
+import { Layers, Volume2, X } from "lucide-react";
 import { EmptyState } from "../../../components/ui/EmptyState";
 import { formatCount } from "../../../lib/formatNumber";
+import { cn } from "../../../lib/cn";
 import { BgSwatch } from "../../../components/controls/BgSwatch";
-import { rankBarStyle } from "../utils";
+import { RankBar } from "./RankBar";
 import type { UsageTab, UsedItem } from "../utils";
 
 interface MostUsedArtifactsProps {
@@ -19,49 +18,29 @@ const USAGE_TABS: { id: UsageTab; label: string }[] = [
 ];
 
 export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
-  const { colors, glass, controls, fonts } = useUITheme();
-  const UI = fonts.ui;
-  const DISPLAY = fonts.display;
   const [usageTab, setUsageTab] = useState<UsageTab>("background");
 
   const mostUsedList = mostUsed[usageTab];
   const highestUseCount = Math.max(1, ...mostUsedList.map((m) => m.count));
 
   return (
-    <div style={{ ...glass, padding: 22 }}>
-      <h3
-        style={{
-          margin: "0 0 12px",
-          fontFamily: DISPLAY,
-          fontSize: 18,
-          color: colors.text,
-        }}
-      >
-        Most Used Artifacts
-      </h3>
-      <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-        {USAGE_TABS.map((t) => {
-          const activeTab = usageTab === t.id;
+    <div className="glass p-5.5">
+      <h3 className="mt-0 mb-3 text-lg text-fg">Most Used Artifacts</h3>
+      <div className="mb-3 flex gap-1.5">
+        {USAGE_TABS.map((tab) => {
+          const activeTab = usageTab === tab.id;
           return (
             <button
-              key={t.id}
-              onClick={() => setUsageTab(t.id)}
-              style={{
-                flex: 1,
-                padding: "7px 0",
-                borderRadius: 9,
-                cursor: "pointer",
-                fontFamily: UI,
-                fontSize: 12.5,
-                fontWeight: 600,
-                border: `1px solid ${activeTab ? fade(colors.accent, 0.4) : colors.border}`,
-                background: activeTab
-                  ? fade(colors.accent, 0.16)
-                  : "transparent",
-                color: activeTab ? colors.accentSoft : colors.sub,
-              }}
+              key={tab.id}
+              onClick={() => setUsageTab(tab.id)}
+              className={cn(
+                "flex-1 rounded-[9px] border py-1.75 text-[12.5px] font-semibold",
+                activeTab
+                  ? "border-accent/40 bg-accent/16 text-accent-soft"
+                  : "border-line bg-transparent text-sub",
+              )}
             >
-              {t.label}
+              {tab.label}
             </button>
           );
         })}
@@ -76,84 +55,29 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
         />
       ) : (
         mostUsedList.map((item, rank) => (
-          <div
-            key={item.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 11,
-              padding: "8px 0",
-            }}
-          >
+          <div key={item.id} className="flex items-center gap-2.75 py-2">
             {item.bg ? (
               <BgSwatch
                 bg={item.bg}
-                style={{
-                  width: 46,
-                  height: 27,
-                  borderRadius: 6,
-                  flexShrink: 0,
-                  overflow: "hidden",
-                  border: `1px solid ${colors.border}`,
-                }}
+                className="h-6.75 w-11.5 shrink-0 rounded-md border border-line"
               />
             ) : (
-              <div
-                style={{
-                  width: 46,
-                  height: 27,
-                  borderRadius: 6,
-                  flexShrink: 0,
-                  display: "grid",
-                  placeItems: "center",
-                  background: fade(colors.accent, 0.14),
-                  border: `1px solid ${colors.border}`,
-                  color: colors.accentSoft,
-                }}
-              >
+              <div className="grid h-6.75 w-11.5 shrink-0 place-items-center rounded-md border border-line bg-accent/14 text-accent-soft">
                 <Volume2 size={14} />
               </div>
             )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div
-                style={{
-                  fontFamily: UI,
-                  fontSize: 13.5,
-                  color: colors.text,
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {item.name}
-              </div>
-              <div
-                style={{
-                  height: 5,
-                  borderRadius: 99,
-                  background: controls.track,
-                  marginTop: 4,
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    width: `${(item.count / highestUseCount) * 100}%`,
-                    borderRadius: 99,
-                    ...rankBarStyle(colors.accent, colors.accentSoft, rank),
-                  }}
-                />
-              </div>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-[13.5px] text-fg">{item.name}</div>
+              <RankBar
+                value={item.count}
+                max={highestUseCount}
+                rank={rank}
+                className="mt-1 h-1.25"
+              />
             </div>
-            <span
-              style={{
-                fontFamily: UI,
-                fontSize: 12.5,
-                color: colors.sub,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              ×{formatCount(item.count)}
+            <span className="inline-flex items-center text-[12.5px] text-sub tabular-nums">
+              <X size={11} aria-label="times" />
+              {formatCount(item.count)}
             </span>
           </div>
         ))

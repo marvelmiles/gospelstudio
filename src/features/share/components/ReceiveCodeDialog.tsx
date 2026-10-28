@@ -20,10 +20,6 @@ interface ReceiveCodeDialogProps {
   onConnected: (paired: PairedLink) => void;
 }
 
-/**
- * The receiving half of pairing by code: it reads the sending device's code
- * and shows a reply for it to read back.
- */
 export const ReceiveCodeDialog = ({
   open,
   deviceName,
@@ -133,7 +129,7 @@ const ReceiveSteps = ({
 
   if (phase === "failed") {
     return (
-      <div style={{ display: "grid", justifyItems: "center", gap: 14 }}>
+      <div className="grid justify-items-center gap-3.5">
         <StreamStatusLine tone="danger">{failure}</StreamStatusLine>
         <Button variant="primary" onClick={startAgain}>
           <RotateCcw size={14} />

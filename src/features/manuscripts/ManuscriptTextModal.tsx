@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Info, RefreshCw } from "lucide-react";
 import type { Manuscript, ManuscriptFormat, Theme } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useTextFormatting } from "../../hooks/useTextFormatting";
 import { resolveStyle } from "../../lib/resolve";
 import { slideRowCapacity, slideTextMetrics } from "../../lib/slideLayout";
@@ -10,7 +10,12 @@ import {
   MANUSCRIPT_FORMAT_OPTIONS,
 } from "../../lib/manuscript/format";
 import { Button, IconButton } from "../../components/ui/Button";
-import { Field, inputStyle, Range, Select } from "../../components/ui/Field";
+import {
+  Field,
+  inputClassName,
+  Range,
+  Select,
+} from "../../components/ui/Field";
 import { Modal } from "../../components/ui/Modal";
 import { ManuscriptFormatGuideModal } from "./ManuscriptFormatGuideModal";
 
@@ -43,9 +48,6 @@ export const ManuscriptTextModal = ({
   theme,
   onRegenerate,
 }: ManuscriptTextModalProps) => {
-  const { colors, fonts } = useUITheme();
-  /* What the manuscript's own text size can hold with room to spare above and
-     below, which is where the slider starts and what it falls back to. */
   const fittedLines = slideRowCapacity(
     slideTextMetrics(resolveStyle(undefined, manuscript, theme)),
   );
@@ -98,8 +100,8 @@ export const ManuscriptTextModal = ({
         </>
       }
     >
-      <div style={{ display: "flex", alignItems: "flex-end", gap: 8 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="flex items-end gap-2">
+        <div className="min-w-0 flex-1">
           <Field label="Format type">
             <Select
               value={format}
@@ -108,7 +110,7 @@ export const ManuscriptTextModal = ({
             />
           </Field>
         </div>
-        <div style={{ marginBottom: 16 }}>
+        <div className="mb-4">
           <IconButton
             icon={Info}
             title="How the text is read"
@@ -125,16 +127,12 @@ export const ManuscriptTextModal = ({
         onKeyUp={formatting.syncSelection}
         onClick={formatting.syncSelection}
         onKeyDown={formatting.handleKeyDown}
-        style={{
-          ...inputStyle,
-          minHeight: 320,
-          fontFamily: "ui-monospace, monospace",
-          lineHeight: 1.65,
-          resize: "vertical",
-          fontSize: 13.5,
-        }}
+        className={cn(
+          inputClassName,
+          "min-h-80 resize-y font-mono text-[13.5px] leading-[1.65]",
+        )}
       />
-      <div style={{ marginTop: 12 }}>
+      <div className="mt-3">
         <Field
           label={
             isSermon
@@ -149,15 +147,7 @@ export const ManuscriptTextModal = ({
             onChange={(e) => setMaxLines(Number(e.target.value))}
           />
         </Field>
-        <p
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            lineHeight: 1.55,
-            color: colors.dim,
-            margin: "-6px 0 0",
-          }}
-        >
+        <p className="mx-0 -mt-1.5 mb-0 text-[11.5px] leading-[1.55] text-dim">
           At this manuscript's text size a slide shows about {fittedLines} line
           {fittedLines === 1 ? "" : "s"} and still keeps its space top and
           bottom. Anything longer moves onto the next slide.

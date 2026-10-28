@@ -1,7 +1,7 @@
 import { clamp } from "./textRange";
 import type { TextRange } from "./textRange";
 
-export const SOURCE_START_ATTRIBUTE = "data-src-start";
+const SOURCE_START_ATTRIBUTE = "data-src-start";
 
 interface SourceSpan {
   element: HTMLElement;

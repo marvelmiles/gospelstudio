@@ -15,11 +15,8 @@ import { useShareLobby, type LobbyStatus } from "./useShareLobby";
 import type { ShareDevice } from "./shareSignaling";
 
 export interface QuickShareOptions {
-  /** Whether this screen also offers itself as somewhere data can arrive. */
   announce?: boolean;
-  /** Runs once the send is over and it reached someone, so the screen can clear itself. */
   onSent?: () => void;
-  /** Runs when a send ends with nothing delivered, so the screen starts over. */
   onReset?: () => void;
 }
 
@@ -28,16 +25,11 @@ export interface QuickShare {
   deviceName: string;
   room: string | null;
   deviceId: string;
-  /**
-   * The devices worth showing: deduplicated, minus any that gave up or were
-   * stopped, plus any still being sent to even if the network briefly lost it.
-   */
   devices: ShareDevice[];
   transfers: OutgoingShareMap;
   selectedDeviceIds: string[];
   toggleDevice: (deviceId: string) => void;
   selectDevice: (deviceId: string) => void;
-  /** Drops a device paired with a code and closes its link. */
   forgetDevice: (deviceId: string) => void;
   isSearching: boolean;
   isBusy: boolean;
@@ -46,14 +38,9 @@ export interface QuickShare {
   send: (selection: BackupSelection) => Promise<void>;
   stopDevice: (deviceId: string) => void;
   stopAll: () => void;
-  /** Stops anything still going, then looks for devices again. */
   refresh: () => void;
 }
 
-/**
- * One quick share conversation, as both the page and the single-item modal
- * need it: who is here, what is going to them, and how far it has got.
- */
 export const useQuickShare = ({
   announce = true,
   onSent,
@@ -117,14 +104,10 @@ export const useQuickShare = ({
 
   const devices = useMemo(() => {
     const hidden = new Set([...lostDeviceIds, ...stoppedDeviceIds]);
-    /* A paired device keeps its card after a no or a stop: its link is still
-       up, and it only leaves once that link goes or it is forgotten. */
     const listed = [
       ...lobby.devices.filter((device) => !hidden.has(device.id)),
       ...pairedDevices,
     ];
-    /* A sleeping or minimised device drops out of the network list while the
-       link between the two is still carrying data, so its card stays put. */
     const sending = Object.values(outgoing.transfers)
       .filter((row) => !listed.some((device) => device.id === row.deviceId))
       .map((row) => ({ id: row.deviceId, name: row.name, lastSeen: 0 }));
@@ -137,8 +120,6 @@ export const useQuickShare = ({
     stoppedDeviceIds,
   ]);
 
-  /* A device that has since left the network stays out of the selection
-     without needing a round of state to prune it. */
   const selectedDeviceIds = useMemo(
     () =>
       pickedDeviceIds.filter((id) =>

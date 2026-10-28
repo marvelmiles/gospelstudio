@@ -1,9 +1,8 @@
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Library, Pause, Pencil, Play, Upload } from "lucide-react";
 import type { AudioItem, AudioSettings, MediaItem } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
+import { cn } from "../../lib/cn";
 import {
   DEFAULT_AUDIO_SETTINGS,
   NO_AUDIO_ID,
@@ -18,22 +17,17 @@ import { AudioSurface } from "../media/AudioSurface";
 import { Button } from "../ui/Button";
 import { RadioDot } from "./RadioDot";
 
-/** A short list beside the slide; the asset library holds the rest. */
-export const AUDIO_PICKER_LIMIT = 10;
+const AUDIO_PICKER_LIMIT = 10;
 
 interface AudioPickerProps {
   audio: AudioItem[];
   value: string;
   onSelect: (id: string) => void;
-  /** Names what this place falls back to; left out where nothing is inherited. */
   inheritLabel?: string;
   onUploaded?: (id: string) => void;
   onManage?: () => void;
-  /** What the place this picker edits applies to the sound it has chosen. */
   settings?: AudioSettings | null;
-  /** Opens the sound's own editor for that one place. */
   onEditUsage?: (request: AssetUsageRequest) => void;
-  /** How many sounds to list at most, newest first. */
   limit?: number;
 }
 
@@ -45,11 +39,6 @@ const PREVIEW_PLAYBACK: MediaPlayback = {
   seekToken: 0,
 };
 
-/**
- * A clip's soundtrack listens and reads exactly like a sound in the library,
- * so the list can hold both without telling them apart. It only becomes a real
- * sound once it is chosen or edited.
- */
 const soundtrackOf = (item: MediaItem): AudioItem => ({
   id: item.id,
   name: item.name,
@@ -71,16 +60,12 @@ export const AudioPicker = ({
   onEditUsage,
   limit = AUDIO_PICKER_LIMIT,
 }: AudioPickerProps) => {
-  const { colors } = useUITheme();
   const media = useStore((s) => s.media);
   const beginUpload = useStore((s) => s.beginUpload);
   const addVideoAudio = useStore((s) => s.addVideoAudio);
   const inputRef = useRef<HTMLInputElement>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
 
-  /* Clips already turned into sounds are listed once, so the soundtracks only
-     offer what is not in the library yet. A sound names the clip it came from
-     with mediaId or blobId depending on when it was made, so both count. */
   const entries = useMemo(() => {
     const taken = new Set(
       audio.flatMap((item) =>
@@ -102,8 +87,6 @@ export const AudioPicker = ({
     });
   }, [audio, limit, media, value]);
 
-  /* Where nothing is inherited, having made no choice already means silence,
-     so both ways of saying it land on the same row. */
   const silent = value === NO_AUDIO_ID || (!inheritLabel && !value);
 
   const previewItem = entries.find((item) => item.id === previewId);
@@ -117,11 +100,9 @@ export const AudioPicker = ({
     [previewItem],
   );
 
-  /** Whether this row is still only a clip's soundtrack. */
   const isSoundtrack = (item: AudioItem): boolean =>
     !audio.some((sound) => sound.id === item.id);
 
-  /** Keeps a clip's soundtrack alongside the sounds, and answers with its id. */
   const adopt = (item: AudioItem): string =>
     isSoundtrack(item) ? addVideoAudio(item.id) : item.id;
 
@@ -130,10 +111,6 @@ export const AudioPicker = ({
     if (id) onSelect(id);
   };
 
-  /**
-   * Editing a sound hands the whole choice over: the trim and level come back
-   * with the sound itself, so what is tuned is what ends up playing.
-   */
   const edit = (item: AudioItem) => {
     if (!onEditUsage) return;
     const adopting = isSoundtrack(item);
@@ -157,13 +134,7 @@ export const AudioPicker = ({
       <div
         role="radiogroup"
         aria-label="Background audio"
-        style={{
-          maxHeight: 232,
-          overflowY: "auto",
-          borderRadius: 11,
-          border: `1px solid ${colors.border}`,
-          marginBottom: 10,
-        }}
+        className="mb-2.5 max-h-58 overflow-y-auto rounded-[11px] border border-line"
       >
         {inheritLabel && (
           <AudioRow
@@ -210,7 +181,7 @@ export const AudioPicker = ({
                 </RowButton>
                 {onEditUsage && (
                   <RowButton
-                    className="ws-reveal"
+                    className="reveal"
                     active={false}
                     label={`Edit ${item.name} for this use`}
                     title="Edit for this use"
@@ -235,7 +206,7 @@ export const AudioPicker = ({
         />
       )}
 
-      <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
+      <div className="flex flex-wrap gap-1.75">
         {onManage && (
           <Button variant="ghost" size="sm" onClick={onManage}>
             <Library size={14} />
@@ -290,73 +261,40 @@ const AudioRow = ({
   selected,
   onSelect,
   actions,
-}: AudioRowProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div
-      className={`ws-reveal-host${selected ? " is-active" : ""}`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 6,
-        padding: "4px 6px 4px 4px",
-        borderBottom: `1px solid ${colors.border}`,
-        background: selected ? fade(colors.accent, 0.12) : "transparent",
-      }}
+}: AudioRowProps) => (
+  <div
+    data-active={selected || undefined}
+    className={cn(
+      "group flex items-center gap-1.5 border-b border-line py-1 pr-1.5 pl-1",
+      selected ? "bg-accent/12" : "bg-transparent",
+    )}
+  >
+    <button
+      role="radio"
+      aria-checked={selected}
+      onClick={onSelect}
+      className="flex min-w-0 flex-1 items-center gap-2.25 border-none bg-transparent p-1.5 text-left"
     >
-      <button
-        role="radio"
-        aria-checked={selected}
-        onClick={onSelect}
-        style={{
-          flex: 1,
-          minWidth: 0,
-          display: "flex",
-          alignItems: "center",
-          gap: 9,
-          padding: "6px 6px",
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          textAlign: "left",
-        }}
-      >
-        <RadioDot selected={selected} />
-        <span style={{ minWidth: 0 }}>
-          <span
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 5,
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              color: selected ? colors.accentSoft : colors.text,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {label}
-          </span>
-          {meta && (
-            <span
-              style={{
-                display: "block",
-                fontFamily: fonts.ui,
-                fontSize: 11,
-                color: colors.sub,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {meta}
-            </span>
+      <RadioDot selected={selected} />
+      <span className="min-w-0">
+        <span
+          className={cn(
+            "flex items-center gap-1.25 truncate text-[12.5px]",
+            selected ? "text-accent-soft" : "text-fg",
           )}
+        >
+          {label}
         </span>
-      </button>
-      {actions}
-    </div>
-  );
-};
+        {meta && (
+          <span className="block text-[11px] text-sub tabular-nums">
+            {meta}
+          </span>
+        )}
+      </span>
+    </button>
+    {actions}
+  </div>
+);
 
 interface RowButtonProps {
   active: boolean;
@@ -374,28 +312,19 @@ const RowButton = ({
   onClick,
   className,
   children,
-}: RowButtonProps) => {
-  const { colors } = useUITheme();
-  return (
-    <button
-      className={className}
-      onClick={onClick}
-      aria-label={label}
-      title={title}
-      style={{
-        width: 28,
-        height: 28,
-        flexShrink: 0,
-        display: "grid",
-        placeItems: "center",
-        borderRadius: 8,
-        cursor: "pointer",
-        border: `1px solid ${active ? fade(colors.accent, 0.4) : "transparent"}`,
-        background: active ? fade(colors.accent, 0.16) : "transparent",
-        color: active ? colors.accentSoft : colors.sub,
-      }}
-    >
-      {children}
-    </button>
-  );
-};
+}: RowButtonProps) => (
+  <button
+    onClick={onClick}
+    aria-label={label}
+    title={title}
+    className={cn(
+      "grid size-7 shrink-0 place-items-center rounded-lg border",
+      active
+        ? "border-accent/40 bg-accent/16 text-accent-soft"
+        : "border-transparent bg-transparent text-sub",
+      className,
+    )}
+  >
+    {children}
+  </button>
+);

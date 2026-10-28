@@ -16,8 +16,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import type { Background, Slide, SlideDeckDoc, Theme } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
 import { SlideCanvas } from "../../components/SlideCanvas";
@@ -49,31 +48,6 @@ interface RowProps {
   fixedShortcut?: { letter: string; label: string };
 }
 
-const LIST_HEADER_CLEARANCE = 64;
-
-const kbdKey: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  fontFamily: "ui-monospace, monospace",
-  fontSize: 8,
-  fontWeight: 800,
-  borderRadius: 3,
-  padding: "1px 4px",
-  background: "rgba(255,255,255,0.15)",
-  border: "1px solid rgba(255,255,255,0.3)",
-  borderBottom: "2px solid rgba(255,255,255,0.3)",
-  color: "#ffffff",
-  lineHeight: 1.4,
-  letterSpacing: 0.2,
-};
-
-const badgeWrap: React.CSSProperties = {
-  display: "inline-flex",
-  alignItems: "center",
-  gap: 2,
-  whiteSpace: "nowrap",
-};
-
 const ShortcutBadge = ({
   label,
   title,
@@ -82,38 +56,31 @@ const ShortcutBadge = ({
   label: string;
   title: string;
   highlight?: boolean;
-}) => {
-  const { colors } = useUITheme();
-  return (
-    <span title={title} style={badgeWrap}>
-      <span
-        style={{
-          ...kbdKey,
-          ...(highlight
-            ? {
-                background: fade(colors.accent, 0.2),
-                border: `1px solid ${fade(colors.accent, 0.5)}`,
-                borderBottom: `2px solid ${fade(colors.accent, 0.5)}`,
-                color: colors.accent,
-              }
-            : {}),
-        }}
-      >
-        Ctrl
-      </span>
-      <span
-        style={{
-          fontSize: 9,
-          fontWeight: 800,
-          color: highlight ? colors.accent : "rgba(255,255,255,0.7)",
-          fontFamily: "ui-monospace, monospace",
-        }}
-      >
-        +{label}
-      </span>
+}) => (
+  <span
+    title={title}
+    className="inline-flex items-center gap-0.5 whitespace-nowrap"
+  >
+    <span
+      className={cn(
+        "inline-flex items-center rounded-[3px] border border-b-2 px-1 py-px font-mono text-[8px] leading-[1.4] font-extrabold tracking-[0.2px]",
+        highlight
+          ? "border-accent/50 bg-accent/20 text-accent"
+          : "border-white/30 bg-white/15 text-white",
+      )}
+    >
+      Ctrl
     </span>
-  );
-};
+    <span
+      className={cn(
+        "font-mono text-[9px] font-extrabold",
+        highlight ? "text-accent" : "text-white/70",
+      )}
+    >
+      +{label}
+    </span>
+  </span>
+);
 
 const SortableRow = ({
   slide,
@@ -127,7 +94,6 @@ const SortableRow = ({
   shortcutNum,
   fixedShortcut,
 }: RowProps) => {
-  const { colors, fonts } = useUITheme();
   const {
     attributes,
     listeners,
@@ -168,52 +134,28 @@ const SortableRow = ({
         setSelId(slide.id);
         onContextMenu(index, e.clientX, e.clientY);
       }}
-      style={{
-        transform: CSS.Transform.toString(transform),
-        transition,
-        display: "flex",
-        gap: 9,
-        alignItems: "stretch",
-        padding: 7,
-        marginBottom: 8,
-        borderRadius: 11,
-        cursor: "pointer",
-        background: selected ? fade(colors.accent, 0.12) : "transparent",
-        border: `1px solid ${selected ? fade(colors.accent, 0.35) : "transparent"}`,
-        opacity: isDragging ? 0.4 : 1,
-        scrollMarginTop: LIST_HEADER_CLEARANCE,
-      }}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={cn(
+        "mb-2 flex cursor-pointer scroll-mt-16 items-stretch gap-2.25 rounded-[11px] border p-1.75",
+        selected
+          ? "border-accent/35 bg-accent/12"
+          : "border-transparent bg-transparent",
+        isDragging && "opacity-40",
+      )}
     >
       <div
         {...attributes}
         {...listeners}
         title="Drag to reorder"
         onClick={(e) => e.stopPropagation()}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          color: colors.dim,
-          cursor: "grab",
-          touchAction: "none",
-        }}
+        className="flex cursor-grab touch-none flex-col justify-center text-dim"
       >
         <GripVertical size={15} />
       </div>
-      <div
-        style={{
-          width: 32,
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          color: colors.dim,
-          display: "flex",
-          alignItems: "center",
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
+      <div className="flex w-8 items-center text-xs text-dim tabular-nums">
         {index + 1}
       </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div className="min-w-0 flex-1">
         <SlideCanvas
           slide={slide}
           bg={background.background}
@@ -226,30 +168,17 @@ const SortableRow = ({
           showLabel={false}
           radius={7}
         />
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 4,
-            marginTop: 5,
-          }}
-        >
+        <div className="mt-1.25 flex items-center justify-between gap-1">
           <div
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 11,
-              color: selected ? colors.accentSoft : colors.sub,
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              minWidth: 0,
-            }}
+            className={cn(
+              "min-w-0 truncate text-[11px]",
+              selected ? "text-accent-soft" : "text-sub",
+            )}
           >
             {slide.label}
           </div>
           {(shortcutNum !== undefined || fixedShortcut) && (
-            <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+            <div className="flex shrink-0 gap-1.25">
               {shortcutNum !== undefined && (
                 <ShortcutBadge
                   label={String(shortcutNum)}

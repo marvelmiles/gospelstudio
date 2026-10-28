@@ -4,10 +4,6 @@ import { resolveBackgroundView } from "../lib/resolve";
 import type { ResolvedBackground } from "../lib/resolve";
 import type { BgMap } from "./useBgMap";
 
-/**
- * The background a slide shows, with the picture or clip settings this document
- * or slide has of its own rather than the ones saved in the library.
- */
 export const useBackgroundView = (
   slide: Slide | undefined,
   doc: SlideDeckDoc | undefined,

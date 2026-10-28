@@ -16,7 +16,6 @@ const KIND_BY_CODE = new Map<string, SignalKind>(
 );
 const SDP_FIRST_LINE = "v=0";
 
-// Base45 keeps the payload inside QR alphanumeric mode, which is far less dense than byte mode.
 const B45 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:";
 
 const toBase45 = (bytes: Uint8Array): string => {

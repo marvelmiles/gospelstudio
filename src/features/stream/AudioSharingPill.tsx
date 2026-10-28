@@ -1,5 +1,6 @@
 import { MicOff, Volume2, VolumeX } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
+import { statusPillClassName } from "./StreamStatusBadge";
 
 export const AudioSharingPill = ({
   available,
@@ -10,7 +11,6 @@ export const AudioSharingPill = ({
   muted: boolean;
   size?: "sm" | "md";
 }) => {
-  const { colors, fonts } = useUITheme();
   const small = size === "sm";
 
   const { Icon, label, title, dim } = !available
@@ -37,21 +37,11 @@ export const AudioSharingPill = ({
   return (
     <span
       title={title}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: small ? 4 : 6,
-        padding: small ? "3px 8px" : "5px 11px",
-        borderRadius: 999,
-        background: colors.raise,
-        color: dim ? colors.dim : colors.sub,
-        border: `1px solid ${colors.border}`,
-        fontFamily: fonts.ui,
-        fontSize: small ? 10 : 11,
-        fontWeight: 800,
-        letterSpacing: 0.4,
-        whiteSpace: "nowrap",
-      }}
+      className={cn(
+        statusPillClassName(small),
+        "border border-line bg-raise",
+        dim ? "text-dim" : "text-sub",
+      )}
     >
       <Icon size={small ? 11 : 12} /> {label}
     </span>

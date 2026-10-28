@@ -3,17 +3,11 @@ import { targetOwnsKey } from "../lib/mediaKeys";
 import { matchViewCommand } from "../lib/viewCommands";
 
 interface ViewShortcutOptions {
-  /** Left out where a view cannot pop out, such as the projected live window. */
   onTogglePopOut?: () => void;
-  /** Left out in a floating window, which has no full screen of its own. */
   onToggleFullscreen?: () => void;
-  /** Guards the keys for a view the rest of the app stays usable behind, so a
-   *  floating window answers them only while it holds the focus. */
   isArmed?: () => boolean;
 }
 
-/** The one place the pop-out and fullscreen keys are bound, so every module
- *  that has both views answers the same two keys. */
 export const useViewShortcuts = (options: ViewShortcutOptions): void => {
   const latest = useRef(options);
   useEffect(() => {

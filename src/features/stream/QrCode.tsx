@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import { ScanLine } from "lucide-react";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { drawQr } from "./lib/qr";
 
 interface QrCodeProps {
@@ -15,7 +13,6 @@ export const QrCode = ({
   size = 300,
   caption = "Scan to pair",
 }: QrCodeProps) => {
-  const { colors, fonts, qr, shadows } = useUITheme();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [renderedCssPx, setRenderedCssPx] = useState(size);
   const [isTooLarge, setIsTooLarge] = useState(false);
@@ -24,69 +21,29 @@ export const QrCode = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ratio = window.devicePixelRatio || 1;
-    const drawnPx = drawQr(canvas, value, size, qr, ratio);
+    const drawnPx = drawQr(canvas, value, size, ratio);
     setIsTooLarge(drawnPx === 0);
     if (drawnPx > 0) setRenderedCssPx(drawnPx / ratio);
-  }, [value, size, qr]);
+  }, [value, size]);
 
-  if (isTooLarge) {
+  if (isTooLarge)
     return (
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          lineHeight: 1.5,
-          color: colors.danger,
-          textAlign: "center",
-          maxWidth: 300,
-          margin: 0,
-        }}
-      >
+      <p className="m-0 max-w-75 text-center text-[13px] leading-normal text-danger">
         This code is too long to show as a QR. Copy it and send it to the other
         device instead.
       </p>
     );
-  }
 
   return (
-    <figure
-      style={{
-        margin: 0,
-        display: "inline-flex",
-        flexDirection: "column",
-        alignItems: "center",
-        padding: "10px 10px 12px",
-        borderRadius: 22,
-        background: qr.surface,
-        border: `1px solid ${fade(colors.accent, 0.35)}`,
-        boxShadow: `0 0 0 5px ${fade(colors.accent, 0.1)}, ${shadows.overlay}`,
-      }}
-    >
+    <figure className="m-0 inline-flex flex-col items-center rounded-[22px] border border-accent/35 bg-qr-surface px-2.5 pt-2.5 pb-3 shadow-[0_0_0_5px_rgb(37_99_235/0.1),0_16px_32px_rgb(0_0_0/0.35)]">
       <canvas
         ref={canvasRef}
         role="img"
         aria-label="Pairing QR code"
-        style={{
-          width: renderedCssPx,
-          height: renderedCssPx,
-          imageRendering: "pixelated",
-          display: "block",
-          borderRadius: 12,
-        }}
+        style={{ width: renderedCssPx, height: renderedCssPx }}
+        className="block rounded-xl [image-rendering:pixelated]"
       />
-      <figcaption
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 7,
-          marginTop: 4,
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          fontWeight: 600,
-          letterSpacing: 0.2,
-          color: qr.eye,
-        }}
-      >
+      <figcaption className="mt-1 flex items-center gap-1.75 text-[13px] font-semibold tracking-[0.2px] text-qr-eye">
         <ScanLine size={15} aria-hidden />
         {caption}
       </figcaption>

@@ -1,9 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import type { CSSProperties } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { fmtClock } from "../../lib/id";
 import type { VideoProgress } from "../../lib/media";
-import { useViewport } from "../../hooks/useViewport";
+import { cn } from "../../lib/cn";
+import { useWindowSize } from "usehooks-ts";
 import { StageButton } from "../../components/ui/Button";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { ImageSurface } from "../../components/media/ImageSurface";
@@ -28,6 +27,11 @@ interface PresenterBarProps {
   onNext: () => void;
 }
 
+const labelClassName =
+  "text-[10.5px] font-bold tracking-[0.6px] text-accent uppercase";
+
+const counterClassName = "text-xs text-sub tabular-nums";
+
 const NextPreview = ({
   frame,
   endLabel,
@@ -35,30 +39,15 @@ const NextPreview = ({
   frame: StageFrame | null;
   endLabel: string;
 }) => {
-  const { colors, fonts } = useUITheme();
-  const UI = fonts.ui;
-  if (!frame) {
+  if (!frame)
     return (
-      <div
-        style={{
-          width: 220,
-          aspectRatio: "16/9",
-          borderRadius: 7,
-          display: "grid",
-          placeItems: "center",
-          background: "rgba(255,255,255,0.05)",
-          color: colors.dim,
-          fontFamily: UI,
-          fontSize: 13,
-        }}
-      >
+      <div className="grid aspect-video w-55 place-items-center rounded-[7px] bg-white/5 text-[13px] text-dim">
         {endLabel}
       </div>
     );
-  }
   const { content } = frame;
   return (
-    <div style={{ width: 220, boxShadow: "0 6px 18px rgba(0,0,0,0.5)" }}>
+    <div className="w-55 shadow-[0_6px_18px_rgb(0_0_0/0.5)]">
       {content.kind === "text" ? (
         <SlideCanvas
           slide={content.slide}
@@ -69,14 +58,7 @@ const NextPreview = ({
           radius={7}
         />
       ) : (
-        <div
-          style={{
-            position: "relative",
-            aspectRatio: "16/9",
-            borderRadius: 7,
-            overflow: "hidden",
-          }}
-        >
+        <div className="relative aspect-video overflow-hidden rounded-[7px]">
           {content.kind === "image" ? (
             <ImageSurface item={content.item} variant="thumb" />
           ) : (
@@ -104,65 +86,31 @@ export const PresenterBar = ({
   onPrev,
   onNext,
 }: PresenterBarProps) => {
-  const { colors, fonts, stage } = useUITheme();
-  const UI = fonts.ui;
-  const DISPLAY = fonts.display;
-  const labelStyle: CSSProperties = {
-    fontFamily: UI,
-    fontSize: 10.5,
-    fontWeight: 700,
-    letterSpacing: 0.6,
-    textTransform: "uppercase",
-    color: colors.accent,
-  };
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const navigable = total > 1;
   const showNext = width >= 720 && navigable;
-  const counterStyle: CSSProperties = {
-    fontFamily: UI,
-    fontSize: 12,
-    color: colors.sub,
-    fontVariantNumeric: "tabular-nums",
-  };
 
   return (
     <div
-      className="wf-controls"
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
-      style={{
-        position: "fixed",
-        left: 0,
-        right: 0,
-        bottom: 0,
-        zIndex: 20,
-        display: "grid",
-        gridTemplateColumns: showNext ? "1fr 220px auto" : "1fr auto",
-        gap: 16,
-        alignItems: "center",
-        padding: "12px 18px",
-        background: stage.overlayStrong,
-        backdropFilter: "blur(12px)",
-        borderTop: `1px solid ${stage.border}`,
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? "auto" : "none",
-        transition: "opacity 0.3s ease",
-      }}
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-20 grid items-center gap-4 border-t border-stage-line bg-stage-overlay-strong px-4.5 py-3 backdrop-blur-md transition-opacity duration-300",
+        showNext ? "grid-cols-[1fr_220px_auto]" : "grid-cols-[1fr_auto]",
+        visible
+          ? "pointer-events-auto opacity-100"
+          : "pointer-events-none opacity-0",
+      )}
     >
-      <div style={{ minWidth: 0 }}>
-        <div style={labelStyle}>
+      <div className="min-w-0">
+        <div className={labelClassName}>
           {title} · {currentLabel}
         </div>
         <div
-          style={{
-            fontFamily: UI,
-            fontSize: 13.5,
-            color: notes ? stage.text : colors.dim,
-            marginTop: 4,
-            lineHeight: 1.45,
-            maxHeight: 44,
-            overflow: "hidden",
-          }}
+          className={cn(
+            "mt-1 max-h-11 overflow-hidden text-[13.5px] leading-[1.45]",
+            notes ? "text-white" : "text-dim",
+          )}
         >
           {notes || "No presenter notes for this slide."}
         </div>
@@ -170,43 +118,34 @@ export const PresenterBar = ({
 
       {showNext && (
         <div>
-          <div style={{ ...labelStyle, marginBottom: 5 }}>Up Next</div>
+          <div className={cn(labelClassName, "mb-1.25")}>Up Next</div>
           <NextPreview frame={nextFrame} endLabel={endLabel} />
         </div>
       )}
 
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ textAlign: "right" }}>
-          <div
-            style={{
-              fontFamily: DISPLAY,
-              fontSize: 22,
-              color: stage.text,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
+      <div className="flex items-center gap-3.5">
+        <div className="text-right">
+          <div className="text-[22px] text-white tabular-nums">
             {fmtClock(elapsed)}
           </div>
           {navigable && (
-            <div style={counterStyle}>
+            <div className={counterClassName}>
               {slideIndex + 1} / {total}
             </div>
           )}
           {videoProgress && (
             <VideoTimecode
               progress={videoProgress}
-              style={{ ...counterStyle, display: "block" }}
+              className={cn(counterClassName, "block")}
             />
           )}
         </div>
         {navigable && (
           <div
-            style={{
-              display: "flex",
-              gap: 7,
-              opacity: paused ? 0.4 : 1,
-              pointerEvents: paused ? "none" : "auto",
-            }}
+            className={cn(
+              "flex gap-1.75",
+              paused && "pointer-events-none opacity-40",
+            )}
           >
             <StageButton icon={ChevronLeft} title="Previous" onClick={onPrev} />
             <StageButton icon={ChevronRight} title="Next" onClick={onNext} />

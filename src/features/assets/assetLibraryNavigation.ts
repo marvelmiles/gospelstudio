@@ -20,7 +20,7 @@ const returnStateSchema = z.object({
   }),
 });
 
-export type AssetLibraryReturn = z.infer<typeof returnStateSchema>["returnTo"];
+type AssetLibraryReturn = z.infer<typeof returnStateSchema>["returnTo"];
 
 export const useOpenAssetLibrary = () => {
   const openOverlay = useStore((s) => s.openOverlay);
@@ -68,7 +68,6 @@ const SECTION_TITLE: Record<AssetSection, string> = {
 
 export interface EditorReturn {
   fromLibrary: boolean;
-  /** Names where the back arrow goes, so the editor does not have to guess. */
   backTitle: string;
   back: () => void;
 }

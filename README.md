@@ -1,18 +1,18 @@
-# WorshipStudio
+# GospelStudio
 
 **A church worship presentation studio that runs in your browser, works offline, and needs no server.**
 
-Paste lyrics, a hymn, a sermon outline or a Bible reference and WorshipStudio turns it into slides, then projects them full screen with themes, backgrounds, video, audio, presenter notes and keyboard control. It also streams phone cameras into a service and hands your whole library to another device across the room.
+Paste lyrics, a hymn, a sermon outline or a Bible reference and GospelStudio turns it into slides, then projects them full screen with themes, backgrounds, video, audio, presenter notes and keyboard control. It also streams phone cameras into a service and hands your whole library to another device across the room.
 
 Everything is stored in the browser (IndexedDB). No account, no subscription, no upload.
 
-**Live demo: [worshipstudio.netlify.app](https://worshipstudio.netlify.app/)**
+**Live demo: [gospelstudio.netlify.app](https://gospelstudio.netlify.app/)**
 
 Keywords: church presentation software, worship slides, lyrics to slides, hymn projection, Bible verse projection, sermon slides, ProPresenter alternative, EasyWorship alternative, OpenLP alternative, offline PWA, React, TypeScript.
 
 ## Why I built it
 
-I built WorshipStudio for my own church.
+I built GospelStudio for my own church.
 
 Our services run on a laptop, a projector and whoever is free to run the slides that morning. The programs made for this job are desktop programs with a licence to buy and one machine to keep them on, and the hall WiFi is not something I can count on when the first song starts. So I wrote the one I wanted: everything in the browser's own storage, opens with no connection, and nobody has to install anything.
 
@@ -82,12 +82,12 @@ It builds to a static bundle, installs as a PWA and updates itself through a ser
 
 **Navigation**
 
-| Key                       | Action         |
-| ------------------------- | -------------- |
-| → / Space / Page Dn / `L` | Next slide     |
-| ← / Page Up / `H`         | Previous slide |
-| Home                      | First slide    |
-| End                       | Last slide     |
+| Key                                   | Action         |
+| ------------------------------------- | -------------- |
+| Right arrow / Space / Page Down / `L` | Next slide     |
+| Left arrow / Page Up / `H`            | Previous slide |
+| Home                                  | First slide    |
+| End                                   | Last slide     |
 
 **Tag navigation** _(numbers are verse only; every other section type has a fixed letter)_
 
@@ -113,7 +113,7 @@ In the editor slide list, each verse's first slide shows a `^N` badge and every 
 | `P` | Pause / resume    |
 | Esc | Exit presentation |
 
-On a clip the playback keys drive the clip: Space and `P` play and pause, `←` and `→` seek five seconds, `M` mutes. A focused slider keeps the arrow and Page keys for itself.
+On a clip the playback keys drive the clip: Space and `P` play and pause, the left and right arrows seek five seconds, `M` mutes. A focused slider keeps the arrow and Page keys for itself.
 
 **View**
 
@@ -126,15 +126,17 @@ On a clip the playback keys drive the clip: Space and `P` play and pause, `←` 
 | `-` | Zoom out                                 |
 | `0` | Reset zoom                               |
 
+## Setup
+
+You need Node 18 or newer (20 or 22 recommended) and pnpm. npm and yarn work too. No server, database or account is required: the app keeps everything in the browser.
+
 ## Installation
 
 ```bash
-git clone https://github.com/marvelmiles/worship-studio.git
-cd worship-studio
+git clone https://github.com/marvelmiles/gospelstudio.git
+cd gospelstudio
 pnpm install
 ```
-
-Node 18 or newer, with 20 or 22 recommended. npm and yarn work too.
 
 ## Running
 
@@ -178,19 +180,19 @@ Cameras also need a secure context: serve over `https://` or `localhost` on both
 
 ## Tech stack
 
-Vite, React 18 and TypeScript, with React Router and Zustand. IndexedDB for documents and files, WebRTC with jsQR and qrcode-generator for cameras and sharing, Firebase Realtime Database as an optional signalling relay, @dnd-kit for dragging slides, Framer Motion for transitions, Zod for validating backups, fflate for the `.zip` format, vite-plugin-pwa and Workbox for offline, and lucide-react for icons.
+Vite, React 18 and TypeScript, with React Router and Zustand. Tailwind CSS 4 for all styling, with clsx, tailwind-merge and class-variance-authority for composing classes, Floating UI for popovers and usehooks-ts for window size, media queries, element size and local storage. IndexedDB for documents and files, WebRTC with jsQR and qrcode-generator for cameras and sharing, Firebase Realtime Database as an optional signalling relay, @dnd-kit for dragging slides, Framer Motion for transitions, Zod for validating backups, fflate for the `.zip` format, vite-plugin-pwa and Workbox for offline, and lucide-react for icons.
 
 ## Architecture
 
 ```
 src/
-  theme/        the UI theme (uiTheme.ts), its provider and the --ws-* CSS variables
-  lib/          parser, style and background resolution, storage, zod schema, helpers
+  index.css     Tailwind entry: every colour, shadow, animation and custom utility
+  lib/          parser, style and background resolution, storage, zod schema, cn()
   data/         built-in backgrounds, themes, collections, fonts, seed manuscripts
                 (hymns.json holds the bundled hymnal, generated, not edited by hand)
   store/        Zustand store (state, actions and persistence)
   components/   SlideCanvas and reusable UI primitives (Button, Field, Modal, ContextMenu)
-  hooks/        shared behaviour (text editing, media playback, wake lock, viewport)
+  hooks/        shared behaviour (text editing, media playback, wake lock, layout)
   features/
     dashboard/    Dashboard
     manuscripts/  Manuscript library, editor, text and settings modals
@@ -211,7 +213,7 @@ Components are functions declared as `const`, files stay focused on one job, and
 
 ## Notes and intentional scope choices
 
-- **Styling is a design token inline style system, not Tailwind**, so the look is self contained and needs no extra build step. The theme lives in `src/theme/uiTheme.ts` and is published as `--ws-*` CSS variables.
+- **Styling is Tailwind first.** The design tokens live once in the `@theme` block of `src/index.css`, components use utility classes, and `cn()` merges conditional classes. Inline styles are kept only for values known at run time, such as a slide's user chosen font, colour or position.
 - **Editing is live bound rather than form managed.** Fields write straight to the store for instant preview; Zod guards the one place it earns its keep, imported backups.
 - **React 18** is pinned for ecosystem compatibility. Moving to 19 is straightforward.
 - **The presenter view is a bar or a floating window**, not a separate second monitor application.

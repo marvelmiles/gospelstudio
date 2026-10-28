@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { Field, TextInput } from "../../components/ui/Field";
@@ -10,7 +9,6 @@ import type { StreamOverlay } from "./lib/streamOverlay";
 import { linkStreamOverlayPreset } from "./lib/streamOverlayStore";
 
 interface SaveOverlayDialogProps {
-  /** The overlay being put away. Mounted only while the dialog is open. */
   overlay: StreamOverlay;
   onClose: () => void;
 }
@@ -19,7 +17,6 @@ export const SaveOverlayDialog = ({
   overlay,
   onClose,
 }: SaveOverlayDialogProps) => {
-  const { colors, fonts } = useUITheme();
   const presets = useStore((s) => s.overlayPresets);
   const saveOverlayPreset = useStore((s) => s.saveOverlayPreset);
   const updateOverlayPreset = useStore((s) => s.updateOverlayPreset);
@@ -66,15 +63,7 @@ export const SaveOverlayDialog = ({
         </>
       }
     >
-      <p
-        style={{
-          margin: "0 0 14px",
-          fontFamily: fonts.ui,
-          fontSize: 13,
-          lineHeight: 1.6,
-          color: colors.sub,
-        }}
-      >
+      <p className="mt-0 mb-3.5 text-[13px] leading-[1.6] text-sub">
         Its placement, styling and what it is showing are kept together, and any
         change you make to it from now on is saved too. Add it to any broadcast
         later from Saved.
@@ -92,15 +81,7 @@ export const SaveOverlayDialog = ({
         />
       </Field>
       {existing && (
-        <p
-          style={{
-            margin: 0,
-            fontFamily: fonts.ui,
-            fontSize: 12.5,
-            lineHeight: 1.55,
-            color: colors.warning,
-          }}
-        >
+        <p className="m-0 text-[12.5px] leading-[1.55] text-warning">
           A saved overlay already goes by this name. Saving replaces it.
         </p>
       )}

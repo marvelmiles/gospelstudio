@@ -7,13 +7,9 @@ import {
 import type { ImageSettings } from "../../types";
 import { Button } from "../ui/Button";
 import { Field, SectionTitle, Select, Toggle } from "../ui/Field";
-import { AdjustmentControls } from "./AdjustmentControls";
-
-const FIT_OPTIONS = [
-  { value: "contain", label: "Contain (fit, letterboxed)" },
-  { value: "cover", label: "Cover (fill, may crop)" },
-  { value: "fill", label: "Fill (stretch)" },
-];
+import { cn } from "../../lib/cn";
+import { SCREEN_FIT_OPTIONS } from "../../lib/mediaOptions";
+import { AdjustmentControls, settingsColumns } from "./AdjustmentControls";
 
 interface ImageSettingsControlsProps {
   settings: ImageSettings;
@@ -35,7 +31,7 @@ export const ImageSettingsControls = ({
   return (
     <>
       <SectionTitle>Transform</SectionTitle>
-      <div className="ws-row-wrap" style={{ marginBottom: 12 }}>
+      <div className="mb-3 flex flex-wrap items-center gap-2.5">
         <Button size="sm" variant="ghost" onClick={() => rotateBy(-90)}>
           <RotateCcw size={14} />
           Rotate left
@@ -61,25 +57,17 @@ export const ImageSettingsControls = ({
           Flip V
         </Button>
       </div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: narrow
-            ? "1fr"
-            : "repeat(auto-fit,minmax(200px,1fr))",
-          gap: "0 16px",
-        }}
-      >
+      <div className={cn("grid gap-x-4", settingsColumns(narrow))}>
         <Field label="Screen fit">
           <Select
             value={settings.fit}
-            options={FIT_OPTIONS}
+            options={SCREEN_FIT_OPTIONS}
             onChange={(event) =>
               onChange({ fit: event.target.value as ImageSettings["fit"] })
             }
           />
         </Field>
-        <div style={{ paddingTop: narrow ? 0 : 24, paddingBottom: 12 }}>
+        <div className={cn("pb-3", !narrow && "pt-6")}>
           <Toggle
             label="Darken overlay (legibility)"
             checked={settings.scrim}

@@ -15,8 +15,8 @@ export const PairedPanel = ({
   onPairAnother,
   onBack,
 }: PairedPanelProps) => (
-  <div style={{ maxWidth: 560, margin: "0 auto" }}>
-    <Panel style={{ padding: 20 }}>
+  <div className="mx-auto max-w-140">
+    <Panel className="p-5">
       <PanelTitle
         icon={Wifi}
         title="Paired"

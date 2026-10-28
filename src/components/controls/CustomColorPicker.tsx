@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { Check, Plus } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { themeVar } from "../../theme/cssVars";
 import { Button } from "../ui/Button";
 import { TextInput } from "../ui/Field";
 import { InfoTip } from "../ui/InfoTip";
@@ -29,18 +27,10 @@ const PALETTE: { value: string; name: string }[] = [
   { value: "#f5ecd7", name: "Parchment" },
 ];
 
-const captionStyle = {
-  fontFamily: themeVar.fontUi,
-  fontSize: 10.5,
-  fontWeight: 700,
-  letterSpacing: 0.5,
-  textTransform: "uppercase" as const,
-  color: themeVar.dim,
-  margin: "0 0 7px",
-};
+const captionClassName =
+  "mt-0 mb-1.75 text-[10.5px] font-bold tracking-[0.5px] text-dim uppercase";
 
 export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
-  const { colors } = useUITheme();
   const [color, setColor] = useState("#1b1733");
   const [css, setCss] = useState("");
   const [label, setLabel] = useState("");
@@ -58,48 +48,21 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
   };
 
   return (
-    <div
-      style={{
-        padding: 12,
-        borderRadius: 11,
-        background: colors.raise,
-        border: `1px solid ${colors.border}`,
-        marginBottom: 12,
-      }}
-    >
-      <p style={captionStyle}>Presets</p>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(8,1fr)",
-          gap: 6,
-          marginBottom: 14,
-        }}
-      >
+    <div className="mb-3 rounded-[11px] border border-line bg-raise p-3">
+      <p className={captionClassName}>Presets</p>
+      <div className="mb-3.5 grid grid-cols-8 gap-1.5">
         {PALETTE.map((swatch) => (
           <button
             key={swatch.value}
             title={swatch.name}
             onClick={() => onAdd(swatch.value, swatch.name)}
-            style={{
-              aspectRatio: "1",
-              borderRadius: 7,
-              background: swatch.value,
-              border: `1px solid ${colors.border}`,
-              cursor: "pointer",
-            }}
+            style={{ background: swatch.value }}
+            className="aspect-square rounded-[7px] border border-line"
           />
         ))}
       </div>
 
-      <p
-        style={{
-          ...captionStyle,
-          display: "flex",
-          alignItems: "center",
-          gap: 4,
-        }}
-      >
+      <p className={`${captionClassName} flex items-center gap-1`}>
         Add custom (label required)
         <InfoTip title="Custom backgrounds">
           Accepts any CSS background: hex, rgb or rgba, hsl, or a gradient.
@@ -109,29 +72,15 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
       <TextInput
         value={label}
         placeholder="Label (e.g. Soft Cream)"
-        onChange={(e) => setLabel(e.target.value)}
+        onChange={(event) => setLabel(event.target.value)}
       />
 
-      <div
-        style={{
-          display: "flex",
-          gap: 8,
-          alignItems: "center",
-          margin: "10px 0",
-        }}
-      >
+      <div className="my-2.5 flex items-center gap-2">
         <input
           type="color"
           value={color}
-          onChange={(e) => setColor(e.target.value)}
-          style={{
-            width: 42,
-            height: 38,
-            borderRadius: 9,
-            border: `1px solid ${colors.border}`,
-            background: "transparent",
-            cursor: "pointer",
-          }}
+          onChange={(event) => setColor(event.target.value)}
+          className="h-9.5 w-10.5 cursor-pointer rounded-[9px] border border-line bg-transparent"
         />
         <Button
           variant="ghost"
@@ -144,11 +93,11 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
         </Button>
       </div>
 
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="flex gap-2">
         <TextInput
           value={css}
           placeholder="#1b1733, rgba(20,20,40,1), linear-gradient(…)"
-          onChange={(e) => setCss(e.target.value)}
+          onChange={(event) => setCss(event.target.value)}
         />
         <Button
           variant="ghost"

@@ -2,11 +2,8 @@ import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import {
   isExtendedDisplay,
   presentLiveWindow,
-  type GoLiveResult,
   type LiveWindowController,
 } from "../lib/liveWindow";
-
-export type { GoLiveResult };
 
 export const useGoLive = (
   controller: LiveWindowController = presentLiveWindow,

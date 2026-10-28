@@ -13,7 +13,6 @@ export type FacingMode = "user" | "environment";
 
 type LensSelector = Pick<MediaTrackConstraints, "facingMode" | "deviceId">;
 
-// Asked in descending order: resolution floors first, so a device cannot quietly hand back a 640x480 capture.
 const lensAttempts = (lens: LensSelector): MediaStreamConstraints[] => {
   return [
     { video: { ...lens, ...VIDEO_CAPTURE }, audio: false },
@@ -109,7 +108,6 @@ export const openCameraFacing = async (
     }
   }
 
-  // Many phones hold one camera at a time, so the current one is released before the other is opened.
   currentTrack?.stop();
 
   for (const constraints of switchAttempts) {

@@ -9,7 +9,6 @@ import {
   type EditOptions,
 } from "./slideEditHelpers";
 
-/** Text and per-line styling for a slide's own lines and for its text boxes. */
 export const useSlideTextEdits = <T extends SlideDeckDoc>(
   deck: DeckDocument<T>,
 ) => {

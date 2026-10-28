@@ -2,10 +2,8 @@ import { useCallback, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Music, Undo2 } from "lucide-react";
 import type { AudioItem, AudioSettings } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
-import { useViewport } from "../../hooks/useViewport";
+import { useWindowSize } from "usehooks-ts";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useDraftHistory } from "../../hooks/useDraftHistory";
 import { useMediaPlayback } from "../../hooks/useMediaPlayback";
@@ -18,7 +16,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
 } from "../../hooks/useUnsavedChanges";
 import { shallowEqual } from "../../lib/equality";
-import { mediaSurfaceProps } from "../../lib/mediaKeys";
+import { cn } from "../../lib/cn";
 import {
   audioSettingsOf,
   DEFAULT_AUDIO_SETTINGS,
@@ -32,6 +30,7 @@ import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { MissingPage } from "../../components/ui/MissingPage";
 import { EditorSplitLayout } from "../../components/layout/EditorSplitLayout";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
+import { AudioPreviewCard } from "../../components/media/AudioPreviewCard";
 import { AudioSurface } from "../../components/media/AudioSurface";
 import { AudioSettingsControls } from "../../components/media/AudioSettingsControls";
 import { VideoTransportBar } from "../../components/media/VideoTransportBar";
@@ -72,8 +71,7 @@ export const AudioEditorPage = () => {
 };
 
 const AudioWorkspace = ({ item }: { item: AudioItem }) => {
-  const { colors, fonts } = useUITheme();
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const stacked = width < 1080;
   const compact = width < 560;
   const pushToast = useStore((s) => s.pushToast);
@@ -166,54 +164,16 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
 
   const preview = (
     <div
-      style={{
-        height: "100%",
-        display: "grid",
-        placeItems: "center",
-        padding: stacked ? 16 : 24,
-      }}
+      className={cn("grid h-full place-items-center", stacked ? "p-4" : "p-6")}
     >
-      <div
-        {...mediaSurfaceProps}
-        style={{
-          width: "100%",
-          maxWidth: 640,
-          padding: compact ? 18 : 28,
-          borderRadius: 18,
-          border: `1px solid ${colors.border}`,
-          background: colors.bg2,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 18,
-        }}
+      <AudioPreviewCard
+        compact={compact}
+        caption={
+          duration > 0
+            ? `Plays ${formatTrimmedDuration(duration, settings)}`
+            : undefined
+        }
       >
-        <div
-          aria-hidden
-          style={{
-            width: compact ? 72 : 96,
-            height: compact ? 72 : 96,
-            borderRadius: 24,
-            display: "grid",
-            placeItems: "center",
-            background: fade(colors.accent, 0.14),
-            color: colors.accentSoft,
-          }}
-        >
-          <Music size={compact ? 30 : 40} />
-        </div>
-        {duration > 0 && (
-          <div
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13,
-              color: colors.dim,
-              fontVariantNumeric: "tabular-nums",
-            }}
-          >
-            Plays {formatTrimmedDuration(duration, settings)}
-          </div>
-        )}
         <VideoTransportBar
           playing={player.playback.playing}
           muted={player.playback.muted}
@@ -228,7 +188,7 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
           onToggleMuted={player.toggleMuted}
           onVolume={(volume) => patchSettings({ volume })}
           onSeek={player.seekTo}
-          style={{ width: "100%" }}
+          className="w-full"
         />
         <AudioSurface
           ref={player.surfaceRef}
@@ -239,21 +199,13 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
           onTimeUpdate={player.onTimeUpdate}
           onEnded={player.onEnded}
         />
-      </div>
+      </AudioPreviewCard>
     </div>
   );
 
   const sidebar = (
-    <div style={{ padding: 18 }}>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          color: colors.dim,
-          margin: "0 0 4px",
-          lineHeight: 1.6,
-        }}
-      >
+    <div className="p-4.5">
+      <p className="mt-0 mb-1 text-xs leading-[1.6] text-dim">
         {formatBytes(item.size || 0)}
         {duration ? ` · ${formatTrimmedDuration(duration, settings)}` : ""}
       </p>
@@ -268,14 +220,7 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col">
       <EditorTopBar
         title={draft.name}
         onTitle={setName}

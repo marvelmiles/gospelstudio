@@ -1,5 +1,4 @@
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
+import { cn } from "../../lib/cn";
 import { useQrScanner, type ScanFacing } from "./lib/useQrScanner";
 
 interface QrScannerProps {
@@ -13,89 +12,43 @@ export const QrScanner = ({
   onResult,
   onError,
 }: QrScannerProps) => {
-  const { colors, fonts, stage } = useUITheme();
   const { videoRef, isCameraReady } = useQrScanner({
     facing,
     onResult,
     onError,
   });
-  const frameColor = isCameraReady ? colors.accentSoft : fade(stage.text, 0.5);
   const statusText = isCameraReady ? "Looking for a code" : "Starting camera";
 
   return (
-    <div
-      style={{
-        position: "relative",
-        width: "100%",
-        maxWidth: 360,
-        aspectRatio: "1 / 1",
-        borderRadius: 16,
-        overflow: "hidden",
-        background: stage.surface,
-        border: `1px solid ${colors.border}`,
-      }}
-    >
+    <div className="relative aspect-square w-full max-w-90 overflow-hidden rounded-2xl border border-line bg-stage">
       <video
         ref={videoRef}
         playsInline
         muted
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          transform: facing === "user" ? "scaleX(-1)" : undefined,
-        }}
+        className={cn(
+          "size-full object-cover",
+          facing === "user" && "-scale-x-100",
+        )}
       />
       <div
         aria-hidden
-        style={{
-          position: "absolute",
-          inset: "8%",
-          borderRadius: 12,
-          overflow: "hidden",
-          border: `2px solid ${frameColor}`,
-          boxShadow: `0 0 0 100vmax ${fade(stage.surface, 0.35)}`,
-        }}
+        className={cn(
+          "absolute inset-[8%] overflow-hidden rounded-xl border-2 shadow-[0_0_0_100vmax_rgb(0_0_0/0.35)]",
+          isCameraReady ? "border-accent-soft" : "border-white/50",
+        )}
       >
         {isCameraReady && (
-          <div className="ws-scan-sweep">
-            <div
-              style={{
-                height: 2,
-                marginTop: -1,
-                background: colors.accentSoft,
-                boxShadow: `0 0 12px 3px ${fade(colors.accentSoft, 0.6)}`,
-              }}
-            />
+          <div className="pointer-events-none absolute inset-0 animate-scan-sweep motion-reduce:[animation-duration:6s]">
+            <div className="-mt-px h-0.5 bg-accent-soft shadow-[0_0_12px_3px_rgb(59_130_246/0.6)]" />
           </div>
         )}
       </div>
       <div
         role="status"
         aria-live="polite"
-        style={{
-          position: "absolute",
-          left: 0,
-          right: 0,
-          bottom: 10,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 6,
-          pointerEvents: "none",
-        }}
+        className="pointer-events-none absolute inset-x-0 bottom-2.5 flex flex-col items-center gap-1.5"
       >
-        <span
-          style={{
-            padding: "4px 10px",
-            borderRadius: 999,
-            background: stage.overlayStrong,
-            color: stage.text,
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            fontWeight: 600,
-          }}
-        >
+        <span className="rounded-full bg-stage-overlay-strong px-2.5 py-1 text-[11.5px] font-semibold text-white">
           {statusText}
         </span>
       </div>

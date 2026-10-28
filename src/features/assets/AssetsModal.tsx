@@ -89,10 +89,7 @@ export const AssetsModal = () => {
       title={sectionLocked ? SECTIONS[tab].lockedTitle : "Asset Library"}
       width={720}
     >
-      <div
-        ref={contentRef}
-        style={{ display: "flex", flexDirection: "column", gap: 18 }}
-      >
+      <div ref={contentRef} className="flex flex-col gap-4.5">
         {!sectionLocked && (
           <SegmentedTabs<AssetSection>
             ariaLabel="Asset kinds"

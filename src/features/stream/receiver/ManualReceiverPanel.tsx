@@ -53,7 +53,6 @@ export const ManualReceiverPanel = ({
         updateStreamCamera(cameraId, patch);
     };
 
-    // The first picture hands the connection to the app-wide session, so the stage and floating window can show it.
     const handleStream = (stream: MediaStream) => {
       if (!isMounted) return;
       if (isAdoptedRef.current) {
@@ -158,9 +157,7 @@ export const ManualReceiverPanel = ({
                 caption="On the other device: open Stream, choose Share this camera, then scan or paste this code."
               />
             ) : (
-              <div
-                style={{ padding: 30, display: "grid", placeItems: "center" }}
-              >
+              <div className="grid place-items-center p-7.5">
                 <Spinner size={22} />
               </div>
             )}
@@ -178,7 +175,7 @@ export const ManualReceiverPanel = ({
         }
       />
 
-      <div style={{ marginTop: 18, display: "flex", gap: 10 }}>
+      <div className="mt-4.5 flex gap-2.5">
         {onUseOneTap && (
           <Button variant="ghost" size="sm" onClick={onUseOneTap}>
             <MonitorSmartphone size={14} />

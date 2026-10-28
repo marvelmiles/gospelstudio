@@ -1,9 +1,9 @@
-import type { CSSProperties } from "react";
 import { Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
 import { formatTimecode, needsHoursField } from "../../lib/media";
+import { cn } from "../../lib/cn";
 import { StageButton } from "../ui/Button";
+import { sliderFill } from "../ui/Field";
 
 interface VideoTransportBarProps {
   playing: boolean;
@@ -21,7 +21,7 @@ interface VideoTransportBarProps {
   onHoverChange?: (hovering: boolean) => void;
   compact?: boolean;
   mediaNoun?: string;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const VideoTransportBar = ({
@@ -40,46 +40,32 @@ export const VideoTransportBar = ({
   onHoverChange,
   compact,
   mediaNoun = "video",
-  style,
+  className,
 }: VideoTransportBarProps) => {
-  const { colors, controls, fonts, stage } = useUITheme();
   const seekMax = Math.max(end, start + 0.1);
   const position = Math.min(Math.max(time, start), seekMax);
   const span = seekMax - start;
   const seekPercent = ((position - start) / span) * 100;
   const level = muted ? 0 : volume;
   const withHours = needsHoursField(span);
-  const fill = (percent: number) =>
-    `linear-gradient(90deg, ${colors.accent} 0%, ${colors.accentSoft} ${percent}%, ${controls.track} ${percent}%)`;
-
-  const readout: CSSProperties = {
-    fontFamily: fonts.ui,
-    fontSize: 12,
-    color: stage.text,
-    fontVariantNumeric: "tabular-nums",
-    minWidth: withHours ? 56 : 40,
-  };
+  const readout = cn(
+    "text-xs tabular-nums",
+    withHours ? "min-w-14" : "min-w-10",
+  );
 
   return (
     <div
       {...mediaSurfaceProps}
       onMouseEnter={() => onHoverChange?.(true)}
       onMouseLeave={() => onHoverChange?.(false)}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: compact ? 6 : 10,
-        padding: compact ? "8px 9px" : "9px 12px",
-        borderRadius: 14,
-        background: stage.overlayStrong,
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        border: `1px solid ${stage.border}`,
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? "auto" : "none",
-        transition: "opacity 0.3s ease",
-        ...style,
-      }}
+      className={cn(
+        "flex items-center rounded-[14px] border border-stage-line bg-stage-overlay-strong backdrop-blur-[10px] transition-opacity duration-300",
+        compact ? "gap-1.5 px-2.25 py-2" : "gap-2.5 px-3 py-2.25",
+        visible
+          ? "pointer-events-auto opacity-100"
+          : "pointer-events-none opacity-0",
+        className,
+      )}
     >
       <StageButton
         icon={playing ? Pause : Play}
@@ -93,22 +79,22 @@ export const VideoTransportBar = ({
         title="Replay from the trim start"
         onClick={onRestart}
       />
-      <span style={{ ...readout, textAlign: "right" }}>
+      <span className={cn(readout, "text-right text-white")}>
         {formatTimecode(position - start, withHours)}
       </span>
       <input
         type="range"
-        className="ws-slider"
+        className="slider min-w-0 flex-1"
         aria-label="Playhead"
         min={start}
         max={seekMax}
         step={0.1}
         value={position}
         onChange={(event) => onSeek(Number(event.target.value))}
-        style={{ flex: 1, minWidth: 0, background: fill(seekPercent) }}
+        style={{ background: sliderFill(seekPercent) }}
       />
       {!compact && (
-        <span style={{ ...readout, color: colors.sub }}>
+        <span className={cn(readout, "text-sub")}>
           {formatTimecode(span, withHours)}
         </span>
       )}
@@ -121,13 +107,13 @@ export const VideoTransportBar = ({
       {!compact && (
         <input
           type="range"
-          className="ws-slider"
+          className="slider w-21 shrink-0"
           aria-label="Volume"
           min={0}
           max={100}
           value={level}
           onChange={(event) => onVolume(Number(event.target.value))}
-          style={{ width: 84, flexShrink: 0, background: fill(level) }}
+          style={{ background: sliderFill(level) }}
         />
       )}
     </div>

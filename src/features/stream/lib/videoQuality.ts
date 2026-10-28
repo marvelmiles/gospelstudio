@@ -29,8 +29,6 @@ export const START_VIDEO_BITRATE = 2_500_000;
 
 export const MAX_VIDEO_FRAMERATE = 30;
 
-// The receiver's offer decides which encoder the phone runs; H.264 is the one phones encode in hardware.
-// Offering only these keeps the description short enough to pair from a single QR; rtx carries their retransmissions.
 export const PREFERRED_VIDEO_CODECS = [
   "video/h264",
   "video/vp8",

@@ -13,9 +13,7 @@ import type { SliceCreator } from "../storeTypes";
 export interface OverlayPresetsSlice {
   overlayPresets: StreamOverlayPreset[];
 
-  /** Keeps a broadcast overlay for later, and answers with its saved id. */
   saveOverlayPreset: (overlay: StreamOverlay, name: string) => string;
-  /** Replaces what was saved with the overlay as it stands now. */
   updateOverlayPreset: (id: string, overlay: StreamOverlay) => void;
   renameOverlayPreset: (id: string, name: string) => void;
   removeOverlayPreset: (id: string) => void;
@@ -66,8 +64,6 @@ export const createOverlayPresetsSlice: SliceCreator<OverlayPresetsSlice> = (
     }));
     void saveRecord("overlayPresets", next);
     afterWrite(get);
-    /* The overlay it was saved from may have pointed at a different passage,
-       and nothing else has to be holding the one it has just let go of. */
     releaseOverlayPassages([current.overlay], getStreamOverlays());
   },
 

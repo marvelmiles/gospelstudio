@@ -13,9 +13,7 @@ export interface DisplayInfo {
   id: string;
   label: string;
   size: string;
-  /** The display Go Live projects onto. */
   isProjector: boolean;
-  /** The display the app itself is on. */
   isCurrent: boolean;
 }
 
@@ -24,7 +22,6 @@ export interface ScreenAccessState {
   isExtended: boolean;
   displays: DisplayInfo[];
   isAsking: boolean;
-  /** Asks the browser for the displays. Only answers from a click. */
   allowDisplays: () => void;
 }
 
@@ -48,10 +45,6 @@ const watchScreenChange = (onChange: () => void): (() => void) => {
   return () => screen.removeEventListener?.("change", onChange);
 };
 
-/**
- * What this site is allowed to do with the displays attached to the device,
- * and which one Go Live would project onto.
- */
 export const useScreenAccess = (enabled = true): ScreenAccessState => {
   const [access, setAccess] = useState<ScreenAccess>("prompt");
   const [isExtended, setIsExtended] = useState(isExtendedDisplay);

@@ -47,9 +47,6 @@ const adjustmentsShape = {
   blur: z.number(),
 };
 
-/* Settings as a complete set, for anything handed between pages. What is read
-   back from storage is the same shape with every field optional, so a record
-   written by an older build still loads. */
 export const imageSettingsSchema = z.object({
   ...adjustmentsShape,
   rotate: rotateSchema,
@@ -154,7 +151,7 @@ const hymnMusicSchema = z
   })
   .strip();
 
-export const manuscriptSchema = z
+const manuscriptSchema = z
   .object({
     id: z.string().optional(),
     title: z.string(),
@@ -236,7 +233,7 @@ const audioSchema = z
   })
   .passthrough();
 
-export const scriptureSchema = z
+const scriptureSchema = z
   .object({
     id: z.string().optional(),
     title: z.string(),
@@ -273,7 +270,7 @@ export const scriptureSchema = z
   })
   .passthrough();
 
-export const mediaSchema = z
+const mediaSchema = z
   .object({
     id: z.string().optional(),
     kind: z.enum(["image", "video"]),
@@ -292,8 +289,6 @@ export const mediaSchema = z
   })
   .passthrough();
 
-/* A broadcast overlay kept for later. Everything it looks like travels with
-   it; what it points at is matched up again on the device it lands on. */
 const overlayImageRefSchema = z
   .object({
     id: z.string(),
@@ -380,7 +375,7 @@ const savedMarqueeOverlaySchema = z
   })
   .passthrough();
 
-export const overlayPresetSchema = z.object({
+const overlayPresetSchema = z.object({
   id: z.string().optional(),
   name: z.string(),
   overlay: z.union([savedMarqueeOverlaySchema, savedContentOverlaySchema]),

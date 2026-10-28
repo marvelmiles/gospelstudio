@@ -1,7 +1,6 @@
 import type { MouseEvent } from "react";
 import type { BibleVerse } from "../../../types";
-import { useUITheme } from "../../../theme/ThemeProvider";
-import { fade } from "../../../theme/uiTheme";
+import { cn } from "../../../lib/cn";
 
 interface VerseRowProps {
   verse: BibleVerse;
@@ -19,64 +18,38 @@ export const VerseRow = ({
   onRef,
   onSelect,
   onPresent,
-}: VerseRowProps) => {
-  const { colors, fonts } = useUITheme();
-  const highlight = isSelected
-    ? fade(colors.accent, 0.13)
-    : isBeingRead
-      ? fade(colors.info, 0.14)
-      : "transparent";
-  const outline = isSelected
-    ? fade(colors.accent, 0.35)
-    : isBeingRead
-      ? fade(colors.info, 0.4)
-      : "transparent";
-
-  return (
-    <div
-      ref={onRef}
-      onClick={(event: MouseEvent) =>
-        onSelect(event.ctrlKey || event.metaKey || event.shiftKey)
-      }
-      onDoubleClick={onPresent}
-      title="Click to select · Ctrl-click to extend · Shift+↑/↓ to grow · Double-click to present this verse"
-      style={{
-        display: "flex",
-        gap: 12,
-        padding: "9px 12px",
-        borderRadius: 10,
-        cursor: "pointer",
-        marginBottom: 2,
-        background: highlight,
-        border: `1px solid ${outline}`,
-        userSelect: "none",
-      }}
+}: VerseRowProps) => (
+  <div
+    ref={onRef}
+    onClick={(event: MouseEvent) =>
+      onSelect(event.ctrlKey || event.metaKey || event.shiftKey)
+    }
+    onDoubleClick={onPresent}
+    title="Click to select, Ctrl-click to extend, Shift+Up/Down to grow, double-click to present this verse"
+    className={cn(
+      "mb-0.5 flex cursor-pointer gap-3 rounded-[10px] border px-3 py-2.25 select-none",
+      isSelected
+        ? "border-accent/35 bg-accent/13"
+        : isBeingRead
+          ? "border-info/40 bg-info/14"
+          : "border-transparent bg-transparent",
+    )}
+  >
+    <span
+      className={cn(
+        "min-w-5.5 pt-0.75 text-right text-xs font-bold tabular-nums",
+        isSelected ? "text-accent" : "text-dim",
+      )}
     >
-      <span
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          fontWeight: 700,
-          color: isSelected ? colors.accent : colors.dim,
-          minWidth: 22,
-          textAlign: "right",
-          paddingTop: 3,
-          fontVariantNumeric: "tabular-nums",
-        }}
-      >
-        {verse.v}
-      </span>
-      <span
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 15,
-          lineHeight: 1.65,
-          whiteSpace: "pre-line",
-          color: isSelected || isBeingRead ? colors.text : colors.sub,
-        }}
-      >
-        {verse.t}
-      </span>
-    </div>
-  );
-};
+      {verse.v}
+    </span>
+    <span
+      className={cn(
+        "text-[15px] leading-[1.65] whitespace-pre-line",
+        isSelected || isBeingRead ? "text-fg" : "text-sub",
+      )}
+    >
+      {verse.t}
+    </span>
+  </div>
+);

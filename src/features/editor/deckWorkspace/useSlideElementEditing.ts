@@ -6,7 +6,6 @@ import type {
   SlideElementRef,
 } from "../SlideElementOverlay";
 
-/** Selecting, moving and duplicating the elements placed on the open slide. */
 export const useSlideElementEditing = (
   editor: DeckEditor,
   slideId: string | null,

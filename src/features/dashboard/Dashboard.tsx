@@ -1,4 +1,5 @@
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { pageClassName } from "../../components/ui/PageHeader";
 import { useDashboardData } from "./useDashboardData";
 import { GreetingHeader } from "./components/GreetingHeader";
 import { OverviewGrid } from "./components/OverviewGrid";
@@ -23,7 +24,7 @@ export const Dashboard = () => {
     storage && (storage.level !== "ok" || storage.backend !== "indexeddb");
 
   return (
-    <div className="ws-page">
+    <div className={pageClassName}>
       <GreetingHeader
         label={greeting.label}
         heading={greeting.heading}
@@ -34,16 +35,10 @@ export const Dashboard = () => {
 
       {showStorage && <StorageCard storage={storage} />}
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit,minmax(280px,1fr))",
-          gap: 16,
-        }}
-      >
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
         <RecentActivities activities={activities} />
 
-        <div style={{ display: "grid", gap: 16 }}>
+        <div className="grid gap-4">
           <ManuscriptsByCategory
             data={manuscriptsByCollection}
             largest={largestCollectionCount}

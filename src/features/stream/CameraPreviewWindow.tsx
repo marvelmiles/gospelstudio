@@ -1,9 +1,13 @@
 import { useState } from "react";
-import { GripHorizontal, MonitorPlay, Volume2, VolumeX, X } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { MonitorPlay, Volume2, VolumeX, X } from "lucide-react";
+import { cn } from "../../lib/cn";
 import { useFloatingWindow } from "../../hooks/useFloatingWindow";
 import { IconButton } from "../../components/ui/Button";
 import { FloatingWindowTab } from "../../components/ui/FloatingWindowTab";
+import {
+  FloatingWindowHeader,
+  floatingWindowClassName,
+} from "../../components/ui/FloatingWindowHeader";
 import { StreamStatusBadge, connectionBadgeStatus } from "./StreamStatusBadge";
 import { StreamVideo } from "./StreamVideo";
 import { CameraStatusOverlay } from "./components/CameraStatusOverlay";
@@ -51,7 +55,6 @@ const CameraPreviewWindow = ({
   session: StreamSessionState;
   index: number;
 }) => {
-  const { colors, fonts, stage, shadows } = useUITheme();
   const { ref, position, handleProps, windowProps, stash, zIndex } =
     useFloatingWindow({
       width: WIDTH,
@@ -77,59 +80,23 @@ const CameraPreviewWindow = ({
         onPointerDownCapture={windowProps.onPointerDownCapture}
         style={{
           ...windowProps.style,
-          position: "fixed",
           left: position.x,
           top: position.y,
           width: WIDTH,
-          borderRadius: 14,
-          overflow: "hidden",
-          background: colors.panelSolid,
-          border: `1px solid ${colors.border}`,
-          boxShadow: shadows.overlay,
         }}
+        className={cn(floatingWindowClassName, "border-line")}
       >
-        <div
-          {...handleProps}
-          style={{
-            ...handleProps.style,
-            display: "flex",
-            alignItems: "center",
-            gap: 7,
-            padding: "7px 9px",
-            borderBottom: `1px solid ${colors.border}`,
-          }}
+        <FloatingWindowHeader
+          handleProps={handleProps}
+          title={camera.deviceName}
         >
-          <GripHorizontal
-            size={14}
-            color={colors.dim}
-            style={{ flexShrink: 0 }}
-          />
-          <span
-            className="ws-ellipsis"
-            style={{
-              flex: 1,
-              minWidth: 0,
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              fontWeight: 700,
-              color: colors.text,
-            }}
-          >
-            {camera.deviceName}
-          </span>
           <StreamStatusBadge
             status={connectionBadgeStatus(camera.status, false)}
             size="sm"
           />
-        </div>
+        </FloatingWindowHeader>
 
-        <div
-          style={{
-            position: "relative",
-            aspectRatio: "16 / 9",
-            background: stage.surface,
-          }}
-        >
+        <div className="relative aspect-video bg-stage">
           <StreamVideo stream={camera.stream} muted={muted} />
           <CameraStatusOverlay
             status={camera.status}
@@ -138,27 +105,12 @@ const CameraPreviewWindow = ({
           />
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 6,
-            padding: "7px 8px",
-            borderTop: `1px solid ${colors.border}`,
-          }}
-        >
+        <div className="flex items-center gap-1.5 border-t border-line px-2 py-1.75">
           <span
-            className="ws-ellipsis"
-            style={{
-              flex: 1,
-              minWidth: 0,
-              fontFamily: fonts.ui,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: 0.4,
-              textTransform: "uppercase",
-              color: isPrimary ? colors.accentSoft : colors.dim,
-            }}
+            className={cn(
+              "min-w-0 flex-1 truncate text-[11px] font-bold tracking-[0.4px] uppercase",
+              isPrimary ? "text-accent-soft" : "text-dim",
+            )}
           >
             {isPrimary ? "Main screen" : "Preview only"}
           </span>

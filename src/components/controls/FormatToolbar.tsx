@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CSSProperties, MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import {
   Bold,
   ChevronDown,
@@ -14,8 +14,7 @@ import {
   Underline,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { Popover } from "../ui/Popover";
 import { INLINE_FORMATS } from "../../lib/textFormatting";
 import type { InlineFormatName } from "../../lib/textFormatting";
@@ -51,15 +50,14 @@ const LIST_SAMPLES: Record<ListKind, string> = {
 interface FormatToolbarProps {
   controller: TextFormattingController;
   block?: boolean;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const FormatToolbar = ({
   controller,
   block,
-  style,
+  className,
 }: FormatToolbarProps) => {
-  const { colors } = useUITheme();
   const [listMenu, setListMenu] = useState(false);
   const { list } = controller;
 
@@ -67,18 +65,12 @@ export const FormatToolbar = ({
     <div
       role="toolbar"
       aria-label="Text formatting"
-      style={{
-        display: "flex",
-        flexWrap: "wrap",
-        alignItems: "center",
-        gap: 4,
-        padding: block ? 6 : 0,
-        borderRadius: block ? 10 : 0,
-        background: block ? colors.raise : "transparent",
-        border: block ? `1px solid ${colors.border}` : "none",
-        opacity: controller.ready ? 1 : 0.5,
-        ...style,
-      }}
+      className={cn(
+        "flex flex-wrap items-center gap-1",
+        block && "rounded-[10px] border border-line bg-raise p-1.5",
+        !controller.ready && "opacity-50",
+        className,
+      )}
     >
       {ORDER.map((name) => (
         <FormatButton
@@ -116,7 +108,7 @@ export const FormatToolbar = ({
           <FormatButton
             icon={ChevronDown}
             label="More list styles"
-            width={22}
+            narrow
             active={
               list.kind !== null &&
               list.kind !== "bullet" &&
@@ -160,98 +152,52 @@ export const FormatToolbar = ({
   );
 };
 
-const Divider = () => {
-  const { colors } = useUITheme();
-  return (
-    <span
-      aria-hidden
-      style={{
-        width: 1,
-        height: 18,
-        margin: "0 3px",
-        background: colors.border,
-      }}
-    />
-  );
-};
+const Divider = () => (
+  <span aria-hidden className="mx-0.75 h-4.5 w-px bg-line" />
+);
 
 interface ListStyleMenuProps {
   active: ListKind | null;
   onPick: (kind: ListKind) => void;
 }
 
-const ListStyleMenu = ({ active, onPick }: ListStyleMenuProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div
-      role="menu"
-      style={{
-        minWidth: 208,
-        padding: 6,
-        borderRadius: 12,
-        background: colors.panelSolid,
-        border: `1px solid ${colors.border}`,
-        boxShadow: "0 18px 44px rgba(0,0,0,0.45)",
-      }}
-    >
-      {ORDERED_LIST_KINDS.map((kind) => {
-        const selected = active === kind;
-        return (
-          <button
-            key={kind}
-            role="menuitemradio"
-            aria-checked={selected}
-            onMouseDown={(event: MouseEvent) => event.preventDefault()}
-            onClick={() => onPick(kind)}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 12,
-              width: "100%",
-              padding: "8px 10px",
-              borderRadius: 8,
-              cursor: "pointer",
-              textAlign: "left",
-              fontFamily: fonts.ui,
-              fontSize: 13,
-              color: selected ? colors.accentSoft : colors.text,
-              background: selected ? fade(colors.accent, 0.16) : "transparent",
-              border: "none",
-            }}
-            onMouseEnter={(event) => {
-              if (selected) return;
-              event.currentTarget.style.background = colors.raise;
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.background = selected
-                ? fade(colors.accent, 0.16)
-                : "transparent";
-            }}
-          >
-            {LIST_KIND_LABELS[kind]}
-            <span
-              style={{
-                fontSize: 12,
-                color: colors.dim,
-                fontVariantNumeric: "tabular-nums",
-              }}
-            >
-              {LIST_SAMPLES[kind]}
-            </span>
-          </button>
-        );
-      })}
-    </div>
-  );
-};
+const ListStyleMenu = ({ active, onPick }: ListStyleMenuProps) => (
+  <div
+    role="menu"
+    className="min-w-52 rounded-xl border border-line bg-panel-solid p-1.5 shadow-[0_18px_44px_rgb(0_0_0/0.45)]"
+  >
+    {ORDERED_LIST_KINDS.map((kind) => {
+      const selected = active === kind;
+      return (
+        <button
+          key={kind}
+          role="menuitemradio"
+          aria-checked={selected}
+          onMouseDown={(event: MouseEvent) => event.preventDefault()}
+          onClick={() => onPick(kind)}
+          className={cn(
+            "flex w-full items-center justify-between gap-3 rounded-lg border-none px-2.5 py-2 text-left text-[13px]",
+            selected
+              ? "bg-accent/16 text-accent-soft"
+              : "bg-transparent text-fg hover:bg-raise",
+          )}
+        >
+          {LIST_KIND_LABELS[kind]}
+          <span className="text-xs text-dim tabular-nums">
+            {LIST_SAMPLES[kind]}
+          </span>
+        </button>
+      );
+    })}
+  </div>
+);
 
 interface FormatButtonProps {
   icon: LucideIcon;
   label: string;
   active?: boolean;
   disabled?: boolean;
-  width?: number;
+  narrow?: boolean;
   onClick?: () => void;
 }
 
@@ -260,42 +206,25 @@ const FormatButton = ({
   label,
   active,
   disabled,
-  width = 30,
+  narrow,
   onClick,
-}: FormatButtonProps) => {
-  const { colors } = useUITheme();
-  const rest = active ? fade(colors.accent, 0.18) : "transparent";
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      aria-pressed={active}
-      disabled={disabled}
-      onMouseDown={(event: MouseEvent) => event.preventDefault()}
-      onClick={onClick}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width,
-        height: 30,
-        borderRadius: 8,
-        cursor: disabled ? "not-allowed" : "pointer",
-        transition: "all .15s",
-        background: rest,
-        color: active ? colors.accentSoft : colors.sub,
-        border: `1px solid ${active ? fade(colors.accent, 0.32) : "transparent"}`,
-      }}
-      onMouseEnter={(event) => {
-        if (disabled) return;
-        event.currentTarget.style.background = active
-          ? fade(colors.accent, 0.24)
-          : colors.raise;
-      }}
-      onMouseLeave={(event) => (event.currentTarget.style.background = rest)}
-    >
-      <Icon size={15} />
-    </button>
-  );
-};
+}: FormatButtonProps) => (
+  <button
+    type="button"
+    title={label}
+    aria-label={label}
+    aria-pressed={active}
+    disabled={disabled}
+    onMouseDown={(event: MouseEvent) => event.preventDefault()}
+    onClick={onClick}
+    className={cn(
+      "inline-flex h-7.5 items-center justify-center rounded-lg border transition-all duration-150 disabled:cursor-not-allowed",
+      narrow ? "w-5.5" : "w-7.5",
+      active
+        ? "border-accent/32 bg-accent/18 text-accent-soft enabled:hover:bg-accent/24"
+        : "border-transparent bg-transparent text-sub enabled:hover:bg-raise",
+    )}
+  >
+    <Icon size={15} />
+  </button>
+);

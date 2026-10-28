@@ -1,56 +1,18 @@
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { APP_NAME } from "../../lib/appInfo";
 
 export const ResetOverlay = () => {
-  const { colors, fonts } = useUITheme();
   const resetting = useStore((s) => s.resetting);
   if (!resetting) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 500,
-        display: "grid",
-        placeItems: "center",
-        padding: 24,
-        background: colors.scrimStrong,
-        backdropFilter: "blur(8px)",
-      }}
-    >
-      <div style={{ textAlign: "center", maxWidth: 360 }}>
-        <div
-          style={{
-            width: 46,
-            height: 46,
-            margin: "0 auto 20px",
-            borderRadius: "50%",
-            border: `3px solid ${colors.border}`,
-            borderTopColor: colors.accent,
-            animation: "wfSpin 0.9s linear infinite",
-          }}
-        />
-        <div
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 22,
-            fontWeight: 600,
-            color: colors.text,
-          }}
-        >
+    <div className="fixed inset-0 z-500 grid place-items-center bg-scrim-strong p-6 backdrop-blur-sm">
+      <div className="max-w-90 text-center">
+        <div className="mx-auto mb-5 size-11.5 animate-spin rounded-full border-3 border-line border-t-accent [animation-duration:0.9s]" />
+        <div className="text-[22px] font-semibold text-fg">
           Resetting {APP_NAME}
         </div>
-        <p
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 14,
-            color: colors.sub,
-            lineHeight: 1.6,
-            marginTop: 10,
-          }}
-        >
+        <p className="mt-2.5 text-sm leading-[1.6] text-sub">
           Restoring defaults. Please don't reload or close this tab.
         </p>
       </div>

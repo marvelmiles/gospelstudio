@@ -13,7 +13,8 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
+import { MiniButton } from "../../components/ui/MiniButton";
 import { Modal } from "../../components/ui/Modal";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { EmptyState } from "../../components/ui/EmptyState";
@@ -130,7 +131,7 @@ export const SavedOverlaysModal = ({
               value={query}
               onChange={setQuery}
               placeholder="Search saved overlays…"
-              style={{ minWidth: 0, marginBottom: 12 }}
+              className="mb-3 min-w-0"
             />
             {filtered.length === 0 ? (
               <EmptyState
@@ -141,15 +142,7 @@ export const SavedOverlaysModal = ({
                 bare
               />
             ) : (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 6,
-                  maxHeight: 360,
-                  overflowY: "auto",
-                }}
-              >
+              <div className="flex max-h-90 flex-col gap-1.5 overflow-y-auto">
                 {filtered.map((preset) => (
                   <PresetRow
                     key={preset.id}
@@ -185,7 +178,6 @@ interface PresetRowProps {
 }
 
 const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
-  const { colors, fonts } = useUITheme();
   const renameOverlayPreset = useStore((s) => s.renameOverlayPreset);
   const [draftName, setDraftName] = useState<string | null>(null);
   const Icon = KIND_ICON[preset.overlay.kind];
@@ -197,16 +189,10 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "8px 9px 8px 11px",
-        borderRadius: 11,
-        background: colors.bg,
-        border: `1px solid ${colors.border}`,
-        opacity: ready ? 1 : 0.6,
-      }}
+      className={cn(
+        "flex items-center gap-2 rounded-[11px] border border-line bg-canvas py-2 pr-2.25 pl-2.75",
+        !ready && "opacity-60",
+      )}
     >
       {draftName === null ? (
         <button
@@ -216,41 +202,18 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
               ? `Add "${preset.name}" to the broadcast`
               : MISSING_NOTE[preset.overlay.kind]
           }
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            flex: 1,
-            minWidth: 0,
-            padding: 0,
-            background: "transparent",
-            border: "none",
-            cursor: "pointer",
-            textAlign: "left",
-          }}
+          className="flex min-w-0 flex-1 items-center gap-2.5 border-none bg-transparent p-0 text-left"
         >
-          <Icon size={15} color={colors.accentSoft} style={{ flexShrink: 0 }} />
-          <span style={{ minWidth: 0, flex: 1 }}>
-            <span
-              className="ws-ellipsis"
-              style={{
-                display: "block",
-                fontFamily: fonts.ui,
-                fontSize: 13.5,
-                fontWeight: 600,
-                color: colors.text,
-              }}
-            >
+          <Icon size={15} className="shrink-0 text-accent-soft" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[13.5px] font-semibold text-fg">
               {preset.name}
             </span>
             <span
-              className="ws-ellipsis"
-              style={{
-                display: "block",
-                fontFamily: fonts.ui,
-                fontSize: 11.5,
-                color: ready ? colors.dim : colors.warning,
-              }}
+              className={cn(
+                "block truncate text-[11.5px]",
+                ready ? "text-dim" : "text-warning",
+              )}
             >
               {ready
                 ? `${KIND_NOUN[preset.overlay.kind]} · ${describe(preset.overlay)}`
@@ -262,7 +225,7 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
         <TextInput
           value={draftName}
           autoFocus
-          style={{ flex: 1, minWidth: 0, padding: "6px 9px", fontSize: 13 }}
+          className="min-w-0 flex-1 px-2.25 py-1.5 text-[13px]"
           onChange={(event) => setDraftName(event.target.value)}
           onKeyDown={(event) => {
             if (event.key === "Enter") commitRename();
@@ -273,67 +236,32 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
 
       {draftName === null ? (
         <>
-          <RowButton
+          <MiniButton
             icon={Pencil}
-            label={`Rename "${preset.name}"`}
+            title={`Rename "${preset.name}"`}
             onClick={() => setDraftName(preset.name)}
           />
-          <RowButton
+          <MiniButton
             icon={Trash2}
-            label={`Remove "${preset.name}"`}
+            title={`Remove "${preset.name}"`}
             danger
             onClick={onRemove}
           />
         </>
       ) : (
         <>
-          <RowButton
+          <MiniButton
             icon={Check}
-            label="Save the name"
+            title="Save the name"
             onClick={commitRename}
           />
-          <RowButton
+          <MiniButton
             icon={X}
-            label="Keep the old name"
+            title="Keep the old name"
             onClick={() => setDraftName(null)}
           />
         </>
       )}
     </div>
-  );
-};
-
-const RowButton = ({
-  icon: Icon,
-  label,
-  onClick,
-  danger,
-}: {
-  icon: LucideIcon;
-  label: string;
-  onClick: () => void;
-  danger?: boolean;
-}) => {
-  const { colors } = useUITheme();
-  return (
-    <button
-      title={label}
-      aria-label={label}
-      onClick={onClick}
-      style={{
-        width: 27,
-        height: 27,
-        flexShrink: 0,
-        display: "grid",
-        placeItems: "center",
-        borderRadius: 8,
-        border: "none",
-        cursor: "pointer",
-        background: "transparent",
-        color: danger ? colors.danger : colors.sub,
-      }}
-    >
-      <Icon size={14} />
-    </button>
   );
 };

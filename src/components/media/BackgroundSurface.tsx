@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import type { Background, ImageSettings, VideoSettings } from "../../types";
 import {
   backgroundImageSettings,
@@ -6,15 +5,14 @@ import {
   isVideoBackground,
 } from "../../lib/media";
 import { useBlobUrl, useThumbUrl } from "../../lib/blobUrls";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
 import { ImageLayer } from "./ImageLayer";
 import { VideoThumb } from "./VideoThumb";
 import { BackgroundVideoLayer } from "./BackgroundVideoLayer";
 
-const EMPTY_SURFACE = "#0a0a0c";
-
-const backgroundCss = (background?: Background): string => {
-  if (!background) return EMPTY_SURFACE;
+const backgroundCss = (background?: Background): string | undefined => {
+  if (!background) return undefined;
   if (background.type === "solid") return background.color || "#111";
   return background.css || "#111";
 };
@@ -26,7 +24,7 @@ interface BackgroundSurfaceProps {
   settings?: ImageSettings | null;
   videoSettings?: VideoSettings | null;
   variant?: SurfaceVariant;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const BackgroundSurface = ({
@@ -34,7 +32,7 @@ export const BackgroundSurface = ({
   settings,
   videoSettings,
   variant = "full",
-  style,
+  className,
 }: BackgroundSurfaceProps) => {
   if (isVideoBackground(background))
     return (
@@ -42,7 +40,7 @@ export const BackgroundSurface = ({
         mediaId={background?.mediaId ?? ""}
         settings={videoSettings}
         variant={variant}
-        style={style}
+        className={className}
       />
     );
   if (isImageBackground(background))
@@ -51,17 +49,13 @@ export const BackgroundSurface = ({
         background={background}
         settings={settings}
         variant={variant}
-        style={style}
+        className={className}
       />
     );
   return (
     <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        background: backgroundCss(background),
-        ...style,
-      }}
+      style={{ background: backgroundCss(background) }}
+      className={cn("absolute inset-0 bg-thumbnail", className)}
     />
   );
 };
@@ -70,7 +64,7 @@ const ImageBackgroundSurface = ({
   background,
   settings,
   variant,
-  style,
+  className,
 }: Required<Pick<BackgroundSurfaceProps, "variant">> &
   Omit<BackgroundSurfaceProps, "variant">) => {
   const blobId = background?.blobId;
@@ -87,7 +81,7 @@ const ImageBackgroundSurface = ({
       src={src}
       alt={background?.name || ""}
       settings={settings ?? backgroundImageSettings(background)}
-      style={{ background: EMPTY_SURFACE, ...style }}
+      className={cn("bg-thumbnail", className)}
     />
   );
 };
@@ -96,30 +90,29 @@ const VideoBackgroundSurface = ({
   mediaId,
   settings,
   variant,
-  style,
+  className,
 }: {
   mediaId: string;
   settings?: VideoSettings | null;
   variant: SurfaceVariant;
-  style?: CSSProperties;
+  className?: string;
 }) => {
   const item = useStore((s) =>
     s.media.find((entry) => entry.id === mediaId && entry.kind === "video"),
   );
-  const surfaceStyle: CSSProperties = { background: EMPTY_SURFACE, ...style };
+  const surfaceClassName = cn("absolute inset-0 bg-thumbnail", className);
 
-  if (!item)
-    return <div style={{ position: "absolute", inset: 0, ...surfaceStyle }} />;
+  if (!item) return <div className={surfaceClassName} />;
   if (variant === "full")
     return (
       <BackgroundVideoLayer
         item={item}
         settings={settings}
-        style={surfaceStyle}
+        className={cn("bg-thumbnail", className)}
       />
     );
   return (
-    <div style={{ position: "absolute", inset: 0, ...surfaceStyle }}>
+    <div className={surfaceClassName}>
       <VideoThumb item={item} applySettings />
     </div>
   );

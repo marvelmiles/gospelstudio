@@ -10,7 +10,7 @@ export interface LineSelection {
 
 const WORD_CHARACTER = /[\p{L}\p{N}'’-]/u;
 
-export const wordAround = (text: string, index: number): TextRange | null => {
+const wordAround = (text: string, index: number): TextRange | null => {
   let start = index;
   let end = index;
   while (start > 0 && WORD_CHARACTER.test(text[start - 1])) start -= 1;

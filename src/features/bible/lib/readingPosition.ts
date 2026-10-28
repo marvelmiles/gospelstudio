@@ -5,7 +5,7 @@ export interface ReadingPosition {
   at?: string;
 }
 
-const STORAGE_KEY = "ws:bible-position";
+const STORAGE_KEY = "gospelstudio:bible-position";
 
 const DEFAULT_POSITION: ReadingPosition = {
   bookId: 43,

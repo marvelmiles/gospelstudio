@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode, Ref } from "react";
+import type { ReactNode, Ref } from "react";
 import type { PipPlacement } from "../../types";
 import type {
   MediaPlayback,
@@ -12,7 +12,13 @@ import {
 } from "../../components/media/VideoSurface";
 import { StreamVideo } from "../stream/StreamVideo";
 import { StreamOverlayLayers } from "../stream/StreamOverlayLayers";
-import { StreamPipLayer, type StreamPipWindow } from "../stream/StreamPipLayer";
+import {
+  StreamPipLayer,
+  pipFrameClassName,
+  pipLabelClassName,
+  type StreamPipWindow,
+} from "../stream/StreamPipLayer";
+import { cn } from "../../lib/cn";
 import type { StreamOverlay } from "../stream/lib/streamOverlay";
 
 interface SecondaryPipContentProps {
@@ -28,46 +34,8 @@ interface SecondaryPipContentProps {
   cameras?: StreamPipWindow[];
 }
 
-const FRAME_STYLE: CSSProperties = {
-  overflow: "hidden",
-  borderRadius: "2.5%",
-  background: "#000",
-  boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
-  outline: "1px solid rgba(255,255,255,0.22)",
-  outlineOffset: -1,
-  zIndex: 15,
-  containerType: "inline-size",
-};
-
-const LABEL_STYLE: CSSProperties = {
-  position: "absolute",
-  left: "4%",
-  bottom: "6%",
-  maxWidth: "88%",
-  padding: "1.5% 4%",
-  borderRadius: 999,
-  background: "rgba(0,0,0,0.6)",
-  color: "#fff",
-  fontFamily: "system-ui, sans-serif",
-  fontSize: "clamp(8px, 7cqw, 13px)",
-  fontWeight: 700,
-  whiteSpace: "nowrap",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  pointerEvents: "none",
-};
-
-const WAITING_STYLE: CSSProperties = {
-  position: "absolute",
-  inset: 0,
-  display: "grid",
-  placeItems: "center",
-  padding: "4%",
-  textAlign: "center",
-  color: "rgba(255,255,255,0.65)",
-  fontFamily: "system-ui, sans-serif",
-  fontSize: "clamp(8px, 6cqw, 13px)",
-};
+const waitingClassName =
+  "absolute inset-0 grid place-items-center p-[4%] text-center text-[clamp(8px,6cqw,13px)] text-white/65";
 
 export const secondaryLabel = (secondary: SecondaryPresentState): string =>
   secondary.kind === "stream"
@@ -91,7 +59,7 @@ export const SecondaryPipContent = ({
 
   if (secondary.kind === "stream") {
     if (!stream)
-      return <div style={WAITING_STYLE}>Waiting for the camera…</div>;
+      return <div className={waitingClassName}>Waiting for the camera…</div>;
     return (
       <>
         <StreamVideo stream={stream} muted={muted} />
@@ -109,7 +77,9 @@ export const SecondaryPipContent = ({
   }
   if (!item) {
     return (
-      <div style={WAITING_STYLE}>That item is no longer in the library.</div>
+      <div className={waitingClassName}>
+        That item is no longer in the library.
+      </div>
     );
   }
   if (secondary.kind === "image") return <ImageSurface item={item} />;
@@ -135,9 +105,14 @@ export const SecondaryPipFrame = ({
   children: ReactNode;
 }) => {
   return (
-    <div style={{ ...pipFrameStyle(placement), ...FRAME_STYLE }}>
+    <div
+      style={pipFrameStyle(placement)}
+      className={cn(pipFrameClassName, "z-15")}
+    >
       {children}
-      {label && <span style={LABEL_STYLE}>{label}</span>}
+      {label && (
+        <span className={cn(pipLabelClassName, "max-w-[88%]")}>{label}</span>
+      )}
     </div>
   );
 };

@@ -17,7 +17,6 @@ import {
   type PlacedElement,
 } from "./slideEditHelpers";
 
-/** The pictures, clips and text boxes placed on a slide. */
 export const useSlideElementEdits = <T extends SlideDeckDoc>(
   deck: DeckDocument<T>,
 ) => {

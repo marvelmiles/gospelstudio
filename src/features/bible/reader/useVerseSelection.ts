@@ -10,7 +10,6 @@ export interface VerseSelection {
 interface UseVerseSelectionOptions {
   verses: BibleVerse[];
   focusRange?: VerseSpan | null;
-  /** Changes whenever the reader moves to another chapter. */
   chapterKey: string;
   isLoading: boolean;
 }
@@ -57,7 +56,6 @@ export const useVerseSelection = ({
     [],
   );
 
-  // A jump to another chapter carries its selection over, because the verses arrive after the navigation.
   const selectAfterNavigation = useCallback(
     (next: VerseSelection, scrollTo: number) => {
       pendingSelection.current = next;

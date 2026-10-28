@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
 
 interface LibrarySectionProps {
   title: string;
@@ -15,73 +14,28 @@ export const LibrarySection = ({
   meta,
   action,
   children,
-}: LibrarySectionProps) => {
-  const { colors, fonts } = useUITheme();
-
-  return (
-    <section
-      style={{
-        borderRadius: 14,
-        border: `1px solid ${colors.border}`,
-        background: colors.panel,
-        overflow: "hidden",
-      }}
-    >
-      <header
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-          padding: "13px 15px",
-          borderBottom: `1px solid ${colors.border}`,
-        }}
-      >
-        <div style={{ minWidth: 0, flex: "1 1 200px" }}>
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              fontWeight: 600,
-              color: colors.text,
-            }}
-          >
-            <span className="ws-ellipsis">{title}</span>
-            {meta && (
-              <span
-                style={{
-                  flexShrink: 0,
-                  fontSize: 11.5,
-                  fontWeight: 600,
-                  color: colors.sub,
-                  fontVariantNumeric: "tabular-nums",
-                }}
-              >
-                {meta}
-              </span>
-            )}
-          </div>
-          {description && (
-            <p
-              style={{
-                margin: "3px 0 0",
-                fontFamily: fonts.ui,
-                fontSize: 12.5,
-                lineHeight: 1.55,
-                color: colors.sub,
-              }}
-            >
-              {description}
-            </p>
+}: LibrarySectionProps) => (
+  <section className="overflow-hidden rounded-[14px] border border-line bg-panel">
+    <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-3.75 py-3.25">
+      <div className="min-w-0 flex-[1_1_200px]">
+        <div className="flex items-center gap-2 text-[13.5px] font-semibold text-fg">
+          <span className="truncate">{title}</span>
+          {meta && (
+            <span className="shrink-0 text-[11.5px] font-semibold text-sub tabular-nums">
+              {meta}
+            </span>
           )}
         </div>
-        {action && <div className="ws-row-wrap">{action}</div>}
-      </header>
-      <div style={{ padding: 15 }}>{children}</div>
-    </section>
-  );
-};
+        {description && (
+          <p className="mt-0.75 mb-0 text-[12.5px] leading-[1.55] text-sub">
+            {description}
+          </p>
+        )}
+      </div>
+      {action && (
+        <div className="flex flex-wrap items-center gap-2.5">{action}</div>
+      )}
+    </header>
+    <div className="p-3.75">{children}</div>
+  </section>
+);

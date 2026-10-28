@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
 
 interface PageHeaderProps {
   title: string;
@@ -7,41 +6,26 @@ interface PageHeaderProps {
   actions?: ReactNode;
 }
 
-export const PageHeader = ({ title, subtitle, actions }: PageHeaderProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div className="ws-page-head">
-      <div style={{ minWidth: 0, flex: "1 1 220px" }}>
-        <h1
-          className="ws-ellipsis"
-          style={{
-            margin: 0,
-            fontFamily: fonts.display,
-            fontSize: "clamp(22px,4vw,30px)",
-            fontWeight: 600,
-            lineHeight: 1.2,
-            color: colors.text,
-          }}
+export const pageClassName =
+  "mx-auto max-w-330 px-[clamp(14px,4vw,36px)] py-[clamp(18px,4vw,28px)]";
+
+export const PageHeader = ({ title, subtitle, actions }: PageHeaderProps) => (
+  <div className="mb-4.5 flex flex-wrap items-center justify-between gap-3.5">
+    <div className="min-w-0 flex-[1_1_220px]">
+      <h1 className="m-0 truncate text-[clamp(22px,4vw,30px)] leading-[1.2] font-semibold text-fg">
+        {title}
+      </h1>
+      {subtitle && (
+        <p
+          title={subtitle}
+          className="mt-1 mb-0 truncate text-[13.5px] leading-[1.4] text-sub"
         >
-          {title}
-        </h1>
-        {subtitle && (
-          <p
-            className="ws-ellipsis"
-            title={subtitle}
-            style={{
-              margin: "4px 0 0",
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              lineHeight: 1.4,
-              color: colors.sub,
-            }}
-          >
-            {subtitle}
-          </p>
-        )}
-      </div>
-      {actions && <div className="ws-row-wrap">{actions}</div>}
+          {subtitle}
+        </p>
+      )}
     </div>
-  );
-};
+    {actions && (
+      <div className="flex flex-wrap items-center gap-2.5">{actions}</div>
+    )}
+  </div>
+);

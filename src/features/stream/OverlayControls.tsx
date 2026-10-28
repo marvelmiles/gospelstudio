@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
   Check,
   ChevronDown,
@@ -8,46 +8,30 @@ import {
   X,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
-import { inputStyle } from "../../components/ui/Field";
-
+import { inputClassName } from "../../components/ui/Field";
 import { InfoTip } from "../../components/ui/InfoTip";
+import { cn } from "../../lib/cn";
 
-export const OverlaySectionLabel = ({ children }: { children: string }) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div
-      style={{
-        fontFamily: fonts.ui,
-        fontSize: 11.5,
-        fontWeight: 700,
-        letterSpacing: 0.4,
-        textTransform: "uppercase",
-        color: colors.dim,
-        marginBottom: 7,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
+const compactInputClassName = cn(inputClassName, "px-2.5 py-1.75");
 
-const ControlLabel = ({ children }: { children: ReactNode }) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <span
-      style={{
-        fontFamily: fonts.ui,
-        fontSize: 12,
-        fontWeight: 600,
-        color: colors.sub,
-      }}
-    >
-      {children}
-    </span>
-  );
-};
+const clearButtonClassName =
+  "grid size-7.5 shrink-0 place-items-center overflow-hidden rounded-lg border border-transparent bg-transparent p-0 text-dim";
+
+export const OverlaySectionLabel = ({ children }: { children: string }) => (
+  <div className="mb-1.75 text-[11.5px] font-bold tracking-[0.4px] text-dim uppercase">
+    {children}
+  </div>
+);
+
+const ControlLabel = ({ children }: { children: ReactNode }) => (
+  <span className="text-xs font-semibold text-sub">{children}</span>
+);
+
+const FieldLabel = ({ children }: { children: ReactNode }) => (
+  <span className="mb-1 block">
+    <ControlLabel>{children}</ControlLabel>
+  </span>
+);
 
 export const OverlaySlider = ({
   label,
@@ -65,36 +49,27 @@ export const OverlaySlider = ({
   step?: number;
   suffix?: string;
   onChange: (value: number) => void;
-}) => {
-  const { colors } = useUITheme();
-  return (
-    <label style={{ display: "block" }}>
-      <span
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: 4,
-        }}
-      >
-        <ControlLabel>{label}</ControlLabel>
-        {suffix !== undefined && (
-          <ControlLabel>
-            <span style={{ color: colors.dim }}>{`${value}${suffix}`}</span>
-          </ControlLabel>
-        )}
-      </span>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(event) => onChange(Number(event.target.value))}
-        style={{ width: "100%", accentColor: colors.accent }}
-      />
-    </label>
-  );
-};
+}) => (
+  <label className="block">
+    <span className="mb-1 flex justify-between">
+      <ControlLabel>{label}</ControlLabel>
+      {suffix !== undefined && (
+        <ControlLabel>
+          <span className="text-dim">{`${value}${suffix}`}</span>
+        </ControlLabel>
+      )}
+    </span>
+    <input
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={value}
+      onChange={(event) => onChange(Number(event.target.value))}
+      className="w-full accent-accent"
+    />
+  </label>
+);
 
 export const OverlaySelect = ({
   label,
@@ -106,37 +81,29 @@ export const OverlaySelect = ({
   value: string;
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
-}) => {
-  const { colors } = useUITheme();
-  return (
-    <label style={{ display: "block" }}>
-      <span style={{ display: "block", marginBottom: 4 }}>
-        <ControlLabel>{label}</ControlLabel>
-      </span>
-      <select
-        value={value}
-        onChange={(event) => onChange(event.target.value)}
-        style={{
-          ...inputStyle,
-          padding: "7px 10px",
-          fontSize: 12.5,
-          appearance: "none",
-          cursor: "pointer",
-        }}
-      >
-        {options.map((option) => (
-          <option
-            key={option.value}
-            value={option.value}
-            style={{ background: colors.panelSolid }}
-          >
-            {option.label}
-          </option>
-        ))}
-      </select>
-    </label>
-  );
-};
+}) => (
+  <label className="block">
+    <FieldLabel>{label}</FieldLabel>
+    <select
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      className={cn(
+        compactInputClassName,
+        "cursor-pointer appearance-none text-[12.5px]",
+      )}
+    >
+      {options.map((option) => (
+        <option
+          key={option.value}
+          value={option.value}
+          className="bg-panel-solid"
+        >
+          {option.label}
+        </option>
+      ))}
+    </select>
+  </label>
+);
 
 export const OverlayCheckbox = ({
   label,
@@ -148,75 +115,32 @@ export const OverlayCheckbox = ({
   hint?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <label
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 9,
-        cursor: "pointer",
-      }}
+}) => (
+  <label className="flex cursor-pointer items-start gap-2.25">
+    <span
+      className={cn(
+        "relative mt-px grid size-4.25 shrink-0 place-items-center rounded-[5px] border text-on-accent",
+        checked
+          ? "border-accent bg-accent"
+          : "border-line-strong bg-transparent",
+      )}
     >
-      <span
-        style={{
-          position: "relative",
-          flexShrink: 0,
-          width: 17,
-          height: 17,
-          marginTop: 1,
-          borderRadius: 5,
-          display: "grid",
-          placeItems: "center",
-          background: checked ? colors.accent : "transparent",
-          border: `1px solid ${checked ? colors.accent : colors.borderStrong}`,
-          color: colors.onAccent,
-        }}
-      >
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={(event) => onChange(event.target.checked)}
-          style={{
-            position: "absolute",
-            opacity: 0,
-            width: 0,
-            height: 0,
-          }}
-        />
-        {checked && <Check size={12} strokeWidth={3} />}
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="absolute size-0 opacity-0"
+      />
+      {checked && <Check size={12} strokeWidth={3} />}
+    </span>
+    <span className="min-w-0">
+      <span className="flex items-center gap-1 text-[12.5px] font-semibold text-fg">
+        {label}
+        {hint && <InfoTip title={label}>{hint}</InfoTip>}
       </span>
-      <span style={{ minWidth: 0 }}>
-        <span
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            fontFamily: fonts.ui,
-            fontSize: 12.5,
-            fontWeight: 600,
-            color: colors.text,
-          }}
-        >
-          {label}
-          {hint && <InfoTip title={label}>{hint}</InfoTip>}
-        </span>
-      </span>
-    </label>
-  );
-};
-
-const swatchButton = (border: string): CSSProperties => ({
-  width: 30,
-  height: 30,
-  flexShrink: 0,
-  padding: 0,
-  borderRadius: 8,
-  cursor: "pointer",
-  border: `1px solid ${border}`,
-  overflow: "hidden",
-});
+    </span>
+  </label>
+);
 
 export const OverlayColorField = ({
   label,
@@ -229,27 +153,24 @@ export const OverlayColorField = ({
   onChange: (value: string) => void;
   clearLabel?: string;
 }) => {
-  const { colors } = useUITheme();
   const pickerValue = /^#[0-9a-f]{6}$/i.test(value) ? value : "#000000";
   return (
     <div>
-      <span style={{ display: "block", marginBottom: 4 }}>
-        <ControlLabel>{label}</ControlLabel>
-      </span>
-      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex items-center gap-1.75">
         <input
           type="color"
           value={pickerValue}
           onChange={(event) => onChange(event.target.value)}
           aria-label={`${label} colour`}
-          style={{ ...swatchButton(colors.border), background: "transparent" }}
+          className="size-7.5 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-line bg-transparent p-0"
         />
         <input
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={clearLabel}
           aria-label={`${label} value`}
-          style={{ ...inputStyle, padding: "7px 10px", fontSize: 12 }}
+          className={cn(compactInputClassName, "text-xs")}
         />
         {value !== "" && (
           <button
@@ -257,13 +178,7 @@ export const OverlayColorField = ({
             title={clearLabel}
             aria-label={clearLabel}
             onClick={() => onChange("")}
-            style={{
-              ...swatchButton("transparent"),
-              display: "grid",
-              placeItems: "center",
-              background: "transparent",
-              color: colors.dim,
-            }}
+            className={clearButtonClassName}
           >
             <X size={14} />
           </button>
@@ -283,61 +198,37 @@ export const OverlayImageField = ({
   pictureName: string | null;
   onChoose: () => void;
   onClear: () => void;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div>
-      <span style={{ display: "block", marginBottom: 4 }}>
-        <ControlLabel>{label}</ControlLabel>
-      </span>
-      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+}) => (
+  <div>
+    <FieldLabel>{label}</FieldLabel>
+    <div className="flex items-center gap-1.75">
+      <button
+        type="button"
+        onClick={onChoose}
+        className={cn(
+          "flex min-w-0 flex-1 items-center gap-2 rounded-[9px] border border-line bg-raise px-2.5 py-1.75 text-left text-xs font-semibold",
+          pictureName ? "text-fg" : "text-dim",
+        )}
+      >
+        <ImageIcon size={13} className="shrink-0" />
+        <span className="min-w-0 truncate">
+          {pictureName ?? "Choose a picture"}
+        </span>
+      </button>
+      {pictureName && (
         <button
           type="button"
-          onClick={onChoose}
-          style={{
-            flex: 1,
-            minWidth: 0,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "7px 10px",
-            borderRadius: 9,
-            cursor: "pointer",
-            textAlign: "left",
-            background: colors.raise,
-            border: `1px solid ${colors.border}`,
-            color: pictureName ? colors.text : colors.dim,
-            fontFamily: fonts.ui,
-            fontSize: 12,
-            fontWeight: 600,
-          }}
+          title="Remove the picture"
+          aria-label="Remove the picture"
+          onClick={onClear}
+          className={clearButtonClassName}
         >
-          <ImageIcon size={13} style={{ flexShrink: 0 }} />
-          <span className="ws-ellipsis" style={{ minWidth: 0 }}>
-            {pictureName ?? "Choose a picture"}
-          </span>
+          <X size={14} />
         </button>
-        {pictureName && (
-          <button
-            type="button"
-            title="Remove the picture"
-            aria-label="Remove the picture"
-            onClick={onClear}
-            style={{
-              ...swatchButton("transparent"),
-              display: "grid",
-              placeItems: "center",
-              background: "transparent",
-              color: colors.dim,
-            }}
-          >
-            <X size={14} />
-          </button>
-        )}
-      </div>
+      )}
     </div>
-  );
-};
+  </div>
+);
 
 export const OverlaySettingsGroup = ({
   title,
@@ -350,52 +241,30 @@ export const OverlaySettingsGroup = ({
   defaultOpen?: boolean;
   children: ReactNode;
 }) => {
-  const { colors, fonts } = useUITheme();
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div
-      style={{
-        borderRadius: 10,
-        border: `1px solid ${colors.border}`,
-        background: open ? fade(colors.raise, 0.5) : "transparent",
-      }}
+      className={cn(
+        "rounded-[10px] border border-line",
+        open ? "bg-raise/50" : "bg-transparent",
+      )}
     >
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          width: "100%",
-          padding: "8px 10px",
-          background: "transparent",
-          border: "none",
-          cursor: "pointer",
-          color: colors.text,
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          fontWeight: 600,
-        }}
+        className="flex w-full items-center gap-2 border-none bg-transparent px-2.5 py-2 text-[12.5px] font-semibold text-fg"
       >
-        <Icon size={14} color={colors.accentSoft} style={{ flexShrink: 0 }} />
-        <span style={{ flex: 1, textAlign: "left" }}>{title}</span>
+        <Icon size={14} className="shrink-0 text-accent-soft" />
+        <span className="flex-1 text-left">{title}</span>
         {open ? (
-          <ChevronDown size={14} color={colors.dim} />
+          <ChevronDown size={14} className="text-dim" />
         ) : (
-          <ChevronRight size={14} color={colors.dim} />
+          <ChevronRight size={14} className="text-dim" />
         )}
       </button>
       {open && (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 11,
-            padding: "2px 10px 11px",
-          }}
-        >
+        <div className="flex flex-col gap-2.75 px-2.5 pt-0.5 pb-2.75">
           {children}
         </div>
       )}

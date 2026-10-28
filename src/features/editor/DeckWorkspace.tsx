@@ -1,9 +1,8 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import type { ContentKind, SlideDeckDoc } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { useStore } from "../../store/useStore";
-import { useViewport } from "../../hooks/useViewport";
+import { useWindowSize } from "usehooks-ts";
 import { useBgMap } from "../../hooks/useBgMap";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
@@ -20,6 +19,10 @@ import { validateName } from "../../lib/validation";
 import { DEFAULT_SLIDE_ELEMENTS } from "../../lib/slideElements";
 import type { SlideElementCapabilities } from "../../lib/slideElements";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
+import {
+  EditorColumns,
+  EditorStackedBody,
+} from "../../components/layout/EditorColumns";
 import { ContextMenu } from "../../components/ui/ContextMenu";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
@@ -65,13 +68,7 @@ interface DeckWorkspaceProps {
   topBarActions: (compact: boolean) => ReactNode;
   emptyState: ReactNode;
   elements?: SlideElementCapabilities;
-  /** How this document's slides are re-cut when its text size changes. */
   reflow?: ReflowOptions;
-  /**
-   * Re-cuts the slides for a new text size. Documents built from a source of
-   * their own, such as a passage built from verses, pass their own so the cut
-   * can fall inside a line rather than only between lines.
-   */
   refit?: (metrics: SlideTextMetrics) => boolean;
   unsavedMessage?: string;
   children?: ReactNode;
@@ -91,9 +88,8 @@ export const DeckWorkspace = ({
   unsavedMessage = UNSAVED_CHANGES_MESSAGE,
   children,
 }: DeckWorkspaceProps) => {
-  const { colors } = useUITheme();
   const navigate = useNavigate();
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const isStacked = width < STACKED_WIDTH;
   useDocumentTitle(doc.title);
 
@@ -280,14 +276,7 @@ export const DeckWorkspace = ({
   ) : null;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        minHeight: 0,
-      }}
-    >
+    <div className="flex h-full min-h-0 flex-col">
       <EditorTopBar
         title={doc.title}
         compact={width < COMPACT_WIDTH}
@@ -319,39 +308,18 @@ export const DeckWorkspace = ({
             onChange={setTab}
             hasSlide={Boolean(slide)}
           />
-          <div style={{ flex: 1, minHeight: 0, overflow: "auto" }}>
+          <EditorStackedBody>
             {tab === "slides" && listPanel}
             {tab === "edit" && previewPanel}
             {tab === "style" && (inspectorPanel || emptyState)}
-          </div>
+          </EditorStackedBody>
         </>
       ) : (
-        <div
-          style={{
-            flex: 1,
-            minHeight: 0,
-            display: "grid",
-            gridTemplateColumns: "292px 1fr 308px",
-          }}
-        >
-          <div
-            style={{
-              overflow: "auto",
-              borderRight: `1px solid ${colors.border}`,
-            }}
-          >
-            {listPanel}
-          </div>
-          <div style={{ overflow: "auto" }}>{previewPanel}</div>
-          <div
-            style={{
-              overflow: "auto",
-              borderLeft: `1px solid ${colors.border}`,
-            }}
-          >
-            {inspectorPanel}
-          </div>
-        </div>
+        <EditorColumns
+          list={listPanel}
+          preview={previewPanel}
+          inspector={inspectorPanel}
+        />
       )}
 
       {slideMenu && (

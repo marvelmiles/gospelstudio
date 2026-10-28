@@ -36,8 +36,6 @@ export const useThemeDraft = (
   const history = useDraftHistory<Theme | null>(saved ?? null);
   const { draft, apply, commit, reset } = history;
 
-  /* Opening another theme starts a fresh draft and a fresh history. The record
-     is read inside the effect so nothing has to be held in a render-time ref. */
   useEffect(() => {
     reset(
       useStore.getState().themes.find((theme) => theme.id === savedId) ?? null,
@@ -54,8 +52,6 @@ export const useThemeDraft = (
 
   const defaults = draft ? themeDefaults(draft) : null;
 
-  /* Staged like any other edit, so Save still decides and undo can take it
-     back. */
   const resetToDefaults = useCallback(() => {
     if (!defaults) return;
     apply(defaults);
@@ -69,8 +65,6 @@ export const useThemeDraft = (
       pushToast(error, "error");
       return;
     }
-    /* keepOnReset and mark belong to the library rather than to this form, so
-       the stored record keeps its own values through a save. */
     const stored = useStore
       .getState()
       .themes.find((theme) => theme.id === draft.id);

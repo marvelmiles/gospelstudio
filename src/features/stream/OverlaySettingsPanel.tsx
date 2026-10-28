@@ -1,5 +1,5 @@
 import { Eye, MonitorPlay, MonitorX, RotateCcw, Square } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { Button } from "../../components/ui/Button";
 import {
   OverlayCheckbox,
@@ -32,30 +32,19 @@ export const OverlaySettingsPanel = ({
 }: {
   overlay: StreamOverlay;
 }) => {
-  const { colors, fonts } = useUITheme();
   const edited = editedOverlay(overlay);
   const isLive = overlay.status === "live";
   const hasStaged = hasStagedEdits(overlay);
 
   return (
-    <div
-      style={{
-        padding: 13,
-        borderRadius: 12,
-        background: colors.bg,
-        border: `1px solid ${colors.border}`,
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-      }}
-    >
+    <div className="flex flex-col gap-3 rounded-xl border border-line bg-canvas p-3.25">
       <OverlaySectionLabel>Selected element</OverlaySectionLabel>
 
       <Button
         variant={isLive ? "danger" : "primary"}
         size="sm"
         onClick={() => toggleStreamOverlayLive(overlay.id)}
-        style={{ width: "100%" }}
+        className="w-full"
         title={
           isLive
             ? "Remove this from the broadcast. It keeps its placement."
@@ -67,14 +56,14 @@ export const OverlaySettingsPanel = ({
       </Button>
 
       {isLive && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <div style={{ display: "flex", gap: 7 }}>
+        <div className="flex flex-col gap-2">
+          <div className="flex gap-1.75">
             <Button
               variant="primary"
               size="sm"
               disabled={!hasStaged}
               onClick={() => applyStreamOverlayEdits(overlay.id)}
-              style={{ flex: 1 }}
+              className="flex-1"
               title={
                 hasStaged
                   ? "Put every change you have made on the broadcast now"
@@ -97,12 +86,10 @@ export const OverlaySettingsPanel = ({
             )}
           </div>
           <span
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 11.5,
-              lineHeight: 1.45,
-              color: hasStaged ? colors.warning : colors.dim,
-            }}
+            className={cn(
+              "text-[11.5px] leading-[1.45]",
+              hasStaged ? "text-warning" : "text-dim",
+            )}
           >
             {hasStaged
               ? "Changes waiting to be applied"
@@ -123,7 +110,7 @@ export const OverlaySettingsPanel = ({
           variant="subtle"
           size="sm"
           onClick={() => toggleStreamOverlayHidden(overlay.id)}
-          style={{ width: "100%" }}
+          className="w-full"
         >
           <Eye size={14} />
           Hidden. Show it again

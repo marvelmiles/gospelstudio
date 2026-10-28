@@ -16,7 +16,6 @@ export const isPeerConnecting = (status: PeerStatus): boolean =>
 export const isPeerFailed = (status: PeerStatus): boolean =>
   status === "failed";
 
-// ICE "disconnected" is transient (a sleeping phone, a WiFi power-save blip) and often recovers on its own, so it only reads as reconnecting.
 export const watchConnectionStatus = (
   connection: RTCPeerConnection,
   onStatus: (status: PeerStatus) => void,
@@ -30,6 +29,7 @@ export const watchConnectionStatus = (
         onConnected?.();
         onStatus("live");
         return;
+      /* A short drop, like a phone screen sleeping, usually recovers, so it shows as reconnecting. */
       case "connecting":
       case "disconnected":
         onStatus(hasConnected ? "reconnecting" : "connecting");

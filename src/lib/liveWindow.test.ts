@@ -23,8 +23,6 @@ describe("windowFeatures", () => {
     });
   });
 
-  /* A window cannot be told to fill a display after it has opened, so the one
-     click that opens it has to ask for both at once. */
   it("asks for a window that already fills the display", () => {
     expect(windowFeatures(tv, true)).toContain("fullscreen");
   });

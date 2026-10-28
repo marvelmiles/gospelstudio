@@ -1,19 +1,34 @@
+import type { ReactNode } from "react";
 import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type PointerEvent,
-  type ReactNode,
-} from "react";
-import { createPortal } from "react-dom";
-import { computePlacement, PLACEMENT_EDGE } from "../../lib/placement";
-import type { Placement, PopoverAlign, PopoverSide } from "../../lib/placement";
+  FloatingPortal,
+  autoUpdate,
+  flip,
+  offset,
+  safePolygon,
+  shift,
+  useClick,
+  useDismiss,
+  useFloating,
+  useHover,
+  useInteractions,
+  type Placement,
+} from "@floating-ui/react";
+import { cn } from "../../lib/cn";
 
-export type { PopoverAlign, PopoverSide };
+export type PopoverSide = "bottom" | "top" | "left" | "right";
+export type PopoverAlign = "start" | "center" | "end";
 
-const PANEL_ATTR = "data-popover-panel";
+const PANEL_ATTRIBUTE = "data-popover-panel";
+const EDGE_PADDING = 8;
+
+const toPlacement = (side: PopoverSide, align: PopoverAlign): Placement =>
+  align === "center" ? side : `${side}-${align}`;
+
+export const floatingMiddleware = [
+  offset(6),
+  flip({ padding: EDGE_PADDING }),
+  shift({ padding: EDGE_PADDING }),
+];
 
 interface PopoverProps {
   open: boolean;
@@ -24,7 +39,7 @@ interface PopoverProps {
   align?: PopoverAlign;
   openOnHover?: boolean;
   disabled?: boolean;
-  triggerStyle?: React.CSSProperties;
+  triggerClassName?: string;
 }
 
 export const Popover = ({
@@ -34,134 +49,58 @@ export const Popover = ({
   children,
   side = "bottom",
   align = "start",
-  openOnHover,
-  disabled,
-  triggerStyle,
+  openOnHover = false,
+  disabled = false,
+  triggerClassName,
 }: PopoverProps) => {
-  const anchorRef = useRef<HTMLSpanElement>(null);
-  const panelRef = useRef<HTMLDivElement>(null);
-  const closeTimer = useRef<number>();
-  const [placement, setPlacement] = useState<Placement | null>(null);
+  const { refs, floatingStyles, context } = useFloating({
+    open,
+    onOpenChange,
+    placement: toPlacement(side, align),
+    middleware: floatingMiddleware,
+    whileElementsMounted: autoUpdate,
+  });
 
-  const reposition = useCallback(() => {
-    const anchor = anchorRef.current;
-    const panel = panelRef.current;
-    if (!anchor || !panel) return;
-    setPlacement(
-      computePlacement(
-        anchor.getBoundingClientRect(),
-        { width: panel.offsetWidth, height: panel.offsetHeight },
-        side,
-        align,
-      ),
-    );
-  }, [side, align]);
-
-  useLayoutEffect(() => {
-    if (!open) {
-      setPlacement(null);
-      return;
-    }
-    reposition();
-  }, [open, reposition, children]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onScrollOrResize = () => reposition();
-    window.addEventListener("scroll", onScrollOrResize, true);
-    window.addEventListener("resize", onScrollOrResize);
-    return () => {
-      window.removeEventListener("scroll", onScrollOrResize, true);
-      window.removeEventListener("resize", onScrollOrResize);
-    };
-  }, [open, reposition]);
-
-  useEffect(() => {
-    if (!open) return;
-    const onPointerDown = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (
-        anchorRef.current?.contains(target) ||
-        panelRef.current?.contains(target)
-      )
-        return;
-      if (target instanceof Element && target.closest(`[${PANEL_ATTR}]`))
-        return;
-      onOpenChange(false);
-    };
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onOpenChange(false);
-    };
-    window.addEventListener("mousedown", onPointerDown);
-    window.addEventListener("keydown", onKey);
-    return () => {
-      window.removeEventListener("mousedown", onPointerDown);
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, onOpenChange]);
-
-  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
-
-  const pinned = useRef(false);
-  useEffect(() => {
-    if (!open) pinned.current = false;
-  }, [open]);
-
-  const cancelClose = () => window.clearTimeout(closeTimer.current);
-  const scheduleClose = (event: PointerEvent<HTMLElement>) => {
-    if (!openOnHover || pinned.current || event.pointerType !== "mouse") return;
-    cancelClose();
-    closeTimer.current = window.setTimeout(() => onOpenChange(false), 180);
-  };
-  const hoverOpen = (event: PointerEvent<HTMLElement>) => {
-    if (!openOnHover || disabled || event.pointerType !== "mouse") return;
-    cancelClose();
-    if (!open) onOpenChange(true);
-  };
-  const handleClick = () => {
-    if (disabled) return;
-    cancelClose();
-    if (open && openOnHover && !pinned.current) {
-      pinned.current = true;
-      return;
-    }
-    pinned.current = !open;
-    onOpenChange(!open);
-  };
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    useHover(context, {
+      enabled: openOnHover && !disabled,
+      mouseOnly: true,
+      delay: { close: 180 },
+      handleClose: safePolygon(),
+    }),
+    useClick(context, { enabled: !disabled }),
+    useDismiss(context, {
+      outsidePress: (event) =>
+        !(
+          event.target instanceof Element &&
+          event.target.closest(`[${PANEL_ATTRIBUTE}]`)
+        ),
+    }),
+  ]);
 
   return (
     <>
       <span
-        ref={anchorRef}
-        style={{ display: "inline-flex", ...triggerStyle }}
-        onClick={handleClick}
-        onPointerEnter={hoverOpen}
-        onPointerLeave={scheduleClose}
+        ref={refs.setReference}
+        className={cn("inline-flex", triggerClassName)}
+        {...getReferenceProps()}
       >
         {trigger}
       </span>
 
-      {open &&
-        createPortal(
+      {open && (
+        <FloatingPortal>
           <div
-            ref={panelRef}
-            {...{ [PANEL_ATTR]: "" }}
-            onPointerEnter={cancelClose}
-            onPointerLeave={scheduleClose}
-            style={{
-              position: "fixed",
-              top: placement?.top ?? 0,
-              left: placement?.left ?? 0,
-              zIndex: 400,
-              visibility: placement ? "visible" : "hidden",
-              maxHeight: `calc(100vh - ${PLACEMENT_EDGE * 2}px)`,
-              overflowY: "auto",
-            }}
+            ref={refs.setFloating}
+            {...{ [PANEL_ATTRIBUTE]: "" }}
+            style={floatingStyles}
+            className="z-400 max-h-[calc(100vh-16px)] overflow-y-auto"
+            {...getFloatingProps()}
           >
             {children}
-          </div>,
-          document.body,
-        )}
+          </div>
+        </FloatingPortal>
+      )}
     </>
   );
 };

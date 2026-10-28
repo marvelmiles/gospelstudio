@@ -10,8 +10,6 @@ import {
 } from "lucide-react";
 import type { MediaItem } from "../../types";
 import type { SecondaryModuleKind } from "../../lib/presentChannel";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
 import { sortMediaByRecency } from "../../lib/media";
 import { useThumbUrl } from "../../lib/blobUrls";
@@ -23,8 +21,8 @@ import { SearchInput } from "../../components/ui/SearchInput";
 import { PipPlacementControls } from "../../components/ui/PipPlacementControls";
 import { StageButton } from "../../components/ui/Button";
 import { primaryCamera, useStreamSession } from "../stream/lib/streamSession";
-
-const PANEL_WIDTH = 320;
+import { MiniButton } from "../../components/ui/MiniButton";
+import { cn } from "../../lib/cn";
 
 const TABS: PillTab<SecondaryModuleKind>[] = [
   { id: "stream", label: "Live camera", icon: Radio },
@@ -55,7 +53,7 @@ export const SecondaryModuleMenu = ({ variant }: SecondaryModuleMenuProps) => {
         variant === "stage" ? (
           <StageButton icon={Combine} title={title} active={active || open} />
         ) : (
-          <MiniTrigger active={active || open} title={title} />
+          <MiniButton icon={Combine} title={title} active={active || open} />
         )
       }
     >
@@ -64,33 +62,7 @@ export const SecondaryModuleMenu = ({ variant }: SecondaryModuleMenuProps) => {
   );
 };
 
-const MiniTrigger = ({ active, title }: { active: boolean; title: string }) => {
-  const { colors } = useUITheme();
-  return (
-    <button
-      type="button"
-      title={title}
-      aria-label={title}
-      style={{
-        width: 28,
-        height: 28,
-        flexShrink: 0,
-        borderRadius: 8,
-        cursor: "pointer",
-        display: "grid",
-        placeItems: "center",
-        background: active ? fade(colors.accent, 0.18) : "transparent",
-        color: active ? colors.accentSoft : colors.sub,
-        border: `1px solid ${active ? fade(colors.accent, 0.3) : "transparent"}`,
-      }}
-    >
-      <Combine size={15} />
-    </button>
-  );
-};
-
 const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
-  const { colors, fonts } = useUITheme();
   const media = useStore((s) => s.media);
   const pushToast = useStore((s) => s.pushToast);
   const secondary = useStore((s) => s.secondaryPresentation);
@@ -125,33 +97,8 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
   };
 
   return (
-    <div
-      style={{
-        width: PANEL_WIDTH,
-        maxWidth: "calc(100vw - 24px)",
-        padding: 14,
-        borderRadius: 14,
-        background: fade(colors.panelSolid, 0.97),
-        backdropFilter: "blur(18px) saturate(150%)",
-        WebkitBackdropFilter: "blur(18px) saturate(150%)",
-        border: `1px solid ${colors.border}`,
-        boxShadow: "0 20px 55px rgba(0,0,0,0.55)",
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 6,
-          fontFamily: fonts.display,
-          fontSize: 15,
-          fontWeight: 600,
-          color: colors.text,
-        }}
-      >
+    <div className="flex w-80 max-w-[calc(100vw-24px)] flex-col gap-3 rounded-[14px] border border-line bg-panel-solid/97 p-3.5 shadow-[0_20px_55px_rgb(0_0_0/0.55)] backdrop-blur-[18px] backdrop-saturate-150">
+      <div className="flex items-center gap-1.5 text-[15px] font-semibold text-fg">
         Second module
         <InfoTip title="Second module">
           Runs in a corner of the stage beside whatever is already on it, on the
@@ -160,29 +107,9 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
       </div>
 
       {secondary && (
-        <div
-          style={{
-            padding: 11,
-            borderRadius: 11,
-            background: colors.bg,
-            border: `1px solid ${fade(colors.accent, 0.35)}`,
-            display: "flex",
-            flexDirection: "column",
-            gap: 10,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span
-              className="ws-ellipsis"
-              style={{
-                flex: 1,
-                minWidth: 0,
-                fontFamily: fonts.ui,
-                fontSize: 13,
-                fontWeight: 700,
-                color: colors.text,
-              }}
-            >
+        <div className="flex flex-col gap-2.5 rounded-[11px] border border-accent/35 bg-canvas p-2.75">
+          <div className="flex items-center gap-2">
+            <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-fg">
               {secondary.kind === "stream"
                 ? (cameraName ?? "Live camera")
                 : (secondary.item?.name ?? "Missing item")}
@@ -236,26 +163,11 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
             value={query}
             onChange={setQuery}
             placeholder={tab === "video" ? "Search videos…" : "Search images…"}
-            style={{ minWidth: 0 }}
+            className="min-w-0"
           />
-          <div
-            style={{
-              maxHeight: 220,
-              overflowY: "auto",
-              display: "flex",
-              flexDirection: "column",
-              gap: 6,
-            }}
-          >
+          <div className="flex max-h-55 flex-col gap-1.5 overflow-y-auto">
             {items.length === 0 ? (
-              <span
-                style={{
-                  fontFamily: fonts.ui,
-                  fontSize: 12.5,
-                  color: colors.dim,
-                  padding: "10px 2px",
-                }}
-              >
+              <span className="px-0.5 py-2.5 text-[12.5px] text-dim">
                 {query
                   ? "Nothing matches that."
                   : `No ${tab === "video" ? "videos" : "images"} in the library yet.`}
@@ -287,35 +199,24 @@ const CameraChoice = ({
   name?: string;
   chosen: boolean;
   onChoose: () => void;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          lineHeight: 1.5,
-          color: colors.sub,
-          margin: 0,
-        }}
-      >
-        {connected
-          ? `Shows ${name ?? "the camera"} the Stream module is receiving, live in the corner.`
-          : "No camera is connected yet. Join one from the Stream page and it appears here on its own."}
-      </p>
-      <Button
-        variant={chosen ? "ghost" : "primary"}
-        size="sm"
-        onClick={onChoose}
-        disabled={chosen}
-      >
-        <Radio size={14} />
-        {chosen ? "Already in the corner" : "Show the live camera"}
-      </Button>
-    </div>
-  );
-};
+}) => (
+  <div className="flex flex-col gap-2">
+    <p className="m-0 text-xs leading-normal text-sub">
+      {connected
+        ? `Shows ${name ?? "the camera"} the Stream module is receiving, live in the corner.`
+        : "No camera is connected yet. Join one from the Stream page and it appears here on its own."}
+    </p>
+    <Button
+      variant={chosen ? "ghost" : "primary"}
+      size="sm"
+      onClick={onChoose}
+      disabled={chosen}
+    >
+      <Radio size={14} />
+      {chosen ? "Already in the corner" : "Show the live camera"}
+    </Button>
+  </div>
+);
 
 const MediaChoice = ({
   item,
@@ -326,61 +227,28 @@ const MediaChoice = ({
   chosen: boolean;
   onChoose: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const thumbUrl = useThumbUrl(item.hasThumb ? item.id : null);
   return (
     <button
       onClick={onChoose}
       title={chosen ? `${item.name} is already showing` : `Show ${item.name}`}
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 10,
-        padding: 6,
-        borderRadius: 10,
-        cursor: "pointer",
-        textAlign: "left",
-        background: chosen ? fade(colors.accent, 0.16) : "transparent",
-        border: `1px solid ${chosen ? fade(colors.accent, 0.3) : "transparent"}`,
-        color: colors.text,
-      }}
+      className={cn(
+        "flex items-center gap-2.5 rounded-[10px] border p-1.5 text-left text-fg",
+        chosen
+          ? "border-accent/30 bg-accent/16"
+          : "border-transparent bg-transparent",
+      )}
     >
-      <span
-        style={{
-          width: 52,
-          height: 30,
-          flexShrink: 0,
-          borderRadius: 6,
-          overflow: "hidden",
-          background: colors.bg,
-          border: `1px solid ${colors.border}`,
-          display: "grid",
-          placeItems: "center",
-          color: colors.dim,
-        }}
-      >
+      <span className="grid h-7.5 w-13 shrink-0 place-items-center overflow-hidden rounded-md border border-line bg-canvas text-dim">
         {thumbUrl ? (
-          <img
-            src={thumbUrl}
-            alt=""
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <img src={thumbUrl} alt="" className="size-full object-cover" />
         ) : item.kind === "video" ? (
           <Film size={14} />
         ) : (
           <ImageIcon size={14} />
         )}
       </span>
-      <span
-        className="ws-ellipsis"
-        style={{
-          flex: 1,
-          minWidth: 0,
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          fontWeight: 600,
-        }}
-      >
+      <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold">
         {item.name}
       </span>
     </button>

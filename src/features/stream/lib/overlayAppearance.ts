@@ -55,7 +55,7 @@ export const DEFAULT_OVERLAY_MARQUEE_STYLE: OverlaySurfaceStyle = {
   fontWeight: 600,
 };
 
-export const BADGE_HEIGHT_RATIO = 1.9;
+const BADGE_HEIGHT_RATIO = 1.9;
 
 export const BADGE_GAP_RATIO = 0.62;
 

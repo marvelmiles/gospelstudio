@@ -8,7 +8,6 @@ interface UrlEntry {
   releaseTimer: number | null;
 }
 
-// Object URLs are reference counted and released after a grace period, so a remount reuses one instead of reloading the blob.
 const entries = new Map<string, UrlEntry>();
 const RELEASE_GRACE_MS = 4000;
 
@@ -21,7 +20,7 @@ const entryFor = (id: string): UrlEntry => {
   return entry;
 };
 
-export const acquireBlobUrl = (id: string): Promise<string | null> => {
+const acquireBlobUrl = (id: string): Promise<string | null> => {
   const entry = entryFor(id);
   entry.refs += 1;
   if (entry.releaseTimer !== null) {
@@ -45,7 +44,7 @@ export const acquireBlobUrl = (id: string): Promise<string | null> => {
   return entry.loading;
 };
 
-export const releaseBlobUrl = (id: string): void => {
+const releaseBlobUrl = (id: string): void => {
   const entry = entries.get(id);
   if (!entry) return;
   entry.refs = Math.max(0, entry.refs - 1);
@@ -58,8 +57,6 @@ export const releaseBlobUrl = (id: string): void => {
   }, RELEASE_GRACE_MS);
 };
 
-/* Dropping a cached url is not enough on its own: mounted readers hold the
-   revoked string in state, so they are woken through this epoch to re-acquire. */
 let epoch = 0;
 const epochListeners = new Set<() => void>();
 

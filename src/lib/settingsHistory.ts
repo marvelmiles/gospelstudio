@@ -1,7 +1,5 @@
 import type { DraftEditOptions } from "../hooks/useDraftHistory";
 
-/* Settings dragged on a slider, where a whole run of changes is one undo step
-   rather than one step per pixel. */
 const CONTINUOUS_KEYS = new Set([
   "brightness",
   "contrast",

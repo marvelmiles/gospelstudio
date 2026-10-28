@@ -6,7 +6,6 @@ import {
   Share2,
   Square,
 } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Modal } from "../../components/ui/Modal";
 import { Button, IconButton } from "../../components/ui/Button";
 import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
@@ -21,23 +20,16 @@ import { useStopSharePrompt } from "./lib/useStopSharePrompt";
 import { deviceListHint } from "./lib/useShareLobby";
 
 interface QuickShareModalProps {
-  /** What is being handed over, named by the records behind it. */
   records: BackupRecordRef[];
   title: string;
   onClose: () => void;
 }
 
-/**
- * Sends one thing from wherever it is listed. It joins the same network lobby
- * the Quick Share page uses, so the devices offered here are the ones already
- * waiting there, along with any device already paired with a code.
- */
 export const QuickShareModal = ({
   records,
   title,
   onClose,
 }: QuickShareModalProps) => {
-  const { colors, fonts } = useUITheme();
   const source = useBackupSource();
   const quickShare = useQuickShare({ announce: false, onSent: onClose });
   const [isPairing, setIsPairing] = useState(false);
@@ -59,14 +51,6 @@ export const QuickShareModal = ({
   );
 
   const canSend = canSendSelection(quickShare, selection);
-
-  const note = {
-    margin: "0 0 12px",
-    fontFamily: fonts.ui,
-    fontSize: 12.5,
-    lineHeight: 1.6,
-    color: colors.sub,
-  };
 
   return (
     <>
@@ -108,16 +92,15 @@ export const QuickShareModal = ({
           )
         }
       >
-        <p style={note}>
-          Sending <strong style={{ color: colors.text }}>{title}</strong>:{" "}
-          {summary}
+        <p className="mt-0 mb-3 text-[12.5px] leading-[1.6] text-sub">
+          Sending <strong className="text-fg">{title}</strong>: {summary}
           {bytes > 0 ? ` (about ${formatBytes(bytes)})` : ""}. Anything it
           needs, such as its background or sound, travels with it.
         </p>
 
-        <p style={{ ...note, marginBottom: 8 }}>
-          <Share2 size={13} style={{ verticalAlign: "-2px" }} /> The other
-          device needs the Quick Share page open.
+        <p className="mt-0 mb-2 text-[12.5px] leading-[1.6] text-sub">
+          <Share2 size={13} className="inline align-[-2px]" /> The other device
+          needs the Quick Share page open.
         </p>
         <ShareDeviceList
           devices={quickShare.devices}
@@ -130,7 +113,7 @@ export const QuickShareModal = ({
           onStop={stopPrompt.askForDevice}
           onForget={(device) => quickShare.forgetDevice(device.id)}
         />
-        <div style={{ marginTop: 10 }}>
+        <div className="mt-2.5">
           <Button
             variant="ghost"
             size="sm"

@@ -20,7 +20,7 @@ import {
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
 import type { SliceCreator } from "../storeTypes";
 
-export interface MediaUpdateOptions {
+interface MediaUpdateOptions {
   touch?: boolean;
 }
 
@@ -161,7 +161,6 @@ export const createMediaSlice: SliceCreator<MediaSlice> = (set, get) => ({
     afterDelete(get);
   },
 
-  /** Puts a picture behind slides, or takes it back out if it is already there. */
   toggleImageBackground: (id) => {
     if (blockWrite(get)) return false;
     const item = get().media.find((m) => m.id === id && m.kind === "image");

@@ -7,7 +7,7 @@ export interface ReadingEvent {
   at: string;
 }
 
-const STORAGE_KEY = "ws:bible-reading-history";
+const STORAGE_KEY = "gospelstudio:bible-reading-history";
 const MAX_ENTRIES = 50;
 
 const eventKey = (

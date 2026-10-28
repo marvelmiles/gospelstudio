@@ -7,6 +7,7 @@ import {
   validateTrimStart,
   type TrimRange,
 } from "../../lib/media";
+import { cn } from "../../lib/cn";
 import { IconButton } from "../ui/Button";
 import { Field } from "../ui/Field";
 import { TimecodeInput } from "../ui/TimecodeInput";
@@ -16,7 +17,7 @@ interface TrimFieldsProps {
   onChange: (changes: Partial<TrimRange>) => void;
   duration?: number;
   playhead?: number;
-  columns?: string;
+  className?: string;
   onIssueChange?: (field: string, message: string | null) => void;
 }
 
@@ -25,7 +26,7 @@ export const TrimFields = ({
   onChange,
   duration,
   playhead,
-  columns = "1fr",
+  className,
   onIssueChange,
 }: TrimFieldsProps) => {
   const withHours = needsHoursField(duration);
@@ -43,8 +44,8 @@ export const TrimFields = ({
       {roundedPlayhead === null ? (
         input
       ) : (
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>{input}</div>
+        <div className="flex items-center gap-1.5">
+          <div className="min-w-0 flex-1">{input}</div>
           <IconButton
             icon={Crosshair}
             title="Set to the playhead"
@@ -57,7 +58,7 @@ export const TrimFields = ({
   );
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: columns, gap: 12 }}>
+    <div className={cn("grid grid-cols-1 gap-3", className)}>
       {trimField(
         `Start (${shape})`,
         <TimecodeInput

@@ -11,9 +11,6 @@ import {
 } from "firebase/database";
 import { getSignalingDb } from "../../../lib/signalingDb";
 
-/* Its own corner of each room, so a device offering to share a library never
-   shows up in the list of cameras, and the rules that already cover the
-   signalling subtree cover this too. */
 const ROOT_PATH = "signal";
 const SHARE_PATH = "share";
 
@@ -26,9 +23,7 @@ const roomPath = (room: string): string => `${ROOT_PATH}/${room}/${SHARE_PATH}`;
 export interface ShareDevice {
   id: string;
   name: string;
-  /** When it last said it was here, so a reloaded device replaces its old row. */
   lastSeen: number;
-  /** Reached over a link set up with a code rather than found on the network. */
   isPaired?: boolean;
 }
 
@@ -53,8 +48,6 @@ const inboxRef = (
   deviceId: string,
 ): DatabaseReference => ref(database, `${roomPath(room)}/calls/${deviceId}`);
 
-/* One slot per caller rather than one per device, so several devices can be
-   handed the same library at once without overwriting each other. */
 const callRef = (
   database: Database,
   room: string,
@@ -73,7 +66,6 @@ export interface SharePresence {
   close: () => Promise<void>;
 }
 
-/** Announces this device to the others on the same network. */
 export const publishShareDevice = (
   room: string,
   deviceId: string,
@@ -89,7 +81,6 @@ export const publishShareDevice = (
     void set(presence, { name, ts: serverTimestamp() });
   };
 
-  // onDisconnect fires once per socket, so presence is re-announced whenever a sleeping device reconnects.
   const stopConnectionListener = onValue(
     ref(database, ".info/connected"),
     (snapshot) => {
@@ -141,7 +132,6 @@ export interface ShareCall {
   close: () => Promise<void>;
 }
 
-/** Puts an offer in another device's inbox and waits for its reply. */
 export const callShareDevice = (
   room: string,
   targetId: string,
@@ -175,7 +165,6 @@ export const callShareDevice = (
   };
 };
 
-/** Every offer waiting in this device's inbox, as it arrives. */
 export const watchIncomingCalls = (
   room: string,
   deviceId: string,

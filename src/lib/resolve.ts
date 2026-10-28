@@ -107,7 +107,7 @@ export const resolveBackgroundId = (
   );
 };
 
-export const resolveBackground = (
+const resolveBackground = (
   slide: Slide | undefined,
   doc: SlideDeckDoc | undefined,
   theme: Theme,
@@ -140,20 +140,11 @@ export const resolveBackgroundImage = (
   return settings;
 };
 
-/**
- * Whether a layer's settings belong to the background in play. A layer that
- * names a different background is styling something else, so its settings are
- * left out rather than bleeding onto the one actually shown.
- */
 const appliesToBackground = (
   layerBackgroundId: string | undefined,
   backgroundId: string,
 ): boolean => !layerBackgroundId || layerBackgroundId === backgroundId;
 
-/**
- * A moving background's settings for this document or slide alone. The clip in
- * the library keeps its own settings; these sit on top of them for one use.
- */
 export const resolveBackgroundVideo = (
   slide: Slide | undefined,
   doc: SlideDeckDoc | undefined,
@@ -210,8 +201,6 @@ export const resolveAnimation = (
   );
 };
 
-/** Silence chosen here is an answer, so it settles the question rather than
- *  passing it on to the document or theme underneath. */
 export const resolveAudioId = (
   slide: Slide | undefined,
   doc: SlideDeckDoc | undefined,
@@ -225,10 +214,6 @@ export const resolveAudioId = (
   return chosen === NO_AUDIO_ID ? null : chosen;
 };
 
-/**
- * The background audio's settings for this document or slide alone, layered
- * over whatever the sound carries in the library.
- */
 export const resolveAudioSettings = (
   slide: Slide | undefined,
   doc: SlideDeckDoc | undefined,

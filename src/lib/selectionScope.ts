@@ -1,4 +1,4 @@
-export const KEEPS_SELECTION_ATTRIBUTE = "data-keeps-selection";
+const KEEPS_SELECTION_ATTRIBUTE = "data-keeps-selection";
 
 export const keepsSelectionProps = {
   [KEEPS_SELECTION_ATTRIBUTE]: "",

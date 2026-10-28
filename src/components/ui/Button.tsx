@@ -1,95 +1,90 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../../lib/cn";
 import { Spinner } from "./Spinner";
 
-type ButtonVariant = "primary" | "ghost" | "subtle" | "danger";
-type ButtonSize = "sm" | "md" | "lg";
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 rounded-[11px] border font-semibold whitespace-nowrap transition-all duration-150 enabled:hover:brightness-110 disabled:cursor-not-allowed",
+  {
+    variants: {
+      variant: {
+        primary:
+          "border-accent-soft/35 bg-accent text-on-accent shadow-[0_6px_20px_rgb(37_99_235/0.32),inset_0_1px_0_rgb(255_255_255/0.14)]",
+        ghost: "border-line bg-raise text-fg",
+        subtle: "border-transparent bg-transparent text-sub",
+        danger: "border-danger/30 bg-danger/14 text-danger",
+      },
+      size: {
+        sm: "px-2.75 py-1.5 text-[12.5px]",
+        md: "px-3.75 py-2.25 text-[13.5px]",
+        lg: "px-5 py-3 text-[15px]",
+      },
+    },
+    defaultVariants: { variant: "ghost", size: "md" },
+  },
+);
 
-interface ButtonProps {
+interface ButtonProps extends VariantProps<typeof buttonVariants> {
   children: ReactNode;
   onClick?: () => void;
-  variant?: ButtonVariant;
-  size?: ButtonSize;
   title?: string;
   disabled?: boolean;
   busy?: boolean;
-  style?: CSSProperties;
+  className?: string;
 }
 
 export const Button = ({
   children,
   onClick,
-  variant = "ghost",
-  size = "md",
+  variant,
+  size,
   title,
   disabled,
   busy,
-  style,
-}: ButtonProps) => {
-  const { colors, fonts } = useUITheme();
-  const blocked = disabled || busy;
-  const base: CSSProperties = {
-    display: "inline-flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    fontFamily: fonts.ui,
-    fontWeight: 600,
-    cursor: blocked ? "not-allowed" : "pointer",
-    borderRadius: 11,
-    transition: "all .16s ease",
-    whiteSpace: "nowrap",
-    opacity: disabled ? 0.5 : 1,
-    border: "1px solid transparent",
-    padding:
-      size === "sm" ? "6px 11px" : size === "lg" ? "12px 20px" : "9px 15px",
-    fontSize: size === "sm" ? 12.5 : size === "lg" ? 15 : 13.5,
-  };
-  const variants: Record<ButtonVariant, CSSProperties> = {
-    primary: {
-      background: colors.accent,
-      color: colors.onAccent,
-      border: `1px solid ${fade(colors.accentSoft, 0.35)}`,
-      boxShadow: `0 6px 20px ${fade(colors.accent, 0.32)}, inset 0 1px 0 rgba(255,255,255,0.14)`,
+  className,
+}: ButtonProps) => (
+  <button
+    title={title}
+    disabled={disabled || busy}
+    onClick={onClick}
+    className={cn(
+      buttonVariants({ variant, size }),
+      disabled && "opacity-50",
+      className,
+    )}
+  >
+    {busy ? (
+      <Spinner
+        size={size === "sm" ? 13 : 15}
+        className={variant === "primary" ? "text-on-accent" : "text-accent"}
+      />
+    ) : (
+      children
+    )}
+  </button>
+);
+
+const iconButtonVariants = cva(
+  "inline-flex items-center justify-center rounded-[9px] border transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-45",
+  {
+    variants: {
+      tone: {
+        plain:
+          "border-transparent bg-transparent text-sub enabled:hover:bg-raise",
+        filled: "border-line bg-raise text-sub",
+        active:
+          "border-accent/30 bg-accent/16 text-accent-soft enabled:hover:bg-accent/22",
+      },
+      danger: { true: "text-danger enabled:hover:bg-danger/16" },
+      size: {
+        sm: "size-7.25 [&_svg]:size-3.75",
+        md: "size-8.5 [&_svg]:size-[16.5px]",
+      },
     },
-    ghost: {
-      background: colors.raise,
-      color: colors.text,
-      border: `1px solid ${colors.border}`,
-    },
-    subtle: {
-      background: "transparent",
-      color: colors.sub,
-      border: "1px solid transparent",
-    },
-    danger: {
-      background: fade(colors.danger, 0.14),
-      color: colors.danger,
-      border: `1px solid ${fade(colors.danger, 0.3)}`,
-    },
-  };
-  const spinnerColor = variant === "primary" ? colors.onAccent : colors.accent;
-  return (
-    <button
-      title={title}
-      disabled={blocked}
-      onClick={onClick}
-      onMouseEnter={(e) => {
-        if (!blocked) e.currentTarget.style.filter = "brightness(1.1)";
-      }}
-      onMouseLeave={(e) => (e.currentTarget.style.filter = "none")}
-      style={{ ...base, ...variants[variant], ...style }}
-    >
-      {busy ? (
-        <Spinner size={size === "sm" ? 13 : 15} color={spinnerColor} />
-      ) : (
-        children
-      )}
-    </button>
-  );
-};
+    defaultVariants: { tone: "plain", size: "md" },
+  },
+);
 
 interface IconButtonProps {
   icon: LucideIcon;
@@ -102,11 +97,6 @@ interface IconButtonProps {
   filled?: boolean;
 }
 
-const ICON_BUTTON_BOX: Record<"sm" | "md", { box: number; icon: number }> = {
-  sm: { box: 29, icon: 15 },
-  md: { box: 34, icon: 16.5 },
-};
-
 export const IconButton = ({
   icon: Icon,
   onClick,
@@ -114,55 +104,23 @@ export const IconButton = ({
   active,
   danger,
   disabled,
-  size = "md",
+  size,
   filled,
-}: IconButtonProps) => {
-  const { colors } = useUITheme();
-  const restBackground = active
-    ? fade(colors.accent, 0.16)
-    : filled
-      ? colors.raise
-      : "transparent";
-  const restBorder = active
-    ? fade(colors.accent, 0.3)
-    : filled
-      ? colors.border
-      : "transparent";
-  const { box, icon } = ICON_BUTTON_BOX[size];
-  return (
-    <button
-      title={title}
-      aria-label={title}
-      onClick={onClick}
-      disabled={disabled}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: box,
-        height: box,
-        borderRadius: 9,
-        cursor: disabled ? "not-allowed" : "pointer",
-        opacity: disabled ? 0.45 : 1,
-        transition: "all .15s",
-        background: restBackground,
-        color: danger ? colors.danger : active ? colors.accentSoft : colors.sub,
-        border: `1px solid ${restBorder}`,
-      }}
-      onMouseEnter={(e) => {
-        if (disabled) return;
-        e.currentTarget.style.background = active
-          ? fade(colors.accent, 0.22)
-          : danger
-            ? fade(colors.danger, 0.16)
-            : colors.raise;
-      }}
-      onMouseLeave={(e) => (e.currentTarget.style.background = restBackground)}
-    >
-      <Icon size={icon} />
-    </button>
-  );
-};
+}: IconButtonProps) => (
+  <button
+    title={title}
+    aria-label={title}
+    onClick={onClick}
+    disabled={disabled}
+    className={iconButtonVariants({
+      tone: active ? "active" : filled ? "filled" : "plain",
+      danger,
+      size,
+    })}
+  >
+    <Icon />
+  </button>
+);
 
 interface StageButtonProps {
   icon: LucideIcon;
@@ -178,30 +136,20 @@ export const StageButton = ({
   title,
   active,
   solid,
-}: StageButtonProps) => {
-  const { colors, stage } = useUITheme();
-  return (
-    <button
-      title={title}
-      aria-label={title}
-      onClick={onClick}
-      style={{
-        width: 40,
-        height: 40,
-        borderRadius: 10,
-        cursor: "pointer",
-        display: "grid",
-        placeItems: "center",
-        background: active
-          ? fade(colors.accent, 0.3)
-          : solid
-            ? "rgba(255,255,255,0.1)"
-            : "rgba(255,255,255,0.06)",
-        color: active ? colors.accentSoft : stage.text,
-        border: `1px solid ${stage.border}`,
-      }}
-    >
-      <Icon size={18} />
-    </button>
-  );
-};
+}: StageButtonProps) => (
+  <button
+    title={title}
+    aria-label={title}
+    onClick={onClick}
+    className={cn(
+      "grid size-10 place-items-center rounded-[10px] border border-stage-line text-white",
+      active
+        ? "bg-accent/30 text-accent-soft"
+        : solid
+          ? "bg-white/10"
+          : "bg-white/6",
+    )}
+  >
+    <Icon size={18} />
+  </button>
+);

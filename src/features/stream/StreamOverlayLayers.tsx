@@ -47,15 +47,14 @@ export const StreamOverlayLayers = ({
   return (
     <div
       aria-hidden
-      style={{
-        position: "absolute",
-        inset: 0,
-        pointerEvents: "none",
-        containerType: "inline-size",
-      }}
+      className="@container pointer-events-none absolute inset-0"
     >
       {visible.map((overlay) => (
-        <div key={overlay.id} style={boxStyle(overlay)}>
+        <div
+          key={overlay.id}
+          style={boxStyle(overlay)}
+          className="@container-[size] absolute overflow-hidden"
+        >
           {isMarquee(overlay) ? (
             <MarqueeLayer overlay={overlay} />
           ) : (
@@ -68,15 +67,12 @@ export const StreamOverlayLayers = ({
 };
 
 const boxStyle = (overlay: StreamOverlay): CSSProperties => ({
-  position: "absolute",
   left: `${overlay.frame.x}%`,
   top: `${overlay.frame.y}%`,
   width: `${overlay.frame.width}%`,
   height: `${overlay.frame.height}%`,
   borderRadius: `${overlay.radius}cqw`,
-  overflow: "hidden",
   opacity: overlay.opacity / 100,
-  containerType: "size",
 });
 
 const ContentLayer = (props: {
@@ -212,36 +208,27 @@ const MarqueeLayer = ({ overlay }: { overlay: MarqueeOverlay }) => {
   return (
     <div
       ref={bandRef}
-      style={{
-        position: "relative",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        overflow: "hidden",
-        background: style.background,
-      }}
+      style={{ background: style.background }}
+      className="relative flex size-full items-center overflow-hidden"
     >
       {style.backgroundImage && (
         <OverlayPicture image={style.backgroundImage} fit="cover" />
       )}
       <div
-        className="ws-marquee-track"
+        className="relative marquee-track leading-[1.1]"
         style={{
-          position: "relative",
           color: style.textColor,
           fontFamily: `'${style.fontFamily}', sans-serif`,
           fontSize: `${fontScale}cqh`,
           fontWeight: style.fontWeight,
-          lineHeight: 1.1,
           animationDuration: duration > 0 ? `${duration}s` : undefined,
           animationPlayState: duration > 0 ? "running" : "paused",
         }}
       >
-        <span ref={copyRef} className="ws-marquee-copy">
+        <span ref={copyRef} className="marquee-copy">
           {text}
         </span>
-        <span className="ws-marquee-copy" aria-hidden>
+        <span className="marquee-copy" aria-hidden>
           {text}
         </span>
       </div>

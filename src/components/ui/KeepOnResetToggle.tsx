@@ -1,6 +1,4 @@
 import { Shield, ShieldCheck } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
 import {
   MAX_KEPT_ITEMS,
@@ -109,24 +107,12 @@ export const KeepOnResetBadge = ({
 }: {
   item: { keepOnReset?: boolean; builtIn?: boolean; deleted?: boolean };
 }) => {
-  const { colors } = useUITheme();
   if (!item.keepOnReset || !canKeep(item)) return null;
   return (
     <span
       title="Kept: this survives a reset"
       aria-label="Kept on reset"
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: 18,
-        height: 18,
-        borderRadius: 999,
-        color: colors.accentSoft,
-        background: fade(colors.accent, 0.14),
-        border: `1px solid ${fade(colors.accent, 0.3)}`,
-        flexShrink: 0,
-      }}
+      className="inline-flex size-4.5 shrink-0 items-center justify-center rounded-full border border-accent/30 bg-accent/14 text-accent-soft"
     >
       <ShieldCheck size={10} />
     </span>

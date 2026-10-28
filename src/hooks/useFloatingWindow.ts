@@ -17,7 +17,7 @@ import {
   subscribeFloatingStack,
 } from "../lib/floatingStack";
 
-export interface FloatingWindowPosition {
+interface FloatingWindowPosition {
   x: number;
   y: number;
 }
@@ -32,7 +32,6 @@ interface FloatingWindowOptions {
   elementRef?: RefObject<HTMLDivElement>;
 }
 
-/** Spread onto whatever grabs the window: its own title bar, or its tab. */
 export interface FloatingWindowHandleProps {
   onPointerDown: (event: ReactPointerEvent) => void;
   onPointerMove: (event: ReactPointerEvent) => void;
@@ -42,12 +41,9 @@ export interface FloatingWindowHandleProps {
 }
 
 export interface FloatingWindowStash {
-  /** The edge the window is parked off, or null while it is on screen. */
   edge: FloatingWindowEdge | null;
-  /** Where the tab sits along that edge, in pixels from the top or left. */
   offset: number;
   restore: () => void;
-  /** The tab drags the parked window too, so it can be moved while off screen. */
   handleProps: FloatingWindowHandleProps;
 }
 
@@ -56,10 +52,7 @@ interface FloatingWindow {
   position: FloatingWindowPosition;
   dragging: boolean;
   stash: FloatingWindowStash;
-  /** The window's place in the pop-out stack, shared with its restore tab. */
   zIndex: number;
-  /** Spread onto the window's own element: its place in the stack, and the
-   *  capture-phase handler that brings it to the front when touched. */
   windowProps: {
     onPointerDownCapture: () => void;
     style: CSSProperties;
@@ -69,10 +62,8 @@ interface FloatingWindow {
 
 const CASCADE = 26;
 
-/** How much of the window has to hang off an edge for the drop to park it. */
 const STASH_RATIO = 0.55;
 
-/** A parked window sits fully outside, so only its tab is left to grab. */
 const parkedPosition = (
   edge: FloatingWindowEdge,
   current: FloatingWindowPosition,
@@ -153,8 +144,6 @@ export const useFloatingWindow = ({
     [ref, estimatedHeight],
   );
 
-  /* A parked window stays parked through a resize; the rest are pulled back
-     inside the new viewport. */
   useEffect(() => {
     const onResize = () =>
       setPosition((current) => {
@@ -175,8 +164,6 @@ export const useFloatingWindow = ({
     return () => window.removeEventListener("resize", onResize);
   }, [margin, width, measuredHeight, edge]);
 
-  /* Raising here rather than only on the window itself covers the tab, which
-     can drag a parked window back in without ever touching the window. */
   const onPointerDown = useCallback(
     (event: ReactPointerEvent) => {
       grab.current = {
@@ -190,8 +177,6 @@ export const useFloatingWindow = ({
     [position.x, position.y, raise],
   );
 
-  /* Dragging is free to leave the viewport on any side, which is what lets a
-     window be pushed away; the drop decides whether it parks or springs back. */
   const onPointerMove = useCallback(
     (event: ReactPointerEvent) => {
       const offset = grab.current;

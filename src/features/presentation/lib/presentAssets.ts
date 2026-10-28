@@ -38,8 +38,6 @@ export const collectPresentAssets = (
   };
 };
 
-/* Records arrive as fresh copies with every state, so only ones that differ
-   from what this window holds are merged, which keeps the library stable. */
 const mergeChanged = <T extends { id: string }>(
   existing: T[],
   incoming: T[],
@@ -54,7 +52,6 @@ const mergeChanged = <T extends { id: string }>(
   return changed.length ? mergeById(existing, changed, true) : existing;
 };
 
-/** Folds the records a presented deck needs into this window's own library. */
 export const applyPresentAssets = (assets: PresentAssets): void =>
   useStore.setState((state) => ({
     backgrounds: mergeChanged(state.backgrounds, assets.backgrounds),

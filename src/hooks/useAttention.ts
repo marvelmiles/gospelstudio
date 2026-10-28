@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import type { RefObject } from "react";
 
-export const ATTENTION_MS = 3000;
+const ATTENTION_MS = 3000;
 
 const MAX_LOOKUPS = 30;
 
 export const attentionAttribute = (id: string) => ({ "data-attention-id": id });
 
-export const ATTENTION_CLASS = "ws-attention";
+export const ATTENTION_CLASS = "attention";
 
 export const useAttention = (
   targetId: string | null,

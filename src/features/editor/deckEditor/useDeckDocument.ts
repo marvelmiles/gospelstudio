@@ -17,10 +17,6 @@ interface HistoryEntry<T> {
   caret: TextRange | null;
 }
 
-/**
- * The document being edited, its undo history and the primitives every other
- * edit hook builds on.
- */
 export const useDeckDocument = <T extends SlideDeckDoc>(
   source: T,
   commit: (doc: T) => boolean,

@@ -1,10 +1,3 @@
-/**
- * The stacking order of the pop-out windows, shared by all of them so that
- * touching one brings it in front of the others. Raising only reorders the
- * pop-outs among themselves: the whole band sits below every piece of app
- * chrome, so dialogs, the full-screen stage, alerts and toasts always cover a
- * pop-out however many times it has been brought forward.
- */
 const BASE_Z = 160;
 
 let order: string[] = [];
@@ -22,7 +15,6 @@ export const subscribeFloatingStack = (listener: () => void): (() => void) => {
   };
 };
 
-/** A window opens in front of the ones already on screen. */
 export const registerFloating = (id: string): void => {
   if (order.includes(id)) return;
   publish([...order, id]);

@@ -1,10 +1,9 @@
 const ICE_GATHERING_TIMEOUT_MS = 3000;
 
-// No ICE servers: only LAN host candidates are gathered, so nothing leaves the local network.
+/* No outside servers, so the camera video only ever travels over your own WiFi. */
 export const createPeerConnection = (): RTCPeerConnection =>
   new RTCPeerConnection({ iceServers: [] });
 
-// Non-trickle signalling: wait for every candidate, with a timeout for browsers that never report completion.
 export const waitForIceGathering = (
   connection: RTCPeerConnection,
   { isRestart = false, timeoutMs = ICE_GATHERING_TIMEOUT_MS } = {},

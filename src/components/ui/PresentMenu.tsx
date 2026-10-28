@@ -1,14 +1,14 @@
 import { useState, type ReactNode } from "react";
 import { MonitorPlay, MonitorUp, Play } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import {
   usePresentActions,
   type PresentOptions,
 } from "../../hooks/usePresentActions";
 import { EDITOR_COMMANDS } from "../../lib/shortcuts";
+import { cn } from "../../lib/cn";
 import { Button } from "./Button";
 import { Popover } from "./Popover";
+import { menuSurfaceClassName } from "./MoreMenu";
 
 interface PresentMenuProps {
   onPresent: (options: PresentOptions) => void;
@@ -33,7 +33,6 @@ export const PresentMenu = ({
   hints,
   children,
 }: PresentMenuProps) => {
-  const { colors, shadows } = useUITheme();
   const present = usePresentActions(onPresent);
   const [open, setOpen] = useState(false);
 
@@ -55,7 +54,7 @@ export const PresentMenu = ({
       disabled={disabled}
       side="bottom"
       align="start"
-      triggerStyle={fill ? { flex: 1, minWidth: 0 } : undefined}
+      triggerClassName={fill ? "min-w-0 flex-1" : undefined}
       trigger={
         children ?? (
           <Button
@@ -63,7 +62,7 @@ export const PresentMenu = ({
             variant={variant}
             disabled={disabled}
             title={title ?? "Present"}
-            style={fill ? { width: "100%" } : undefined}
+            className={fill ? "w-full" : undefined}
           >
             <Play size={size === "sm" ? 13 : 14} />
             {label}
@@ -73,16 +72,7 @@ export const PresentMenu = ({
     >
       <div
         role="menu"
-        style={{
-          width: 268,
-          padding: 6,
-          borderRadius: 12,
-          background: fade(colors.panelSolid, 0.97),
-          backdropFilter: "blur(18px) saturate(150%)",
-          WebkitBackdropFilter: "blur(18px) saturate(150%)",
-          border: `1px solid ${colors.border}`,
-          boxShadow: shadows.overlay,
-        }}
+        className={cn(menuSurfaceClassName, "w-67 shadow-overlay")}
       >
         <MenuOption
           icon={MonitorUp}
@@ -118,84 +108,41 @@ const MenuOption = ({
   hint?: string;
   accent?: boolean;
   onClick: () => void;
-}) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <button
-      role="menuitem"
-      onClick={onClick}
-      style={{
-        display: "flex",
-        alignItems: "flex-start",
-        gap: 10,
-        width: "100%",
-        padding: "10px 11px",
-        borderRadius: 9,
-        cursor: "pointer",
-        textAlign: "left",
-        border: "none",
-        background: "transparent",
-        color: colors.text,
-      }}
-      onMouseEnter={(e) =>
-        (e.currentTarget.style.background = accent
-          ? fade(colors.accent, 0.14)
-          : "rgba(255,255,255,0.05)")
-      }
-      onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-    >
-      <Icon
-        size={16}
-        color={accent ? colors.accentSoft : colors.sub}
-        style={{ flexShrink: 0, marginTop: 2 }}
-      />
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span
-          style={{
-            display: "flex",
-            alignItems: "baseline",
-            justifyContent: "space-between",
-            gap: 8,
-            fontFamily: fonts.ui,
-            fontSize: 13.5,
-            fontWeight: 700,
-            color: accent ? colors.accentSoft : colors.text,
-          }}
-        >
-          {optionTitle}
-          {hint && (
-            <kbd
-              style={{
-                fontFamily: "ui-monospace, monospace",
-                fontSize: 10.5,
-                fontWeight: 600,
-                color: colors.dim,
-                background: fade(colors.text, 0.07),
-                border: `1px solid ${colors.border}`,
-                borderRadius: 5,
-                padding: "2px 5px",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {hint}
-            </kbd>
-          )}
-        </span>
-        <span
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 11.5,
-            lineHeight: 1.45,
-            color: colors.sub,
-            display: "block",
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-          }}
-        >
-          {description}
-        </span>
+}) => (
+  <button
+    role="menuitem"
+    onClick={onClick}
+    className={cn(
+      "flex w-full items-start gap-2.5 rounded-[9px] border-none bg-transparent px-2.75 py-2.5 text-left text-fg",
+      accent ? "hover:bg-accent/14" : "hover:bg-white/5",
+    )}
+  >
+    <Icon
+      size={16}
+      className={cn(
+        "mt-0.5 shrink-0",
+        accent ? "text-accent-soft" : "text-sub",
+      )}
+    />
+    <span className="min-w-0 flex-1">
+      <span
+        className={cn(
+          "flex items-baseline justify-between gap-2 text-[13.5px] font-bold",
+          accent ? "text-accent-soft" : "text-fg",
+        )}
+      >
+        {optionTitle}
+        {hint && <KeyHint>{hint}</KeyHint>}
       </span>
-    </button>
-  );
-};
+      <span className="block truncate text-[11.5px] leading-[1.45] text-sub">
+        {description}
+      </span>
+    </span>
+  </button>
+);
+
+const KeyHint = ({ children }: { children: ReactNode }) => (
+  <kbd className="rounded-[5px] border border-line bg-fg/7 px-1.25 py-0.5 font-mono text-[10.5px] font-semibold whitespace-nowrap text-dim">
+    {children}
+  </kbd>
+);

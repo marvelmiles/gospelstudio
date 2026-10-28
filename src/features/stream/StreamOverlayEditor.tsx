@@ -1,5 +1,4 @@
 import { useMemo } from "react";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { SlideElementOverlay } from "../editor/SlideElementOverlay";
 import type { SlideElement } from "../editor/SlideElementOverlay";
 import { editedOverlay, isOnAir, isVisible } from "./lib/streamOverlay";
@@ -60,35 +59,15 @@ export const StreamOverlayEditor = ({
 };
 
 const DraftMarkers = ({ overlays }: { overlays: StreamOverlay[] }) => {
-  const { colors, fonts } = useUITheme();
   if (overlays.length === 0) return null;
 
   return (
-    <div
-      aria-hidden
-      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-    >
+    <div aria-hidden className="pointer-events-none absolute inset-0">
       {overlays.map((overlay) => (
         <span
           key={overlay.id}
-          style={{
-            position: "absolute",
-            left: `${overlay.frame.x}%`,
-            top: `${overlay.frame.y}%`,
-            transform: "translateY(-100%)",
-            margin: "-4px 0 0 0",
-            padding: "2px 7px",
-            borderRadius: 999,
-            background: colors.panelSolid,
-            border: `1px solid ${colors.border}`,
-            color: colors.sub,
-            fontFamily: fonts.ui,
-            fontSize: 10.5,
-            fontWeight: 700,
-            letterSpacing: 0.3,
-            textTransform: "uppercase",
-            whiteSpace: "nowrap",
-          }}
+          style={{ left: `${overlay.frame.x}%`, top: `${overlay.frame.y}%` }}
+          className="absolute -mt-1 -translate-y-full rounded-full border border-line bg-panel-solid px-1.75 py-0.5 text-[10.5px] font-bold tracking-[0.3px] whitespace-nowrap text-sub uppercase"
         >
           Not on air
         </span>

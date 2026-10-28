@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Inbox, Square } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
-import { fade } from "../../../theme/uiTheme";
+import { cn } from "../../../lib/cn";
 import { Modal } from "../../../components/ui/Modal";
 import { Button } from "../../../components/ui/Button";
 import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
@@ -28,7 +27,6 @@ export const IncomingShareDialog = ({
   onDecline,
   onStop,
 }: IncomingShareDialogProps) => {
-  const { colors, fonts } = useUITheme();
   const [isConfirmingStop, setIsConfirmingStop] = useState(false);
   if (!incoming) return null;
 
@@ -37,13 +35,7 @@ export const IncomingShareDialog = ({
   const percent =
     bytes > 0 ? Math.min(99, Math.round((receivedBytes / bytes) * 100)) : 0;
 
-  const body = {
-    margin: "0 0 12px",
-    fontFamily: fonts.ui,
-    fontSize: 13.5,
-    lineHeight: 1.6,
-    color: colors.sub,
-  };
+  const bodyClassName = "mt-0 text-[13.5px] leading-[1.6] text-sub";
 
   return (
     <>
@@ -73,34 +65,23 @@ export const IncomingShareDialog = ({
           )
         }
       >
-        <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-          <span
-            style={{
-              width: 38,
-              height: 38,
-              flexShrink: 0,
-              borderRadius: 11,
-              display: "grid",
-              placeItems: "center",
-              background: fade(colors.accent, 0.14),
-              color: colors.accentSoft,
-            }}
-          >
+        <div className="flex items-start gap-3">
+          <span className="grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-accent/14 text-accent-soft">
             <Inbox size={19} />
           </span>
-          <div style={{ minWidth: 0, flex: 1 }}>
-            <p style={{ ...body, marginBottom: isAsking ? 12 : 14 }}>
-              <strong style={{ color: colors.text }}>{fromName}</strong> is
-              sending {summary}
+          <div className="min-w-0 flex-1">
+            <p className={cn(bodyClassName, isAsking ? "mb-3" : "mb-3.5")}>
+              <strong className="text-fg">{fromName}</strong> is sending{" "}
+              {summary}
               {bytes > 0 ? ` (${formatBytes(bytes)})` : ""}.
             </p>
             {isAsking ? (
-              <p style={{ ...body, marginBottom: 0 }}>
+              <p className={cn(bodyClassName, "mb-0")}>
                 Everything you already have is kept. Where the same item exists
                 on both devices, the incoming copy wins.
               </p>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <div className="flex items-center gap-3">
                 <ProgressRing
                   size={44}
                   thickness={4}
@@ -108,14 +89,7 @@ export const IncomingShareDialog = ({
                   indeterminate={stage === "importing"}
                   label="Receiving"
                 />
-                <span
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 12.5,
-                    color: colors.dim,
-                    fontVariantNumeric: "tabular-nums",
-                  }}
-                >
+                <span className="text-[12.5px] text-dim tabular-nums">
                   {stage === "importing"
                     ? "Finishing"
                     : `${formatBytes(receivedBytes)} of ${formatBytes(bytes)}`}

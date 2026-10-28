@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
@@ -9,10 +9,10 @@ import {
 } from "lucide-react";
 import type { BibleVersionId } from "../../types";
 import { BIBLE_VERSIONS, bookById } from "../../data/bibleBooks";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { useStore } from "../../store/useStore";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
-import { PageHeader } from "../../components/ui/PageHeader";
+import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
 import { PillTabs } from "../../components/ui/PillTabs";
 import { Button, IconButton } from "../../components/ui/Button";
 import { Select } from "../../components/ui/Field";
@@ -39,7 +39,6 @@ const versionOptions = BIBLE_VERSIONS.map((v) => ({
 }));
 
 export const BiblePage = () => {
-  const { colors, fonts } = useUITheme();
   useDocumentTitle("Bible");
 
   const prefs = useStore((s) => s.prefs);
@@ -145,58 +144,22 @@ export const BiblePage = () => {
     if (step !== "books") setFocusVerse(null);
   };
 
-  const crumbBtn: CSSProperties = {
-    border: "none",
-    background: "transparent",
-    padding: "4px 2px",
-    cursor: "pointer",
-    fontFamily: fonts.ui,
-    fontSize: 13.5,
-    fontWeight: 600,
-    color: colors.sub,
-  };
-  const crumbCurrent: CSSProperties = {
-    ...crumbBtn,
-    cursor: "default",
-    color: colors.accentSoft,
-  };
-  const crumbSep = (
-    <ChevronRight size={13} color={colors.dim} style={{ flexShrink: 0 }} />
-  );
+  const crumbClassName = (current: boolean) =>
+    cn(
+      "border-none bg-transparent px-0.5 py-1 text-[13.5px] font-semibold",
+      current ? "cursor-default text-accent-soft" : "text-sub",
+    );
+  const crumbSep = <ChevronRight size={13} className="shrink-0 text-dim" />;
 
   const readView = (
-    <div
-      style={{
-        flex: 1,
-        minHeight: 0,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
-      <div
-        className="ws-row-wrap"
-        style={{
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 14,
-          paddingBottom: 12,
-          borderBottom: `1px solid ${colors.border}`,
-        }}
-      >
+    <div className="flex min-h-0 flex-1 flex-col">
+      <div className="mb-3.5 flex flex-wrap items-center gap-2 border-b border-line pb-3">
         {step !== "books" && (
           <IconButton icon={ArrowLeft} title="Back" onClick={goBack} />
         )}
-        <div
-          className="ws-row"
-          style={{
-            gap: 6,
-            alignItems: "center",
-            flexWrap: "wrap",
-            minWidth: 0,
-          }}
-        >
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           <button
-            style={step === "books" ? crumbCurrent : crumbBtn}
+            className={crumbClassName(step === "books")}
             onClick={() => setStep("books")}
           >
             Books
@@ -205,7 +168,7 @@ export const BiblePage = () => {
             <>
               {crumbSep}
               <button
-                style={step === "chapters" ? crumbCurrent : crumbBtn}
+                className={crumbClassName(step === "chapters")}
                 onClick={() => setStep("chapters")}
               >
                 {book.name}
@@ -216,7 +179,7 @@ export const BiblePage = () => {
             <>
               {crumbSep}
               <button
-                style={step === "verses" ? crumbCurrent : crumbBtn}
+                className={crumbClassName(step === "verses")}
                 onClick={() => {
                   setFocusVerse(null);
                   setStep("verses");
@@ -229,7 +192,7 @@ export const BiblePage = () => {
           {step === "read" && (
             <>
               {crumbSep}
-              <span style={crumbCurrent}>
+              <span className={crumbClassName(true)}>
                 {!focusRange
                   ? "Reading"
                   : focusRange.start === focusRange.end
@@ -239,8 +202,8 @@ export const BiblePage = () => {
             </>
           )}
         </div>
-        <span style={{ flex: 1 }} />
-        <div style={{ width: 230, maxWidth: "100%" }}>
+        <span className="flex-1" />
+        <div className="w-57.5 max-w-full">
           <Select
             value={prefs.bibleVersion}
             options={versionOptions}
@@ -280,7 +243,7 @@ export const BiblePage = () => {
         />
       )}
       {step === "read" && (
-        <div style={{ flex: 1, minHeight: 0 }}>
+        <div className="min-h-0 flex-1">
           <BibleReader
             version={prefs.bibleVersion}
             bookId={readingPosition.bookId}
@@ -295,15 +258,7 @@ export const BiblePage = () => {
   );
 
   return (
-    <div
-      className="ws-page"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        maxHeight: "100%",
-      }}
-    >
+    <div className={cn(pageClassName, "flex h-full max-h-full flex-col")}>
       <PageHeader
         title="Bible"
         subtitle="Read and project scripture offline."
@@ -336,7 +291,7 @@ export const BiblePage = () => {
       {tab === "read" ? (
         readView
       ) : (
-        <div style={{ flex: 1, minHeight: 0, overflowY: "auto" }}>
+        <div className="min-h-0 flex-1 overflow-y-auto">
           <SavedPassages trashView={trashView} />
         </div>
       )}

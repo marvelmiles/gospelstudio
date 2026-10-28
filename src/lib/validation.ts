@@ -3,7 +3,7 @@ export interface ValidationIssue {
   message: string;
 }
 
-export const NAME_MAX_LENGTH = 120;
+const NAME_MAX_LENGTH = 120;
 
 export const validateName = (value: string, label: string): string | null => {
   const trimmed = value.trim();

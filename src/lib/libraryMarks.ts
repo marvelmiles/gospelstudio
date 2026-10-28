@@ -11,7 +11,7 @@ const MARK_VERBS: Record<LibraryMarkAction, string> = {
 export const describeMark = (mark: LibraryMark): string =>
   MARK_VERBS[mark.action];
 
-export const markNow = (action: LibraryMarkAction): LibraryMark => ({
+const markNow = (action: LibraryMarkAction): LibraryMark => ({
   action,
   at: now(),
 });

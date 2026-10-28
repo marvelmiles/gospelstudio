@@ -1,5 +1,5 @@
 import { Smartphone, Unplug, Wifi } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
+import { cn } from "../../../lib/cn";
 import { Button } from "../../../components/ui/Button";
 import { StreamStatusBadge, connectionBadgeStatus } from "../StreamStatusBadge";
 import type { DeviceEntry } from "../lib/signaling";
@@ -32,59 +32,24 @@ export const DeviceRow = ({
   onConnect,
   onDisconnect,
 }: DeviceRowProps) => {
-  const { colors, fonts } = useUITheme();
   const isConnected = camera?.status === "live";
 
   return (
     <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 12,
-        padding: "12px 14px",
-        borderRadius: 12,
-        background: colors.bg,
-        border: `1px solid ${isConnected ? colors.accent : colors.border}`,
-      }}
+      className={cn(
+        "flex items-center gap-3 rounded-xl border bg-canvas px-3.5 py-3",
+        isConnected ? "border-accent" : "border-line",
+      )}
     >
-      <span
-        style={{
-          width: 38,
-          height: 38,
-          borderRadius: 10,
-          display: "grid",
-          placeItems: "center",
-          background: colors.raise,
-          color: colors.accentSoft,
-          flexShrink: 0,
-        }}
-      >
+      <span className="grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-raise text-accent-soft">
         <Smartphone size={18} />
       </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span
-          className="ws-ellipsis"
-          style={{
-            display: "block",
-            fontFamily: fonts.ui,
-            fontSize: 14,
-            fontWeight: 600,
-            color: colors.text,
-          }}
-        >
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-sm font-semibold text-fg">
           {device.name}
         </span>
         {camera && (
-          <span
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: 0.4,
-              textTransform: "uppercase",
-              color: colors.dim,
-            }}
-          >
+          <span className="text-[11px] font-bold tracking-[0.4px] text-dim uppercase">
             {cameraRole(session, device.id)}
           </span>
         )}

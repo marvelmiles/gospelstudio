@@ -17,10 +17,9 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { Button } from "../../components/ui/Button";
 import { APP_NAME } from "../../lib/appInfo";
+import { cn } from "../../lib/cn";
 
 const TIPS: { icon: LucideIcon; title: string; desc: string }[] = [
   {
@@ -99,249 +98,105 @@ const HEADER_ICONS: { icon: LucideIcon; name: string; desc: string }[] = [
 ];
 
 export const GuideModal = () => {
-  const { colors, fonts, glass, shadows } = useUITheme();
   const showGuide = useStore((s) => s.showGuide);
   const completeGuide = useStore((s) => s.completeGuide);
   const bodyRef = useRef<HTMLDivElement>(null);
   const [reachedEnd, setReachedEnd] = useState(false);
 
   useEffect(() => {
-    const el = bodyRef.current;
-    if (showGuide && el && el.scrollHeight <= el.clientHeight + 8)
+    const element = bodyRef.current;
+    if (
+      showGuide &&
+      element &&
+      element.scrollHeight <= element.clientHeight + 8
+    )
       setReachedEnd(true);
   }, [showGuide]);
 
   if (!showGuide) return null;
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 320,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: 18,
-        background: colors.scrim,
-        backdropFilter: "blur(8px)",
-        animation: "wfFade .2s ease",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 580,
-          maxHeight: "90vh",
-          display: "flex",
-          flexDirection: "column",
-          borderRadius: 18,
-          overflow: "hidden",
-          background: colors.panel,
-          backdropFilter: glass.backdropFilter,
-          WebkitBackdropFilter: glass.WebkitBackdropFilter,
-          border: `1px solid ${colors.border}`,
-          boxShadow: shadows.overlay,
-        }}
-      >
-        <div
-          style={{
-            padding: "22px 24px 16px",
-            borderBottom: `1px solid ${colors.border}`,
-          }}
-        >
-          <div
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: 0.6,
-              textTransform: "uppercase",
-              color: colors.accent,
-            }}
-          >
+    <div className="fixed inset-0 z-320 flex animate-fade-in items-center justify-center bg-scrim p-4.5 backdrop-blur-sm">
+      <div className="flex max-h-[90vh] w-full max-w-145 flex-col overflow-hidden rounded-[18px] border border-line bg-panel shadow-overlay backdrop-blur-sm">
+        <div className="border-b border-line px-6 pt-5.5 pb-4">
+          <div className="text-[11px] font-bold tracking-[0.6px] text-accent uppercase">
             Welcome
           </div>
-          <h2
-            style={{
-              margin: "4px 0 0",
-              fontFamily: fonts.display,
-              fontSize: 25,
-              fontWeight: 600,
-              color: colors.text,
-            }}
-          >
+          <h2 className="mt-1 mb-0 text-[25px] font-semibold text-fg">
             A quick tour of {APP_NAME}
           </h2>
         </div>
 
         <div
           ref={bodyRef}
-          onScroll={(e) => {
-            const el = e.currentTarget;
-            if (el.scrollTop + el.clientHeight >= el.scrollHeight - 8)
+          onScroll={(event) => {
+            const element = event.currentTarget;
+            if (
+              element.scrollTop + element.clientHeight >=
+              element.scrollHeight - 8
+            )
               setReachedEnd(true);
           }}
-          style={{ padding: 24, overflowY: "auto", flex: 1 }}
+          className="flex-1 overflow-y-auto p-6"
         >
-          <p
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 14,
-              color: colors.sub,
-              lineHeight: 1.7,
-              marginTop: 0,
-            }}
-          >
+          <p className="mt-0 text-sm leading-[1.7] text-sub">
             {APP_NAME} is a light, distraction-free studio for presenting
             manuscripts, scripture, images, videos and live cameras reliably.
             Here are a few things worth knowing before you start.
           </p>
 
           {TIPS.map((tip) => (
-            <div
-              key={tip.title}
-              style={{ display: "flex", gap: 13, marginBottom: 16 }}
-            >
-              <div
-                style={{
-                  width: 38,
-                  height: 38,
-                  flexShrink: 0,
-                  borderRadius: 10,
-                  display: "grid",
-                  placeItems: "center",
-                  background: fade(colors.accent, 0.14),
-                  color: colors.accentSoft,
-                }}
-              >
+            <div key={tip.title} className="mb-4 flex gap-3.25">
+              <div className="grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-accent/14 text-accent-soft">
                 <tip.icon size={18} />
               </div>
               <div>
-                <div
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 14.5,
-                    fontWeight: 600,
-                    color: colors.text,
-                  }}
-                >
+                <div className="text-[14.5px] font-semibold text-fg">
                   {tip.title}
                 </div>
-                <div
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 13,
-                    color: colors.sub,
-                    lineHeight: 1.6,
-                    marginTop: 2,
-                  }}
-                >
+                <div className="mt-0.5 text-[13px] leading-[1.6] text-sub">
                   {tip.desc}
                 </div>
               </div>
             </div>
           ))}
 
-          <h3
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 17,
-              color: colors.text,
-              margin: "22px 0 12px",
-            }}
-          >
+          <h3 className="mt-5.5 mb-3 text-[17px] text-fg">
             What the header icons do
           </h3>
           {HEADER_ICONS.map((item) => (
             <div
               key={item.name}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 13,
-                padding: "9px 0",
-                borderBottom: `1px solid ${colors.border}`,
-              }}
+              className="flex items-center gap-3.25 border-b border-line py-2.25"
             >
-              <div
-                style={{
-                  width: 34,
-                  height: 34,
-                  flexShrink: 0,
-                  borderRadius: 9,
-                  display: "grid",
-                  placeItems: "center",
-                  background: colors.raise,
-                  color: colors.text,
-                }}
-              >
+              <div className="grid size-8.5 shrink-0 place-items-center rounded-[9px] bg-raise text-fg">
                 <item.icon size={16} />
               </div>
               <div>
-                <div
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 13.5,
-                    fontWeight: 600,
-                    color: colors.text,
-                  }}
-                >
+                <div className="text-[13.5px] font-semibold text-fg">
                   {item.name}
                 </div>
-                <div
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 12.5,
-                    color: colors.sub,
-                    lineHeight: 1.5,
-                  }}
-                >
+                <div className="text-[12.5px] leading-normal text-sub">
                   {item.desc}
                 </div>
               </div>
             </div>
           ))}
 
-          <p
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              color: colors.sub,
-              lineHeight: 1.7,
-              margin: "20px 0 0",
-            }}
-          >
+          <p className="mt-5 mb-0 text-[13.5px] leading-[1.7] text-sub">
             That's it, create a manuscript from the dashboard or open the
             library to start. You can revisit all of this anytime under About
             &amp; Help. Welcome aboard.
-            <Cross
-              size={13}
-              style={{
-                display: "inline",
-                verticalAlign: "middle",
-                marginLeft: 5,
-              }}
-            />
+            <Cross size={13} className="ml-1.25 inline align-middle" />
           </p>
         </div>
 
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 12,
-            padding: "14px 24px",
-            borderTop: `1px solid ${colors.border}`,
-          }}
-        >
+        <div className="flex items-center justify-between gap-3 border-t border-line px-6 py-3.5">
           <span
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 12.5,
-              color: reachedEnd ? colors.dim : colors.accent,
-            }}
+            className={cn(
+              "text-[12.5px]",
+              reachedEnd ? "text-dim" : "text-accent",
+            )}
           >
             {reachedEnd ? "You're all set." : "Scroll to the end to continue"}
           </span>

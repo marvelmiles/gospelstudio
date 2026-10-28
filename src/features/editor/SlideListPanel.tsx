@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import type { Background, Slide, SlideDeckDoc, Theme } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { IconButton } from "../../components/ui/Button";
+import { PanelHeader } from "../../components/layout/EditorColumns";
 import { SortableSlideList } from "./SortableSlideList";
 import type { TagGroup } from "../../lib/tagGroups";
 
@@ -29,50 +29,24 @@ export const SlideListPanel = ({
   onContextMenu,
   onAdd,
   tagGroups,
-}: SlideListPanelProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div style={{ paddingBottom: 14 }}>
-      <div
-        style={{
-          position: "sticky",
-          top: 0,
-          zIndex: 2,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          padding: "14px 14px 10px",
-          background: colors.bg,
-          borderBottom: `1px solid ${colors.border}`,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: fonts.ui,
-            fontSize: 12,
-            fontWeight: 700,
-            letterSpacing: 0.5,
-            textTransform: "uppercase",
-            color: colors.dim,
-          }}
-        >
-          Slides
-        </span>
-        <IconButton icon={Plus} title="Add slide" onClick={onAdd} />
-      </div>
-      <div style={{ padding: "12px 14px 0" }}>
-        <SortableSlideList
-          slides={slides}
-          selId={selectedId}
-          setSelId={setSelectedId}
-          doc={doc}
-          theme={theme}
-          bgMap={bgMap}
-          onReorder={onReorder}
-          onContextMenu={onContextMenu}
-          tagGroups={tagGroups}
-        />
-      </div>
+}: SlideListPanelProps) => (
+  <div className="pb-3.5">
+    <PanelHeader
+      title="Slides"
+      action={<IconButton icon={Plus} title="Add slide" onClick={onAdd} />}
+    />
+    <div className="px-3.5 pt-3">
+      <SortableSlideList
+        slides={slides}
+        selId={selectedId}
+        setSelId={setSelectedId}
+        doc={doc}
+        theme={theme}
+        bgMap={bgMap}
+        onReorder={onReorder}
+        onContextMenu={onContextMenu}
+        tagGroups={tagGroups}
+      />
     </div>
-  );
-};
+  </div>
+);

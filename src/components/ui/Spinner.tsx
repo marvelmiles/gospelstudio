@@ -1,46 +1,26 @@
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 
 interface SpinnerProps {
   size?: number;
-  color?: string;
   padded?: boolean;
+  className?: string;
 }
 
-export const Spinner = ({ size = 16, color, padded }: SpinnerProps) => {
-  const { colors } = useUITheme();
-  const spinColor = color ?? colors.accent;
-  return (
-    <span
-      role="status"
-      aria-label="Loading"
-      style={{
-        display: "inline-block",
-        width: size,
-        height: size,
-        flexShrink: 0,
-        border: `${Math.max(2, size / 8)}px solid ${fade(spinColor, 0.25)}`,
-        borderTopColor: spinColor,
-        borderRadius: "50%",
-        animation: "wfSpin 0.7s linear infinite",
-        margin: padded ? 20 : 0,
-      }}
-    />
-  );
-};
+export const Spinner = ({ size = 16, padded, className }: SpinnerProps) => (
+  <span
+    role="status"
+    aria-label="Loading"
+    style={{ width: size, height: size, borderWidth: Math.max(2, size / 8) }}
+    className={cn(
+      "inline-block shrink-0 animate-spin rounded-full border-solid border-current/25 border-t-current text-accent [animation-duration:0.7s]",
+      padded && "m-5",
+      className,
+    )}
+  />
+);
 
-export const LoadingArea = ({ size = 26 }: { size?: number }) => {
-  return (
-    <div
-      style={{
-        display: "grid",
-        placeItems: "center",
-        height: "100%",
-        minHeight: 120,
-        width: "100%",
-      }}
-    >
-      <Spinner size={size} />
-    </div>
-  );
-};
+export const LoadingArea = ({ size = 26 }: { size?: number }) => (
+  <div className="grid size-full min-h-30 place-items-center">
+    <Spinner size={size} />
+  </div>
+);

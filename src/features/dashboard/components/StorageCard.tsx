@@ -1,128 +1,76 @@
 import { HardDrive } from "lucide-react";
-import { fade } from "../../../theme/uiTheme";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { getStorageLabel, type StorageInfo } from "../../../lib/storageStats";
+import { cn } from "../../../lib/cn";
 
 interface StorageCardProps {
   storage: StorageInfo;
 }
 
-export const StorageCard = ({ storage }: StorageCardProps) => {
-  const { colors, glass, fills, controls, fonts } = useUITheme();
-  const UI = fonts.ui;
-  const DISPLAY = fonts.display;
+const LEVEL_CLASSES: Record<
+  StorageInfo["level"],
+  { badge: string; bar: string; summary: string }
+> = {
+  critical: {
+    badge: "bg-danger/14 text-danger",
+    bar: "bg-danger",
+    summary: "Critical: free up space soon",
+  },
+  warn: {
+    badge: "bg-warning/14 text-warning",
+    bar: "bg-accent",
+    summary: "Storage is filling up",
+  },
+  ok: {
+    badge: "bg-success/14 text-success",
+    bar: "bg-success",
+    summary: "Plenty of space available",
+  },
+};
 
+export const StorageCard = ({ storage }: StorageCardProps) => {
+  const level = LEVEL_CLASSES[storage.level];
   return (
-    <div style={{ ...glass, padding: "16px 20px", marginBottom: 26 }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 11,
-            minWidth: 0,
-          }}
-        >
+    <div className="mb-6.5 glass px-5 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2.75">
           <div
-            style={{
-              width: 38,
-              height: 38,
-              borderRadius: 11,
-              display: "grid",
-              placeItems: "center",
-              background:
-                storage.level === "critical"
-                  ? fade(colors.danger, 0.14)
-                  : storage.level === "warn"
-                    ? fade(colors.warning, 0.14)
-                    : fade(colors.success, 0.14),
-              color:
-                storage.level === "critical"
-                  ? colors.danger
-                  : storage.level === "warn"
-                    ? colors.warning
-                    : colors.success,
-              flexShrink: 0,
-            }}
+            className={cn(
+              "grid size-9.5 shrink-0 place-items-center rounded-[11px]",
+              level.badge,
+            )}
           >
             <HardDrive size={19} />
           </div>
-          <div style={{ minWidth: 0 }}>
-            <div
-              style={{
-                fontFamily: UI,
-                fontWeight: 600,
-                fontSize: 14,
-                color: colors.text,
-              }}
-            >
-              Storage used
-            </div>
-            <div
-              style={{
-                fontFamily: UI,
-                fontSize: 12,
-                color: colors.sub,
-                marginTop: 2,
-              }}
-            >
+          <div className="min-w-0">
+            <div className="text-sm font-semibold text-fg">Storage used</div>
+            <div className="mt-0.5 text-xs text-sub">
               {storage.blocked
                 ? "Storage full. Delete manuscripts, audio or backgrounds to continue"
-                : storage.level === "critical"
-                  ? "Critical: free up space soon"
-                  : storage.level === "warn"
-                    ? "Storage is filling up"
-                    : "Plenty of space available"}
+                : level.summary}
             </div>
           </div>
         </div>
-        <div style={{ textAlign: "right", fontFamily: UI }}>
+        <div className="text-right">
           <div
-            style={{
-              fontFamily: DISPLAY,
-              fontSize: 22,
-              fontWeight: 600,
-              color: storage.level === "critical" ? colors.danger : colors.text,
-              lineHeight: 1,
-            }}
+            className={cn(
+              "text-[22px] leading-none font-semibold",
+              storage.level === "critical" ? "text-danger" : "text-fg",
+            )}
           >
             {Math.min(100, Math.round(storage.pct * 100))}%
           </div>
-          <div style={{ fontSize: 11.5, color: colors.dim, marginTop: 4 }}>
+          <div className="mt-1 text-[11.5px] text-dim">
             {getStorageLabel(storage)}
           </div>
         </div>
       </div>
-      <div
-        style={{
-          height: 9,
-          borderRadius: 99,
-          background: controls.track,
-          overflow: "hidden",
-          marginTop: 13,
-        }}
-      >
+      <div className="mt-3.25 h-2.25 overflow-hidden rounded-full bg-track">
         <div
-          style={{
-            height: "100%",
-            width: `${Math.max(2, Math.min(100, storage.pct * 100))}%`,
-            borderRadius: 99,
-            background:
-              storage.level === "critical"
-                ? fills.dangerBar
-                : storage.level === "warn"
-                  ? fills.accentBar
-                  : fills.successBar,
-            transition: "width 0.4s ease",
-          }}
+          style={{ width: `${Math.max(2, Math.min(100, storage.pct * 100))}%` }}
+          className={cn(
+            "h-full rounded-full transition-[width] duration-400",
+            level.bar,
+          )}
         />
       </div>
     </div>

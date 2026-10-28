@@ -4,7 +4,7 @@ import type { SliceCreator, StoreState } from "../storeTypes";
 
 export type UploadKind = "background" | "audio" | "image" | "video";
 
-export interface PendingUpload {
+interface PendingUpload {
   token: string;
   kind: UploadKind;
   files: File[];
@@ -66,9 +66,6 @@ export const createUploadsSlice: SliceCreator<UploadsSlice> = (set, get) => ({
       });
   },
 
-  /* Cancelling closes the dialog at once. A commit already in flight finishes
-     the file it is on, sees the cancelled token, and removes everything the
-     batch had saved so nothing half-uploaded is left behind. */
   cancelUpload: () => {
     const pending = get().pendingUpload;
     if (!pending) return;

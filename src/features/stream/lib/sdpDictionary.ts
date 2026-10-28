@@ -108,8 +108,7 @@ const QUALITY_HINT_LINES = [
   `;x-google-start-bitrate=${Math.round(START_VIDEO_BITRATE / 1000)}`,
 ];
 
-// Both devices deflate against this same boilerplate, so a description costs only the bytes that are unique to the call.
-// Changing it changes the wire format: bump SIGNAL_PREFIX in streamSignal.ts alongside it.
+/* Both devices must share this exact text to pair; changing it stops older versions connecting. */
 export const SDP_DICTIONARY = strToU8(
   [
     ...SESSION_LINES,

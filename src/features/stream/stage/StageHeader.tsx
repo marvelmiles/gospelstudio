@@ -10,7 +10,6 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { Button } from "../../../components/ui/Button";
 import { keepsSelectionProps } from "../../../lib/selectionScope";
 import { viewCommandTitle } from "../../../lib/viewCommands";
@@ -58,53 +57,23 @@ export const StageHeader = ({
   onToggleLive,
   onStop,
 }: StageHeaderProps) => {
-  const { colors, fonts } = useUITheme();
   const waitingTitle = isAwaitingConnection
     ? "Available once the camera connects"
     : undefined;
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 12,
-        flexWrap: "wrap",
-        flexShrink: 0,
-        padding: "10px 14px",
-        background: colors.raise,
-        borderBottom: `1px solid ${colors.border}`,
-      }}
-    >
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 10,
-          minWidth: 0,
-          flexWrap: "wrap",
-        }}
-      >
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-raise px-3.5 py-2.5">
+      <span className="inline-flex min-w-0 flex-wrap items-center gap-2.5">
         <StreamStatusBadge status={connectionBadgeStatus(status, isLive)} />
         <AudioSharingPill available={audioShared} muted={isAudioMuted} />
         {deviceName && (
-          <span
-            className="ws-ellipsis"
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13,
-              fontWeight: 600,
-              color: colors.text,
-              minWidth: 0,
-            }}
-          >
+          <span className="min-w-0 truncate text-[13px] font-semibold text-fg">
             {deviceName}
           </span>
         )}
       </span>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <div className="flex flex-wrap gap-2">
         {audioShared && (
           <Button
             variant={isAudioMuted ? "ghost" : "primary"}
@@ -135,7 +104,7 @@ export const StageHeader = ({
           <Video size={14} />
           {secondaryCount > 0 ? `Cameras (+${secondaryCount})` : "Cameras"}
         </Button>
-        <span {...keepsSelectionProps} style={{ display: "inline-flex" }}>
+        <span {...keepsSelectionProps} className="inline-flex">
           <Button
             variant={drawer === "overlays" ? "primary" : "ghost"}
             size="sm"

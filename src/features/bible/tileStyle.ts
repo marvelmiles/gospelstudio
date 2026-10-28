@@ -1,16 +1,9 @@
-import type { CSSProperties } from "react";
-import { fadeVar, themeVar } from "../../theme/cssVars";
+import { cn } from "../../lib/cn";
 
-export const tileStyle = (isActive = false): CSSProperties => ({
-  padding: "10px 0",
-  borderRadius: 10,
-  cursor: "pointer",
-  fontFamily: themeVar.fontUi,
-  fontSize: 13.5,
-  fontWeight: 600,
-  fontVariantNumeric: "tabular-nums",
-  textAlign: "center",
-  border: `1px solid ${isActive ? fadeVar(themeVar.accent, 0.4) : themeVar.border}`,
-  background: isActive ? fadeVar(themeVar.accent, 0.16) : themeVar.raise,
-  color: isActive ? themeVar.accentSoft : themeVar.text,
-});
+export const tileClassName = (isActive = false): string =>
+  cn(
+    "cursor-pointer rounded-[10px] border py-2.5 text-center text-[13.5px] font-semibold tabular-nums",
+    isActive
+      ? "border-accent/40 bg-accent/16 text-accent-soft"
+      : "border-line bg-raise text-fg",
+  );

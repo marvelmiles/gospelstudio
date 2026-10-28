@@ -35,11 +35,9 @@ const createLocalOffer = async (
     await connection.createOffer({ iceRestart }),
   );
   await waitForIceGathering(connection, { isRestart: iceRestart });
-  // Only the copy sent to the sender carries bandwidth hints; browsers validate the local description against their own.
   return withVideoQualityHints(connection.localDescription?.sdp ?? "");
 };
 
-// The audio transceiver is always offered so the sender can toggle its mic later without renegotiating.
 export const createReceiver = async (
   options: ReceiverOptions,
 ): Promise<ReceiverHandle> => {
@@ -70,7 +68,6 @@ export const createReceiver = async (
     if (message?.type === "deviceName") options.onDeviceName?.(message.name);
   });
 
-  // Tracks arrive via replaceTrack with no stream id, so they are gathered into one stable stream here.
   const remoteStream = new MediaStream();
   connection.addEventListener("track", (event) => {
     remoteStream.addTrack(event.track);

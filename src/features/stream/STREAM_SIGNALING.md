@@ -76,7 +76,7 @@ A phone that sleeps or is backgrounded is expected, not treated as a failure:
 ## Setup
 
 1. Create a free Firebase project.
-2. **Build → Realtime Database → Create database.**
+2. **Build, then Realtime Database, then Create database.**
 3. Copy the config values into a `.env` file (see `.env.example`):
    ```
    VITE_FIREBASE_API_KEY=…
@@ -84,7 +84,7 @@ A phone that sleeps or is backgrounded is expected, not treated as a failure:
    VITE_FIREBASE_APP_ID=…
    VITE_FIREBASE_DATABASE_URL=https://<project>-default-rtdb.firebaseio.com
    ```
-4. Paste the rules below into **Realtime Database → Rules**.
+4. Paste the rules below into **Realtime Database, then Rules**.
 
 Restart the dev server. The Stream module now defaults to one tap; without these
 variables it silently uses the QR or pasted code instead.

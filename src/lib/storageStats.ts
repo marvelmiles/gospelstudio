@@ -2,8 +2,8 @@ import type { Backend } from "./storage";
 
 const MB = 1024 * 1024;
 
-export const MIN_VIABLE_BYTES = 4 * MB;
-export const SAFETY_BYTES = 2 * MB;
+const MIN_VIABLE_BYTES = 4 * MB;
+const SAFETY_BYTES = 2 * MB;
 export const APP_RESERVE_IDB = 8 * MB;
 
 const WARN_RATIO = 0.7;
@@ -40,7 +40,7 @@ export const formatBytes = (n: number): string => {
 };
 
 export const getStorageLabel = (storage: StorageInfo) => {
-  return `${formatBytes(storage.userUsed)} used • ~${formatBytes(Math.max(0, storage.userMax - storage.userUsed))} available`;
+  return `${formatBytes(storage.userUsed)} used · ~${formatBytes(Math.max(0, storage.userMax - storage.userUsed))} available`;
 };
 
 export const computeStorageInfo = (

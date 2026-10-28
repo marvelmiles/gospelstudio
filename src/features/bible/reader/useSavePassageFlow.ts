@@ -17,7 +17,6 @@ interface DuplicatePrompt {
   existing: ScripturePassage;
 }
 
-/** Saving a selection, including what to do when the same passage is already saved. */
 export const useSavePassageFlow = () => {
   const pushToast = useStore((s) => s.pushToast);
   const scriptures = useStore((s) => s.scriptures);

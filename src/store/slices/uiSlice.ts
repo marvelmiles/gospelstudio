@@ -4,9 +4,9 @@ import { missingCapabilities } from "../../lib/capabilities";
 import type { SliceCreator } from "../storeTypes";
 import { APP_NAME } from "../../lib/appInfo";
 
-export type OverlayName = "assets" | "settings" | "shortcuts" | "about";
+type OverlayName = "assets" | "settings" | "shortcuts" | "about";
 
-export interface OverlayOptions {
+interface OverlayOptions {
   lockSection?: boolean;
 }
 

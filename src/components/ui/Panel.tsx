@@ -1,30 +1,20 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { InfoTip } from "./InfoTip";
 
-/** The raised, bordered surface a page section sits on. */
 interface PanelProps {
   children: ReactNode;
-  style?: CSSProperties;
+  className?: string;
 }
 
-export const Panel = ({ children, style }: PanelProps) => {
-  const { colors } = useUITheme();
-  return (
-    <div
-      style={{
-        background: colors.raise,
-        border: `1px solid ${colors.border}`,
-        borderRadius: 16,
-        padding: 18,
-        ...style,
-      }}
-    >
-      {children}
-    </div>
-  );
-};
+export const Panel = ({ children, className }: PanelProps) => (
+  <div
+    className={cn("rounded-2xl border border-line bg-raise p-4.5", className)}
+  >
+    {children}
+  </div>
+);
 
 interface PanelTitleProps {
   title: string;
@@ -40,42 +30,26 @@ export const PanelTitle = ({
   info,
   trailing,
   centered = false,
-}: PanelTitleProps) => {
-  const { colors, fonts } = useUITheme();
-  return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: centered
-          ? "center"
-          : trailing
-            ? "space-between"
-            : "flex-start",
-        gap: 8,
-        marginBottom: 14,
-      }}
-    >
-      <span
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 8,
-          fontFamily: fonts.display,
-          fontSize: 16,
-          fontWeight: 600,
-          color: colors.text,
-        }}
-      >
-        {Icon && <Icon size={17} color={colors.accentSoft} />}
-        {title}
-        {info && (
-          <InfoTip title={title} align={centered ? "center" : "start"}>
-            {info}
-          </InfoTip>
-        )}
-      </span>
-      {trailing}
-    </div>
-  );
-};
+}: PanelTitleProps) => (
+  <div
+    className={cn(
+      "mb-3.5 flex items-center gap-2",
+      centered
+        ? "justify-center"
+        : trailing
+          ? "justify-between"
+          : "justify-start",
+    )}
+  >
+    <span className="inline-flex items-center gap-2 text-base font-semibold text-fg">
+      {Icon && <Icon size={17} className="text-accent-soft" />}
+      {title}
+      {info && (
+        <InfoTip title={title} align={centered ? "center" : "start"}>
+          {info}
+        </InfoTip>
+      )}
+    </span>
+    {trailing}
+  </div>
+);

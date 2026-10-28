@@ -1,6 +1,5 @@
 import { Image as ImageIcon, Tag, Type } from "lucide-react";
 import type { Align } from "../../../types";
-import { useUITheme } from "../../../theme/ThemeProvider";
 import { FONT_WEIGHT_OPTIONS } from "../../../data/slideFonts";
 import { ANIMATION_OPTIONS } from "../../../lib/animation";
 import { Button } from "../../../components/ui/Button";
@@ -104,32 +103,17 @@ const BlockStepper = ({
   count: number;
   noun: string;
 }) => {
-  const { colors, fonts } = useUITheme();
   if (count <= 1) return null;
   const index = Math.min(Math.max(overlay.slideIndex, 0), count - 1);
   const step = (direction: number) =>
     pageStreamOverlay(overlay.id, (index + direction + count) % count);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        gap: 8,
-      }}
-    >
-      <span
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 12.5,
-          fontWeight: 600,
-          color: colors.sub,
-        }}
-      >
+    <div className="flex items-center justify-between gap-2">
+      <span className="text-[12.5px] font-semibold text-sub">
         {noun} {index + 1} of {count}
       </span>
-      <span style={{ display: "flex", gap: 6 }}>
+      <span className="flex gap-1.5">
         <Button
           variant="subtle"
           size="sm"

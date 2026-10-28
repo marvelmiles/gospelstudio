@@ -7,13 +7,10 @@ import {
   Square,
   Volume2,
 } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
+import { cn } from "../../../lib/cn";
 import { Button, IconButton } from "../../../components/ui/Button";
 import { TextInput } from "../../../components/ui/Field";
-import {
-  CLEAR_BUTTON_INSET,
-  ClearInputButton,
-} from "../../../components/ui/ClearInputButton";
+import { ClearInputButton } from "../../../components/ui/ClearInputButton";
 
 interface ChapterToolbarProps {
   reference: string;
@@ -42,7 +39,6 @@ export const ChapterToolbar = ({
   onPreviousChapter,
   onNextChapter,
 }: ChapterToolbarProps) => {
-  const { colors, fonts } = useUITheme();
   const referenceRef = useRef<HTMLInputElement>(null);
 
   const clearReference = () => {
@@ -51,8 +47,8 @@ export const ChapterToolbar = ({
   };
 
   return (
-    <div className="ws-row-wrap" style={{ marginBottom: 14 }}>
-      <div style={{ position: "relative", flex: 1, minWidth: 190 }}>
+    <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
+      <div className="relative min-w-47.5 flex-1">
         <TextInput
           ref={referenceRef}
           value={reference}
@@ -65,7 +61,7 @@ export const ChapterToolbar = ({
               clearReference();
             }
           }}
-          style={reference ? { paddingRight: CLEAR_BUTTON_INSET } : undefined}
+          className={cn(reference && "pr-9.5")}
         />
         <ClearInputButton
           value={reference}
@@ -81,8 +77,8 @@ export const ChapterToolbar = ({
         <ArrowRight size={15} />
         Go
       </Button>
-      <span style={{ flex: 1 }} />
-      <div className="ws-row" style={{ gap: 6 }}>
+      <span className="flex-1" />
+      <div className="flex items-center gap-1.5">
         <IconButton
           icon={ListChecks}
           title={
@@ -106,16 +102,7 @@ export const ChapterToolbar = ({
           title="Previous chapter"
           onClick={onPreviousChapter}
         />
-        <span
-          style={{
-            fontFamily: fonts.display,
-            fontSize: 17,
-            fontWeight: 600,
-            color: colors.text,
-            minWidth: 130,
-            textAlign: "center",
-          }}
-        >
+        <span className="min-w-32.5 text-center text-[17px] font-semibold text-fg">
           {chapterLabel}
         </span>
         <IconButton

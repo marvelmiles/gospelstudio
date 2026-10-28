@@ -1,5 +1,6 @@
-export const uid = (): string =>
-  Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+import { nanoid } from "nanoid";
+
+export const uid = (): string => nanoid(12);
 
 export const now = (): string => new Date().toISOString();
 

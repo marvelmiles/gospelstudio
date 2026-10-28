@@ -2,7 +2,7 @@ import { FIXED_TAG_SHORTCUTS } from "./tagGroups";
 import { VIEW_COMMANDS, type ViewCommand } from "./viewCommands";
 import { INLINE_FORMATS, INLINE_FORMAT_NAMES } from "./textFormatting";
 
-export interface Shortcut {
+interface Shortcut {
   keys: string[];
   description: string;
 }
@@ -143,8 +143,8 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     title: "Placed Elements",
     note: "Available while a picture, clip or text box on the slide is selected in the editor.",
     shortcuts: [
-      { keys: ["← ↑ → ↓"], description: "Nudge it across the slide" },
-      { keys: ["Shift", "+", "← ↑ → ↓"], description: "Nudge it further" },
+      { keys: ["arrows"], description: "Nudge it across the slide" },
+      { keys: ["Shift", "+", "arrows"], description: "Nudge it further" },
       { keys: ["Delete"], description: "Remove it from the slide" },
       { keys: ["Esc"], description: "Deselect it" },
     ],
@@ -153,8 +153,8 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     title: "Navigation",
     note: "Available while presenting.",
     shortcuts: [
-      { keys: ["→", "Page Dn", "L"], description: "Next slide" },
-      { keys: ["←", "Page Up", "H"], description: "Previous slide" },
+      { keys: ["right", "Page Dn", "L"], description: "Next slide" },
+      { keys: ["left", "Page Up", "H"], description: "Previous slide" },
       { keys: ["Home"], description: "First slide" },
       { keys: ["End"], description: "Last slide" },
     ],
@@ -193,7 +193,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
         description: "Extend the selection to a verse",
       },
       {
-        keys: ["Shift", "+", "↑ / ↓"],
+        keys: ["Shift", "+", "up-down"],
         description: "Grow / shrink the selection from its active end",
       },
       {
@@ -216,8 +216,8 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
     note: "Available while a video is on the stage. Space also plays and pauses the preview in the video and audio editors.",
     shortcuts: [
       { keys: ["Space"], description: "Play / pause the video" },
-      { keys: ["→"], description: "Seek forward 5s" },
-      { keys: ["←"], description: "Seek back 5s" },
+      { keys: ["right"], description: "Seek forward 5s" },
+      { keys: ["left"], description: "Seek back 5s" },
       { keys: ["M"], description: "Mute / unmute" },
     ],
   },

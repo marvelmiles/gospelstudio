@@ -8,7 +8,7 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
+import { cn } from "../../../lib/cn";
 import { useAutoHideChrome } from "../../../hooks/useAutoHideChrome";
 import { useFullscreen } from "../../../hooks/useFullscreen";
 import { Button, StageButton } from "../../../components/ui/Button";
@@ -46,50 +46,28 @@ export const SharingCameraCard = ({
   onFlip,
   onStop,
 }: SharingCameraCardProps) => {
-  const { stage } = useUITheme();
   const shellRef = useRef<HTMLDivElement>(null);
   const {
     isFullscreen,
     fillStyle,
     toggle: toggleFullscreen,
   } = useFullscreen(shellRef);
-  /* Nothing but the camera should be on screen while it is filling it, so the
-     controls step aside and come back on a touch, a click or a moved pointer. */
+  /* In full screen the buttons hide, and come back on a touch, click or mouse move. */
   const chrome = useAutoHideChrome({ enabled: isFullscreen });
   const isFrontCamera = facing === "user";
 
-  /* The chrome is hidden rather than unmounted so the camera element survives
-     the switch: a remounted video would lose the stream it is showing. */
+  /* Controls are hidden, not removed, so the camera picture keeps playing. */
   return (
     <div
       ref={shellRef}
-      style={
-        isFullscreen
-          ? {
-              display: "flex",
-              width: "100%",
-              height: "100%",
-              background: "#000",
-              ...(fillStyle ?? {}),
-            }
-          : undefined
-      }
+      style={(isFullscreen && fillStyle) || undefined}
+      className={cn(isFullscreen && "flex size-full bg-black")}
     >
       <Panel
-        style={
-          isFullscreen
-            ? {
-                flex: 1,
-                minWidth: 0,
-                display: "flex",
-                flexDirection: "column",
-                padding: 0,
-                border: "none",
-                borderRadius: 0,
-                background: "#000",
-              }
-            : undefined
-        }
+        className={cn(
+          isFullscreen &&
+            "flex min-w-0 flex-1 flex-col rounded-none border-none bg-black p-0",
+        )}
       >
         {!isFullscreen && (
           <PanelTitle icon={Radio} title="Your camera" trailing={badge} />
@@ -97,50 +75,31 @@ export const SharingCameraCard = ({
         <div
           onPointerDown={chrome.wake}
           onPointerMove={chrome.wake}
-          style={{
-            position: "relative",
-            overflow: "hidden",
-            background: isFullscreen ? "#000" : stage.surface,
-            ...(isFullscreen
-              ? { flex: 1, minHeight: 0 }
-              : { borderRadius: 12, aspectRatio: "16 / 9" }),
-          }}
+          className={cn(
+            "relative overflow-hidden bg-stage",
+            isFullscreen ? "min-h-0 flex-1" : "aspect-video rounded-xl",
+          )}
         >
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: isFullscreen ? "contain" : "cover",
-              display: "block",
-            }}
+            className={cn(
+              "block size-full",
+              isFullscreen ? "object-contain" : "object-cover",
+            )}
           />
           {isFullscreen && (
             <div
               onPointerEnter={() => chrome.onHoverChange(true)}
               onPointerLeave={() => chrome.onHoverChange(false)}
-              style={{
-                position: "absolute",
-                left: "50%",
-                bottom: 22,
-                transform: "translateX(-50%)",
-                display: "flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "9px 12px",
-                borderRadius: 16,
-                background: stage.overlayStrong,
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                border: `1px solid ${stage.border}`,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.45)",
-                opacity: chrome.visible ? 1 : 0,
-                pointerEvents: chrome.visible ? "auto" : "none",
-                transition: "opacity 0.3s ease",
-              }}
+              className={cn(
+                "absolute bottom-5.5 left-1/2 flex -translate-x-1/2 items-center gap-2.5 rounded-2xl border border-stage-line bg-stage-overlay-strong px-3 py-2.25 shadow-[0_10px_30px_rgb(0_0_0/0.45)] backdrop-blur-[10px] transition-opacity duration-300",
+                chrome.visible
+                  ? "pointer-events-auto opacity-100"
+                  : "pointer-events-none opacity-0",
+              )}
             >
               <StageButton
                 icon={isAudioOn ? Volume2 : VolumeX}
@@ -170,9 +129,7 @@ export const SharingCameraCard = ({
         {!isFullscreen && statusLine}
 
         {!isFullscreen && (
-          <div
-            style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}
-          >
+          <div className="mt-3.5 flex flex-wrap gap-2">
             <Button
               variant={isAudioOn ? "primary" : "ghost"}
               size="sm"
@@ -200,9 +157,7 @@ export const SharingCameraCard = ({
               >
                 <SwitchCamera
                   size={14}
-                  style={{
-                    transform: isFrontCamera ? "scaleX(-1)" : undefined,
-                  }}
+                  className={cn(isFrontCamera && "-scale-x-100")}
                 />
                 Switch camera
               </Button>

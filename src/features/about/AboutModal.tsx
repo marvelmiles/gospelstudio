@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, Heart, Mail } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { Modal } from "../../components/ui/Modal";
 import { APP_NAME, APP_VERSION_LABEL } from "../../lib/appInfo";
 import { SectionTitle } from "../../components/ui/Field";
@@ -115,8 +115,9 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
+const bodyClassName = "mt-0 text-[13.5px] leading-[1.7] text-sub";
+
 export const AboutModal = () => {
-  const { colors, fonts } = useUITheme();
   const overlay = useStore((s) => s.overlay);
   const close = useStore((s) => s.closeOverlay);
   const [open, setOpen] = useState<number | null>(0);
@@ -128,45 +129,17 @@ export const AboutModal = () => {
       title="About & Help"
       width={640}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          fontFamily: fonts.ui,
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: 0.6,
-          textTransform: "uppercase",
-          color: colors.accent,
-        }}
-      >
+      <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.6px] text-accent uppercase">
         <Heart size={14} /> Why {APP_NAME}
       </div>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 14,
-          color: colors.text,
-          lineHeight: 1.7,
-          marginTop: 10,
-        }}
-      >
+      <p className="mt-2.5 text-sm leading-[1.7] text-fg">
         {APP_NAME} was born out of frustration. While running media at my
         church, the presentation software we relied on kept lagging mid-service,
         stuttering on hymns, images, and videos right when the congregation
         needed to follow along. Those freezes chipped away at the trust people
         had in the media team and pulled focus away from worship.
       </p>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 14,
-          color: colors.sub,
-          lineHeight: 1.7,
-          marginTop: 0,
-        }}
-      >
+      <p className="mt-0 text-sm leading-[1.7] text-sub">
         I wanted something lighter and purpose-built: fast, calm, and made for
         one job, displaying worship content beautifully and reliably. That
         frustration became the spark for {APP_NAME}, so the focus can stay on
@@ -174,52 +147,29 @@ export const AboutModal = () => {
       </p>
 
       <SectionTitle>Frequently Asked</SectionTitle>
-      <div style={{ borderTop: `1px solid ${colors.border}` }}>
-        {FAQS.map((faq, i) => {
-          const isOpen = open === i;
+      <div className="border-t border-line">
+        {FAQS.map((faq, index) => {
+          const isOpen = open === index;
           return (
-            <div key={i} style={{ borderBottom: `1px solid ${colors.border}` }}>
+            <div key={index} className="border-b border-line">
               <button
-                onClick={() => setOpen(isOpen ? null : i)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 12,
-                  width: "100%",
-                  padding: "13px 2px",
-                  background: "transparent",
-                  border: "none",
-                  cursor: "pointer",
-                  textAlign: "left",
-                  fontFamily: fonts.ui,
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: isOpen ? colors.accentSoft : colors.text,
-                }}
+                onClick={() => setOpen(isOpen ? null : index)}
+                className={cn(
+                  "flex w-full items-center justify-between gap-3 border-none bg-transparent px-0.5 py-3.25 text-left text-sm font-semibold",
+                  isOpen ? "text-accent-soft" : "text-fg",
+                )}
               >
                 {faq.q}
                 <ChevronDown
                   size={17}
-                  style={{
-                    flexShrink: 0,
-                    transition: "transform 0.2s ease",
-                    transform: isOpen ? "rotate(180deg)" : "none",
-                    color: colors.sub,
-                  }}
+                  className={cn(
+                    "shrink-0 text-sub transition-transform duration-200",
+                    isOpen && "rotate-180",
+                  )}
                 />
               </button>
               {isOpen && (
-                <p
-                  style={{
-                    fontFamily: fonts.ui,
-                    fontSize: 13.5,
-                    color: colors.sub,
-                    lineHeight: 1.7,
-                    margin: "0 0 14px",
-                    paddingRight: 24,
-                  }}
-                >
+                <p className="mt-0 mb-3.5 pr-6 text-[13.5px] leading-[1.7] text-sub">
                   {faq.a}
                 </p>
               )}
@@ -229,20 +179,11 @@ export const AboutModal = () => {
       </div>
 
       <SectionTitle>Scripture Data &amp; Licensing</SectionTitle>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13.5,
-          color: colors.sub,
-          lineHeight: 1.7,
-          marginTop: 0,
-        }}
-      >
+      <p className={bodyClassName}>
         {APP_NAME} includes two Bible translations, both in the{" "}
-        <strong style={{ color: colors.text }}>public domain</strong>: the{" "}
-        <strong style={{ color: colors.text }}>King James Version (KJV)</strong>{" "}
-        and the{" "}
-        <strong style={{ color: colors.text }}>
+        <strong className="text-fg">public domain</strong>: the{" "}
+        <strong className="text-fg">King James Version (KJV)</strong> and the{" "}
+        <strong className="text-fg">
           American Standard Version (ASV, 1901)
         </strong>
         . Public-domain texts belong to everyone and may be read, projected,
@@ -251,21 +192,13 @@ export const AboutModal = () => {
         the world except in the United Kingdom, where printing rights are held
         under Crown letters patent.)
       </p>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13.5,
-          color: colors.sub,
-          lineHeight: 1.7,
-          marginTop: 0,
-        }}
-      >
+      <p className={bodyClassName}>
         The Bible verses included in the app are sourced from the open-source{" "}
         <a
           href="https://www.npmjs.com/package/holy-bible"
           target="_blank"
           rel="noreferrer"
-          style={{ color: colors.accentSoft, fontWeight: 600 }}
+          className="font-semibold text-accent-soft"
         >
           holy-bible
         </a>{" "}
@@ -275,45 +208,18 @@ export const AboutModal = () => {
       </p>
 
       <SectionTitle>Contact</SectionTitle>
-      <p
-        style={{
-          fontFamily: fonts.ui,
-          fontSize: 13.5,
-          color: colors.sub,
-          lineHeight: 1.6,
-          marginTop: 0,
-        }}
-      >
+      <p className="mt-0 text-[13.5px] leading-[1.6] text-sub">
         Have feedback, found a bug, or want a feature? I'd genuinely love to
         hear from you.
       </p>
       <a
         href={`mailto:${CONTACT_EMAIL}`}
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 9,
-          padding: "11px 16px",
-          borderRadius: 11,
-          textDecoration: "none",
-          fontFamily: fonts.ui,
-          fontWeight: 600,
-          fontSize: 14,
-          color: "#ffffff",
-          background: `linear-gradient(140deg,${colors.accentSoft},${colors.accent})`,
-        }}
+        className="inline-flex items-center gap-2.25 rounded-[11px] bg-linear-140 from-accent-soft to-accent px-4 py-2.75 text-sm font-semibold text-white no-underline"
       >
         <Mail size={16} />
         {CONTACT_EMAIL}
       </a>
-      <p
-        style={{
-          margin: "18px 0 0",
-          fontFamily: fonts.ui,
-          fontSize: 12,
-          color: colors.dim,
-        }}
-      >
+      <p className="mt-4.5 mb-0 text-xs text-dim">
         {APP_NAME} {APP_VERSION_LABEL}
       </p>
     </Modal>

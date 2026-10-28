@@ -4,9 +4,7 @@ import { matchesDefault } from "../../lib/manuscript/defaults";
 import { useStore } from "../../store/useStore";
 
 interface ManuscriptDefault {
-  /** The manuscript the way it ships, or null when nothing ships for it. */
   shipped: Manuscript | null;
-  /** True while resetting to the default would actually change something. */
   changed: boolean;
 }
 

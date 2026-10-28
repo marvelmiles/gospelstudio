@@ -42,8 +42,6 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
   const [paused, setPaused] = useState(false);
   const [followedSession, setFollowedSession] = useState(presentation?.session);
 
-  /* Starting the same item again, from another slide or straight from its
-     editor, keeps this view mounted, so the new start is taken up here. */
   if (presentation && presentation.session !== followedSession) {
     setFollowedSession(presentation.session);
     setSlideIndex(presentation.startIndex);
@@ -319,8 +317,6 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
 
   const playbackPaused = isVideoSlide ? !mediaPlayback.playing : paused;
 
-  /* The manuscript, passage or slide can trim and level the sound for itself,
-     so what plays is the sound's own settings with those layered on top. */
   const audioSettings = useMemo(
     () =>
       audioItem ? resolveAudioSettings(currentTextSlide, doc, audioItem) : null,

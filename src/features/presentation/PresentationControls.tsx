@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Check,
   Expand,
@@ -21,10 +21,11 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { PresentationView } from "../../types";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
 import { viewCommandTitle } from "../../lib/viewCommands";
 import { StageButton } from "../../components/ui/Button";
+import { Popover } from "../../components/ui/Popover";
+import { menuSurfaceClassName } from "../../components/ui/MoreMenu";
+import { cn } from "../../lib/cn";
 
 const VIEW_OPTIONS: {
   value: PresentationView;
@@ -93,45 +94,18 @@ export const PresentationControls = ({
   onToggleFullscreen,
   onExit,
 }: PresentationControlsProps) => {
-  const { colors, fonts, stage } = useUITheme();
-  const UI = fonts.ui;
   const [menuOpen, setMenuOpen] = useState(false);
-  const viewRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (!viewRef.current?.contains(e.target as Node)) setMenuOpen(false);
-    };
-    window.addEventListener("click", onClick);
-    return () => window.removeEventListener("click", onClick);
-  }, [menuOpen]);
 
   return (
     <div
-      className="wf-controls"
       onMouseEnter={() => onHoverChange(true)}
       onMouseLeave={() => onHoverChange(false)}
-      style={{
-        position: "fixed",
-        top: 16,
-        right: 16,
-        zIndex: 20,
-        display: "flex",
-        flexWrap: "wrap",
-        justifyContent: "flex-end",
-        alignItems: "center",
-        gap: 7,
-        maxWidth: "calc(100vw - 32px)",
-        padding: 7,
-        borderRadius: 14,
-        background: stage.overlay,
-        backdropFilter: "blur(10px)",
-        border: `1px solid ${stage.border}`,
-        opacity: visible ? 1 : 0,
-        pointerEvents: visible ? "auto" : "none",
-        transition: "opacity 0.3s ease",
-      }}
+      className={cn(
+        "fixed top-4 right-4 z-20 flex max-w-[calc(100vw-32px)] flex-wrap items-center justify-end gap-1.75 rounded-[14px] border border-stage-line bg-stage-overlay p-1.75 backdrop-blur-[10px] transition-opacity duration-300",
+        visible
+          ? "pointer-events-auto opacity-100"
+          : "pointer-events-none opacity-0",
+      )}
     >
       <StageButton
         icon={MonitorUp}
@@ -171,128 +145,61 @@ export const PresentationControls = ({
         />
       )}
 
-      <div ref={viewRef} style={{ position: "relative" }}>
-        <StageButton
-          icon={Scan}
-          title="Screen fit (V)"
-          active={menuOpen}
-          onClick={() => setMenuOpen((o) => !o)}
-        />
-        {menuOpen && (
-          <div
-            style={{
-              position: "absolute",
-              top: 48,
-              right: 0,
-              minWidth: 196,
-              padding: 6,
-              borderRadius: 12,
-              background: fade(colors.panelSolid, 0.92),
-              backdropFilter: "blur(18px) saturate(150%)",
-              WebkitBackdropFilter: "blur(18px) saturate(150%)",
-              border: `1px solid ${colors.border}`,
-              boxShadow: "0 18px 50px rgba(0,0,0,0.55)",
-            }}
-          >
-            <div
-              style={{
-                fontFamily: UI,
-                fontSize: 10.5,
-                fontWeight: 700,
-                letterSpacing: 0.6,
-                textTransform: "uppercase",
-                color: colors.dim,
-                padding: "6px 9px 8px",
-              }}
-            >
-              Screen Fit
-            </div>
-            {VIEW_OPTIONS.map((option) => {
-              const active = view === option.value;
-              return (
-                <button
-                  key={option.value}
-                  onClick={() => {
-                    onSetView(option.value);
-                    setMenuOpen(false);
-                  }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    width: "100%",
-                    padding: "9px 10px",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    textAlign: "left",
-                    border: "none",
-                    background: active
-                      ? fade(colors.accent, 0.16)
-                      : "transparent",
-                    color: active ? colors.accentSoft : colors.text,
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!active)
-                      e.currentTarget.style.background =
-                        "rgba(255,255,255,0.05)";
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!active)
-                      e.currentTarget.style.background = "transparent";
-                  }}
-                >
-                  <option.icon size={16} />
-                  <span style={{ flex: 1 }}>
-                    <span
-                      style={{
-                        fontFamily: UI,
-                        fontSize: 13.5,
-                        fontWeight: 600,
-                        display: "block",
-                      }}
-                    >
-                      {option.label}
-                    </span>
-                    <span
-                      style={{
-                        fontFamily: UI,
-                        fontSize: 11.5,
-                        color: active ? colors.accentSoft : colors.sub,
-                      }}
-                    >
-                      {option.hint}
-                    </span>
-                  </span>
-                  {active && <Check size={15} />}
-                </button>
-              );
-            })}
+      <Popover
+        open={menuOpen}
+        onOpenChange={setMenuOpen}
+        align="end"
+        trigger={
+          <StageButton icon={Scan} title="Screen fit (V)" active={menuOpen} />
+        }
+      >
+        <div className={cn(menuSurfaceClassName, "min-w-49 bg-panel-solid/92")}>
+          <div className="px-2.25 pt-1.5 pb-2 text-[10.5px] font-bold tracking-[0.6px] text-dim uppercase">
+            Screen Fit
           </div>
-        )}
-      </div>
+          {VIEW_OPTIONS.map((option) => {
+            const active = view === option.value;
+            return (
+              <button
+                key={option.value}
+                onClick={() => {
+                  onSetView(option.value);
+                  setMenuOpen(false);
+                }}
+                className={cn(
+                  "flex w-full items-center gap-2.5 rounded-lg border-none px-2.5 py-2.25 text-left",
+                  active
+                    ? "bg-accent/16 text-accent-soft"
+                    : "bg-transparent text-fg hover:bg-white/5",
+                )}
+              >
+                <option.icon size={16} />
+                <span className="flex-1">
+                  <span className="block text-[13.5px] font-semibold">
+                    {option.label}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[11.5px]",
+                      active ? "text-accent-soft" : "text-sub",
+                    )}
+                  >
+                    {option.hint}
+                  </span>
+                </span>
+                {active && <Check size={15} />}
+              </button>
+            );
+          })}
+        </div>
+      </Popover>
 
-      <span style={{ display: "flex", alignItems: "center", gap: 2 }}>
+      <span className="flex items-center gap-0.5">
         <StageButton icon={ZoomOut} title="Zoom out (-)" onClick={onZoomOut} />
         <button
           onClick={onResetZoom}
           title="Reset zoom (0)"
-          style={{
-            minWidth: 48,
-            height: 40,
-            padding: "0 8px",
-            borderRadius: 10,
-            cursor: "pointer",
-            background: "rgba(255,255,255,0.06)",
-            color: stage.text,
-            border: `1px solid ${stage.border}`,
-            fontFamily: UI,
-            fontSize: 12.5,
-            fontVariantNumeric: "tabular-nums",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 5,
-          }}
+          className="inline-flex h-10 min-w-12 items-center justify-center gap-1.25 rounded-[10px] border border-stage-line bg-white/6 px-2 text-[12.5px] text-white tabular-nums"
         >
           <RotateCcw size={13} />
           {Math.round(zoom * 100)}%

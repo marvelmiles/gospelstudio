@@ -1,9 +1,8 @@
 import { AlertTriangle, Info, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { AppAlert } from "../../types";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { feedbackTone } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
+import { cn } from "../../lib/cn";
 
 const ICONS: Record<AppAlert["kind"], LucideIcon> = {
   error: AlertTriangle,
@@ -11,78 +10,38 @@ const ICONS: Record<AppAlert["kind"], LucideIcon> = {
   info: Info,
 };
 
+const TONES: Record<AppAlert["kind"], string> = {
+  error: "bg-danger/15 border-danger/42 text-danger-fg",
+  warning: "bg-warning/15 border-warning/42 text-warning-fg",
+  info: "bg-info/15 border-info/42 text-info-fg",
+};
+
 export const AlertBar = () => {
-  const { fonts, colors } = useUITheme();
-  const UI = fonts.ui;
-  const tones: Record<AppAlert["kind"], ReturnType<typeof feedbackTone>> = {
-    error: feedbackTone(colors.danger, colors.text),
-    warning: feedbackTone(colors.warning, colors.text),
-    info: feedbackTone(colors.info, colors.text),
-  };
   const alerts = useStore((s) => s.alerts);
   const dismissAlert = useStore((s) => s.dismissAlert);
   if (alerts.length === 0) return null;
 
   return (
-    <div
-      style={{
-        position: "sticky",
-        top: 0,
-        zIndex: 360,
-        display: "flex",
-        flexDirection: "column",
-      }}
-    >
+    <div className="sticky top-0 z-360 flex flex-col">
       {alerts.map((alert) => {
-        const tone = tones[alert.kind];
         const Icon = ICONS[alert.kind];
         return (
           <div
             key={alert.id}
             role="alert"
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 11,
-              padding: "11px clamp(14px,4vw,24px)",
-              background: tone.bg,
-              borderBottom: `1px solid ${tone.border}`,
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-            }}
+            className={cn(
+              "flex items-start gap-2.75 border-b px-[clamp(14px,4vw,24px)] py-2.75 backdrop-blur-[10px]",
+              TONES[alert.kind],
+            )}
           >
-            <Icon
-              size={17}
-              color={tone.text}
-              style={{ flexShrink: 0, marginTop: 1 }}
-            />
-            <span
-              style={{
-                flex: 1,
-                fontFamily: UI,
-                fontSize: 13.5,
-                color: tone.text,
-                lineHeight: 1.5,
-              }}
-            >
+            <Icon size={17} className="mt-px shrink-0" />
+            <span className="flex-1 text-[13.5px] leading-normal">
               {alert.message}
             </span>
             <button
               onClick={() => dismissAlert(alert.id)}
               aria-label="Dismiss"
-              style={{
-                flexShrink: 0,
-                width: 26,
-                height: 26,
-                display: "grid",
-                placeItems: "center",
-                borderRadius: 7,
-                border: "none",
-                background: "transparent",
-                color: tone.text,
-                cursor: "pointer",
-                opacity: 0.8,
-              }}
+              className="grid size-6.5 shrink-0 place-items-center rounded-[7px] border-none bg-transparent text-current opacity-80"
             >
               <X size={15} />
             </button>

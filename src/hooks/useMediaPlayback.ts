@@ -15,14 +15,14 @@ export interface MediaPlaybackOptions {
   autoPlay?: boolean;
 }
 
-export interface AdoptedPlayback {
+interface AdoptedPlayback {
   playing: boolean;
   muted: boolean;
   volume: number;
   time: number;
 }
 
-export interface RestartOptions {
+interface RestartOptions {
   playing?: boolean;
   time?: number;
 }

@@ -28,7 +28,7 @@ export const SERMON_TITLE_FRAME: SlideFrame = {
   height: 60,
 };
 
-export const DEFAULT_TEXT_BOX_LINES = ["New text"];
+const DEFAULT_TEXT_BOX_LINES = ["New text"];
 
 export interface CreateTextBoxOptions {
   frame?: SlideFrame;

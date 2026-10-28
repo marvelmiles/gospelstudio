@@ -23,7 +23,13 @@ import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
 import { PinButton } from "../../components/ui/PinControl";
 import {
   CardActions,
+  CardTitle,
+  cardBodyClassName,
+  cardClassName,
+  cardGridClassName,
   cardOpenProps,
+  cardSubClassName,
+  cardThumbBadgeClassName,
 } from "../../components/ui/InteractiveCard";
 import { LibrarySortSelect } from "../../components/ui/LibrarySortSelect";
 import { PresentMenu } from "../../components/ui/PresentMenu";
@@ -66,7 +72,7 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
   return (
     <>
       {!trashView && (
-        <div className="ws-row-wrap" style={{ marginBottom: 18 }}>
+        <div className="mb-4.5 flex flex-wrap items-center gap-2.5">
           <SearchInput
             value={query}
             onChange={setQuery}
@@ -95,7 +101,7 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
           />
         )
       ) : (
-        <div className="ws-card-grid">
+        <div className={cardGridClassName}>
           {list.map((passage) => (
             <PassageCard
               key={passage.id}
@@ -167,10 +173,10 @@ const PassageCard = ({
 
   return (
     <div
-      className="ws-glass ws-card"
+      className={cardClassName}
       {...cardOpenProps(passage.title, trashView ? undefined : onOpen)}
     >
-      <div style={{ position: "relative" }}>
+      <div className="relative">
         {first && (
           <SlideCanvas
             slide={first}
@@ -184,15 +190,13 @@ const PassageCard = ({
             )}
           />
         )}
-        <div className="ws-thumb-badge">
+        <div className={cardThumbBadgeClassName}>
           {formatCountLabel(passage.slides?.length || 0, "slide")}
         </div>
       </div>
-      <div className="ws-card-body">
-        <div className="ws-card-title">
-          <span className="ws-ellipsis">{passage.title}</span>
-        </div>
-        <div className="ws-card-sub">
+      <div className={cardBodyClassName}>
+        <CardTitle title={passage.title} />
+        <div className={cardSubClassName}>
           {passage.version} · {formatCountLabel(passage.verses.length, "verse")}
         </div>
         <CardActions>

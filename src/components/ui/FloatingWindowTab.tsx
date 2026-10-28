@@ -7,21 +7,16 @@ import {
   ChevronUp,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import type {
   FloatingWindowEdge,
   FloatingWindowStash,
 } from "../../hooks/useFloatingWindow";
 
-const THICKNESS = 26;
 const MIN_LENGTH = 64;
-const MAX_LENGTH = 168;
 const EDGE_GAP = 8;
-
-/** How far the pointer may travel before a press counts as a drag, not a click. */
 const DRAG_SLOP = 4;
 
-/** The chevron points back into the page, the way the window will travel. */
 const ARROW: Record<FloatingWindowEdge, LucideIcon> = {
   left: ChevronRight,
   right: ChevronLeft,
@@ -29,18 +24,16 @@ const ARROW: Record<FloatingWindowEdge, LucideIcon> = {
   bottom: ChevronUp,
 };
 
-const RADIUS: Record<FloatingWindowEdge, string> = {
-  left: "0 10px 10px 0",
-  right: "10px 0 0 10px",
-  top: "0 0 10px 10px",
-  bottom: "10px 10px 0 0",
+const EDGE_CLASSES: Record<FloatingWindowEdge, string> = {
+  left: "left-0 rounded-r-[10px]",
+  right: "right-0 rounded-l-[10px]",
+  top: "top-0 rounded-b-[10px]",
+  bottom: "bottom-0 rounded-t-[10px]",
 };
 
 interface FloatingWindowTabProps {
   stash: FloatingWindowStash;
-  /** The pop-out module the tab brings back, such as Camera or Manuscript. */
   name: string;
-  /** What this particular pop-out is showing, when several share a module. */
   detail?: string;
   zIndex?: number;
 }
@@ -51,16 +44,12 @@ export const FloatingWindowTab = ({
   detail,
   zIndex,
 }: FloatingWindowTabProps) => {
-  const { colors, fonts, shadows } = useUITheme();
   const [length, setLength] = useState(MIN_LENGTH);
   const pressOrigin = useRef<{ x: number; y: number } | null>(null);
   const wasDragged = useRef(false);
   const { edge, offset, restore, handleProps } = stash;
   const isVertical = edge === "left" || edge === "right";
 
-  /* The tab sizes itself to its label, and that size is what keeps it from
-     running off the end of the edge it is parked on. Remounting on a new edge
-     or label, through the key below, is what re-measures it. */
   const measure = useCallback(
     (node: HTMLButtonElement | null) => {
       if (!node) return;
@@ -112,61 +101,23 @@ export const FloatingWindowTab = ({
       }}
       style={{
         ...handleProps.style,
-        position: "fixed",
         zIndex,
-        ...(isVertical
-          ? {
-              top: along,
-              width: THICKNESS,
-              minHeight: MIN_LENGTH,
-              maxHeight: MAX_LENGTH,
-              padding: "9px 0",
-            }
-          : {
-              left: along,
-              height: THICKNESS,
-              minWidth: MIN_LENGTH,
-              maxWidth: MAX_LENGTH,
-              padding: "0 9px",
-            }),
-        ...(edge === "left" ? { left: 0 } : {}),
-        ...(edge === "right" ? { right: 0 } : {}),
-        ...(edge === "top" ? { top: 0 } : {}),
-        ...(edge === "bottom" ? { bottom: 0 } : {}),
-        display: "flex",
-        flexDirection: isVertical ? "column" : "row",
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 4,
-        background: colors.panelSolid,
-        color: colors.sub,
-        border: `1px solid ${colors.border}`,
-        borderRadius: RADIUS[edge],
-        boxShadow: shadows.overlay,
+        ...(isVertical ? { top: along } : { left: along }),
       }}
-      onMouseEnter={(event) => {
-        event.currentTarget.style.color = colors.text;
-      }}
-      onMouseLeave={(event) => {
-        event.currentTarget.style.color = colors.sub;
-      }}
+      className={cn(
+        "fixed flex items-center justify-center gap-1 border border-line bg-panel-solid text-sub shadow-overlay hover:text-fg",
+        isVertical
+          ? "max-h-42 min-h-16 w-6.5 flex-col py-2.25"
+          : "h-6.5 max-w-42 min-w-16 flex-row px-2.25",
+        EDGE_CLASSES[edge],
+      )}
     >
-      <Arrow size={14} style={{ flexShrink: 0 }} />
+      <Arrow size={14} className="shrink-0" />
       <span
-        style={{
-          minWidth: 0,
-          minHeight: 0,
-          overflow: "hidden",
-          whiteSpace: "nowrap",
-          textOverflow: "ellipsis",
-          fontFamily: fonts.ui,
-          fontSize: 11.5,
-          fontWeight: 700,
-          letterSpacing: 0.2,
-          lineHeight: 1,
-          color: "inherit",
-          ...(isVertical ? { writingMode: "vertical-rl" } : {}),
-        }}
+        className={cn(
+          "min-h-0 min-w-0 truncate text-[11.5px] leading-none font-bold tracking-[0.2px]",
+          isVertical && "[writing-mode:vertical-rl]",
+        )}
       >
         {name}
       </span>

@@ -1,4 +1,4 @@
-// One persistence API over three backends: IndexedDB, then sessionStorage, then memory.
+/* Saves to the browser database when it can, then to this tab only, then to memory as a last resort. */
 export type StoreName =
   | "manuscripts"
   | "scriptures"
@@ -15,7 +15,7 @@ interface HasId {
   id: string;
 }
 
-const DB_NAME = "worshipflow";
+const DB_NAME = "gospelstudio";
 const DB_VERSION = 5;
 const STORES: StoreName[] = [
   "manuscripts",
@@ -30,7 +30,7 @@ const STORES: StoreName[] = [
 ];
 
 const SESSION_SKIP: ReadonlySet<StoreName> = new Set(["files"]);
-const SESSION_PREFIX = "ws:";
+const SESSION_PREFIX = "gospelstudio:";
 const MB = 1024 * 1024;
 
 export const storageState: { backend: Backend | null; memFallback: boolean } = {
@@ -77,7 +77,7 @@ const openIDB = (): Promise<IDBDatabase | null> => {
 const sessionAvailable = (): boolean => {
   try {
     if (typeof sessionStorage === "undefined") return false;
-    const k = "__ws_probe__";
+    const k = "__gospelstudio_probe__";
     sessionStorage.setItem(k, "1");
     sessionStorage.removeItem(k);
     return true;

@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
-import { useUITheme } from "../../theme/ThemeProvider";
-import { fade } from "../../theme/uiTheme";
 import { useStore } from "../../store/useStore";
 import { Button } from "../../components/ui/Button";
 import { InfoTip } from "../../components/ui/InfoTip";
@@ -19,7 +17,6 @@ export const ResetSection = ({
   keptItems: string[];
   onBeforeReset: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const resetApp = useStore((s) => s.resetApp);
   const [isConfirming, setIsConfirming] = useState(false);
   const [typedPhrase, setTypedPhrase] = useState("");
@@ -73,30 +70,9 @@ export const ResetSection = ({
             </>
           }
         >
-          <div
-            style={{
-              display: "flex",
-              gap: 12,
-              padding: 14,
-              borderRadius: 11,
-              background: fade(colors.danger, 0.1),
-              border: `1px solid ${fade(colors.danger, 0.3)}`,
-              marginBottom: 16,
-            }}
-          >
-            <AlertTriangle
-              size={20}
-              color={colors.danger}
-              style={{ flexShrink: 0, marginTop: 1 }}
-            />
-            <div
-              style={{
-                fontFamily: fonts.ui,
-                fontSize: 13.5,
-                color: colors.text,
-                lineHeight: 1.6,
-              }}
-            >
+          <div className="mb-4 flex gap-3 rounded-[11px] border border-danger/30 bg-danger/10 p-3.5">
+            <AlertTriangle size={20} className="mt-px shrink-0 text-danger" />
+            <div className="text-[13.5px] leading-[1.6] text-fg">
               This permanently deletes{" "}
               <strong>
                 all your manuscripts, custom themes, backgrounds, audio, and
@@ -116,19 +92,8 @@ export const ResetSection = ({
               )}
             </div>
           </div>
-          <p
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              color: colors.sub,
-              margin: "0 0 8px",
-              lineHeight: 1.6,
-            }}
-          >
-            Type{" "}
-            <code style={{ textTransform: "none", color: colors.text }}>
-              {RESET_PHRASE}
-            </code>{" "}
+          <p className="mt-0 mb-2 text-[13.5px] leading-[1.6] text-sub">
+            Type <code className="text-fg normal-case">{RESET_PHRASE}</code>{" "}
             below to confirm (case-sensitive).
           </p>
           <TextInput

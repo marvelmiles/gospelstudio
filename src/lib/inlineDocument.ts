@@ -15,7 +15,7 @@ import type { TextRange } from "./textRange";
 
 type Marks = Omit<SourceSegment, "text" | "sourceStart" | "sourceEnd">;
 
-export interface DocumentLine {
+interface DocumentLine {
   raw: string;
   prefix: string;
   content: string;
@@ -24,7 +24,7 @@ export interface DocumentLine {
   end: number;
 }
 
-export const documentLines = (text: string): DocumentLine[] => {
+const documentLines = (text: string): DocumentLine[] => {
   return lineBounds(text).map((bound) => {
     const raw = text.slice(bound.start, bound.end);
     const prefix = raw.slice(0, prefixLength(raw));

@@ -4,7 +4,7 @@ import { useStore } from "../../store/useStore";
 import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useGoLive } from "../../hooks/useGoLive";
 import { useGoLiveToast } from "../../hooks/useGoLiveToast";
-import { useViewport } from "../../hooks/useViewport";
+import { useWindowSize } from "usehooks-ts";
 import { usePortalHost } from "../../hooks/usePortalHost";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
 import { useBlobUrl } from "../../lib/blobUrls";
@@ -25,7 +25,7 @@ import { useSecondaryModule } from "./lib/useSecondaryModule";
 import { collectPresentAssets } from "./lib/presentAssets";
 import {
   DECK_END_LABELS,
-  STAGE_TRANSPORT_STYLE,
+  stageTransportClassName,
   stageBackgroundStyle,
 } from "./lib/stageBackground";
 import { Stage } from "./Stage";
@@ -45,7 +45,7 @@ import { VideoTransportBar } from "../../components/media/VideoTransportBar";
 
 export const Presentation = () => {
   const pushToast = useStore((s) => s.pushToast);
-  const { width } = useViewport();
+  const { width } = useWindowSize();
   const mode = useStore((s) => s.presentationMode);
   const setPresentationMode = useStore((s) => s.setPresentationMode);
   const publishPresentedMedia = useStore((s) => s.publishPresentedMedia);
@@ -53,8 +53,6 @@ export const Presentation = () => {
   const markPresentationLive = useStore((s) => s.markPresentationLive);
   const media = useStore((s) => s.media);
   const { isExtended, isLive, goLive, endLive } = useGoLive();
-  /* The live window can stay open while something else is previewed here, so
-     only the presentation that went live is mirrored onto it. */
   const isBroadcasting = isLive && isLiveTarget;
 
   const pipRef = useRef<HTMLDivElement>(null);
@@ -82,8 +80,6 @@ export const Presentation = () => {
   const announceGoLive = useGoLiveToast("Presentation window");
   const streamSession = useStreamSession();
 
-  /* The camera stage sits above the presentation stage, so it owns the view
-     keys whenever it is up. */
   const isCoveredByStreamStage =
     streamSession.active && streamSession.mode === "stage";
 
@@ -261,7 +257,7 @@ export const Presentation = () => {
             forceMuted={isLive}
             onTimeUpdate={presentation.onVideoTime}
             onEnded={presentation.onVideoEnded}
-            style={{ pointerEvents: "auto" }}
+            className="pointer-events-auto"
           />,
           videoHost,
         )
@@ -350,12 +346,11 @@ export const Presentation = () => {
       {secondaryContent}
       <div
         ref={presentation.rootRef}
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 150,
-          ...stageBackgroundStyle(presentation.frame.backdrop, backdropBlobUrl),
-        }}
+        style={stageBackgroundStyle(
+          presentation.frame.backdrop,
+          backdropBlobUrl,
+        )}
+        className="fixed inset-0 z-150 bg-stage bg-cover bg-center"
       >
         <Stage
           slideIndex={slideIndex}
@@ -414,7 +409,7 @@ export const Presentation = () => {
             onVolume={presentation.setVideoVolume}
             onSeek={presentation.seekVideoTo}
             onRestart={presentation.restartVideo}
-            style={STAGE_TRANSPORT_STYLE}
+            className={stageTransportClassName}
           />
         )}
 

@@ -94,13 +94,6 @@ export const secondaryCameras = (session: StreamSessionState): StreamCamera[] =>
     return camera ? [camera] : [];
   });
 
-export const benchedCameras = (session: StreamSessionState): StreamCamera[] =>
-  session.cameras.filter(
-    (camera) =>
-      camera.deviceId !== session.primaryId &&
-      !session.secondaryIds.includes(camera.deviceId),
-  );
-
 export const canJoinCamera = (session: StreamSessionState): boolean =>
   session.cameras.length < MAX_STREAM_CAMERAS;
 
@@ -128,7 +121,6 @@ const publishComposition = (): void => {
   });
 };
 
-// The composition is republished before listeners wake, so popups never read controls ahead of the picture.
 const commit = (next: StreamSessionState): void => {
   sessionState = next;
   publishComposition();
@@ -255,7 +247,6 @@ const sendOffer = (
   });
 };
 
-// A failed link is restarted over signalling (ICE restart), retrying until the sleeping device wakes or the window closes.
 const reconnectCamera = (deviceId: string): void => {
   const peer = peers.get(deviceId);
   if (!peer?.signalRoute || peer.reconnectTimer !== null) return;
@@ -368,7 +359,6 @@ const canAdmit = (deviceId: string): boolean =>
   !findCamera(sessionState, deviceId) &&
   (!sessionState.active || canJoinCamera(sessionState));
 
-// Code-paired cameras handshake outside the session, then hand their connection over so every app-root surface sees them.
 export const adoptStreamCamera = (camera: {
   deviceId: string;
   deviceName: string;

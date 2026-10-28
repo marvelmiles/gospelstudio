@@ -1,5 +1,3 @@
-import { useUITheme } from "../../../theme/ThemeProvider";
-
 interface GreetingHeaderProps {
   label: string;
   heading: string;
@@ -10,47 +8,14 @@ export const GreetingHeader = ({
   label,
   heading,
   tag,
-}: GreetingHeaderProps) => {
-  const { colors, fonts } = useUITheme();
-  const UI = fonts.ui;
-  const DISPLAY = fonts.display;
-
-  return (
-    <div style={{ marginBottom: 26 }}>
-      <p
-        style={{
-          margin: 0,
-          color: colors.accent,
-          fontFamily: UI,
-          fontWeight: 600,
-          letterSpacing: 1.2,
-          fontSize: 13,
-        }}
-      >
-        {label}
-      </p>
-      <h1
-        style={{
-          margin: "6px 0 0",
-          fontFamily: DISPLAY,
-          fontSize: "clamp(28px,5.5vw,44px)",
-          fontWeight: 600,
-          color: colors.text,
-          letterSpacing: -0.5,
-        }}
-      >
-        {heading}
-      </h1>
-      <p
-        style={{
-          margin: "10px 0 0",
-          fontFamily: UI,
-          fontSize: 14.5,
-          color: colors.sub,
-        }}
-      >
-        {tag}
-      </p>
-    </div>
-  );
-};
+}: GreetingHeaderProps) => (
+  <div className="mb-6.5">
+    <p className="m-0 text-[13px] font-semibold tracking-[1.2px] text-accent">
+      {label}
+    </p>
+    <h1 className="mt-1.5 mb-0 text-[clamp(28px,5.5vw,44px)] font-semibold tracking-[-0.5px] text-fg">
+      {heading}
+    </h1>
+    <p className="mt-2.5 mb-0 text-[14.5px] text-sub">{tag}</p>
+  </div>
+);

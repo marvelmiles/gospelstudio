@@ -3,10 +3,7 @@ from = "/*"
 to = "/index.html"
 status = 200
 
-# sw.js and index.html must never be cached by the browser or Netlify's CDN.
-# The browser fetches sw.js to detect new versions — a stale CDN copy means
-# updates are never seen. index.html must also be fresh so the new hashed
-# asset filenames are loaded after an update.
+# Never cache these, or visitors would keep an old version after an update.
 [[headers]]
 for = "/sw.js"
 [headers.values]
@@ -22,8 +19,7 @@ for = "/manifest.webmanifest"
 [headers.values]
 Cache-Control = "no-store, no-cache, must-revalidate"
 
-# Vite's hashed JS/CSS bundles are safe to cache forever — the content hash
-# in the filename guarantees a unique URL for every changed file.
+# Built files get a new name whenever they change, so they can be cached forever.
 [[headers]]
 for = "/assets/*"
 [headers.values]

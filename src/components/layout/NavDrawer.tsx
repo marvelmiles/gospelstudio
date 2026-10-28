@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { fade } from "../../theme/uiTheme";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { IconButton } from "../ui/Button";
 import type { AppNavigationItem } from "./appNavigation";
 import { isRouteActive } from "../../routes";
@@ -16,6 +15,49 @@ interface NavDrawerProps {
   actions: AppNavigationItem[];
 }
 
+interface NavSectionProps {
+  title: string;
+  items: AppNavigationItem[];
+  pathname: string;
+  onClose: () => void;
+}
+
+const NavSection = ({ title, items, pathname, onClose }: NavSectionProps) => (
+  <div className="mb-4.5">
+    <div className="px-1 pb-2 section-label">{title}</div>
+    <div className="flex flex-col gap-1">
+      {items.map((item) => {
+        const active = item.path ? isRouteActive(item.path, pathname) : false;
+        return (
+          <button
+            key={item.id}
+            type="button"
+            aria-current={active || undefined}
+            onClick={() => {
+              item.run();
+              onClose();
+            }}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-[11px] border px-3 py-2.75 text-left",
+              active
+                ? "border-accent/32 bg-accent/14 text-accent-soft"
+                : "border-transparent bg-transparent text-fg",
+            )}
+          >
+            <item.icon size={18} className="shrink-0" />
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold">{item.label}</span>
+              <span className="mt-0.5 block text-xs text-sub">
+                {item.description}
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  </div>
+);
+
 export const NavDrawer = ({
   open,
   onClose,
@@ -23,8 +65,6 @@ export const NavDrawer = ({
   destinations,
   actions,
 }: NavDrawerProps) => {
-  const { colors, fonts, shadows } = useUITheme();
-
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -36,81 +76,9 @@ export const NavDrawer = ({
 
   if (!open) return null;
 
-  const section = (title: string, items: AppNavigationItem[]) => (
-    <div style={{ marginBottom: 18 }}>
-      <div className="ws-section-label" style={{ padding: "0 4px 8px" }}>
-        {title}
-      </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-        {items.map((item) => {
-          const active = item.path ? isRouteActive(item.path, pathname) : false;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              aria-current={active || undefined}
-              onClick={() => {
-                item.run();
-                onClose();
-              }}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                width: "100%",
-                padding: "11px 12px",
-                borderRadius: 11,
-                cursor: "pointer",
-                textAlign: "left",
-                background: active ? fade(colors.accent, 0.14) : "transparent",
-                border: `1px solid ${active ? fade(colors.accent, 0.32) : "transparent"}`,
-                color: active ? colors.accentSoft : colors.text,
-              }}
-            >
-              <item.icon size={18} style={{ flexShrink: 0 }} />
-              <span style={{ minWidth: 0 }}>
-                <span
-                  style={{
-                    display: "block",
-                    fontFamily: fonts.ui,
-                    fontSize: 14,
-                    fontWeight: 600,
-                  }}
-                >
-                  {item.label}
-                </span>
-                <span
-                  style={{
-                    display: "block",
-                    fontFamily: fonts.ui,
-                    fontSize: 12,
-                    marginTop: 2,
-                    color: colors.sub,
-                  }}
-                >
-                  {item.description}
-                </span>
-              </span>
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-
   return createPortal(
     <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 380,
-        display: "flex",
-        justifyContent: "flex-end",
-        background: colors.scrim,
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-        animation: "wfFade .18s ease",
-      }}
+      className="fixed inset-0 z-380 flex animate-fade-in justify-end bg-scrim backdrop-blur-[6px]"
       onClick={onClose}
     >
       <nav
@@ -118,39 +86,24 @@ export const NavDrawer = ({
         aria-modal="true"
         aria-label="Navigation"
         onClick={(event) => event.stopPropagation()}
-        style={{
-          width: "min(320px, 88vw)",
-          height: "100%",
-          overflowY: "auto",
-          padding: "16px 14px 28px",
-          background: colors.bg2,
-          borderLeft: `1px solid ${colors.border}`,
-          boxShadow: shadows.overlay,
-        }}
+        className="h-full w-[min(320px,88vw)] overflow-y-auto border-l border-line bg-canvas-2 px-3.5 pt-4 pb-7 shadow-overlay"
       >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 18,
-            padding: "0 2px",
-          }}
-        >
-          <span
-            style={{
-              fontFamily: fonts.display,
-              fontSize: 17,
-              fontWeight: 600,
-              color: colors.text,
-            }}
-          >
-            {APP_NAME}
-          </span>
+        <div className="mb-4.5 flex items-center justify-between px-0.5">
+          <span className="text-[17px] font-semibold text-fg">{APP_NAME}</span>
           <IconButton icon={X} title="Close menu" onClick={onClose} />
         </div>
-        {section("Go to", destinations)}
-        {section("Studio", actions)}
+        <NavSection
+          title="Go to"
+          items={destinations}
+          pathname={pathname}
+          onClose={onClose}
+        />
+        <NavSection
+          title="Studio"
+          items={actions}
+          pathname={pathname}
+          onClose={onClose}
+        />
       </nav>
     </div>,
     document.body,

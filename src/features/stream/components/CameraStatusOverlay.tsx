@@ -1,7 +1,6 @@
 import { WifiOff } from "lucide-react";
-import { useUITheme } from "../../../theme/ThemeProvider";
-import { fade } from "../../../theme/uiTheme";
 import { Spinner } from "../../../components/ui/Spinner";
+import { cn } from "../../../lib/cn";
 import { isPeerConnecting, type PeerStatus } from "../lib/peerStatus";
 
 interface CameraStatusOverlayProps {
@@ -53,7 +52,6 @@ export const CameraStatusOverlay = ({
   hasStream,
   size = "stage",
 }: CameraStatusOverlayProps) => {
-  const { fonts, stage } = useUITheme();
   const copy = overlayCopy(status, hasStream);
   if (!copy) return null;
   const isCompact = size === "compact";
@@ -62,51 +60,36 @@ export const CameraStatusOverlay = ({
     <div
       role="status"
       aria-live="polite"
-      style={{
-        position: "absolute",
-        inset: 0,
-        display: "grid",
-        placeItems: "center",
-        textAlign: "center",
-        padding: isCompact ? 10 : 24,
-        background: fade(stage.surface, copy.isBlocking ? 0.72 : 0.4),
-        pointerEvents: copy.isBlocking && !isCompact ? "auto" : "none",
-        zIndex: 5,
-      }}
+      className={cn(
+        "absolute inset-0 z-5 grid place-items-center text-center",
+        isCompact ? "p-2.5" : "p-6",
+        copy.isBlocking ? "bg-stage/72" : "bg-stage/40",
+        copy.isBlocking && !isCompact
+          ? "pointer-events-auto"
+          : "pointer-events-none",
+      )}
     >
       <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: isCompact ? 6 : 12,
-        }}
+        className={cn(
+          "flex flex-col items-center",
+          isCompact ? "gap-1.5" : "gap-3",
+        )}
       >
         {copy.isBusy ? (
           <Spinner size={isCompact ? 18 : 34} />
         ) : (
-          <WifiOff size={isCompact ? 18 : 30} color={stage.text} />
+          <WifiOff size={isCompact ? 18 : 30} className="text-white" />
         )}
         <div
-          style={{
-            fontFamily: isCompact ? fonts.ui : fonts.display,
-            fontSize: isCompact ? 12 : 18,
-            fontWeight: isCompact ? 600 : 700,
-            color: stage.text,
-          }}
+          className={cn(
+            "text-white",
+            isCompact ? "text-xs font-semibold" : "text-lg font-bold",
+          )}
         >
           {copy.title}
         </div>
         {!isCompact && (
-          <div
-            style={{
-              fontFamily: fonts.ui,
-              fontSize: 13.5,
-              color: fade(stage.text, 0.7),
-            }}
-          >
-            {copy.detail}
-          </div>
+          <div className="text-[13.5px] text-white/70">{copy.detail}</div>
         )}
       </div>
     </div>

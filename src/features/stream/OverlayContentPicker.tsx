@@ -3,7 +3,7 @@ import { FileText, Video } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ContentKind, MediaItem } from "../../types";
 import { useStore } from "../../store/useStore";
-import { useUITheme } from "../../theme/ThemeProvider";
+import { cn } from "../../lib/cn";
 import { Modal } from "../../components/ui/Modal";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { SearchInput } from "../../components/ui/SearchInput";
@@ -40,7 +40,6 @@ export const OverlayContentPicker = ({
   onPick: (kind: PickableKind, item: PickableItem) => void;
   onClose: () => void;
 }) => {
-  const { colors, fonts } = useUITheme();
   const manuscripts = useStore((s) => s.manuscripts);
   const media = useStore((s) => s.media);
   const [query, setQuery] = useState("");
@@ -74,7 +73,7 @@ export const OverlayContentPicker = ({
         placeholder={
           kind === "manuscript" ? "Search manuscripts…" : "Search clips…"
         }
-        style={{ minWidth: 0, marginBottom: 12 }}
+        className="mb-3 min-w-0"
       />
 
       {filtered.length === 0 ? (
@@ -88,58 +87,24 @@ export const OverlayContentPicker = ({
           bare
         />
       ) : (
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 6,
-            maxHeight: 340,
-            overflowY: "auto",
-          }}
-        >
+        <div className="flex max-h-85 flex-col gap-1.5 overflow-y-auto">
           {filtered.map((item) => (
             <button
               key={item.id}
               onClick={() => onPick(kind, item)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 11,
-                width: "100%",
-                textAlign: "left",
-                padding: item.media ? 7 : "11px 12px",
-                borderRadius: 11,
-                cursor: "pointer",
-                background: colors.bg,
-                border: `1px solid ${colors.border}`,
-                color: colors.text,
-                fontFamily: fonts.ui,
-                fontSize: 13.5,
-                fontWeight: 600,
-              }}
+              className={cn(
+                "flex w-full items-center gap-2.75 rounded-[11px] border border-line bg-canvas text-left text-[13.5px] font-semibold text-fg",
+                item.media ? "p-1.75" : "px-3 py-2.75",
+              )}
             >
               {item.media ? (
-                <span
-                  style={{
-                    width: 60,
-                    height: 34,
-                    flexShrink: 0,
-                    borderRadius: 7,
-                    overflow: "hidden",
-                    background: colors.raise,
-                    display: "grid",
-                    placeItems: "center",
-                    color: colors.dim,
-                  }}
-                >
+                <span className="grid h-8.5 w-15 shrink-0 place-items-center overflow-hidden rounded-[7px] bg-raise text-dim">
                   <Video size={16} />
                 </span>
               ) : (
-                <Icon size={16} color={colors.accentSoft} />
+                <Icon size={16} className="text-accent-soft" />
               )}
-              <span className="ws-ellipsis" style={{ minWidth: 0 }}>
-                {item.name}
-              </span>
+              <span className="min-w-0 truncate">{item.name}</span>
             </button>
           ))}
         </div>
