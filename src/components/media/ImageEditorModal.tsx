@@ -3,12 +3,13 @@ import { Save, Undo2 } from "lucide-react";
 import type { ImageSettings } from "../../types";
 import { useBlobUrl } from "../../lib/blobUrls";
 import { shallowEqual } from "../../lib/equality";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
-import { Field, TextInput } from "../../components/ui/Field";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/shared/Field";
+import { Input } from "@/components/ui/input";
 import { ImageLayer } from "../../components/media/ImageLayer";
 import { ImageSettingsControls } from "./ImageSettingsControls";
-import { InfoTip } from "../ui/InfoTip";
+import { InfoTip } from "@/components/shared/InfoTip";
 
 interface ImageEditorModalProps {
   title: string;
@@ -60,9 +61,11 @@ export const ImageEditorModal = ({
       }
       footer={
         <>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
-            variant="ghost"
+            variant="secondary"
             disabled={!canReset}
             title={
               canReset
@@ -74,7 +77,7 @@ export const ImageEditorModal = ({
             <Undo2 size={14} />
             Reset all
           </Button>
-          <Button variant="primary" onClick={save}>
+          <Button onClick={save}>
             <Save size={15} />
             Save
           </Button>
@@ -92,7 +95,7 @@ export const ImageEditorModal = ({
       {initialName !== undefined && (
         <div className="mt-4">
           <Field label="Name">
-            <TextInput value={name} onChange={(e) => setName(e.target.value)} />
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
         </div>
       )}

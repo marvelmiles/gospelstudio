@@ -1,4 +1,4 @@
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 import { CameraPanel } from "../CameraPanel";
 import { StreamOverlayPanel } from "../StreamOverlayPanel";
 import type { StreamOverlay } from "../lib/streamOverlay";
@@ -27,7 +27,7 @@ export const StageDrawerPanel = ({
       drawer === "cameras" ? "Connected cameras" : "Broadcast overlays"
     }
     className={cn(
-      "shrink-0 overflow-y-auto border-line bg-raise p-3.5",
+      "shrink-0 overflow-y-auto border-border bg-secondary p-3.5",
       isStacked ? "max-h-[45dvh] w-auto border-t" : "w-82.5 border-l",
     )}
   >

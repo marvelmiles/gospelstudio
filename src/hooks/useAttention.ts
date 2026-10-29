@@ -14,7 +14,7 @@ export const useAttention = (
   containerRef?: RefObject<HTMLElement | null>,
 ): string | null => {
   const [found, setFound] = useState<string | null>(null);
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (!targetId) return;

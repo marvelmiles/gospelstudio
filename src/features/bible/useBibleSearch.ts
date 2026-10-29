@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import type { BibleVersionId } from "../../types";
 import { searchBibleVerses, type BibleSearchResult } from "./lib/offlineBible";
+import { useValueChange } from "@/hooks/useValueChange";
 
 const MIN_QUERY_LENGTH = 3;
 const DEBOUNCE_MS = 450;
@@ -15,18 +16,15 @@ export const useBibleSearch = (version: BibleVersionId, query: string) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  useValueChange(`${version}:${term}`, () => {
     setResults([]);
     setTotal(0);
     setPage(1);
     setError(null);
-  }, [term, version]);
+  });
 
   useEffect(() => {
-    if (!enabled) {
-      setLoading(false);
-      return;
-    }
+    if (!enabled) return;
     const controller = new AbortController();
     const timer = window.setTimeout(
       () => {
@@ -61,7 +59,7 @@ export const useBibleSearch = (version: BibleVersionId, query: string) => {
     term,
     results,
     total,
-    loading,
+    loading: enabled && loading,
     error,
     hasMore: enabled && results.length < total,
     loadMore,

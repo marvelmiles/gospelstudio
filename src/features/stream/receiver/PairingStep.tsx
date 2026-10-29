@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Panel } from "../../../components/ui/Panel";
+import { Panel } from "@/components/shared/Panel";
 
 interface PairingStepProps {
   stepNumber: number;
@@ -15,10 +15,10 @@ export const PairingStep = ({
   return (
     <Panel>
       <div className="mb-3.5 flex items-center gap-2.25">
-        <span className="grid size-6 place-items-center rounded-full bg-accent text-[12.5px] font-extrabold text-on-accent">
+        <span className="grid size-6 place-items-center rounded-full bg-primary text-[12.5px] font-extrabold text-primary-foreground">
           {stepNumber}
         </span>
-        <span className="text-base font-semibold text-fg">{title}</span>
+        <span className="text-base font-semibold text-foreground">{title}</span>
       </div>
       {children}
     </Panel>

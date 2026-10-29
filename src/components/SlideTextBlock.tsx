@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import type { PointerEvent, ReactNode } from "react";
 import type { Align, ResolvedStyle, VerticalAlign } from "../types";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/utils";
 import { lineContentOffsets } from "../lib/inlineDocument";
 import { analyzeLines, listMarkerLabel } from "../lib/lists";
 import type { ListKind, ListLine } from "../lib/lists";
@@ -148,7 +148,7 @@ export const SlideTextBlock = ({
                 outlined &&
                   "mx-[-0.6cqw] my-[-0.3cqw] px-[0.6cqw] py-[0.3cqw] outline-[0.25cqw] transition-[outline-color,background-color] duration-150",
                 selected
-                  ? "bg-accent/14 outline-accent"
+                  ? "bg-primary/14 outline-primary"
                   : outlined && "outline-transparent outline-dashed",
               )}
             >

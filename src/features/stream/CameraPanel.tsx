@@ -9,12 +9,13 @@ import {
   VolumeX,
 } from "lucide-react";
 import type { PipCorner } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { IconButton } from "../../components/ui/Button";
-import { PipPlacementControls } from "../../components/ui/PipPlacementControls";
-import { StreamStatusBadge, connectionBadgeStatus } from "./StreamStatusBadge";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { PipPlacementControls } from "@/components/shared/PipPlacementControls";
+import { StreamStatusBadge } from "./StreamStatusBadge";
+import { connectionBadgeStatus } from "./lib/streamBadge";
 import { AudioSharingPill } from "./AudioSharingPill";
 import { toggleCameraPreview, useCameraPreviewIds } from "./lib/cameraPreview";
 import {
@@ -60,8 +61,10 @@ export const CameraPanel = ({ isLive = false }: CameraPanelProps) => {
   return (
     <div className="flex flex-col gap-2.5">
       <div className="flex items-baseline gap-2">
-        <span className="text-[15px] font-semibold text-fg">Cameras</span>
-        <span className="text-[11.5px] font-bold text-dim tabular-nums">
+        <span className="text-[15px] font-semibold text-foreground">
+          Cameras
+        </span>
+        <span className="text-[11.5px] font-bold text-subtle-foreground tabular-nums">
           {session.cameras.length} of {MAX_STREAM_CAMERAS}
         </span>
       </div>
@@ -111,27 +114,27 @@ const CameraRow = ({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2.5 rounded-xl border bg-canvas px-3 py-2.75",
-        isPrimary ? "border-accent/45" : "border-line",
+        "flex flex-col gap-2.5 rounded-xl border bg-background px-3 py-2.75",
+        isPrimary ? "border-primary/45" : "border-border",
       )}
     >
       <div className="flex items-center gap-2.5">
         <span
           className={cn(
-            "grid size-8 shrink-0 place-items-center rounded-[9px] bg-raise",
-            isPrimary ? "text-accent-soft" : "text-sub",
+            "grid size-8 shrink-0 place-items-center rounded-[9px] bg-secondary",
+            isPrimary ? "text-primary-soft" : "text-muted-foreground",
           )}
         >
           <Smartphone size={16} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13.5px] font-bold text-fg">
+          <span className="block truncate text-[13.5px] font-bold text-foreground">
             {camera.deviceName}
           </span>
           <span
             className={cn(
               "text-[11px] font-bold tracking-[0.4px] uppercase",
-              isPrimary ? "text-accent-soft" : "text-dim",
+              isPrimary ? "text-primary-soft" : "text-subtle-foreground",
             )}
           >
             {role}
@@ -146,7 +149,6 @@ const CameraRow = ({
       <div className="flex flex-wrap items-center gap-1.75">
         {!isPrimary && (
           <Button
-            variant="primary"
             size="sm"
             disabled={camera.status === "failed"}
             onClick={() => setPrimaryCamera(camera.deviceId)}
@@ -163,7 +165,7 @@ const CameraRow = ({
         {!isPrimary &&
           (isSecondary ? (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => hideCameraSecondary(camera.deviceId)}
               title="Take this camera off the picture, keeping it connected"
@@ -173,7 +175,7 @@ const CameraRow = ({
             </Button>
           ) : (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={onShowInCorner}
               title="Show this camera in a corner of the picture"
@@ -184,7 +186,7 @@ const CameraRow = ({
           ))}
         {canPreview && (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={() => toggleCameraPreview(camera.deviceId)}
             title={

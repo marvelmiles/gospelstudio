@@ -8,15 +8,16 @@ import {
   Save,
   Undo2,
 } from "lucide-react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useEditorShortcuts } from "../../hooks/useEditorShortcuts";
 import {
   usePresentActions,
   type PresentOptions,
 } from "../../hooks/usePresentActions";
 import { EDITOR_COMMANDS } from "../../lib/shortcuts";
-import { Button, IconButton } from "../ui/Button";
-import { PresentMenu } from "../ui/PresentMenu";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { PresentMenu } from "@/components/shared/PresentMenu";
 
 const ignorePresent = () => {};
 
@@ -85,7 +86,7 @@ export const EditorTopBar = ({
   });
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 border-b border-line px-4 py-2.75">
+    <div className="flex flex-wrap items-center gap-2.5 border-b border-border px-4 py-2.75">
       {onBack && (
         <IconButton
           icon={ArrowLeft}
@@ -102,15 +103,15 @@ export const EditorTopBar = ({
             aria-label={titleLabel}
             aria-invalid={titleError ? true : undefined}
             className={cn(
-              "w-full border-0 border-b bg-transparent font-semibold text-fg outline-none",
+              "w-full border-0 border-b bg-transparent font-semibold text-foreground outline-none",
               compact ? "text-[17px]" : "text-xl",
-              titleError ? "border-danger" : "border-transparent",
+              titleError ? "border-destructive" : "border-transparent",
             )}
           />
         ) : (
           <h1
             className={cn(
-              "m-0 truncate font-semibold text-fg",
+              "m-0 truncate font-semibold text-foreground",
               compact ? "text-[17px]" : "text-xl",
             )}
           >
@@ -120,7 +121,7 @@ export const EditorTopBar = ({
         {titleError && (
           <span
             role="alert"
-            className="mt-0.75 block text-[11.5px] leading-[1.4] text-danger"
+            className="mt-0.75 block text-[11.5px] leading-[1.4] text-destructive"
           >
             {titleError}
           </span>
@@ -151,7 +152,11 @@ export const EditorTopBar = ({
             onClick={onSyncFromPresentation}
           />
         ) : (
-          <Button variant="ghost" size="sm" onClick={onSyncFromPresentation}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={onSyncFromPresentation}
+          >
             <MonitorDown size={14} />
             Sync with presentation
           </Button>
@@ -165,7 +170,7 @@ export const EditorTopBar = ({
           />
         ) : (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             title={`Update presentation (${EDITOR_COMMANDS.updatePresentation.hint})`}
             onClick={onUpdatePresentation}
@@ -184,7 +189,7 @@ export const EditorTopBar = ({
         />
       ) : (
         <Button
-          variant={dirty && !blocked ? "primary" : "ghost"}
+          variant={dirty && !blocked ? "default" : "secondary"}
           size="sm"
           title={saveTitle}
           disabled={!dirty || blocked}
@@ -199,7 +204,7 @@ export const EditorTopBar = ({
           {compact ? (
             <IconButton icon={Play} title="Present" active />
           ) : (
-            <Button variant="primary" size="sm">
+            <Button size="sm">
               <Play size={14} />
               Present
             </Button>

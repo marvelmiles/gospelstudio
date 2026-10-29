@@ -4,8 +4,9 @@ import type { Manuscript, ManuscriptFormat } from "../../types";
 import { DEFAULT_COLLECTION } from "../../data/collections";
 import { now } from "../../lib/id";
 import { useStore } from "../../store/useStore";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDeckEditor } from "../editor/useDeckEditor";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import { useManuscriptDefault } from "./useManuscriptDefault";
@@ -103,7 +104,7 @@ export const ManuscriptWorkspace = ({
         />
       ) : (
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           title={resetTitle(shippedDefault.changed)}
           disabled={!shippedDefault.changed}
@@ -143,12 +144,16 @@ export const ManuscriptWorkspace = ({
         ) : (
           <>
             {resetAction(false)}
-            <Button variant="ghost" size="sm" onClick={() => setTextOpen(true)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setTextOpen(true)}
+            >
               <Type size={14} />
               Text
             </Button>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setSettingsOpen(true)}
             >
@@ -161,10 +166,10 @@ export const ManuscriptWorkspace = ({
       emptyState={
         <div className="grid h-full place-items-center p-6">
           <div className="max-w-80 text-center">
-            <p className="leading-[1.6] text-sub">
+            <p className="leading-[1.6] text-muted-foreground">
               This manuscript has no slides yet.
             </p>
-            <Button variant="primary" onClick={() => setTextOpen(true)}>
+            <Button onClick={() => setTextOpen(true)}>
               <Type size={15} />
               Edit text
             </Button>

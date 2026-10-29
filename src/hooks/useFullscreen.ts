@@ -59,7 +59,7 @@ const leaveFullscreen = (): void => {
 };
 
 export const useFullscreen = (
-  ref: RefObject<HTMLElement>,
+  ref: RefObject<HTMLElement | null>,
 ): FullscreenControls => {
   const [isBrowserFullscreen, setIsBrowserFullscreen] = useState(false);
   const [isFilling, setIsFilling] = useState(false);

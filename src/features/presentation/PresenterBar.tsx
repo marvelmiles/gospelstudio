@@ -1,9 +1,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { fmtClock } from "../../lib/id";
 import type { VideoProgress } from "../../lib/media";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useWindowSize } from "usehooks-ts";
-import { StageButton } from "../../components/ui/Button";
+import { StageButton } from "@/components/shared/StageButton";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import { VideoThumb } from "../../components/media/VideoThumb";
@@ -28,9 +28,9 @@ interface PresenterBarProps {
 }
 
 const labelClassName =
-  "text-[10.5px] font-bold tracking-[0.6px] text-accent uppercase";
+  "text-[10.5px] font-bold tracking-[0.6px] text-primary uppercase";
 
-const counterClassName = "text-xs text-sub tabular-nums";
+const counterClassName = "text-xs text-muted-foreground tabular-nums";
 
 const NextPreview = ({
   frame,
@@ -41,7 +41,7 @@ const NextPreview = ({
 }) => {
   if (!frame)
     return (
-      <div className="grid aspect-video w-55 place-items-center rounded-[7px] bg-white/5 text-[13px] text-dim">
+      <div className="grid aspect-video w-55 place-items-center rounded-[7px] bg-white/5 text-[13px] text-subtle-foreground">
         {endLabel}
       </div>
     );
@@ -109,7 +109,7 @@ export const PresenterBar = ({
         <div
           className={cn(
             "mt-1 max-h-11 overflow-hidden text-[13.5px] leading-[1.45]",
-            notes ? "text-white" : "text-dim",
+            notes ? "text-white" : "text-subtle-foreground",
           )}
         >
           {notes || "No presenter notes for this slide."}

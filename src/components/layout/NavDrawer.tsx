@@ -1,8 +1,14 @@
-import { useEffect } from "react";
-import { createPortal } from "react-dom";
 import { X } from "lucide-react";
-import { cn } from "../../lib/cn";
-import { IconButton } from "../ui/Button";
+import { cn } from "../../lib/utils";
+import { IconButton } from "@/components/shared/IconButton";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import type { AppNavigationItem } from "./appNavigation";
 import { isRouteActive } from "../../routes";
 import { APP_NAME } from "../../lib/appInfo";
@@ -23,39 +29,38 @@ interface NavSectionProps {
 }
 
 const NavSection = ({ title, items, pathname, onClose }: NavSectionProps) => (
-  <div className="mb-4.5">
+  <nav aria-label={title} className="mb-4.5">
     <div className="px-1 pb-2 section-label">{title}</div>
     <div className="flex flex-col gap-1">
       {items.map((item) => {
         const active = item.path ? isRouteActive(item.path, pathname) : false;
         return (
-          <button
+          <Button
             key={item.id}
-            type="button"
+            variant="ghost"
             aria-current={active || undefined}
             onClick={() => {
               item.run();
               onClose();
             }}
             className={cn(
-              "flex w-full items-center gap-3 rounded-[11px] border px-3 py-2.75 text-left",
-              active
-                ? "border-accent/32 bg-accent/14 text-accent-soft"
-                : "border-transparent bg-transparent text-fg",
+              "h-auto w-full justify-start gap-3 rounded-[11px] px-3 py-2.75 text-left whitespace-normal text-foreground [&_svg:not([class*='size-'])]:size-4.5",
+              active &&
+                "border-primary/32 bg-primary/14 text-primary-soft enabled:hover:bg-primary/18 enabled:hover:text-primary-soft",
             )}
           >
-            <item.icon size={18} className="shrink-0" />
+            <item.icon />
             <span className="min-w-0">
               <span className="block text-sm font-semibold">{item.label}</span>
-              <span className="mt-0.5 block text-xs text-sub">
+              <span className="mt-0.5 block text-xs font-normal text-muted-foreground">
                 {item.description}
               </span>
             </span>
-          </button>
+          </Button>
         );
       })}
     </div>
-  </div>
+  </nav>
 );
 
 export const NavDrawer = ({
@@ -64,48 +69,32 @@ export const NavDrawer = ({
   pathname,
   destinations,
   actions,
-}: NavDrawerProps) => {
-  useEffect(() => {
-    if (!open) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-380 flex animate-fade-in justify-end bg-scrim backdrop-blur-[6px]"
-      onClick={onClose}
+}: NavDrawerProps) => (
+  <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
+    <SheetContent
+      side="right"
+      showCloseButton={false}
+      aria-describedby={undefined}
+      className="w-[min(320px,88vw)] gap-0 overflow-y-auto bg-sidebar px-3.5 pt-4 pb-7 shadow-overlay sm:max-w-none"
     >
-      <nav
-        role="dialog"
-        aria-modal="true"
-        aria-label="Navigation"
-        onClick={(event) => event.stopPropagation()}
-        className="h-full w-[min(320px,88vw)] overflow-y-auto border-l border-line bg-canvas-2 px-3.5 pt-4 pb-7 shadow-overlay"
-      >
-        <div className="mb-4.5 flex items-center justify-between px-0.5">
-          <span className="text-[17px] font-semibold text-fg">{APP_NAME}</span>
-          <IconButton icon={X} title="Close menu" onClick={onClose} />
-        </div>
-        <NavSection
-          title="Go to"
-          items={destinations}
-          pathname={pathname}
-          onClose={onClose}
-        />
-        <NavSection
-          title="Studio"
-          items={actions}
-          pathname={pathname}
-          onClose={onClose}
-        />
-      </nav>
-    </div>,
-    document.body,
-  );
-};
+      <SheetHeader className="mb-4.5 flex-row items-center justify-between p-0 px-0.5">
+        <SheetTitle className="text-[17px]">{APP_NAME}</SheetTitle>
+        <SheetClose asChild>
+          <IconButton icon={X} title="Close menu" />
+        </SheetClose>
+      </SheetHeader>
+      <NavSection
+        title="Go to"
+        items={destinations}
+        pathname={pathname}
+        onClose={onClose}
+      />
+      <NavSection
+        title="Studio"
+        items={actions}
+        pathname={pathname}
+        onClose={onClose}
+      />
+    </SheetContent>
+  </Sheet>
+);

@@ -15,7 +15,7 @@ import type {
   VerticalAlign,
   VideoSettings,
 } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { PLAYBACK_RATE_OPTIONS } from "../../lib/mediaOptions";
 import { useStore } from "../../store/useStore";
 import { formatDuration, trimmedDuration } from "../../lib/media";
@@ -30,10 +30,13 @@ import {
 import type { SlideMediaChoice } from "../../lib/slideMedia";
 import type { SlideElementCapabilities } from "../../lib/slideElements";
 import { allowsAnySlideElement } from "../../lib/slideElements";
-import { Button } from "../../components/ui/Button";
-import { Field, Range, Select, Toggle } from "../../components/ui/Field";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { SwitchField } from "@/components/shared/SwitchField";
 import { AdjustmentControls } from "../../components/media/AdjustmentControls";
-import { InfoTip } from "../../components/ui/InfoTip";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { SlideMediaPicker } from "./SlideMediaPicker";
 import type { SlideElementRef } from "./SlideElementOverlay";
 import type { DeckEditor } from "./useDeckEditor";
@@ -163,7 +166,7 @@ export const SlideElementsPanel = ({
         <div className="flex flex-wrap gap-1.75">
           {capabilities.images && (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setPicking("image")}
             >
@@ -173,7 +176,7 @@ export const SlideElementsPanel = ({
           )}
           {capabilities.videos && (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setPicking("video")}
             >
@@ -182,7 +185,7 @@ export const SlideElementsPanel = ({
             </Button>
           )}
           {capabilities.textBoxes && (
-            <Button variant="ghost" size="sm" onClick={onAddTextBox}>
+            <Button variant="secondary" size="sm" onClick={onAddTextBox}>
               <Type size={14} />
               Add text box
             </Button>
@@ -192,7 +195,7 @@ export const SlideElementsPanel = ({
 
       <p
         className={cn(
-          "m-0 text-[11.5px] leading-[1.55] text-dim",
+          "m-0 text-[11.5px] leading-[1.55] text-subtle-foreground",
           canPlace && "mt-2.5",
         )}
       >
@@ -202,15 +205,15 @@ export const SlideElementsPanel = ({
       {media && (
         <div className="mt-4">
           <Field label="Fit inside its box">
-            <Select
+            <OptionSelect
               value={
                 media.kind === "image"
                   ? placedImageSettings(media).fit
                   : placedVideoSettings(media).fit
               }
               options={FIT_OPTIONS}
-              onChange={(event) => {
-                const fit = event.target.value as ImageSettings["fit"];
+              onValueChange={(next) => {
+                const fit = next as ImageSettings["fit"];
                 if (media.kind === "image") patchImage({ fit });
                 else patchVideo({ fit });
               }}
@@ -219,32 +222,28 @@ export const SlideElementsPanel = ({
           <Field
             label={`Opacity (${media.opacity ?? DEFAULT_SLIDE_MEDIA_OPACITY}%)`}
           >
-            <Range
+            <RangeSlider
               value={media.opacity ?? DEFAULT_SLIDE_MEDIA_OPACITY}
               min={10}
               max={100}
               suffix="%"
-              onChange={(event) =>
-                patchMedia({ opacity: Number(event.target.value) })
-              }
+              onValueChange={(next) => patchMedia({ opacity: next })}
             />
           </Field>
           <Field label="Corner rounding">
-            <Range
+            <RangeSlider
               value={media.radius ?? DEFAULT_SLIDE_MEDIA_RADIUS}
               min={0}
               max={MAX_RADIUS}
               step={0.2}
-              onChange={(event) =>
-                patchMedia({ radius: Number(event.target.value) })
-              }
+              onValueChange={(next) => patchMedia({ radius: next })}
             />
           </Field>
 
           {media.kind === "image" ? (
             <div className="flex flex-wrap gap-1.75">
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() =>
                   patchImage({
@@ -256,7 +255,7 @@ export const SlideElementsPanel = ({
                 Rotate
               </Button>
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() =>
                   patchImage({ flipH: !placedImageSettings(media).flipH })
@@ -266,7 +265,7 @@ export const SlideElementsPanel = ({
                 Flip
               </Button>
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() =>
                   patchImage({ flipV: !placedImageSettings(media).flipV })
@@ -304,12 +303,12 @@ export const SlideElementsPanel = ({
       {textBox && (
         <div className="mt-4">
           <Field label="Text sits at">
-            <Select
+            <OptionSelect
               value={textBox.verticalAlign ?? "middle"}
               options={VERTICAL_ALIGN_OPTIONS}
-              onChange={(event) =>
+              onValueChange={(next) =>
                 patchTextBox({
-                  verticalAlign: event.target.value as VerticalAlign,
+                  verticalAlign: next as VerticalAlign,
                 })
               }
             />
@@ -355,29 +354,27 @@ const VideoPlacementControls = ({
           </InfoTip>
         }
       >
-        <Select
+        <OptionSelect
           value={String(settings.playbackRate)}
           options={PLAYBACK_RATE_OPTIONS}
-          onChange={(event) =>
-            onChange({ playbackRate: Number(event.target.value) })
-          }
+          onValueChange={(next) => onChange({ playbackRate: Number(next) })}
         />
       </Field>
       <Field label={`Volume (${settings.volume}%)`}>
-        <Range
+        <RangeSlider
           value={settings.volume}
           min={0}
           max={100}
           suffix="%"
-          onChange={(event) => onChange({ volume: Number(event.target.value) })}
+          onValueChange={(next) => onChange({ volume: next })}
         />
       </Field>
-      <Toggle
+      <SwitchField
         label="Muted"
         checked={settings.muted}
         onChange={(muted) => onChange({ muted })}
       />
-      <Toggle
+      <SwitchField
         label="Loop"
         checked={settings.loop}
         onChange={(loop) => onChange({ loop })}

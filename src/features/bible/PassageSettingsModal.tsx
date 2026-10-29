@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
+import { useMemo, useState } from "react";
 import { RefreshCw } from "lucide-react";
 import type { BibleVersionId, ScripturePassage } from "../../types";
 import {
@@ -9,16 +10,13 @@ import {
   isBibleVersion,
 } from "../../data/bibleBooks";
 import { useStore } from "../../store/useStore";
-import { Modal } from "../../components/ui/Modal";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { Button } from "../../components/ui/Button";
-import {
-  Field,
-  Range,
-  Select,
-  Toggle,
-  SectionTitle,
-} from "../../components/ui/Field";
+import { Modal } from "@/components/shared/Modal";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { Button } from "@/components/ui/button";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { SwitchField } from "@/components/shared/SwitchField";
 import { StyleControls } from "../../components/controls/StyleControls";
 import { BackgroundPicker } from "../../components/controls/BackgroundPicker";
 import { AudioPicker } from "../../components/controls/AudioPicker";
@@ -72,17 +70,17 @@ export const PassageSettingsModal = ({
   const [showReference, setShowReference] = useState(passage.showReference);
   const [rebuilding, setRebuilding] = useState(false);
 
-  useEffect(() => {
-    if (!open) return;
-    setVersion(safeVersion(passage.version));
-    setBookId(passage.range.bookId);
-    setChapter(passage.range.chapter);
-    setVerseStart(passage.range.verseStart);
-    setVerseEnd(passage.range.verseEnd);
-    setVersesPerSlide(passage.versesPerSlide);
-    setShowVerseNumbers(passage.showVerseNumbers);
-    setShowReference(passage.showReference);
-  }, [open, passage]);
+  useValueChange(open ? passage : null, (editing) => {
+    if (!editing) return;
+    setVersion(safeVersion(editing.version));
+    setBookId(editing.range.bookId);
+    setChapter(editing.range.chapter);
+    setVerseStart(editing.range.verseStart);
+    setVerseEnd(editing.range.verseEnd);
+    setVersesPerSlide(editing.versesPerSlide);
+    setShowVerseNumbers(editing.showVerseNumbers);
+    setShowReference(editing.showReference);
+  });
 
   const book = bookById(bookId);
   const theme = useMemo(
@@ -177,45 +175,45 @@ export const PassageSettingsModal = ({
       <SectionTitle>Passage</SectionTitle>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-3">
         <Field label="Version">
-          <Select
+          <OptionSelect
             value={version}
             options={BIBLE_VERSIONS.map((v) => ({ value: v.id, label: v.id }))}
-            onChange={(e) => setVersion(e.target.value as BibleVersionId)}
+            onValueChange={(next) => setVersion(next as BibleVersionId)}
           />
         </Field>
         <Field label="Book">
-          <Select
+          <OptionSelect
             value={String(bookId)}
             options={BIBLE_BOOKS.map((b) => ({
               value: String(b.id),
               label: b.name,
             }))}
-            onChange={(e) => {
-              setBookId(Number(e.target.value));
+            onValueChange={(next) => {
+              setBookId(Number(next));
               setChapter(1);
             }}
           />
         </Field>
         <Field label="Chapter">
-          <Select
+          <OptionSelect
             value={String(chapter)}
             options={Array.from({ length: book?.chapters || 1 }, (_, i) =>
               String(i + 1),
             )}
-            onChange={(e) => setChapter(Number(e.target.value))}
+            onValueChange={(next) => setChapter(Number(next))}
           />
         </Field>
         <Field label="Verses (from – to)" error={rangeError}>
           <div className="flex gap-2">
-            <Select
+            <OptionSelect
               value={String(verseStart)}
               options={Array.from({ length: 176 }, (_, i) => String(i + 1))}
-              onChange={(e) => setVerseStart(Number(e.target.value))}
+              onValueChange={(next) => setVerseStart(Number(next))}
             />
-            <Select
+            <OptionSelect
               value={String(verseEnd)}
               options={Array.from({ length: 176 }, (_, i) => String(i + 1))}
-              onChange={(e) => setVerseEnd(Number(e.target.value))}
+              onValueChange={(next) => setVerseEnd(Number(next))}
             />
           </div>
         </Field>
@@ -223,29 +221,28 @@ export const PassageSettingsModal = ({
 
       <SectionTitle>Slide Format</SectionTitle>
       <Field label={`Verses per slide (${versesPerSlide})`}>
-        <Range
+        <RangeSlider
           value={versesPerSlide}
           min={1}
           max={6}
-          onChange={(e) => setVersesPerSlide(Number(e.target.value))}
+          onValueChange={(next) => setVersesPerSlide(next)}
         />
       </Field>
       <div className="mb-2">
-        <Toggle
+        <SwitchField
           label="Show verse numbers"
           checked={showVerseNumbers}
           onChange={setShowVerseNumbers}
         />
       </div>
       <div className="mb-3">
-        <Toggle
+        <SwitchField
           label="Show reference on each slide"
           checked={showReference}
           onChange={setShowReference}
         />
       </div>
       <Button
-        variant="primary"
         onClick={() => void rebuild()}
         busy={rebuilding}
         disabled={Boolean(rangeError)}
@@ -254,16 +251,16 @@ export const PassageSettingsModal = ({
         <RefreshCw size={15} />
         Apply & rebuild slides
       </Button>
-      <p className="mt-2.5 mb-0 text-xs text-danger opacity-85">
+      <p className="mt-2.5 mb-0 text-xs text-destructive opacity-85">
         Rebuilding refetches the verses and resets per-slide overrides.
       </p>
 
       <SectionTitle>Theme</SectionTitle>
       <Field label="Theme">
-        <Select
+        <OptionSelect
           value={passage.defaultThemeId}
           options={themes.map((t) => ({ value: t.id, label: t.name }))}
-          onChange={(e) => editor.patchDoc({ defaultThemeId: e.target.value })}
+          onValueChange={(next) => editor.patchDoc({ defaultThemeId: next })}
         />
       </Field>
 

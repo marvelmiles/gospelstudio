@@ -9,8 +9,9 @@ import {
   VolumeX,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 import { formatDuration } from "../../../lib/media";
+import { Slider } from "@/components/ui/slider";
 import { OverlaySelect, OverlaySlider } from "../OverlayControls";
 import type { ContentOverlay } from "../lib/streamOverlay";
 import {
@@ -79,24 +80,20 @@ export const VideoOverlaySettings = ({
         />
       </div>
 
-      <label className="block">
-        <span className="mb-1 flex justify-between text-[11.5px] font-semibold text-dim tabular-nums">
+      <div>
+        <span className="mb-2 flex justify-between text-[11.5px] font-semibold text-subtle-foreground tabular-nums">
           <span>{formatDuration(time)}</span>
           <span>{formatDuration(duration > 0 ? duration : 0)}</span>
         </span>
-        <input
-          type="range"
+        <Slider
           min={0}
           max={scrubberEnd}
           step={0.1}
-          value={Math.min(time, scrubberEnd)}
+          value={[Math.min(time, scrubberEnd)]}
           aria-label="Clip position"
-          onChange={(event) =>
-            seekStreamOverlayVideo(overlay.id, Number(event.target.value))
-          }
-          className="w-full accent-accent"
+          onValueChange={([next]) => seekStreamOverlayVideo(overlay.id, next)}
         />
-      </label>
+      </div>
 
       <OverlaySlider
         label="Volume"
@@ -136,8 +133,10 @@ const TransportButton = ({
     aria-label={label}
     onClick={onClick}
     className={cn(
-      "grid size-7.5 shrink-0 place-items-center rounded-lg border bg-raise",
-      isAccent ? "border-accent text-accent-soft" : "border-line text-sub",
+      "grid size-7.5 shrink-0 place-items-center rounded-lg border bg-secondary",
+      isAccent
+        ? "border-primary text-primary-soft"
+        : "border-border text-muted-foreground",
     )}
   >
     <Icon size={14} />

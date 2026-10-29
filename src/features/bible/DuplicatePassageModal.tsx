@@ -1,6 +1,6 @@
 import { CopyPlus, RefreshCw } from "lucide-react";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
 
 interface DuplicatePassageModalProps {
   existingTitle: string | null;
@@ -25,23 +25,25 @@ export const DuplicatePassageModal = ({
       width={480}
       footer={
         <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="ghost" onClick={onSaveCopy}>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button variant="secondary" onClick={onSaveCopy}>
             <CopyPlus size={15} />
             Save as copy
           </Button>
-          <Button variant="primary" onClick={onOverwrite}>
+          <Button onClick={onOverwrite}>
             <RefreshCw size={15} />
             Overwrite existing
           </Button>
         </>
       }
     >
-      <p className="mt-0 text-[13.5px] leading-[1.65] text-fg">
+      <p className="mt-0 text-[13.5px] leading-[1.65] text-foreground">
         "{existingTitle}" is already in your saved passages, but the saved one
         doesn't match what you're saving now.
       </p>
-      <p className="m-0 text-[13px] leading-[1.65] text-sub">
+      <p className="m-0 text-[13px] leading-[1.65] text-muted-foreground">
         Overwrite it with this new content, or keep both; the new one is saved
         as a numbered copy like "{existingTitle} (1)".
       </p>

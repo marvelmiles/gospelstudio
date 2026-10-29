@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { MonitorPlay, Volume2, VolumeX, X } from "lucide-react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useFloatingWindow } from "../../hooks/useFloatingWindow";
-import { IconButton } from "../../components/ui/Button";
-import { FloatingWindowTab } from "../../components/ui/FloatingWindowTab";
+import { IconButton } from "@/components/shared/IconButton";
+import { FloatingWindowTab } from "@/components/shared/FloatingWindowTab";
 import {
   FloatingWindowHeader,
   floatingWindowClassName,
-} from "../../components/ui/FloatingWindowHeader";
-import { StreamStatusBadge, connectionBadgeStatus } from "./StreamStatusBadge";
+} from "@/components/shared/FloatingWindowHeader";
+import { StreamStatusBadge } from "./StreamStatusBadge";
+import { connectionBadgeStatus } from "./lib/streamBadge";
 import { StreamVideo } from "./StreamVideo";
 import { CameraStatusOverlay } from "./components/CameraStatusOverlay";
 import { closeCameraPreview, useCameraPreviewIds } from "./lib/cameraPreview";
@@ -84,7 +85,7 @@ const CameraPreviewWindow = ({
           top: position.y,
           width: WIDTH,
         }}
-        className={cn(floatingWindowClassName, "border-line")}
+        className={cn(floatingWindowClassName, "border-border")}
       >
         <FloatingWindowHeader
           handleProps={handleProps}
@@ -105,11 +106,11 @@ const CameraPreviewWindow = ({
           />
         </div>
 
-        <div className="flex items-center gap-1.5 border-t border-line px-2 py-1.75">
+        <div className="flex items-center gap-1.5 border-t border-border px-2 py-1.75">
           <span
             className={cn(
               "min-w-0 flex-1 truncate text-[11px] font-bold tracking-[0.4px] uppercase",
-              isPrimary ? "text-accent-soft" : "text-dim",
+              isPrimary ? "text-primary-soft" : "text-subtle-foreground",
             )}
           >
             {isPrimary ? "Main screen" : "Preview only"}

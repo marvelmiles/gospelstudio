@@ -1,21 +1,17 @@
 import { Play } from "lucide-react";
 import type { ScriptureSelection } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { PresentMenu } from "../../components/ui/PresentMenu";
+import { Button } from "@/components/ui/button";
+import { PresentMenu } from "@/components/shared/PresentMenu";
 import { usePresentScripture } from "./usePresentScripture";
 
 export const PresentButton = ({
   selection,
   label = "Present",
-  size = "sm",
-  variant = "primary",
   title,
   disabled,
 }: {
   selection: ScriptureSelection | null | (() => ScriptureSelection | null);
   label?: string;
-  size?: "sm" | "md" | "lg";
-  variant?: "primary" | "ghost" | "subtle";
   title?: string;
   disabled?: boolean;
 }) => {
@@ -34,8 +30,8 @@ export const PresentButton = ({
           );
         }}
       >
-        <Button size={size} variant={variant} title={title} disabled={disabled}>
-          <Play size={size === "sm" ? 13 : 14} />
+        <Button size="sm" title={title} disabled={disabled}>
+          <Play />
           {label}
         </Button>
       </PresentMenu>

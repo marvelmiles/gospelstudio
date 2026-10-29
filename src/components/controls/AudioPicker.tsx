@@ -2,7 +2,7 @@ import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Library, Pause, Pencil, Play, Upload } from "lucide-react";
 import type { AudioItem, AudioSettings, MediaItem } from "../../types";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import {
   DEFAULT_AUDIO_SETTINGS,
   NO_AUDIO_ID,
@@ -14,7 +14,7 @@ import { mostRecent } from "../../lib/recentItems";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { AudioSurface } from "../media/AudioSurface";
-import { Button } from "../ui/Button";
+import { Button } from "@/components/ui/button";
 import { RadioDot } from "./RadioDot";
 
 const AUDIO_PICKER_LIMIT = 10;
@@ -134,7 +134,7 @@ export const AudioPicker = ({
       <div
         role="radiogroup"
         aria-label="Background audio"
-        className="mb-2.5 max-h-58 overflow-y-auto rounded-[11px] border border-line"
+        className="mb-2.5 max-h-58 overflow-y-auto rounded-[11px] border border-border"
       >
         {inheritLabel && (
           <AudioRow
@@ -208,14 +208,14 @@ export const AudioPicker = ({
 
       <div className="flex flex-wrap gap-1.75">
         {onManage && (
-          <Button variant="ghost" size="sm" onClick={onManage}>
+          <Button variant="secondary" size="sm" onClick={onManage}>
             <Library size={14} />
             Manage audio
           </Button>
         )}
         {onUploaded && (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={() => inputRef.current?.click()}
           >
@@ -265,8 +265,8 @@ const AudioRow = ({
   <div
     data-active={selected || undefined}
     className={cn(
-      "group flex items-center gap-1.5 border-b border-line py-1 pr-1.5 pl-1",
-      selected ? "bg-accent/12" : "bg-transparent",
+      "group flex items-center gap-1.5 border-b border-border py-1 pr-1.5 pl-1",
+      selected ? "bg-primary/12" : "bg-transparent",
     )}
   >
     <button
@@ -280,13 +280,13 @@ const AudioRow = ({
         <span
           className={cn(
             "flex items-center gap-1.25 truncate text-[12.5px]",
-            selected ? "text-accent-soft" : "text-fg",
+            selected ? "text-primary-soft" : "text-foreground",
           )}
         >
           {label}
         </span>
         {meta && (
-          <span className="block text-[11px] text-sub tabular-nums">
+          <span className="block text-[11px] text-muted-foreground tabular-nums">
             {meta}
           </span>
         )}
@@ -320,8 +320,8 @@ const RowButton = ({
     className={cn(
       "grid size-7 shrink-0 place-items-center rounded-lg border",
       active
-        ? "border-accent/40 bg-accent/16 text-accent-soft"
-        : "border-transparent bg-transparent text-sub",
+        ? "border-primary/40 bg-primary/16 text-primary-soft"
+        : "border-transparent bg-transparent text-muted-foreground",
       className,
     )}
   >

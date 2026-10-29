@@ -1,9 +1,9 @@
 import type { Background, Theme } from "../../types";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import { resolveStyle } from "../../lib/resolve";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { SlideCanvas } from "../../components/SlideCanvas";
-import { KeepOnResetBadge } from "../../components/ui/KeepOnResetToggle";
+import { KeepOnResetBadge } from "@/components/shared/KeepOnResetToggle";
 import { THEME_SAMPLE_SLIDE } from "./themeSample";
 
 interface ThemeCardProps {
@@ -27,7 +27,7 @@ export const ThemeCard = ({
     {...attentionAttribute(theme.id)}
     className={cn(
       "block w-full rounded-[11px] border p-1.5 text-left",
-      active ? "border-accent/40 bg-accent/12" : "border-line bg-raise",
+      active ? "border-primary/40 bg-primary/12" : "border-border bg-secondary",
       attention && ATTENTION_CLASS,
     )}
   >
@@ -42,12 +42,12 @@ export const ThemeCard = ({
     <div
       className={cn(
         "px-1 pt-1.75 pb-0.75 text-[12.5px] font-semibold",
-        active ? "text-accent-soft" : "text-fg",
+        active ? "text-primary-soft" : "text-foreground",
       )}
     >
       {theme.name}
       {theme.builtIn && (
-        <span className="font-medium text-dim"> · default</span>
+        <span className="font-medium text-subtle-foreground"> · default</span>
       )}
       {theme.keepOnReset && !theme.builtIn && (
         <span className="ml-1.5 align-middle">

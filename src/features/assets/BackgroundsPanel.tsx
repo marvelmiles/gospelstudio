@@ -4,10 +4,10 @@ import type { Background } from "../../types";
 import { useStore } from "../../store/useStore";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import { isImageBackground, isVideoBackground } from "../../lib/media";
-import { LibrarySection } from "../../components/ui/LibrarySection";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
-import type { SegmentedTab } from "../../components/ui/SegmentedTabs";
-import { pillTabPanelProps } from "../../components/ui/tabPanel";
+import { LibrarySection } from "@/components/shared/LibrarySection";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import type { SegmentedTab } from "@/components/shared/SegmentedTabs";
+import { pillTabPanelProps } from "@/components/shared/tabPanel";
 import { BgSwatch } from "../../components/controls/BgSwatch";
 import { CustomColorPicker } from "../../components/controls/CustomColorPicker";
 import { BackgroundImageEditorModal } from "../../components/media/BackgroundImageEditorModal";
@@ -16,7 +16,7 @@ import {
   assetGridClassName,
   cardOverlayButtonClassName,
 } from "./assetCardStyles";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { formatCount } from "../../lib/formatNumber";
 
 type BackgroundTab = "images" | "colors" | "videos";
@@ -250,9 +250,11 @@ const BackgroundGrid = ({
         >
           <BgSwatch
             bg={bg}
-            className="aspect-video rounded-[9px] border border-line"
+            className="aspect-video rounded-[9px] border border-border"
           />
-          <div className="mt-1.25 truncate text-xs text-fg">{bg.name}</div>
+          <div className="mt-1.25 truncate text-xs text-foreground">
+            {bg.name}
+          </div>
           {!bg.builtIn && (
             <div className="absolute top-1.5 right-1.5 flex gap-1.25">
               {onEditImage && (

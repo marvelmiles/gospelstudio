@@ -1,18 +1,19 @@
 import { useMemo, useRef, useState } from "react";
 import { Film, Music, Pencil, Share2, Trash2, Upload } from "lucide-react";
 import type { AudioItem } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { useAssetUrl } from "../../hooks/useAssetUrl";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import { audioPlayLength, formatDuration } from "../../lib/media";
-import { Button, IconButton } from "../../components/ui/Button";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { LibrarySection } from "../../components/ui/LibrarySection";
-import { MoreMenu } from "../../components/ui/MoreMenu";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
-import type { SegmentedTab } from "../../components/ui/SegmentedTabs";
-import { pillTabPanelProps } from "../../components/ui/tabPanel";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LibrarySection } from "@/components/shared/LibrarySection";
+import { MoreMenu } from "@/components/shared/MoreMenu";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import type { SegmentedTab } from "@/components/shared/SegmentedTabs";
+import { pillTabPanelProps } from "@/components/shared/tabPanel";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
 import { useOpenAssetEditor } from "./assetLibraryNavigation";
@@ -80,11 +81,7 @@ const SoundsTab = ({ attentionId }: { attentionId: string | null }) => {
       meta={`${formatCount(audio.length)} saved`}
       description="Background audio you can attach to a theme, a manuscript or a single slide."
       action={
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => audioInput.current?.click()}
-        >
+        <Button size="sm" onClick={() => audioInput.current?.click()}>
           <Upload size={14} />
           Upload audio
         </Button>
@@ -184,16 +181,16 @@ const AudioRow = ({
     <div
       {...attentionAttribute(item.id)}
       className={cn(
-        "flex flex-wrap items-center gap-3 rounded-[10px] border-b border-line px-2 py-2.75",
+        "flex flex-wrap items-center gap-3 rounded-[10px] border-b border-border px-2 py-2.75",
         attention && ATTENTION_CLASS,
       )}
     >
-      <div className="grid size-9.5 shrink-0 place-items-center rounded-[9px] bg-accent/14 text-accent-soft">
+      <div className="grid size-9.5 shrink-0 place-items-center rounded-[9px] bg-primary/14 text-primary-soft">
         {item.mediaId ? <Film size={17} /> : <Music size={17} />}
       </div>
       <div className="min-w-30 flex-1">
-        <div className="text-sm text-fg">{item.name}</div>
-        <div className="text-[11.5px] text-sub">
+        <div className="text-sm text-foreground">{item.name}</div>
+        <div className="text-[11.5px] text-muted-foreground">
           {item.builtIn
             ? "Default"
             : item.mediaId

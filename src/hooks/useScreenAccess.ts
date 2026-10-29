@@ -45,25 +45,53 @@ const watchScreenChange = (onChange: () => void): (() => void) => {
   return () => screen.removeEventListener?.("change", onChange);
 };
 
+interface ScreenSnapshot {
+  access: ScreenAccess;
+  isExtended: boolean;
+  displays: DisplayInfo[];
+}
+
+const readScreenSnapshot = async (): Promise<ScreenSnapshot> => {
+  const access = await screenAccess();
+  const details = access === "granted" ? await readScreenDetails() : null;
+  return {
+    access,
+    isExtended: isExtendedDisplay(),
+    displays: details ? describeDisplays(details) : [],
+  };
+};
+
 export const useScreenAccess = (enabled = true): ScreenAccessState => {
   const [access, setAccess] = useState<ScreenAccess>("prompt");
   const [isExtended, setIsExtended] = useState(isExtendedDisplay);
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
   const [isAsking, setIsAsking] = useState(false);
 
-  const refresh = useCallback(async () => {
-    const state = await screenAccess();
-    const details = state === "granted" ? await readScreenDetails() : null;
-    setAccess(state);
-    setIsExtended(isExtendedDisplay());
-    setDisplays(details ? describeDisplays(details) : []);
+  const applySnapshot = useCallback((snapshot: ScreenSnapshot) => {
+    setAccess(snapshot.access);
+    setIsExtended(snapshot.isExtended);
+    setDisplays(snapshot.displays);
   }, []);
+
+  const refresh = useCallback(
+    () => readScreenSnapshot().then(applySnapshot),
+    [applySnapshot],
+  );
 
   useEffect(() => {
     if (!enabled) return;
-    void refresh();
-    return watchScreenChange(() => void refresh());
-  }, [enabled, refresh]);
+    let isCancelled = false;
+    const load = () =>
+      void readScreenSnapshot().then((snapshot) => {
+        if (!isCancelled) applySnapshot(snapshot);
+      });
+    load();
+    const stopWatching = watchScreenChange(load);
+    return () => {
+      isCancelled = true;
+      stopWatching();
+    };
+  }, [enabled, applySnapshot]);
 
   const allowDisplays = useCallback(() => {
     setIsAsking(true);

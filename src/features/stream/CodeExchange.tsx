@@ -1,16 +1,15 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode, type RefObject } from "react";
 import { QrCode as QrIcon, Clipboard, Check, Camera } from "lucide-react";
-import { inputClassName } from "../../components/ui/Field";
-import { cn } from "../../lib/cn";
 import { useMediaQuery, useResizeObserver } from "usehooks-ts";
 import { useStore } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { PillTabs } from "../../components/ui/PillTabs";
-import { pillTabPanelProps } from "../../components/ui/tabPanel";
+import { Button } from "@/components/ui/button";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { PillTabs } from "@/components/shared/PillTabs";
+import { pillTabPanelProps } from "@/components/shared/tabPanel";
 import { QrCode } from "./QrCode";
 import { QrScanner } from "./QrScanner";
 import type { ScanFacing } from "./lib/useQrScanner";
+import { Textarea } from "@/components/ui/textarea";
 
 const LAPTOP_QUERY = "(max-width: 1204px)";
 const MAX_QR_SIZE = 420;
@@ -78,7 +77,9 @@ export const ShowCode = ({ value, caption }: ShowCodeProps) => {
   const pushToast = useStore((s) => s.pushToast);
   const [isCopied, setIsCopied] = useState(false);
   const columnRef = useRef<HTMLDivElement>(null);
-  const { width: columnWidth = 0 } = useResizeObserver({ ref: columnRef });
+  const { width: columnWidth = 0 } = useResizeObserver({
+    ref: columnRef as RefObject<HTMLDivElement>,
+  });
   const qrSize = Math.round(
     Math.max(MIN_QR_SIZE, Math.min(MAX_QR_SIZE, columnWidth - QR_TILE_PADDING)),
   );
@@ -96,14 +97,14 @@ export const ShowCode = ({ value, caption }: ShowCodeProps) => {
   return (
     <div ref={columnRef} className="flex flex-col items-center gap-3">
       <QrCode value={value} size={qrSize} />
-      <div className="flex items-center gap-1 text-[13px] text-sub">
+      <div className="flex items-center gap-1 text-[13px] text-muted-foreground">
         Scan with the other device
         <InfoTip title="Scanning this code" align="center">
           {caption} Hold the code steady in view of the other camera. It does
           not have to fill the scan box.
         </InfoTip>
       </div>
-      <Button variant="ghost" size="sm" onClick={copy}>
+      <Button variant="secondary" size="sm" onClick={copy}>
         {isCopied ? <Check size={14} /> : <Clipboard size={14} />}
         {isCopied ? "Copied" : "Copy code instead"}
       </Button>
@@ -135,7 +136,7 @@ export const ReadCode = ({
     <div className="flex flex-col gap-3">
       <div className="flex items-center gap-1.5">
         <Button
-          variant={mode === "scan" ? "primary" : "ghost"}
+          variant={mode === "scan" ? "default" : "secondary"}
           size="sm"
           onClick={() => setMode("scan")}
         >
@@ -143,7 +144,7 @@ export const ReadCode = ({
           Scan code
         </Button>
         <Button
-          variant={mode === "paste" ? "primary" : "ghost"}
+          variant={mode === "paste" ? "default" : "secondary"}
           size="sm"
           onClick={() => setMode("paste")}
         >
@@ -163,25 +164,21 @@ export const ReadCode = ({
               setMode("paste");
             }}
           />
-          <p className="m-0 text-center text-[12.5px] text-dim">
+          <p className="m-0 text-center text-[12.5px] text-subtle-foreground">
             <Camera size={12} className="mr-1 inline align-[-1px]" />
             {scanLabel}
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          <textarea
+          <Textarea
             value={pastedCode}
             onChange={(event) => setPastedCode(event.target.value)}
             placeholder="Paste the code the other device shared with you"
             rows={4}
-            className={cn(
-              inputClassName,
-              "resize-y bg-raise p-2.75 font-mono text-xs break-all",
-            )}
+            className="resize-y bg-secondary p-2.75 font-mono text-xs break-all"
           />
           <Button
-            variant="primary"
             size="sm"
             disabled={!pastedCode.trim()}
             onClick={() => onCode(pastedCode.trim())}

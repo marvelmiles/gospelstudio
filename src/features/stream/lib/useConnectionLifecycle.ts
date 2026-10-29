@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
 import type { PeerStatus } from "./peerStatus";
 
 export type ConnectionPhase =
@@ -8,22 +9,18 @@ export const useConnectionLifecycle = (
   status: PeerStatus,
   onDisconnected?: () => void,
 ): ConnectionPhase => {
-  const [hasBeenLive, setHasBeenLive] = useState(false);
+  const [hasBeenLive, setHasBeenLive] = useState(status === "live");
   const hasFiredRef = useRef(false);
-  const onDisconnectedRef = useRef(onDisconnected);
+  const notifyDisconnected = useEffectEvent(() => onDisconnected?.());
 
-  useEffect(() => {
-    onDisconnectedRef.current = onDisconnected;
+  useValueChange(status, (next) => {
+    if (next === "live") setHasBeenLive(true);
   });
-
-  useEffect(() => {
-    if (status === "live") setHasBeenLive(true);
-  }, [status]);
 
   useEffect(() => {
     if (hasBeenLive && status === "failed" && !hasFiredRef.current) {
       hasFiredRef.current = true;
-      onDisconnectedRef.current?.();
+      notifyDisconnected();
     }
   }, [hasBeenLive, status]);
 

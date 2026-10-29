@@ -16,9 +16,10 @@ import {
   StreamPipLayer,
   pipFrameClassName,
   pipLabelClassName,
-  type StreamPipWindow,
 } from "../stream/StreamPipLayer";
-import { cn } from "../../lib/cn";
+import type { StreamPipWindow } from "../stream/lib/streamPipWindow";
+import { secondaryLabel } from "./lib/secondaryLabel";
+import { cn } from "../../lib/utils";
 import type { StreamOverlay } from "../stream/lib/streamOverlay";
 
 interface SecondaryPipContentProps {
@@ -36,11 +37,6 @@ interface SecondaryPipContentProps {
 
 const waitingClassName =
   "absolute inset-0 grid place-items-center p-[4%] text-center text-[clamp(8px,6cqw,13px)] text-white/65";
-
-export const secondaryLabel = (secondary: SecondaryPresentState): string =>
-  secondary.kind === "stream"
-    ? "Live camera"
-    : (secondary.item?.name ?? "Missing item");
 
 export const SecondaryPipContent = ({
   secondary,

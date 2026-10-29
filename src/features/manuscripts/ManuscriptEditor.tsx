@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { FileText } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { buildNewManuscript } from "../../lib/manuscript/newManuscript";
-import { MissingPage } from "../../components/ui/MissingPage";
+import { MissingPage } from "@/components/shared/MissingPage";
 import { ManuscriptWorkspace } from "./ManuscriptWorkspace";
 import routes, { NEW_MANUSCRIPT_ID } from "../../routes";
 

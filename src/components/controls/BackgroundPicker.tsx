@@ -7,7 +7,7 @@ import type {
   VideoSettings,
 } from "../../types";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import {
   DEFAULT_BACKGROUND_IMAGE_SETTINGS,
   backgroundImageSettings,
@@ -18,10 +18,10 @@ import {
 } from "../../lib/media";
 import { mostRecent } from "../../lib/recentItems";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
-import { Button } from "../ui/Button";
+import { Button } from "@/components/ui/button";
 import { ImageSurface } from "../media/ImageSurface";
 import { VideoThumb } from "../media/VideoThumb";
-import { LazyMount } from "../ui/LazyMount";
+import { LazyMount } from "@/components/shared/LazyMount";
 import { CustomColorPicker } from "./CustomColorPicker";
 import { BgSwatch } from "./BgSwatch";
 import { RadioDot } from "./RadioDot";
@@ -292,14 +292,14 @@ export const BackgroundPicker = ({
 
       <div className="flex flex-wrap gap-1.75">
         {onManage && (
-          <Button variant="ghost" size="sm" onClick={onManage}>
+          <Button variant="secondary" size="sm" onClick={onManage}>
             <Library size={14} />
             Manage backgrounds
           </Button>
         )}
         {onUploaded && (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={() => inputRef.current?.click()}
           >
@@ -309,7 +309,7 @@ export const BackgroundPicker = ({
         )}
         {onAddColor && (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={() => setShowColor((v) => !v)}
           >
@@ -374,8 +374,8 @@ const InheritOption = ({ inherit, selected, onSelect }: InheritOptionProps) => (
     className={cn(
       "mb-2 flex w-full items-center gap-2.25 rounded-[10px] border px-2.5 py-2 text-left text-[12.5px] font-semibold",
       selected
-        ? "border-accent bg-accent/12 text-accent-soft"
-        : "border-line bg-transparent text-fg",
+        ? "border-primary bg-primary/12 text-primary-soft"
+        : "border-border bg-transparent text-foreground",
     )}
   >
     <RadioDot selected={selected} />
@@ -384,7 +384,7 @@ const InheritOption = ({ inherit, selected, onSelect }: InheritOptionProps) => (
       bg={inherit.background}
       settings={inherit.imageSettings}
       videoSettings={inherit.videoSettings}
-      className="h-5 w-8.5 shrink-0 rounded-[5px] border border-line"
+      className="h-5 w-8.5 shrink-0 rounded-[5px] border border-border"
     />
   </button>
 );
@@ -411,20 +411,22 @@ const SwatchTile = ({
       onClick={onPick}
       className={cn(
         "block aspect-video w-full overflow-hidden rounded-[7px] border-[1.5px] bg-transparent p-0",
-        active ? "border-accent" : "border-line",
+        active ? "border-primary" : "border-border",
       )}
     >
       {children}
     </button>
     {onEdit && (
-      <button
+      <Button
+        variant="ghost"
+        size="icon-sm"
         onClick={onEdit}
         title="Edit for this use"
         aria-label={`Edit ${name} for this use`}
-        className="absolute top-1 right-1 grid size-5 place-items-center rounded-md border-none bg-black/62 p-0 text-white reveal"
+        className="absolute top-1 right-1 size-5 rounded-md bg-black/62 text-white reveal enabled:hover:bg-black/80 enabled:hover:text-white [&_svg:not([class*='size-'])]:size-2.75"
       >
-        <Pencil size={11} />
-      </button>
+        <Pencil />
+      </Button>
     )}
   </div>
 );

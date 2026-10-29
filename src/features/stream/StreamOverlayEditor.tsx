@@ -67,7 +67,7 @@ const DraftMarkers = ({ overlays }: { overlays: StreamOverlay[] }) => {
         <span
           key={overlay.id}
           style={{ left: `${overlay.frame.x}%`, top: `${overlay.frame.y}%` }}
-          className="absolute -mt-1 -translate-y-full rounded-full border border-line bg-panel-solid px-1.75 py-0.5 text-[10.5px] font-bold tracking-[0.3px] whitespace-nowrap text-sub uppercase"
+          className="absolute -mt-1 -translate-y-full rounded-full border border-border bg-card px-1.75 py-0.5 text-[10.5px] font-bold tracking-[0.3px] whitespace-nowrap text-muted-foreground uppercase"
         >
           Not on air
         </span>

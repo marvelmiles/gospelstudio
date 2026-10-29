@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
+import { useMemo, useRef, useState } from "react";
 import { Image as ImageIcon, Music } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { useAttention } from "../../hooks/useAttention";
 import { parseOverlayTarget } from "../../lib/overlayTarget";
-import { Modal } from "../../components/ui/Modal";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
-import type { SegmentedTab } from "../../components/ui/SegmentedTabs";
-import { pillTabPanelProps } from "../../components/ui/tabPanel";
+import { Modal } from "@/components/shared/Modal";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import type { SegmentedTab } from "@/components/shared/SegmentedTabs";
+import { pillTabPanelProps } from "@/components/shared/tabPanel";
 import type { AssetSection } from "./assetLibraryNavigation";
 import { useReopenAssetLibraryOnArrival } from "./assetLibraryNavigation";
 import { BackgroundsPanel } from "./BackgroundsPanel";
@@ -58,9 +59,13 @@ export const AssetsModal = () => {
       ?.mediaId ?? targetItemId;
   const attentionId = useAttention(attentionTarget, contentRef);
   const targetSection = target?.section;
-  useEffect(() => {
-    if (isAssetSection(targetSection)) setTab(targetSection);
-  }, [targetSection]);
+  useValueChange(
+    targetSection,
+    (section) => {
+      if (isAssetSection(section)) setTab(section);
+    },
+    { onMount: true },
+  );
 
   const sectionLocked = locked && isAssetSection(targetSection);
 

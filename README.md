@@ -180,18 +180,23 @@ Cameras also need a secure context: serve over `https://` or `localhost` on both
 
 ## Tech stack
 
-Vite, React 18 and TypeScript, with React Router and Zustand. Tailwind CSS 4 for all styling, with clsx, tailwind-merge and class-variance-authority for composing classes, Floating UI for popovers and usehooks-ts for window size, media queries, element size and local storage. IndexedDB for documents and files, WebRTC with jsQR and qrcode-generator for cameras and sharing, Firebase Realtime Database as an optional signalling relay, @dnd-kit for dragging slides, Framer Motion for transitions, Zod for validating backups, fflate for the `.zip` format, vite-plugin-pwa and Workbox for offline, and lucide-react for icons.
+Vite, React 19 and TypeScript, with React Router and Zustand. Tailwind CSS 4 for all styling and shadcn/ui (Radix UI primitives, tw-animate-css) for the interface components, with clsx, tailwind-merge and class-variance-authority for composing classes, Sonner for toasts and usehooks-ts for window size, media queries, element size and local storage. IndexedDB for documents and files, WebRTC with jsQR and qrcode-generator for cameras and sharing, Firebase Realtime Database as an optional signalling relay, @dnd-kit for dragging slides, Framer Motion for transitions, Zod for validating backups, fflate for the `.zip` format, vite-plugin-pwa and Workbox for offline, and lucide-react for icons.
 
 ## Architecture
 
 ```
 src/
-  index.css     Tailwind entry: every colour, shadow, animation and custom utility
-  lib/          parser, style and background resolution, storage, zod schema, cn()
+  index.css     Tailwind entry: the shadcn theme variables, shadows, animations and custom utilities
+  lib/          parser, style and background resolution, storage, zod schema, cn() in utils.ts
   data/         built-in backgrounds, themes, collections, fonts, seed manuscripts
                 (hymns.json holds the bundled hymnal, generated, not edited by hand)
   store/        Zustand store (state, actions and persistence)
-  components/   SlideCanvas and reusable UI primitives (Button, Field, Modal, ContextMenu)
+  components/
+    ui/         shadcn/ui primitives (Button, Dialog, DropdownMenu, Select, Slider, Tabs, ...)
+    shared/     app components composed from them (Modal, MoreMenu, InfoTip, Field, EmptyState)
+    layout/     header, navigation drawer and editor columns
+    controls/   slide styling, background, audio and formatting pickers
+    media/      image, video and audio surfaces and their settings
   hooks/        shared behaviour (text editing, media playback, wake lock, layout)
   features/
     dashboard/    Dashboard
@@ -213,9 +218,9 @@ Components are functions declared as `const`, files stay focused on one job, and
 
 ## Notes and intentional scope choices
 
-- **Styling is Tailwind first.** The design tokens live once in the `@theme` block of `src/index.css`, components use utility classes, and `cn()` merges conditional classes. Inline styles are kept only for values known at run time, such as a slide's user chosen font, colour or position.
+- **Styling is Tailwind first, on the shadcn/ui theme contract.** The palette lives once as CSS variables on `:root` in `src/index.css` (`--background`, `--primary`, `--card`, `--border` and the rest, plus app tokens such as `--success` and `--stage`), mapped to utilities by `@theme inline`. The app is dark only, so `<html>` carries the `dark` class. Components use utility classes and `cn()` merges conditional classes. Inline styles are kept only for values known at run time, such as a slide's user chosen font, colour or position.
+- **`components/ui` is owned code.** Primitives are added with `pnpm dlx shadcn@latest add <name>` (see `components.json`) and then adapted: the app's variants live in them, floating layers portal into the fullscreen element when one is active, and dialogs sit above the app's floating windows. App specific components belong in `components/shared`.
 - **Editing is live bound rather than form managed.** Fields write straight to the store for instant preview; Zod guards the one place it earns its keep, imported backups.
-- **React 18** is pinned for ecosystem compatibility. Moving to 19 is straightforward.
 - **The presenter view is a bar or a floating window**, not a separate second monitor application.
 - **Only the current `.zip` backup format is read.** The older inline JSON exports are not imported.
 - **The service worker runs in development too**, so offline and install behaviour can be checked without a production build.

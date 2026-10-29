@@ -16,10 +16,10 @@ export const ChaptersStep = ({
   onOpenChapter: (chapter: number) => void;
 }) => (
   <div className={stepScrollClassName}>
-    <h2 className="mt-0.5 mb-1 text-[22px] font-semibold text-fg">
+    <h2 className="mt-0.5 mb-1 text-[22px] font-semibold text-foreground">
       {book.name}
     </h2>
-    <p className="mt-0 mb-4 text-[13px] text-sub">
+    <p className="mt-0 mb-4 text-[13px] text-muted-foreground">
       Pick a chapter to continue.
     </p>
     <div className={stepNumberGridClassName}>

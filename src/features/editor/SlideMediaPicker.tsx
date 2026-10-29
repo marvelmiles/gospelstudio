@@ -11,12 +11,12 @@ import {
 } from "../../lib/media";
 import { backgroundChoice, mediaItemChoice } from "../../lib/slideMedia";
 import type { SlideMediaChoice } from "../../lib/slideMedia";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { LazyMount } from "../../components/ui/LazyMount";
-import { LibrarySection } from "../../components/ui/LibrarySection";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LazyMount } from "@/components/shared/LazyMount";
+import { LibrarySection } from "@/components/shared/LibrarySection";
 import { BgSwatch } from "../../components/controls/BgSwatch";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import { VideoThumb } from "../../components/media/VideoThumb";
@@ -109,7 +109,7 @@ export const SlideMediaPicker = ({
             placeholder={`Search ${kind === "image" ? "images" : "videos"}…`}
           />
         </div>
-        <Button variant="primary" onClick={() => inputRef.current?.click()}>
+        <Button onClick={() => inputRef.current?.click()}>
           <Upload size={15} />
           {COPY[kind].upload}
         </Button>
@@ -208,15 +208,15 @@ const PickerTile = ({
   <button
     onClick={onPick}
     title={name}
-    className="overflow-hidden rounded-[11px] border border-line bg-raise p-0 text-left hover:border-accent/50"
+    className="overflow-hidden rounded-[11px] border border-border bg-secondary p-0 text-left hover:border-primary/50"
   >
     <div className="relative aspect-video bg-black">
       <LazyMount>{children}</LazyMount>
     </div>
-    <div className="truncate px-2.5 py-2 text-[12.5px] text-fg">
+    <div className="truncate px-2.5 py-2 text-[12.5px] text-foreground">
       {name}
       {meta && (
-        <span className="text-dim">
+        <span className="text-subtle-foreground">
           {" · "}
           {meta}
         </span>

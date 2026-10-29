@@ -4,11 +4,11 @@ import { ArrowRight, BookOpen } from "lucide-react";
 import type { BibleVersionId, ScripturePassage } from "../../types";
 import { bookById } from "../../data/bibleBooks";
 import { useStore, type ScriptureSelection } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { Modal } from "../../components/ui/Modal";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/shared/Modal";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { Spinner } from "@/components/ui/spinner";
 import { VerseSnippet } from "../bible/VerseSnippet";
 import { useBibleChapter } from "../bible/useBibleChapter";
 import { useBibleSearch } from "../bible/useBibleSearch";
@@ -20,7 +20,7 @@ import {
 } from "../bible/lib/reference";
 import { buildScriptureSelection } from "../bible/lib/scriptureSelection";
 import { createOverlayPassage } from "./lib/overlayPassage";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 export interface OverlayPassageChoice {
   contentId: string;
@@ -111,7 +111,7 @@ export const OverlayPassagePicker = ({
                       heading={passage.title}
                       onInsert={() => insertPassage(passage)}
                     >
-                      <span className="text-[12.5px] text-dim">
+                      <span className="text-[12.5px] text-subtle-foreground">
                         {passage.verses.length} verse
                         {passage.verses.length === 1 ? "" : "s"}
                       </span>
@@ -165,7 +165,7 @@ export const OverlayPassagePicker = ({
                           )
                         }
                       >
-                        <span className="text-[13px] leading-[1.55] text-sub">
+                        <span className="text-[13px] leading-[1.55] text-muted-foreground">
                           <VerseSnippet text={result.text} term={search.term} />
                         </span>
                       </ResultRow>
@@ -175,7 +175,7 @@ export const OverlayPassagePicker = ({
                 {search.hasMore && (
                   <div className="mt-2.5 text-center">
                     <Button
-                      variant="ghost"
+                      variant="secondary"
                       size="sm"
                       onClick={search.loadMore}
                       busy={search.loading}
@@ -231,9 +231,9 @@ const ReferenceResult = ({
       }
     >
       {loading && <Spinner size={16} />}
-      {error && <span className="text-[12.5px] text-danger">{error}</span>}
+      {error && <span className="text-[12.5px] text-destructive">{error}</span>}
       {!loading && !error && (
-        <span className="text-[13px] leading-[1.55] text-sub">
+        <span className="text-[13px] leading-[1.55] text-muted-foreground">
           {chosen
             .slice(0, 2)
             .map((verse) => verse.t)
@@ -253,7 +253,7 @@ const Section = ({
   children: ReactNode;
 }) => (
   <div className="mb-4.5">
-    <div className="mb-2 text-[11px] font-bold tracking-[0.4px] text-dim uppercase">
+    <div className="mb-2 text-[11px] font-bold tracking-[0.4px] text-subtle-foreground uppercase">
       {title}
     </div>
     {children}
@@ -270,7 +270,7 @@ const Note = ({
   <p
     className={cn(
       "mt-0 mb-3.5 text-[12.5px]",
-      danger ? "text-danger" : "text-dim",
+      danger ? "text-destructive" : "text-subtle-foreground",
     )}
   >
     {children}
@@ -298,28 +298,28 @@ const ResultRow = ({
     disabled={disabled}
     title={`Add ${heading} to the broadcast`}
     className={cn(
-      "block w-full border bg-canvas text-left disabled:cursor-not-allowed disabled:opacity-60",
+      "block w-full border bg-background text-left disabled:cursor-not-allowed disabled:opacity-60",
       emphasis
-        ? "rounded-xl border-accent-soft px-3.5 py-3"
-        : "rounded-[10px] border-line px-3 py-2.5",
+        ? "rounded-xl border-primary-soft px-3.5 py-3"
+        : "rounded-[10px] border-border px-3 py-2.5",
     )}
   >
     <span className="mb-1 flex items-center gap-2">
       <span
         className={cn(
-          "min-w-0 truncate font-bold text-accent-soft",
+          "min-w-0 truncate font-bold text-primary-soft",
           emphasis ? "text-[15px]" : "text-[12.5px]",
         )}
       >
         {heading}
       </span>
       {meta && (
-        <span className="shrink-0 text-[11px] font-semibold text-dim">
+        <span className="shrink-0 text-[11px] font-semibold text-subtle-foreground">
           {meta}
         </span>
       )}
       <span className="flex-1" />
-      <ArrowRight size={15} className="shrink-0 text-dim" />
+      <ArrowRight size={15} className="shrink-0 text-subtle-foreground" />
     </span>
     {children}
   </button>

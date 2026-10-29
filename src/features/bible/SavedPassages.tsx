@@ -6,35 +6,33 @@ import { useStore } from "../../store/useStore";
 import { useBgMap } from "../../hooks/useBgMap";
 import type { BgMap } from "../../hooks/useBgMap";
 import { sortPinnedFirst } from "../../lib/pinning";
-import {
-  DEFAULT_LIBRARY_SORT,
-  sortLibrary,
-  type LibrarySortOption,
-} from "../../lib/librarySort";
+import { sortLibrary } from "../../lib/librarySort";
 import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
 import { SlideCanvas } from "../../components/SlideCanvas";
-import { Button, IconButton } from "../../components/ui/Button";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { MoreMenu } from "../../components/ui/MoreMenu";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { MoreMenu } from "@/components/shared/MoreMenu";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
-import { PinButton } from "../../components/ui/PinControl";
+import { PinButton } from "@/components/shared/PinControl";
 import {
   CardActions,
   CardTitle,
   cardBodyClassName,
   cardClassName,
   cardGridClassName,
-  cardOpenProps,
   cardSubClassName,
   cardThumbBadgeClassName,
-} from "../../components/ui/InteractiveCard";
-import { LibrarySortSelect } from "../../components/ui/LibrarySortSelect";
-import { PresentMenu } from "../../components/ui/PresentMenu";
+} from "@/components/shared/InteractiveCard";
+import { cardOpenProps } from "@/components/shared/cardOpenProps";
+import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
+import { PresentMenu } from "@/components/shared/PresentMenu";
 import routes from "../../routes";
 import { formatCountLabel } from "../../lib/formatNumber";
+import { useLibrarySort } from "@/hooks/useLibrarySort";
 
 export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
   const navigate = useNavigate();
@@ -47,7 +45,7 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
   const bgMap = useBgMap();
 
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<LibrarySortOption>(DEFAULT_LIBRARY_SORT);
+  const [sort, setSort] = useLibrarySort("scriptures");
   const quickShare = useQuickShareTarget();
 
   const saved = useMemo(
@@ -202,11 +200,11 @@ const PassageCard = ({
         <CardActions>
           {trashView ? (
             <>
-              <Button size="sm" variant="ghost" onClick={onRestore}>
+              <Button size="sm" variant="secondary" onClick={onRestore}>
                 <RotateCcw size={13} />
                 Restore
               </Button>
-              <Button size="sm" variant="danger" onClick={onDelete}>
+              <Button size="sm" variant="destructive" onClick={onDelete}>
                 <Trash2 size={13} />
                 Delete
               </Button>

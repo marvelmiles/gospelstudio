@@ -5,10 +5,10 @@ import {
   Square,
   Unlink,
 } from "lucide-react";
-import { cn } from "../../../lib/cn";
-import { IconButton } from "../../../components/ui/Button";
-import { ProgressRing } from "../../../components/ui/ProgressRing";
-import { Spinner } from "../../../components/ui/Spinner";
+import { cn } from "../../../lib/utils";
+import { IconButton } from "@/components/shared/IconButton";
+import { ProgressRing } from "@/components/shared/ProgressRing";
+import { Spinner } from "@/components/ui/spinner";
 import { formatBytes } from "../../../lib/storageStats";
 import {
   isTransferActive,
@@ -47,7 +47,7 @@ export const ShareDeviceList = ({
     return (
       <div className="flex flex-col items-center gap-3 py-6.5 text-center">
         {isSearching && <Spinner size={20} />}
-        <span className="max-w-80 text-[13px] leading-[1.6] text-sub">
+        <span className="max-w-80 text-[13px] leading-[1.6] text-muted-foreground">
           {isSearching ? "Looking for devices on this WiFi" : emptyHint}
         </span>
       </div>
@@ -117,7 +117,9 @@ const ShareDeviceRow = ({
     <div
       className={cn(
         "flex items-center gap-2.75 rounded-xl border px-3 py-2.75 transition-opacity duration-150",
-        highlighted ? "border-accent bg-accent/12" : "border-line bg-canvas",
+        highlighted
+          ? "border-primary bg-primary/12"
+          : "border-border bg-background",
         disabled && !transfer && "opacity-60",
       )}
     >
@@ -129,18 +131,18 @@ const ShareDeviceRow = ({
         onClick={onToggle}
         className="flex min-w-0 flex-1 items-center gap-2.75 border-none bg-transparent p-0 text-left disabled:cursor-default"
       >
-        <span className="grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-accent/14 text-accent-soft">
+        <span className="grid size-8.5 shrink-0 place-items-center rounded-[10px] bg-primary/14 text-primary-soft">
           <MonitorSmartphone size={17} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13.5px] font-semibold text-fg">
+          <span className="block truncate text-[13.5px] font-semibold text-foreground">
             {device.name}
           </span>
           {status && (
             <span
               className={cn(
                 "mt-0.5 block truncate text-[11.5px] tabular-nums",
-                isDone ? "text-accent-soft" : "text-dim",
+                isDone ? "text-primary-soft" : "text-subtle-foreground",
               )}
             >
               {status}
@@ -151,10 +153,10 @@ const ShareDeviceRow = ({
           <span
             aria-hidden
             className={cn(
-              "grid size-5 shrink-0 place-items-center rounded-[7px] border text-on-accent",
+              "grid size-5 shrink-0 place-items-center rounded-[7px] border text-primary-foreground",
               isSelected
-                ? "border-accent bg-accent"
-                : "border-line-strong bg-transparent",
+                ? "border-primary bg-primary"
+                : "border-input bg-transparent",
             )}
           >
             {isSelected && <Check size={13} strokeWidth={3} />}
@@ -180,7 +182,7 @@ const ShareDeviceRow = ({
           />
         </span>
       ) : isDone ? (
-        <CircleCheck size={19} className="shrink-0 text-accent" />
+        <CircleCheck size={19} className="shrink-0 text-primary" />
       ) : device.isPaired && !disabled ? (
         <IconButton
           icon={Unlink}

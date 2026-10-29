@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import type { RefObject } from "react";
 import {
   DEFAULT_MEDIA_PLAYBACK,
@@ -28,7 +28,6 @@ interface RestartOptions {
 }
 
 export interface MediaPlaybackController {
-  surfaceRef: RefObject<MediaSurfaceHandle>;
   getTime: () => number;
   playback: MediaPlayback;
   time: number;
@@ -46,10 +45,10 @@ export interface MediaPlaybackController {
 }
 
 export const useMediaPlayback = (
+  surfaceRef: RefObject<MediaSurfaceHandle | null>,
   settings?: TrimWindow,
   { autoPlay = true }: MediaPlaybackOptions = {},
 ): MediaPlaybackController => {
-  const surfaceRef = useRef<MediaSurfaceHandle>(null);
   const [playback, setPlayback] = useState<MediaPlayback>({
     ...DEFAULT_MEDIA_PLAYBACK,
     playing: autoPlay,
@@ -60,7 +59,7 @@ export const useMediaPlayback = (
 
   const getTime = useCallback(
     () => surfaceRef.current?.getCurrentTime() ?? 0,
-    [],
+    [surfaceRef],
   );
 
   const togglePlaying = useCallback(
@@ -97,7 +96,7 @@ export const useMediaPlayback = (
       const current = surfaceRef.current?.getCurrentTime() ?? time;
       seekTo(Math.max(trimStart, Math.min(end, current + delta)));
     },
-    [seekTo, trimStart, trimEnd, duration, time],
+    [surfaceRef, seekTo, trimStart, trimEnd, duration, time],
   );
 
   const restart = useCallback(
@@ -146,7 +145,6 @@ export const useMediaPlayback = (
   );
 
   return {
-    surfaceRef,
     getTime,
     playback,
     time,

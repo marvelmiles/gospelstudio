@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { ChevronDown, Heart, Mail } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
-import { Modal } from "../../components/ui/Modal";
+import { cn } from "../../lib/utils";
+import { Modal } from "@/components/shared/Modal";
 import { APP_NAME, APP_VERSION_LABEL } from "../../lib/appInfo";
-import { SectionTitle } from "../../components/ui/Field";
+import { SectionTitle } from "@/components/shared/Field";
 
 const CONTACT_EMAIL = "marvellousabidemi2@gmail.com";
 
@@ -115,7 +115,7 @@ const FAQS: { q: string; a: string }[] = [
   },
 ];
 
-const bodyClassName = "mt-0 text-[13.5px] leading-[1.7] text-sub";
+const bodyClassName = "mt-0 text-[13.5px] leading-[1.7] text-muted-foreground";
 
 export const AboutModal = () => {
   const overlay = useStore((s) => s.overlay);
@@ -129,17 +129,17 @@ export const AboutModal = () => {
       title="About & Help"
       width={640}
     >
-      <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.6px] text-accent uppercase">
+      <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.6px] text-primary uppercase">
         <Heart size={14} /> Why {APP_NAME}
       </div>
-      <p className="mt-2.5 text-sm leading-[1.7] text-fg">
+      <p className="mt-2.5 text-sm leading-[1.7] text-foreground">
         {APP_NAME} was born out of frustration. While running media at my
         church, the presentation software we relied on kept lagging mid-service,
         stuttering on hymns, images, and videos right when the congregation
         needed to follow along. Those freezes chipped away at the trust people
         had in the media team and pulled focus away from worship.
       </p>
-      <p className="mt-0 text-sm leading-[1.7] text-sub">
+      <p className="mt-0 text-sm leading-[1.7] text-muted-foreground">
         I wanted something lighter and purpose-built: fast, calm, and made for
         one job, displaying worship content beautifully and reliably. That
         frustration became the spark for {APP_NAME}, so the focus can stay on
@@ -147,29 +147,29 @@ export const AboutModal = () => {
       </p>
 
       <SectionTitle>Frequently Asked</SectionTitle>
-      <div className="border-t border-line">
+      <div className="border-t border-border">
         {FAQS.map((faq, index) => {
           const isOpen = open === index;
           return (
-            <div key={index} className="border-b border-line">
+            <div key={index} className="border-b border-border">
               <button
                 onClick={() => setOpen(isOpen ? null : index)}
                 className={cn(
                   "flex w-full items-center justify-between gap-3 border-none bg-transparent px-0.5 py-3.25 text-left text-sm font-semibold",
-                  isOpen ? "text-accent-soft" : "text-fg",
+                  isOpen ? "text-primary-soft" : "text-foreground",
                 )}
               >
                 {faq.q}
                 <ChevronDown
                   size={17}
                   className={cn(
-                    "shrink-0 text-sub transition-transform duration-200",
+                    "shrink-0 text-muted-foreground transition-transform duration-200",
                     isOpen && "rotate-180",
                   )}
                 />
               </button>
               {isOpen && (
-                <p className="mt-0 mb-3.5 pr-6 text-[13.5px] leading-[1.7] text-sub">
+                <p className="mt-0 mb-3.5 pr-6 text-[13.5px] leading-[1.7] text-muted-foreground">
                   {faq.a}
                 </p>
               )}
@@ -181,9 +181,10 @@ export const AboutModal = () => {
       <SectionTitle>Scripture Data &amp; Licensing</SectionTitle>
       <p className={bodyClassName}>
         {APP_NAME} includes two Bible translations, both in the{" "}
-        <strong className="text-fg">public domain</strong>: the{" "}
-        <strong className="text-fg">King James Version (KJV)</strong> and the{" "}
-        <strong className="text-fg">
+        <strong className="text-foreground">public domain</strong>: the{" "}
+        <strong className="text-foreground">King James Version (KJV)</strong>{" "}
+        and the{" "}
+        <strong className="text-foreground">
           American Standard Version (ASV, 1901)
         </strong>
         . Public-domain texts belong to everyone and may be read, projected,
@@ -198,7 +199,7 @@ export const AboutModal = () => {
           href="https://www.npmjs.com/package/holy-bible"
           target="_blank"
           rel="noreferrer"
-          className="font-semibold text-accent-soft"
+          className="font-semibold text-primary-soft"
         >
           holy-bible
         </a>{" "}
@@ -208,18 +209,18 @@ export const AboutModal = () => {
       </p>
 
       <SectionTitle>Contact</SectionTitle>
-      <p className="mt-0 text-[13.5px] leading-[1.6] text-sub">
+      <p className="mt-0 text-[13.5px] leading-[1.6] text-muted-foreground">
         Have feedback, found a bug, or want a feature? I'd genuinely love to
         hear from you.
       </p>
       <a
         href={`mailto:${CONTACT_EMAIL}`}
-        className="inline-flex items-center gap-2.25 rounded-[11px] bg-linear-140 from-accent-soft to-accent px-4 py-2.75 text-sm font-semibold text-white no-underline"
+        className="inline-flex items-center gap-2.25 rounded-[11px] bg-linear-140 from-primary-soft to-primary px-4 py-2.75 text-sm font-semibold text-white no-underline"
       >
         <Mail size={16} />
         {CONTACT_EMAIL}
       </a>
-      <p className="mt-4.5 mb-0 text-xs text-dim">
+      <p className="mt-4.5 mb-0 text-xs text-subtle-foreground">
         {APP_NAME} {APP_VERSION_LABEL}
       </p>
     </Modal>

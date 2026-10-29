@@ -17,52 +17,75 @@ interface HistoryEntry<T> {
   caret: TextRange | null;
 }
 
+interface DeckState<T> {
+  doc: T;
+  savedDoc: T;
+  selectedId: string | null;
+  past: HistoryEntry<T>[];
+  future: HistoryEntry<T>[];
+}
+
 export const useDeckDocument = <T extends SlideDeckDoc>(
   source: T,
   commit: (doc: T) => boolean,
 ) => {
-  const [doc, setDoc] = useState<T>(source);
-  const [savedDoc, setSavedDoc] = useState<T>(source);
-  const [selectedId, setSelectedId] = useState<string | null>(
-    source.slides?.[0]?.id ?? null,
-  );
-  const [past, setPast] = useState<HistoryEntry<T>[]>([]);
-  const [future, setFuture] = useState<HistoryEntry<T>[]>([]);
+  const [state, setState] = useState<DeckState<T>>(() => ({
+    doc: source,
+    savedDoc: source,
+    selectedId: source.slides?.[0]?.id ?? null,
+    past: [],
+    future: [],
+  }));
+  const latest = useRef(state);
   const coalesceRef = useRef<{ key: string; at: number } | null>(null);
 
-  const latest = useRef({ doc, selectedId, past, future });
-  latest.current = { doc, selectedId, past, future };
+  const update = useCallback((changes: Partial<DeckState<T>>) => {
+    latest.current = { ...latest.current, ...changes };
+    setState(latest.current);
+  }, []);
+
+  const { doc, savedDoc, selectedId, past, future } = state;
+
+  const setSelectedId = useCallback(
+    (id: string | null) => update({ selectedId: id }),
+    [update],
+  );
 
   const slides = doc.slides ?? [];
   const selectedIndex = slides.findIndex((slide) => slide.id === selectedId);
   const selectedSlide = slides[selectedIndex] ?? slides[0];
 
-  const apply = useCallback((next: T, options?: EditOptions) => {
-    const { doc: current, selectedId: currentId } = latest.current;
-    const at = Date.now();
-    const key = options?.coalesceKey;
-    const mergesWithPrevious = Boolean(
-      key &&
-      coalesceRef.current?.key === key &&
-      at - coalesceRef.current.at < COALESCE_MS,
-    );
-    coalesceRef.current = key ? { key, at } : null;
+  const apply = useCallback(
+    (next: T, options?: EditOptions) => {
+      const { doc: current, selectedId: currentId } = latest.current;
+      const at = Date.now();
+      const key = options?.coalesceKey;
+      const mergesWithPrevious = Boolean(
+        key &&
+        coalesceRef.current?.key === key &&
+        at - coalesceRef.current.at < COALESCE_MS,
+      );
+      coalesceRef.current = key ? { key, at } : null;
 
-    if (!mergesWithPrevious) {
-      setPast((entries) =>
-        [
-          ...entries,
+      if (mergesWithPrevious) {
+        update({ doc: next });
+        return;
+      }
+      update({
+        doc: next,
+        past: [
+          ...latest.current.past,
           {
             doc: current,
             selectedId: currentId,
             caret: options?.caret ?? null,
           },
         ].slice(-HISTORY_LIMIT),
-      );
-      setFuture([]);
-    }
-    setDoc(next);
-  }, []);
+        future: [],
+      });
+    },
+    [update],
+  );
 
   const patchDoc = useCallback(
     (changes: Partial<T>, options?: EditOptions) =>
@@ -129,25 +152,22 @@ export const useDeckDocument = <T extends SlideDeckDoc>(
       const entry = source[source.length - 1];
       if (!entry) return null;
 
-      const trim = (entries: HistoryEntry<T>[]) => entries.slice(0, -1);
-      const push = (entries: HistoryEntry<T>[]) =>
-        [...entries, { doc: current, selectedId: currentId, caret }].slice(
-          -HISTORY_LIMIT,
-        );
+      const remaining = source.slice(0, -1);
+      const pushed = [
+        ...(goBack ? latest.current.future : latest.current.past),
+        { doc: current, selectedId: currentId, caret },
+      ].slice(-HISTORY_LIMIT);
 
-      if (goBack) {
-        setPast(trim);
-        setFuture(push);
-      } else {
-        setFuture(trim);
-        setPast(push);
-      }
       coalesceRef.current = null;
-      setDoc(entry.doc);
-      setSelectedId(entry.selectedId);
+      update({
+        doc: entry.doc,
+        selectedId: entry.selectedId,
+        past: goBack ? remaining : pushed,
+        future: goBack ? pushed : remaining,
+      });
       return entry.caret;
     },
-    [],
+    [update],
   );
 
   const undo = useCallback(
@@ -163,9 +183,9 @@ export const useDeckDocument = <T extends SlideDeckDoc>(
   const save = useCallback((): boolean => {
     const current = latest.current.doc;
     if (!commit(current)) return false;
-    setSavedDoc(current);
+    update({ savedDoc: current });
     return true;
-  }, [commit]);
+  }, [commit, update]);
 
   const history = useMemo<EditHistory>(
     () => ({

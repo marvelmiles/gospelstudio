@@ -7,10 +7,10 @@ import {
   validateTrimStart,
   type TrimRange,
 } from "../../lib/media";
-import { cn } from "../../lib/cn";
-import { IconButton } from "../ui/Button";
-import { Field } from "../ui/Field";
-import { TimecodeInput } from "../ui/TimecodeInput";
+import { cn } from "../../lib/utils";
+import { IconButton } from "@/components/shared/IconButton";
+import { Field } from "@/components/shared/Field";
+import { TimecodeInput } from "@/components/shared/TimecodeInput";
 
 interface TrimFieldsProps {
   trim: TrimRange;

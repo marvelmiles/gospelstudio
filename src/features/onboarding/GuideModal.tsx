@@ -17,9 +17,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { APP_NAME } from "../../lib/appInfo";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 const TIPS: { icon: LucideIcon; title: string; desc: string }[] = [
   {
@@ -113,18 +114,22 @@ export const GuideModal = () => {
       setReachedEnd(true);
   }, [showGuide]);
 
-  if (!showGuide) return null;
-
   return (
-    <div className="fixed inset-0 z-320 flex animate-fade-in items-center justify-center bg-scrim p-4.5 backdrop-blur-sm">
-      <div className="flex max-h-[90vh] w-full max-w-145 flex-col overflow-hidden rounded-[18px] border border-line bg-panel shadow-overlay backdrop-blur-sm">
-        <div className="border-b border-line px-6 pt-5.5 pb-4">
-          <div className="text-[11px] font-bold tracking-[0.6px] text-accent uppercase">
+    <Dialog open={showGuide}>
+      <DialogContent
+        showCloseButton={false}
+        aria-describedby={undefined}
+        onInteractOutside={(event) => event.preventDefault()}
+        onEscapeKeyDown={(event) => event.preventDefault()}
+        className="flex max-h-[90vh] max-w-[min(580px,calc(100%-2rem))] flex-col gap-0 overflow-hidden rounded-[18px] p-0 sm:max-w-none"
+      >
+        <div className="border-b border-border px-6 pt-5.5 pb-4">
+          <div className="text-[11px] font-bold tracking-[0.6px] text-primary uppercase">
             Welcome
           </div>
-          <h2 className="mt-1 mb-0 text-[25px] font-semibold text-fg">
+          <DialogTitle className="mt-1 text-[25px] leading-tight">
             A quick tour of {APP_NAME}
-          </h2>
+          </DialogTitle>
         </div>
 
         <div
@@ -139,7 +144,7 @@ export const GuideModal = () => {
           }}
           className="flex-1 overflow-y-auto p-6"
         >
-          <p className="mt-0 text-sm leading-[1.7] text-sub">
+          <p className="mt-0 text-sm leading-[1.7] text-muted-foreground">
             {APP_NAME} is a light, distraction-free studio for presenting
             manuscripts, scripture, images, videos and live cameras reliably.
             Here are a few things worth knowing before you start.
@@ -147,43 +152,43 @@ export const GuideModal = () => {
 
           {TIPS.map((tip) => (
             <div key={tip.title} className="mb-4 flex gap-3.25">
-              <div className="grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-accent/14 text-accent-soft">
+              <div className="grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-primary/14 text-primary-soft">
                 <tip.icon size={18} />
               </div>
               <div>
-                <div className="text-[14.5px] font-semibold text-fg">
+                <div className="text-[14.5px] font-semibold text-foreground">
                   {tip.title}
                 </div>
-                <div className="mt-0.5 text-[13px] leading-[1.6] text-sub">
+                <div className="mt-0.5 text-[13px] leading-[1.6] text-muted-foreground">
                   {tip.desc}
                 </div>
               </div>
             </div>
           ))}
 
-          <h3 className="mt-5.5 mb-3 text-[17px] text-fg">
+          <h3 className="mt-5.5 mb-3 text-[17px] text-foreground">
             What the header icons do
           </h3>
           {HEADER_ICONS.map((item) => (
             <div
               key={item.name}
-              className="flex items-center gap-3.25 border-b border-line py-2.25"
+              className="flex items-center gap-3.25 border-b border-border py-2.25"
             >
-              <div className="grid size-8.5 shrink-0 place-items-center rounded-[9px] bg-raise text-fg">
+              <div className="grid size-8.5 shrink-0 place-items-center rounded-[9px] bg-secondary text-foreground">
                 <item.icon size={16} />
               </div>
               <div>
-                <div className="text-[13.5px] font-semibold text-fg">
+                <div className="text-[13.5px] font-semibold text-foreground">
                   {item.name}
                 </div>
-                <div className="text-[12.5px] leading-normal text-sub">
+                <div className="text-[12.5px] leading-normal text-muted-foreground">
                   {item.desc}
                 </div>
               </div>
             </div>
           ))}
 
-          <p className="mt-5 mb-0 text-[13.5px] leading-[1.7] text-sub">
+          <p className="mt-5 mb-0 text-[13.5px] leading-[1.7] text-muted-foreground">
             That's it, create a manuscript from the dashboard or open the
             library to start. You can revisit all of this anytime under About
             &amp; Help. Welcome aboard.
@@ -191,24 +196,20 @@ export const GuideModal = () => {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-3 border-t border-line px-6 py-3.5">
+        <div className="flex items-center justify-between gap-3 border-t border-border px-6 py-3.5">
           <span
             className={cn(
               "text-[12.5px]",
-              reachedEnd ? "text-dim" : "text-accent",
+              reachedEnd ? "text-subtle-foreground" : "text-primary",
             )}
           >
             {reachedEnd ? "You're all set." : "Scroll to the end to continue"}
           </span>
-          <Button
-            variant="primary"
-            disabled={!reachedEnd}
-            onClick={completeGuide}
-          >
+          <Button disabled={!reachedEnd} onClick={completeGuide}>
             Understood
           </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };

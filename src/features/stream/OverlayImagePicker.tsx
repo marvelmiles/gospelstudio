@@ -5,13 +5,13 @@ import type { LucideIcon } from "lucide-react";
 import type { SlideMediaSource } from "../../types";
 import { useStore } from "../../store/useStore";
 import { isImageBackground } from "../../lib/media";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { LibrarySection } from "../../components/ui/LibrarySection";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
-import type { SegmentedTab } from "../../components/ui/SegmentedTabs";
-import { SearchInput } from "../../components/ui/SearchInput";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LibrarySection } from "@/components/shared/LibrarySection";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
+import type { SegmentedTab } from "@/components/shared/SegmentedTabs";
+import { SearchInput } from "@/components/shared/SearchInput";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import { BgSwatch } from "../../components/controls/BgSwatch";
 import type { OverlayImageRef } from "./lib/overlayAppearance";
@@ -127,7 +127,7 @@ export const OverlayImagePicker = ({
           action={
             onClear && (
               <Button
-                variant="subtle"
+                variant="ghost"
                 size="sm"
                 onClick={() => {
                   onClear();
@@ -166,9 +166,9 @@ export const OverlayImagePicker = ({
                 <button
                   key={`${item.source}:${item.id}`}
                   onClick={() => onPick(item)}
-                  className="flex w-full items-center gap-2.75 rounded-[11px] border border-line bg-canvas p-1.75 text-left text-[13.5px] font-semibold text-fg"
+                  className="flex w-full items-center gap-2.75 rounded-[11px] border border-border bg-background p-1.75 text-left text-[13.5px] font-semibold text-foreground"
                 >
-                  <span className="relative h-8.5 w-15 shrink-0 overflow-hidden rounded-[7px] bg-raise">
+                  <span className="relative h-8.5 w-15 shrink-0 overflow-hidden rounded-[7px] bg-secondary">
                     {item.preview}
                   </span>
                   <span className="min-w-0 truncate">{item.name}</span>

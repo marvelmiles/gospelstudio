@@ -12,9 +12,9 @@ export const EditorColumns = ({
   inspector,
 }: EditorColumnsProps) => (
   <div className="grid min-h-0 flex-1 grid-cols-[292px_1fr_308px]">
-    <div className="overflow-auto border-r border-line">{list}</div>
+    <div className="overflow-auto border-r border-border">{list}</div>
     <div className="overflow-auto">{preview}</div>
-    <div className="overflow-auto border-l border-line">{inspector}</div>
+    <div className="overflow-auto border-l border-border">{inspector}</div>
   </div>
 );
 
@@ -28,7 +28,7 @@ interface PanelHeaderProps {
 }
 
 export const PanelHeader = ({ title, action }: PanelHeaderProps) => (
-  <div className="sticky top-0 z-2 flex items-center justify-between border-b border-line bg-canvas px-3.5 pt-3.5 pb-2.5">
+  <div className="sticky top-0 z-2 flex items-center justify-between border-b border-border bg-background px-3.5 pt-3.5 pb-2.5">
     <span className="section-label">{title}</span>
     {action}
   </div>

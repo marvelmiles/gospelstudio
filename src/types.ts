@@ -324,11 +324,7 @@ export interface PresentTarget {
 
 export type ImportMode = "override" | "merge-imported" | "merge-existing";
 
-export interface Toast {
-  id: string;
-  message: string;
-  kind: "success" | "error";
-}
+export type ToastKind = "success" | "error";
 
 export interface AppAlert {
   id: string;

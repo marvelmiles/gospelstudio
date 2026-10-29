@@ -1,4 +1,4 @@
-import type { StreamBadgeStatus } from "../StreamStatusBadge";
+import type { StreamBadgeStatus } from "../lib/streamBadge";
 import type { ConnectionPhase } from "../lib/useConnectionLifecycle";
 
 export type BroadcastPhase =

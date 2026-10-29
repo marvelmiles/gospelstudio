@@ -3,10 +3,10 @@ import { FileText, Video } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { ContentKind, MediaItem } from "../../types";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
-import { Modal } from "../../components/ui/Modal";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { SearchInput } from "../../components/ui/SearchInput";
+import { cn } from "../../lib/utils";
+import { Modal } from "@/components/shared/Modal";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { SearchInput } from "@/components/shared/SearchInput";
 
 export type PickableKind = Exclude<ContentKind, "image" | "scripture">;
 
@@ -93,16 +93,16 @@ export const OverlayContentPicker = ({
               key={item.id}
               onClick={() => onPick(kind, item)}
               className={cn(
-                "flex w-full items-center gap-2.75 rounded-[11px] border border-line bg-canvas text-left text-[13.5px] font-semibold text-fg",
+                "flex w-full items-center gap-2.75 rounded-[11px] border border-border bg-background text-left text-[13.5px] font-semibold text-foreground",
                 item.media ? "p-1.75" : "px-3 py-2.75",
               )}
             >
               {item.media ? (
-                <span className="grid h-8.5 w-15 shrink-0 place-items-center overflow-hidden rounded-[7px] bg-raise text-dim">
+                <span className="grid h-8.5 w-15 shrink-0 place-items-center overflow-hidden rounded-[7px] bg-secondary text-subtle-foreground">
                   <Video size={16} />
                 </span>
               ) : (
-                <Icon size={16} className="text-accent-soft" />
+                <Icon size={16} className="text-primary-soft" />
               )}
               <span className="min-w-0 truncate">{item.name}</span>
             </button>

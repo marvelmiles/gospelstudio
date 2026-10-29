@@ -1,7 +1,7 @@
 import { useEffect, type RefObject } from "react";
 
 export const useResumePlaybackOnVisible = (
-  videoRef: RefObject<HTMLVideoElement>,
+  videoRef: RefObject<HTMLVideoElement | null>,
 ): void => {
   useEffect(() => {
     const handleVisibilityChange = () => {

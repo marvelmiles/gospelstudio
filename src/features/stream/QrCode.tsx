@@ -28,14 +28,14 @@ export const QrCode = ({
 
   if (isTooLarge)
     return (
-      <p className="m-0 max-w-75 text-center text-[13px] leading-normal text-danger">
+      <p className="m-0 max-w-75 text-center text-[13px] leading-normal text-destructive">
         This code is too long to show as a QR. Copy it and send it to the other
         device instead.
       </p>
     );
 
   return (
-    <figure className="m-0 inline-flex flex-col items-center rounded-[22px] border border-accent/35 bg-qr-surface px-2.5 pt-2.5 pb-3 shadow-[0_0_0_5px_rgb(37_99_235/0.1),0_16px_32px_rgb(0_0_0/0.35)]">
+    <figure className="m-0 inline-flex flex-col items-center rounded-[22px] border border-primary/35 bg-qr-surface px-2.5 pt-2.5 pb-3 shadow-[0_0_0_5px_rgb(37_99_235/0.1),0_16px_32px_rgb(0_0_0/0.35)]">
       <canvas
         ref={canvasRef}
         role="img"

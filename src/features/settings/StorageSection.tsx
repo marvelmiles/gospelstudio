@@ -1,11 +1,11 @@
-import { SectionTitle } from "../../components/ui/Field";
+import { SectionTitle } from "@/components/shared/Field";
 import { getStorageLabel, type StorageInfo } from "../../lib/storageStats";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 const BAR_CLASSES: Record<StorageInfo["level"], string> = {
-  critical: "from-danger to-danger-fg",
-  warn: "from-warning to-warning-fg",
-  ok: "from-success to-success-fg",
+  critical: "from-destructive to-destructive-foreground",
+  warn: "from-warning to-warning-foreground",
+  ok: "from-success to-success-foreground",
 };
 
 export const StorageSection = ({ storage }: { storage: StorageInfo }) => {
@@ -19,14 +19,18 @@ export const StorageSection = ({ storage }: { storage: StorageInfo }) => {
           <div
             className={cn(
               "text-xl leading-none font-semibold",
-              storage.level === "critical" ? "text-danger" : "text-fg",
+              storage.level === "critical"
+                ? "text-destructive"
+                : "text-foreground",
             )}
           >
             {usedPercent}%
           </div>
-          <div className="text-xs text-sub">{getStorageLabel(storage)}</div>
+          <div className="text-xs text-muted-foreground">
+            {getStorageLabel(storage)}
+          </div>
         </div>
-        <div className="mt-2.25 h-1.75 overflow-hidden rounded-full bg-raise">
+        <div className="mt-2.25 h-1.75 overflow-hidden rounded-full bg-secondary">
           <div
             style={{ width: `${Math.max(2, usedPercent)}%` }}
             className={cn(

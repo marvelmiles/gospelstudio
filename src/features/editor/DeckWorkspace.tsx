@@ -23,8 +23,7 @@ import {
   EditorColumns,
   EditorStackedBody,
 } from "../../components/layout/EditorColumns";
-import { ContextMenu } from "../../components/ui/ContextMenu";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import type { DeckEditor } from "./useDeckEditor";
 import { useFollowPresentation } from "./useFollowPresentation";
@@ -52,12 +51,6 @@ const TITLE_LABEL: Partial<Record<ContentKind, string>> = {
   manuscript: "manuscript title",
   scripture: "passage title",
 };
-
-interface SlideMenuState {
-  index: number;
-  x: number;
-  y: number;
-}
 
 interface DeckWorkspaceProps {
   doc: SlideDeckDoc;
@@ -101,7 +94,6 @@ export const DeckWorkspace = ({
   const presentation = useStore((s) => s.presentation);
   const pushToast = useStore((s) => s.pushToast);
 
-  const [slideMenu, setSlideMenu] = useState<SlideMenuState | null>(null);
   const [tab, setTab] = useState<WorkspaceTab>("edit");
 
   const tagGroups = useMemo(
@@ -210,7 +202,7 @@ export const DeckWorkspace = ({
       theme={theme}
       bgMap={bgMap}
       onReorder={editor.setSlides}
-      onContextMenu={(index, x, y) => setSlideMenu({ index, x, y })}
+      slideMenuItems={(index) => slideMenuItems(editor, index)}
       onAdd={() =>
         editor.insertSlideAt(
           editor.selectedIndex >= 0
@@ -319,15 +311,6 @@ export const DeckWorkspace = ({
           list={listPanel}
           preview={previewPanel}
           inspector={inspectorPanel}
-        />
-      )}
-
-      {slideMenu && (
-        <ContextMenu
-          x={slideMenu.x}
-          y={slideMenu.y}
-          items={slideMenuItems(editor, slideMenu.index)}
-          onClose={() => setSlideMenu(null)}
         />
       )}
 

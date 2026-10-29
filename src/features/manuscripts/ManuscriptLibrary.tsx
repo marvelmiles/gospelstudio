@@ -7,54 +7,50 @@ import { useStore } from "../../store/useStore";
 import { useBgMap } from "../../hooks/useBgMap";
 import type { BgMap } from "../../hooks/useBgMap";
 import { sortPinnedFirst } from "../../lib/pinning";
-import {
-  DEFAULT_LIBRARY_SORT,
-  sortLibrary,
-  type LibrarySortOption,
-} from "../../lib/librarySort";
+import { sortLibrary } from "../../lib/librarySort";
 import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { BgSwatch } from "../../components/controls/BgSwatch";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
-import { PillTabs } from "../../components/ui/PillTabs";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
+import { PillTabs } from "@/components/shared/PillTabs";
 import { buildSearchIndex, matchesSearch } from "../../lib/search";
 import { formatCountLabel } from "../../lib/formatNumber";
 import { formatDate } from "../../lib/id";
-import { LazyMount } from "../../components/ui/LazyMount";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { MoreMenu } from "../../components/ui/MoreMenu";
+import { LazyMount } from "@/components/shared/LazyMount";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { MoreMenu } from "@/components/shared/MoreMenu";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
-import type { MoreMenuItem } from "../../components/ui/MoreMenu";
-import {
-  KeepOnResetBadge,
-  useKeepOnResetAction,
-} from "../../components/ui/KeepOnResetToggle";
-import { PinButton } from "../../components/ui/PinControl";
+import type { MenuItem } from "@/components/shared/menuItem";
+import { useKeepOnResetAction } from "@/components/shared/useKeepOnReset";
+import { KeepOnResetBadge } from "@/components/shared/KeepOnResetToggle";
+import { PinButton } from "@/components/shared/PinControl";
 import {
   CardActions,
   CardTitle,
   cardBodyClassName,
   cardClassName,
   cardGridClassName,
-  cardOpenProps,
   cardSubClassName,
   cardThumbBadgeClassName,
-} from "../../components/ui/InteractiveCard";
-import { LibrarySortSelect } from "../../components/ui/LibrarySortSelect";
-import { LayoutToggle } from "../../components/ui/LayoutToggle";
+} from "@/components/shared/InteractiveCard";
+import { cardOpenProps } from "@/components/shared/cardOpenProps";
+import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
+import { LayoutToggle } from "@/components/shared/LayoutToggle";
 import {
   LibraryListRow,
   listClassName,
-} from "../../components/ui/LibraryListRow";
-import { PresentMenu } from "../../components/ui/PresentMenu";
+} from "@/components/shared/LibraryListRow";
+import { PresentMenu } from "@/components/shared/PresentMenu";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useLibraryLayout } from "../../hooks/useLibraryLayout";
 import routes from "../../routes";
+import { useLibrarySort } from "@/hooks/useLibrarySort";
 
 export const ManuscriptLibrary = () => {
   useDocumentTitle("Manuscripts");
@@ -68,7 +64,7 @@ export const ManuscriptLibrary = () => {
 
   const [query, setQuery] = useState("");
   const [collection, setCollection] = useState("All");
-  const [sort, setSort] = useState<LibrarySortOption>(DEFAULT_LIBRARY_SORT);
+  const [sort, setSort] = useLibrarySort("manuscripts");
   const [deleting, setDeleting] = useState<Manuscript | null>(null);
   const quickShare = useQuickShareTarget();
   const { layout, setLayout } = useLibraryLayout("manuscripts");
@@ -122,7 +118,7 @@ export const ManuscriptLibrary = () => {
         title="Manuscripts"
         subtitle="Turn lyrics, hymns and sermons into slides."
         actions={
-          <Button variant="primary" onClick={onNew}>
+          <Button onClick={onNew}>
             <Plus size={16} />
             New Manuscript
           </Button>
@@ -167,7 +163,7 @@ export const ManuscriptLibrary = () => {
             title="No manuscripts yet"
             message="Its text turns into styled slides, ready to present."
             action={
-              <Button variant="primary" onClick={onNew}>
+              <Button onClick={onNew}>
                 <Plus size={15} />
                 New Manuscript
               </Button>
@@ -222,8 +218,8 @@ export const ManuscriptLibrary = () => {
 const manuscriptMenuItems = (
   onOpen: () => void,
   onQuickShare: () => void,
-  keepAction: MoreMenuItem | null,
-): MoreMenuItem[] => [
+  keepAction: MenuItem | null,
+): MenuItem[] => [
   { label: "Open in editor", icon: PenLine, onClick: onOpen },
   {
     label: "Quick share",

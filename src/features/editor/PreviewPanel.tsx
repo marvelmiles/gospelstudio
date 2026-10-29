@@ -8,18 +8,17 @@ import type {
 } from "../../types";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import type { ClickPoint } from "../../components/SlideCanvas";
-import { inputClassName } from "../../components/ui/Field";
 import {
   previewFrameClassName,
   previewStageClassName,
 } from "../../components/layout/EditorColumns";
-import { cn } from "../../lib/cn";
-import { InfoTip } from "../../components/ui/InfoTip";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { SelectionFormatToolbar } from "../../components/controls/SelectionFormatToolbar";
 import { useSlideTextEditor } from "../../hooks/useSlideTextEditor";
 import type { TextFormattingController } from "../../hooks/useTextFormatting";
 import { SlideElementOverlay } from "./SlideElementOverlay";
 import type { SlideElement, SlideElementEditing } from "./SlideElementOverlay";
+import { Input } from "@/components/ui/input";
 
 interface PreviewPanelProps {
   slide: Slide;
@@ -117,12 +116,12 @@ export const PreviewPanel = ({
       />
 
       <div className="mx-auto mt-4.5 flex w-full max-w-205 items-center gap-2">
-        <input
+        <Input
           value={slide.label}
           onChange={(e) => onChangeLabel(e.target.value)}
           placeholder="Slide label"
           aria-label="Slide label"
-          className={cn(inputClassName, "text-[13px]")}
+          className="text-[13px]"
         />
         <InfoTip title="Editing on the slide" variant="modal" size={16}>
           <p className="mt-0">

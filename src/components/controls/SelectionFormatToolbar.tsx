@@ -1,43 +1,44 @@
-import { useLayoutEffect } from "react";
+import { useMemo } from "react";
 import type { MouseEvent } from "react";
-import { FloatingPortal, useFloating } from "@floating-ui/react";
 import { FormatToolbar } from "./FormatToolbar";
-import { floatingMiddleware } from "../ui/Popover";
 import type { TextFormattingController } from "../../hooks/useTextFormatting";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover";
 
 interface SelectionFormatToolbarProps {
   controller: TextFormattingController;
   rect: DOMRect | null;
 }
 
+const keepFocus = (event: Event | MouseEvent) => event.preventDefault();
+
 export const SelectionFormatToolbar = ({
   controller,
   rect,
 }: SelectionFormatToolbarProps) => {
-  const { refs, floatingStyles, update } = useFloating({
-    placement: "top",
-    strategy: "fixed",
-    middleware: floatingMiddleware,
-  });
-
-  useLayoutEffect(() => {
-    if (!rect) return;
-    refs.setPositionReference({ getBoundingClientRect: () => rect });
-    update();
-  }, [rect, refs, update]);
+  const selectionAnchor = useMemo(
+    () => ({ current: { getBoundingClientRect: () => rect ?? new DOMRect() } }),
+    [rect],
+  );
 
   if (!rect) return null;
 
   return (
-    <FloatingPortal>
-      <div
-        ref={refs.setFloating}
-        style={floatingStyles}
-        onMouseDown={(event: MouseEvent) => event.preventDefault()}
-        className="z-400 rounded-xl border border-line bg-panel-solid p-1.5 shadow-[0_18px_44px_rgb(0_0_0/0.45)]"
+    <Popover open modal={false}>
+      <PopoverAnchor virtualRef={selectionAnchor} />
+      <PopoverContent
+        side="top"
+        role="toolbar"
+        onOpenAutoFocus={keepFocus}
+        onCloseAutoFocus={keepFocus}
+        onMouseDown={keepFocus}
+        className="w-auto p-1.5"
       >
         <FormatToolbar controller={controller} />
-      </div>
-    </FloatingPortal>
+      </PopoverContent>
+    </Popover>
   );
 };

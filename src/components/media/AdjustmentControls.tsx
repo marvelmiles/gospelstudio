@@ -1,14 +1,13 @@
 import type { MediaAdjustments } from "../../types";
-import { cn } from "../../lib/cn";
-import { Field, Range } from "../../components/ui/Field";
+import { cn } from "../../lib/utils";
+import { Field } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { settingsColumns } from "./settingsColumns";
 
 interface AdjustmentControlsProps {
   value: MediaAdjustments;
   onChange: (changes: Partial<MediaAdjustments>) => void;
 }
-
-export const settingsColumns = (narrow?: boolean): string =>
-  narrow ? "grid-cols-1" : "grid-cols-[repeat(auto-fit,minmax(200px,1fr))]";
 
 const SLIDERS: {
   key: keyof MediaAdjustments;
@@ -32,12 +31,12 @@ export const AdjustmentControls = ({
   <div className={cn("grid gap-x-4", settingsColumns())}>
     {SLIDERS.map(({ key, label, min, max, suffix }) => (
       <Field key={key} label={label}>
-        <Range
+        <RangeSlider
           value={value[key]}
           min={min}
           max={max}
           suffix={suffix}
-          onChange={(event) => onChange({ [key]: Number(event.target.value) })}
+          onValueChange={(next) => onChange({ [key]: next })}
         />
       </Field>
     ))}

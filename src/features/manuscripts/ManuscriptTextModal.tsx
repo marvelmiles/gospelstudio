@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
+import { useState } from "react";
 import { Info, RefreshCw } from "lucide-react";
 import type { Manuscript, ManuscriptFormat, Theme } from "../../types";
-import { cn } from "../../lib/cn";
 import { useTextFormatting } from "../../hooks/useTextFormatting";
 import { resolveStyle } from "../../lib/resolve";
 import { slideRowCapacity, slideTextMetrics } from "../../lib/slideLayout";
@@ -9,15 +9,14 @@ import {
   DEFAULT_MANUSCRIPT_FORMAT,
   MANUSCRIPT_FORMAT_OPTIONS,
 } from "../../lib/manuscript/format";
-import { Button, IconButton } from "../../components/ui/Button";
-import {
-  Field,
-  inputClassName,
-  Range,
-  Select,
-} from "../../components/ui/Field";
-import { Modal } from "../../components/ui/Modal";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { Field } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { Modal } from "@/components/shared/Modal";
 import { ManuscriptFormatGuideModal } from "./ManuscriptFormatGuideModal";
+import { Textarea } from "@/components/ui/textarea";
 
 const LINE_RANGE: Record<ManuscriptFormat, { min: number; max: number }> = {
   song: { min: 2, max: 10 },
@@ -58,21 +57,19 @@ export const ManuscriptTextModal = ({
   );
   const [guideOpen, setGuideOpen] = useState(false);
   const [maxLines, setMaxLines] = useState(manuscript.maxLines || fittedLines);
-  const formatting = useTextFormatting({ value: body, onChange: setBody });
+  const { bind: bindFormatting, ...formatting } = useTextFormatting({
+    value: body,
+    onChange: setBody,
+  });
   const isSermon = format === "sermon";
 
-  const {
-    body: storedBody,
-    maxLines: storedMaxLines,
-    format: storedFormat,
-  } = manuscript;
-  useEffect(() => {
-    if (!open) return;
-    const opened = storedFormat ?? DEFAULT_MANUSCRIPT_FORMAT;
-    setBody(storedBody);
-    setFormat(opened);
-    setMaxLines(clampLines(storedMaxLines || fittedLines, opened));
-  }, [open, storedBody, storedMaxLines, storedFormat, fittedLines]);
+  useValueChange(open ? manuscript : null, (opened) => {
+    if (!opened) return;
+    const openedFormat = opened.format ?? DEFAULT_MANUSCRIPT_FORMAT;
+    setBody(opened.body);
+    setFormat(openedFormat);
+    setMaxLines(clampLines(opened.maxLines || fittedLines, openedFormat));
+  });
 
   const changeFormat = (next: ManuscriptFormat) => {
     setFormat(next);
@@ -92,8 +89,10 @@ export const ManuscriptTextModal = ({
       width={640}
       footer={
         <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={regenerate}>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={regenerate}>
             <RefreshCw size={15} />
             Regenerate slides
           </Button>
@@ -103,10 +102,10 @@ export const ManuscriptTextModal = ({
       <div className="flex items-end gap-2">
         <div className="min-w-0 flex-1">
           <Field label="Format type">
-            <Select
+            <OptionSelect
               value={format}
               options={MANUSCRIPT_FORMAT_OPTIONS}
-              onChange={(e) => changeFormat(e.target.value as ManuscriptFormat)}
+              onValueChange={(next) => changeFormat(next as ManuscriptFormat)}
             />
           </Field>
         </div>
@@ -119,18 +118,15 @@ export const ManuscriptTextModal = ({
           />
         </div>
       </div>
-      <textarea
-        ref={formatting.bind}
+      <Textarea
+        ref={bindFormatting}
         value={body}
         onChange={(e) => setBody(e.target.value)}
         onSelect={formatting.syncSelection}
         onKeyUp={formatting.syncSelection}
         onClick={formatting.syncSelection}
         onKeyDown={formatting.handleKeyDown}
-        className={cn(
-          inputClassName,
-          "min-h-80 resize-y font-mono text-[13.5px] leading-[1.65]",
-        )}
+        className="min-h-80 resize-y font-mono text-[13.5px] leading-[1.65]"
       />
       <div className="mt-3">
         <Field
@@ -140,14 +136,14 @@ export const ManuscriptTextModal = ({
               : `Max lines per slide (${maxLines})`
           }
         >
-          <Range
+          <RangeSlider
             value={maxLines}
             min={LINE_RANGE[format].min}
             max={LINE_RANGE[format].max}
-            onChange={(e) => setMaxLines(Number(e.target.value))}
+            onValueChange={(next) => setMaxLines(next)}
           />
         </Field>
-        <p className="mx-0 -mt-1.5 mb-0 text-[11.5px] leading-[1.55] text-dim">
+        <p className="mx-0 -mt-1.5 mb-0 text-[11.5px] leading-[1.55] text-subtle-foreground">
           At this manuscript's text size a slide shows about {fittedLines} line
           {fittedLines === 1 ? "" : "s"} and still keeps its space top and
           bottom. Anything longer moves onto the next slide.

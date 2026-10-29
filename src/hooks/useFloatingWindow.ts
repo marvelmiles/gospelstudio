@@ -29,7 +29,7 @@ interface FloatingWindowOptions {
   margin?: number;
   estimatedHeight?: number;
   offsetIndex?: number;
-  elementRef?: RefObject<HTMLDivElement>;
+  elementRef?: RefObject<HTMLDivElement | null>;
 }
 
 export interface FloatingWindowHandleProps {
@@ -48,7 +48,7 @@ export interface FloatingWindowStash {
 }
 
 interface FloatingWindow {
-  ref: RefObject<HTMLDivElement>;
+  ref: RefObject<HTMLDivElement | null>;
   position: FloatingWindowPosition;
   dragging: boolean;
   stash: FloatingWindowStash;

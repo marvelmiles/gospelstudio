@@ -1,3 +1,4 @@
+import { useValueChange } from "@/hooks/useValueChange";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
@@ -9,13 +10,14 @@ import {
 } from "lucide-react";
 import type { BibleVersionId } from "../../types";
 import { BIBLE_VERSIONS, bookById } from "../../data/bibleBooks";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
-import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
-import { PillTabs } from "../../components/ui/PillTabs";
-import { Button, IconButton } from "../../components/ui/Button";
-import { Select } from "../../components/ui/Field";
+import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
+import { PillTabs } from "@/components/shared/PillTabs";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { OptionSelect } from "@/components/shared/OptionSelect";
 import { BibleReader } from "./BibleReader";
 import { SavedPassages } from "./SavedPassages";
 import { BooksStep } from "./BooksStep";
@@ -71,10 +73,11 @@ export const BiblePage = () => {
   } | null;
   const readTarget = arrivalState?.read;
   const tabTarget = arrivalState?.tab;
-  useEffect(() => {
-    if (!readTarget && !tabTarget) return;
-    if (tabTarget) setTab(tabTarget);
-    if (readTarget) {
+  useValueChange(
+    arrivalState,
+    () => {
+      if (tabTarget) setTab(tabTarget);
+      if (!readTarget) return;
       setReadingPosition({
         bookId: readTarget.bookId,
         chapter: readTarget.chapter,
@@ -82,9 +85,13 @@ export const BiblePage = () => {
       });
       setFocusVerse(readTarget.verse ?? 1);
       setStep("read");
-    }
-    navigate(location.pathname, { replace: true, state: null });
-  }, [readTarget, tabTarget, navigate, location.pathname]);
+    },
+    { onMount: true },
+  );
+  useEffect(() => {
+    if (arrivalState)
+      navigate(location.pathname, { replace: true, state: null });
+  }, [arrivalState, navigate, location.pathname]);
 
   const book = bookById(readingPosition.bookId);
   const savedCount = scriptures.filter((s) => !s.quick && !s.deleted).length;
@@ -147,13 +154,15 @@ export const BiblePage = () => {
   const crumbClassName = (current: boolean) =>
     cn(
       "border-none bg-transparent px-0.5 py-1 text-[13.5px] font-semibold",
-      current ? "cursor-default text-accent-soft" : "text-sub",
+      current ? "cursor-default text-primary-soft" : "text-muted-foreground",
     );
-  const crumbSep = <ChevronRight size={13} className="shrink-0 text-dim" />;
+  const crumbSep = (
+    <ChevronRight size={13} className="shrink-0 text-subtle-foreground" />
+  );
 
   const readView = (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mb-3.5 flex flex-wrap items-center gap-2 border-b border-line pb-3">
+      <div className="mb-3.5 flex flex-wrap items-center gap-2 border-b border-border pb-3">
         {step !== "books" && (
           <IconButton icon={ArrowLeft} title="Back" onClick={goBack} />
         )}
@@ -204,10 +213,10 @@ export const BiblePage = () => {
         </div>
         <span className="flex-1" />
         <div className="w-57.5 max-w-full">
-          <Select
+          <OptionSelect
             value={prefs.bibleVersion}
             options={versionOptions}
-            onChange={(e) => setBibleVersion(e.target.value as BibleVersionId)}
+            onValueChange={(next) => setBibleVersion(next as BibleVersionId)}
           />
         </div>
       </div>
@@ -277,7 +286,7 @@ export const BiblePage = () => {
             />
             {tab === "saved" && (
               <Button
-                variant={trashView ? "primary" : "ghost"}
+                variant={trashView ? "default" : "secondary"}
                 onClick={() => setTrashView((v) => !v)}
               >
                 <Trash2 size={15} />

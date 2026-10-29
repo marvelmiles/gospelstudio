@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { MonitorSmartphone, RotateCcw } from "lucide-react";
 import { useStore } from "../../../store/useStore";
-import { Button } from "../../../components/ui/Button";
-import { Spinner } from "../../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { CodeExchangePanes, ReadCode, ShowCode } from "../CodeExchange";
 import { StreamStatusLine } from "../components/StreamStatusLine";
 import type { PeerStatus } from "../lib/peerStatus";
@@ -40,7 +40,7 @@ export const ManualReceiverPanel = ({
   const statusRef = useRef<PeerStatus>("idle");
   const hasBeenLiveRef = useRef(false);
   const isAdoptedRef = useRef(false);
-  const cameraId = useRef(`paired-${crypto.randomUUID()}`).current;
+  const [cameraId] = useState(() => `paired-${crypto.randomUUID()}`);
   const isPaired = Boolean(findCamera(session, cameraId));
 
   useEffect(() => {
@@ -177,12 +177,12 @@ export const ManualReceiverPanel = ({
 
       <div className="mt-4.5 flex gap-2.5">
         {onUseOneTap && (
-          <Button variant="ghost" size="sm" onClick={onUseOneTap}>
+          <Button variant="secondary" size="sm" onClick={onUseOneTap}>
             <MonitorSmartphone size={14} />
             Quick connect
           </Button>
         )}
-        <Button variant="ghost" size="sm" onClick={onBack}>
+        <Button variant="secondary" size="sm" onClick={onBack}>
           <RotateCcw size={14} />
           Back
         </Button>

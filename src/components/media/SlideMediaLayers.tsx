@@ -1,9 +1,9 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import type { CSSProperties } from "react";
 import type { SlideMedia } from "../../types";
 import { useSlideMediaFile } from "../../hooks/useSlideMediaFile";
 import { buildFilter } from "../../lib/media";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { placedImageSettings, placedVideoSettings } from "../../lib/slideMedia";
 import { ImageLayer } from "./ImageLayer";
 
@@ -78,14 +78,15 @@ const PlacedVideo = ({
   const url = file.url;
   const videoRef = useRef<HTMLVideoElement>(null);
   const settings = placedVideoSettings(media);
-  const settingsRef = useRef(settings);
-  settingsRef.current = settings;
+  const resetToTrimStart = useEffectEvent((element: HTMLVideoElement) => {
+    element.currentTime = settings.trimStart;
+    element.playbackRate = settings.playbackRate;
+  });
 
   useEffect(() => {
     const element = videoRef.current;
     if (!element || !url || controls) return;
-    element.currentTime = settingsRef.current.trimStart;
-    element.playbackRate = settingsRef.current.playbackRate;
+    resetToTrimStart(element);
     if (live) void element.play().catch(() => {});
     else element.pause();
   }, [url, live, controls]);
@@ -100,7 +101,7 @@ const PlacedVideo = ({
   const handleTimeUpdate = () => {
     const element = videoRef.current;
     if (!element) return;
-    const { trimStart, trimEnd, loop } = settingsRef.current;
+    const { trimStart, trimEnd, loop } = settings;
     if (trimEnd === null || element.currentTime < trimEnd) return;
     if (loop) {
       element.currentTime = trimStart;
@@ -112,8 +113,8 @@ const PlacedVideo = ({
 
   const handleEnded = () => {
     const element = videoRef.current;
-    if (!element || !settingsRef.current.loop) return;
-    element.currentTime = settingsRef.current.trimStart;
+    if (!element || !settings.loop) return;
+    element.currentTime = settings.trimStart;
     void element.play().catch(() => {});
   };
 

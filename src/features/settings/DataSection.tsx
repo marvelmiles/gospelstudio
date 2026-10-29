@@ -11,10 +11,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { ImportMode } from "../../types";
 import { useStore } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { SectionTitle } from "../../components/ui/Field";
-import { ProgressBar } from "../../components/ui/ProgressBar";
+import { Button } from "@/components/ui/button";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { SectionTitle } from "@/components/shared/Field";
+import { ProgressBar } from "@/components/shared/ProgressBar";
 import routes from "../../routes";
 
 const EXPORT_SETTLE_MS = 450;
@@ -121,7 +121,6 @@ export const DataSection = () => {
 
       <div className="flex flex-wrap gap-2.5">
         <Button
-          variant="primary"
           onClick={runExport}
           busy={busyWith === "export"}
           disabled={busyWith === "import"}
@@ -130,7 +129,7 @@ export const DataSection = () => {
           Export Data
         </Button>
         <Button
-          variant="ghost"
+          variant="secondary"
           onClick={() => setIsChoosingMode((open) => !open)}
           busy={busyWith === "import"}
           disabled={busyWith === "export"}
@@ -139,7 +138,7 @@ export const DataSection = () => {
           Import Data
         </Button>
         <Button
-          variant="ghost"
+          variant="secondary"
           disabled={Boolean(busyWith)}
           onClick={() => {
             closeOverlay();
@@ -172,15 +171,15 @@ export const DataSection = () => {
                 pendingMode.current = option.mode;
                 fileInputRef.current?.click();
               }}
-              className="flex flex-col gap-2 rounded-xl border border-line bg-raise p-3.5 text-left"
+              className="flex flex-col gap-2 rounded-xl border border-border bg-secondary p-3.5 text-left"
             >
-              <div className="grid size-8.5 place-items-center rounded-[9px] bg-accent/14 text-accent-soft">
+              <div className="grid size-8.5 place-items-center rounded-[9px] bg-primary/14 text-primary-soft">
                 <option.icon size={17} />
               </div>
-              <div className="text-[13.5px] font-semibold text-fg">
+              <div className="text-[13.5px] font-semibold text-foreground">
                 {option.title}
               </div>
-              <div className="text-xs leading-[1.45] text-sub">
+              <div className="text-xs leading-[1.45] text-muted-foreground">
                 {option.description}
               </div>
             </button>
@@ -189,7 +188,7 @@ export const DataSection = () => {
       )}
 
       {isMemoryFallback() && (
-        <p className="mt-3 mb-0 text-xs text-danger opacity-85">
+        <p className="mt-3 mb-0 text-xs text-destructive opacity-85">
           Memory-only storage: data won&apos;t survive a refresh.
         </p>
       )}

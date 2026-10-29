@@ -27,7 +27,7 @@ export const ThemePreviewPanel = ({
       />
     </div>
 
-    <div className="mx-auto mt-4.5 flex w-full max-w-205 items-center justify-center gap-1.5 text-center text-[12.5px] text-sub">
+    <div className="mx-auto mt-4.5 flex w-full max-w-205 items-center justify-center gap-1.5 text-center text-[12.5px] text-muted-foreground">
       A sample slide, so you can see the theme as the congregation will.
     </div>
   </div>

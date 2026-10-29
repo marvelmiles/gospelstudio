@@ -53,7 +53,7 @@ export const StreamOverlayLayers = ({
         <div
           key={overlay.id}
           style={boxStyle(overlay)}
-          className="@container-[size] absolute overflow-hidden"
+          className="@container-size absolute overflow-hidden"
         >
           {isMarquee(overlay) ? (
             <MarqueeLayer overlay={overlay} />

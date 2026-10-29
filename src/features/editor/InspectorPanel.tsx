@@ -22,11 +22,10 @@ import {
   slideElementsTitle,
 } from "../../lib/slideElements";
 import type { SlideElementCapabilities } from "../../lib/slideElements";
-import { Button } from "../../components/ui/Button";
-import { inputClassName, SectionTitle } from "../../components/ui/Field";
-import { cn } from "../../lib/cn";
-import { PillTabs } from "../../components/ui/PillTabs";
-import { InfoTip } from "../../components/ui/InfoTip";
+import { Button } from "@/components/ui/button";
+import { SectionTitle } from "@/components/shared/Field";
+import { PillTabs } from "@/components/shared/PillTabs";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { StyleControls } from "../../components/controls/StyleControls";
 import { BackgroundPicker } from "../../components/controls/BackgroundPicker";
 import { AudioPicker } from "../../components/controls/AudioPicker";
@@ -38,6 +37,7 @@ import type { SlideElementRef } from "./SlideElementOverlay";
 import type { DeckEditor } from "./useDeckEditor";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import { useOpenAssetLibrary } from "../assets/assetLibraryNavigation";
+import { Textarea } from "@/components/ui/textarea";
 
 interface InspectorPanelProps {
   editor: DeckEditor;
@@ -270,7 +270,8 @@ export const InspectorPanel = ({
             onChange={(scope) => onScopeToLine(scope === "line")}
           />
           {lineMode && hasLineOverrides && (
-            <button
+            <Button
+              variant="link"
               onClick={() =>
                 editor.clearLineStyles(slide.id, activeTextBoxId, selectedLine)
               }
@@ -279,10 +280,10 @@ export const InspectorPanel = ({
                   ? "Reset this line to the box's style"
                   : "Reset this line to the slide's style"
               }
-              className="border-none bg-transparent p-0 text-[11.5px] text-sub underline"
+              className="h-auto p-0 text-[11.5px] font-normal text-muted-foreground underline"
             >
               Reset line
-            </button>
+            </Button>
           )}
         </div>
       )}
@@ -363,7 +364,7 @@ export const InspectorPanel = ({
       />
 
       <SectionTitle>Presenter Notes</SectionTitle>
-      <textarea
+      <Textarea
         value={slide.notes || ""}
         onChange={(e) =>
           editor.updateSlide(
@@ -373,13 +374,13 @@ export const InspectorPanel = ({
           )
         }
         placeholder="Notes for the presenter (cues, transitions…)"
-        className={cn(inputClassName, "min-h-17.5 resize-y text-[13px]")}
+        className="min-h-17.5 resize-y text-[13px]"
       />
 
       <div className="mt-3.5 flex flex-wrap gap-1.5">
         <Button
           size="sm"
-          variant="ghost"
+          variant="secondary"
           onClick={() => editor.duplicateSlide(selectedIndex)}
         >
           <Copy size={13} />
@@ -387,14 +388,14 @@ export const InspectorPanel = ({
         </Button>
         <Button
           size="sm"
-          variant="ghost"
+          variant="secondary"
           onClick={() => editor.splitSlide(selectedIndex)}
         >
           Split
         </Button>
         <Button
           size="sm"
-          variant="ghost"
+          variant="secondary"
           onClick={() => editor.mergeSlideDown(selectedIndex)}
         >
           <ArrowDownToLine size={13} />
@@ -402,7 +403,7 @@ export const InspectorPanel = ({
         </Button>
         <Button
           size="sm"
-          variant="danger"
+          variant="destructive"
           onClick={() => editor.removeSlide(selectedIndex)}
         >
           <Trash2 size={13} />
@@ -431,7 +432,7 @@ const ScopeTabs = ({ documentNoun, value, onChange }: ScopeTabsProps) => (
 );
 
 const ScopeBanner = ({ children }: { children: ReactNode }) => (
-  <div className="mb-2.5 flex items-center justify-between gap-1.5 rounded-[9px] border border-accent/30 bg-accent/10 py-1.25 pr-1.5 pl-2.25 text-xs leading-normal text-accent-soft">
+  <div className="mb-2.5 flex items-center justify-between gap-1.5 rounded-[9px] border border-primary/30 bg-primary/10 py-1.25 pr-1.5 pl-2.25 text-xs leading-normal text-primary-soft">
     {children}
   </div>
 );

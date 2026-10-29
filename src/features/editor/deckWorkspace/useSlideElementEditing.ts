@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
 import { createSlideTextBox } from "../../../lib/slideTextBox";
 import type { DeckEditor } from "../useDeckEditor";
 import type {
@@ -14,10 +15,10 @@ export const useSlideElementEditing = (
     useState<SlideElementRef | null>(null);
   const [pickedTextBoxId, setPickedTextBoxId] = useState<string | null>(null);
 
-  useEffect(() => {
+  useValueChange(slideId, () => {
     setSelectedElement(null);
     setPickedTextBoxId(null);
-  }, [slideId]);
+  });
 
   const selectElement = (element: SlideElementRef | null) => {
     setSelectedElement(element);

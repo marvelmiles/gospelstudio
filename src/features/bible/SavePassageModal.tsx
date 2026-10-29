@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
+import { useState } from "react";
 import { BookmarkPlus } from "lucide-react";
 import type { ScriptureSelection } from "../../store/useStore";
-import { Modal } from "../../components/ui/Modal";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { Button } from "../../components/ui/Button";
-import { Field, Range, Toggle } from "../../components/ui/Field";
+import { Modal } from "@/components/shared/Modal";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { SwitchField } from "@/components/shared/SwitchField";
 import { formatReference } from "./lib/reference";
 
 interface SavePassageModalProps {
@@ -26,12 +29,12 @@ export const SavePassageModal = ({
   const [showVerseNumbers, setShowVerseNumbers] = useState(true);
   const [showReference, setShowReference] = useState(true);
 
-  useEffect(() => {
-    if (!selection) return;
+  useValueChange(selection, (next) => {
+    if (!next) return;
     setVersesPerSlide(1);
     setShowVerseNumbers(true);
     setShowReference(true);
-  }, [selection]);
+  });
 
   if (!selection) return null;
   const slideCount = Math.ceil(
@@ -52,9 +55,10 @@ export const SavePassageModal = ({
       }
       footer={
         <>
-          <Button onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
           <Button
-            variant="primary"
             onClick={() =>
               onSave(versesPerSlide, showVerseNumbers, showReference)
             }
@@ -68,21 +72,21 @@ export const SavePassageModal = ({
       <Field
         label={`Verses per slide (${versesPerSlide}), makes ${slideCount} slide${slideCount === 1 ? "" : "s"}`}
       >
-        <Range
+        <RangeSlider
           value={versesPerSlide}
           min={1}
           max={6}
-          onChange={(e) => setVersesPerSlide(Number(e.target.value))}
+          onValueChange={(next) => setVersesPerSlide(next)}
         />
       </Field>
       <div className="mb-2.5">
-        <Toggle
+        <SwitchField
           label="Show verse numbers"
           checked={showVerseNumbers}
           onChange={setShowVerseNumbers}
         />
       </div>
-      <Toggle
+      <SwitchField
         label="Show reference on each slide"
         checked={showReference}
         onChange={setShowReference}

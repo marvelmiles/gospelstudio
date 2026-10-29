@@ -1,4 +1,5 @@
-import type { AppAlert, Toast } from "../../types";
+import { toast } from "sonner";
+import type { AppAlert, ToastKind } from "../../types";
 import { uid } from "../../lib/id";
 import { missingCapabilities } from "../../lib/capabilities";
 import type { SliceCreator } from "../storeTypes";
@@ -14,7 +15,6 @@ export interface UiSlice {
   overlay: OverlayName | null;
   overlayContext: string | null;
   overlaySectionLocked: boolean;
-  toasts: Toast[];
   alerts: AppAlert[];
   showGuide: boolean;
   goLiveTipOpen: boolean;
@@ -25,8 +25,7 @@ export interface UiSlice {
     options?: OverlayOptions,
   ) => void;
   closeOverlay: () => void;
-  pushToast: (message: string, kind?: Toast["kind"]) => void;
-  dismissToast: (id: string) => void;
+  pushToast: (message: string, kind?: ToastKind) => void;
   pushAlert: (message: string, kind?: AppAlert["kind"], key?: string) => void;
   dismissAlert: (id: string) => void;
   clearAlert: (key: string) => void;
@@ -40,7 +39,6 @@ export const createUiSlice: SliceCreator<UiSlice> = (set, get) => ({
   overlay: null,
   overlayContext: null,
   overlaySectionLocked: false,
-  toasts: [],
   alerts: [],
   showGuide: false,
   goLiveTipOpen: false,
@@ -54,12 +52,10 @@ export const createUiSlice: SliceCreator<UiSlice> = (set, get) => ({
   closeOverlay: () =>
     set({ overlay: null, overlayContext: null, overlaySectionLocked: false }),
 
-  pushToast: (message, kind = "success") =>
-    set((state) => ({
-      toasts: [...state.toasts, { id: uid(), message, kind }],
-    })),
-  dismissToast: (id) =>
-    set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) })),
+  pushToast: (message, kind = "success") => {
+    if (kind === "error") toast.error(message);
+    else toast.success(message);
+  },
 
   pushAlert: (message, kind = "warning", key) =>
     set((state) => {

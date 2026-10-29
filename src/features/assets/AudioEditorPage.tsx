@@ -1,4 +1,6 @@
 import { useCallback, useMemo, useRef } from "react";
+import type { MediaSurfaceHandle } from "@/hooks/useMediaElementPlayback";
+import { useLastDefined } from "@/hooks/useLastDefined";
 import { useNavigate, useParams } from "react-router-dom";
 import { Music, Undo2 } from "lucide-react";
 import type { AudioItem, AudioSettings } from "../../types";
@@ -16,7 +18,7 @@ import {
   UNSAVED_CHANGES_MESSAGE,
 } from "../../hooks/useUnsavedChanges";
 import { shallowEqual } from "../../lib/equality";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import {
   audioSettingsOf,
   DEFAULT_AUDIO_SETTINGS,
@@ -25,9 +27,10 @@ import {
 import { settingsGrouping } from "../../lib/settingsHistory";
 import { formatBytes } from "../../lib/storageStats";
 import { validateName } from "../../lib/validation";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { MissingPage } from "../../components/ui/MissingPage";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { MissingPage } from "@/components/shared/MissingPage";
 import { EditorSplitLayout } from "../../components/layout/EditorSplitLayout";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
 import { AudioPreviewCard } from "../../components/media/AudioPreviewCard";
@@ -53,10 +56,9 @@ export const AudioEditorPage = () => {
   const item = useStore((s) =>
     s.audio.find((entry) => entry.id === audioId && !entry.builtIn),
   );
-  const lastRef = useRef(item);
-  if (item) lastRef.current = item;
+  const shown = useLastDefined(item);
 
-  if (!lastRef.current)
+  if (!shown)
     return (
       <MissingPage
         icon={Music}
@@ -67,7 +69,7 @@ export const AudioEditorPage = () => {
       />
     );
 
-  return <AudioWorkspace key={lastRef.current.id} item={lastRef.current} />;
+  return <AudioWorkspace key={shown.id} item={shown} />;
 };
 
 const AudioWorkspace = ({ item }: { item: AudioItem }) => {
@@ -100,7 +102,10 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
   });
   useDocumentTitle(draft.name);
 
-  const player = useMediaPlayback(settings, { autoPlay: false });
+  const playerSurfaceRef = useRef<MediaSurfaceHandle>(null);
+  const player = useMediaPlayback(playerSurfaceRef, settings, {
+    autoPlay: false,
+  });
   const duration = item.duration || player.duration || 0;
   const trimEnd = settings.trimEnd ?? duration;
 
@@ -191,7 +196,7 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
           className="w-full"
         />
         <AudioSurface
-          ref={player.surfaceRef}
+          ref={playerSurfaceRef}
           item={item}
           settings={settings}
           loop={loopAudio}
@@ -205,7 +210,7 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
 
   const sidebar = (
     <div className="p-4.5">
-      <p className="mt-0 mb-1 text-xs leading-[1.6] text-dim">
+      <p className="mt-0 mb-1 text-xs leading-[1.6] text-subtle-foreground">
         {formatBytes(item.size || 0)}
         {duration ? ` · ${formatTrimmedDuration(duration, settings)}` : ""}
       </p>
@@ -237,7 +242,7 @@ const AudioWorkspace = ({ item }: { item: AudioItem }) => {
             />
           ) : (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               title={resetTitle(canReset)}
               disabled={!canReset}

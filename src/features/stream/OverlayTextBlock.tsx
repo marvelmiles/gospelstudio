@@ -3,7 +3,7 @@ import type { Align } from "../../types";
 import { useStore } from "../../store/useStore";
 import { ANIMATION_VARIANTS, buildTransition } from "../../lib/animation";
 import { FormattedText } from "../../components/FormattedText";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { OverlayPicture } from "./OverlayPicture";
 import {
   BADGE_GAP_RATIO,

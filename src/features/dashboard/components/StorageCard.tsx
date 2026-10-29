@@ -1,6 +1,6 @@
 import { HardDrive } from "lucide-react";
 import { getStorageLabel, type StorageInfo } from "../../../lib/storageStats";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 
 interface StorageCardProps {
   storage: StorageInfo;
@@ -11,13 +11,13 @@ const LEVEL_CLASSES: Record<
   { badge: string; bar: string; summary: string }
 > = {
   critical: {
-    badge: "bg-danger/14 text-danger",
-    bar: "bg-danger",
+    badge: "bg-destructive/14 text-destructive",
+    bar: "bg-destructive",
     summary: "Critical: free up space soon",
   },
   warn: {
     badge: "bg-warning/14 text-warning",
-    bar: "bg-accent",
+    bar: "bg-primary",
     summary: "Storage is filling up",
   },
   ok: {
@@ -42,8 +42,10 @@ export const StorageCard = ({ storage }: StorageCardProps) => {
             <HardDrive size={19} />
           </div>
           <div className="min-w-0">
-            <div className="text-sm font-semibold text-fg">Storage used</div>
-            <div className="mt-0.5 text-xs text-sub">
+            <div className="text-sm font-semibold text-foreground">
+              Storage used
+            </div>
+            <div className="mt-0.5 text-xs text-muted-foreground">
               {storage.blocked
                 ? "Storage full. Delete manuscripts, audio or backgrounds to continue"
                 : level.summary}
@@ -54,17 +56,19 @@ export const StorageCard = ({ storage }: StorageCardProps) => {
           <div
             className={cn(
               "text-[22px] leading-none font-semibold",
-              storage.level === "critical" ? "text-danger" : "text-fg",
+              storage.level === "critical"
+                ? "text-destructive"
+                : "text-foreground",
             )}
           >
             {Math.min(100, Math.round(storage.pct * 100))}%
           </div>
-          <div className="mt-1 text-[11.5px] text-dim">
+          <div className="mt-1 text-[11.5px] text-subtle-foreground">
             {getStorageLabel(storage)}
           </div>
         </div>
       </div>
-      <div className="mt-3.25 h-2.25 overflow-hidden rounded-full bg-track">
+      <div className="mt-3.25 h-2.25 overflow-hidden rounded-full bg-muted">
         <div
           style={{ width: `${Math.max(2, Math.min(100, storage.pct * 100))}%` }}
           className={cn(

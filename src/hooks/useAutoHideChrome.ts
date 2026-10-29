@@ -21,7 +21,7 @@ export const useAutoHideChrome = ({
   surfaceRef,
 }: AutoHideChromeOptions = {}): AutoHideChrome => {
   const [awake, setAwake] = useState(true);
-  const timer = useRef<number>();
+  const timer = useRef<number | undefined>(undefined);
   const hovering = useRef(false);
 
   const [wasEnabled, setWasEnabled] = useState(enabled);

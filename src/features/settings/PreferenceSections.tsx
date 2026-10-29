@@ -1,12 +1,9 @@
 import type { EasingKind, PresentationView, Prefs, Theme } from "../../types";
-import { InfoTip } from "../../components/ui/InfoTip";
-import {
-  Field,
-  Range,
-  Select,
-  SectionTitle,
-  Toggle,
-} from "../../components/ui/Field";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { SwitchField } from "@/components/shared/SwitchField";
 import { AnimationPicker } from "../../components/controls/AnimationPicker";
 
 const VIEW_OPTIONS = [
@@ -34,32 +31,32 @@ export const PresentationSection = ({
   <>
     <SectionTitle>Presentation</SectionTitle>
     <Field label="Default screen fit">
-      <Select
+      <OptionSelect
         value={prefs.presentationView}
         options={VIEW_OPTIONS}
-        onChange={(event) =>
+        onValueChange={(next) =>
           onChange({
-            presentationView: event.target.value as PresentationView,
+            presentationView: next as PresentationView,
           })
         }
       />
     </Field>
     <div className="mb-3.5">
-      <Toggle
+      <SwitchField
         label="Show presenter bar"
         checked={prefs.showPresenterBar}
         onChange={(checked) => onChange({ showPresenterBar: checked })}
       />
     </div>
     <div className="mb-2.5">
-      <Toggle
+      <SwitchField
         label="Auto-hide controls on mouse leave"
         checked={prefs.autoHideControls}
         onChange={(checked) => onChange({ autoHideControls: checked })}
       />
     </div>
     <div className="mb-3.5">
-      <Toggle
+      <SwitchField
         label="Auto-hide presenter bar on mouse leave"
         checked={prefs.autoHidePresenterBar}
         onChange={(checked) => onChange({ autoHidePresenterBar: checked })}
@@ -90,21 +87,17 @@ export const DefaultThemesSection = ({
         Default Themes
       </SectionTitle>
       <Field label="Manuscripts">
-        <Select
+        <OptionSelect
           value={prefs.defaultManuscriptThemeId}
           options={themeOptions}
-          onChange={(event) =>
-            onChange({ defaultManuscriptThemeId: event.target.value })
-          }
+          onValueChange={(next) => onChange({ defaultManuscriptThemeId: next })}
         />
       </Field>
       <Field label="Bible">
-        <Select
+        <OptionSelect
           value={prefs.defaultScriptureThemeId}
           options={themeOptions}
-          onChange={(event) =>
-            onChange({ defaultScriptureThemeId: event.target.value })
-          }
+          onValueChange={(next) => onChange({ defaultScriptureThemeId: next })}
         />
       </Field>
     </>
@@ -125,24 +118,20 @@ export const TransitionsSection = ({
       }
     />
     <Field label={`Duration (${prefs.transitionDuration}ms)`}>
-      <Range
+      <RangeSlider
         value={prefs.transitionDuration}
         min={150}
         max={1500}
         step={50}
         suffix="ms"
-        onChange={(event) =>
-          onChange({ transitionDuration: Number(event.target.value) })
-        }
+        onValueChange={(next) => onChange({ transitionDuration: next })}
       />
     </Field>
     <Field label="Easing">
-      <Select
+      <OptionSelect
         value={prefs.easing}
         options={EASING_OPTIONS}
-        onChange={(event) =>
-          onChange({ easing: event.target.value as EasingKind })
-        }
+        onValueChange={(next) => onChange({ easing: next as EasingKind })}
       />
     </Field>
   </>
@@ -152,18 +141,16 @@ export const AudioSection = ({ prefs, onChange }: PreferenceSectionProps) => (
   <>
     <SectionTitle>Audio</SectionTitle>
     <Field label={`Background audio volume (${prefs.backgroundVolume}%)`}>
-      <Range
+      <RangeSlider
         value={prefs.backgroundVolume}
         min={0}
         max={100}
         suffix="%"
-        onChange={(event) =>
-          onChange({ backgroundVolume: Number(event.target.value) })
-        }
+        onValueChange={(next) => onChange({ backgroundVolume: next })}
       />
     </Field>
     <div className="mb-1.5">
-      <Toggle
+      <SwitchField
         label="Loop background audio"
         checked={prefs.loopAudio}
         onChange={(checked) => onChange({ loopAudio: checked })}

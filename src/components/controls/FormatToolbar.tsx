@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { MouseEvent } from "react";
+import type { ComponentProps, MouseEvent } from "react";
 import {
   Bold,
   ChevronDown,
@@ -14,8 +14,15 @@ import {
   Underline,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "../../lib/cn";
-import { Popover } from "../ui/Popover";
+import { cn } from "../../lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import { Toggle } from "@/components/ui/toggle";
 import { INLINE_FORMATS } from "../../lib/textFormatting";
 import type { InlineFormatName } from "../../lib/textFormatting";
 import { LIST_KIND_LABELS, ORDERED_LIST_KINDS } from "../../lib/lists";
@@ -67,7 +74,7 @@ export const FormatToolbar = ({
       aria-label="Text formatting"
       className={cn(
         "flex flex-wrap items-center gap-1",
-        block && "rounded-[10px] border border-line bg-raise p-1.5",
+        block && "rounded-[10px] border border-border bg-secondary p-1.5",
         !controller.ready && "opacity-50",
         className,
       )}
@@ -79,7 +86,7 @@ export const FormatToolbar = ({
           label={`${INLINE_FORMATS[name].label} (${INLINE_FORMATS[name].shortcutHint})`}
           active={controller.isActive(name)}
           disabled={!controller.ready}
-          onClick={() => controller.toggle(name)}
+          onToggle={() => controller.toggle(name)}
         />
       ))}
 
@@ -90,21 +97,17 @@ export const FormatToolbar = ({
         label={LIST_KIND_LABELS.bullet}
         active={list.kind === "bullet"}
         disabled={!controller.ready}
-        onClick={() => controller.toggleList("bullet")}
+        onToggle={() => controller.toggleList("bullet")}
       />
       <FormatButton
         icon={ListOrdered}
         label={LIST_KIND_LABELS.decimal}
         active={list.kind === "decimal"}
         disabled={!controller.ready}
-        onClick={() => controller.toggleList("decimal")}
+        onToggle={() => controller.toggleList("decimal")}
       />
-      <Popover
-        open={listMenu}
-        onOpenChange={setListMenu}
-        disabled={!controller.ready}
-        align="start"
-        trigger={
+      <Popover open={listMenu} onOpenChange={setListMenu}>
+        <PopoverTrigger asChild disabled={!controller.ready}>
           <FormatButton
             icon={ChevronDown}
             label="More list styles"
@@ -116,28 +119,35 @@ export const FormatToolbar = ({
             }
             disabled={!controller.ready}
           />
-        }
-      >
-        <ListStyleMenu
-          active={list.kind}
-          onPick={(kind) => {
-            controller.toggleList(kind);
-            setListMenu(false);
-          }}
-        />
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          role="menu"
+          onOpenAutoFocus={(event) => event.preventDefault()}
+          onCloseAutoFocus={(event) => event.preventDefault()}
+          className="w-auto min-w-52 p-1.5"
+        >
+          <ListStyleMenu
+            active={list.kind}
+            onPick={(kind) => {
+              controller.toggleList(kind);
+              setListMenu(false);
+            }}
+          />
+        </PopoverContent>
       </Popover>
 
       <FormatButton
         icon={IndentDecrease}
         label="Decrease indent (Shift+Tab)"
         disabled={!controller.ready || list.level === 0}
-        onClick={controller.outdent}
+        onToggle={controller.outdent}
       />
       <FormatButton
         icon={IndentIncrease}
         label="Increase indent (Tab)"
         disabled={!controller.ready}
-        onClick={controller.indent}
+        onToggle={controller.indent}
       />
 
       <Divider />
@@ -146,14 +156,17 @@ export const FormatToolbar = ({
         icon={RemoveFormatting}
         label="Clear formatting"
         disabled={!controller.ready}
-        onClick={controller.clear}
+        onToggle={controller.clear}
       />
     </div>
   );
 };
 
 const Divider = () => (
-  <span aria-hidden className="mx-0.75 h-4.5 w-px bg-line" />
+  <Separator
+    orientation="vertical"
+    className="mx-0.75 data-[orientation=vertical]:h-4.5"
+  />
 );
 
 interface ListStyleMenuProps {
@@ -162,43 +175,43 @@ interface ListStyleMenuProps {
 }
 
 const ListStyleMenu = ({ active, onPick }: ListStyleMenuProps) => (
-  <div
-    role="menu"
-    className="min-w-52 rounded-xl border border-line bg-panel-solid p-1.5 shadow-[0_18px_44px_rgb(0_0_0/0.45)]"
-  >
+  <>
     {ORDERED_LIST_KINDS.map((kind) => {
       const selected = active === kind;
       return (
-        <button
+        <Button
           key={kind}
+          variant="ghost"
+          size="sm"
           role="menuitemradio"
           aria-checked={selected}
           onMouseDown={(event: MouseEvent) => event.preventDefault()}
           onClick={() => onPick(kind)}
           className={cn(
-            "flex w-full items-center justify-between gap-3 rounded-lg border-none px-2.5 py-2 text-left text-[13px]",
-            selected
-              ? "bg-accent/16 text-accent-soft"
-              : "bg-transparent text-fg hover:bg-raise",
+            "w-full justify-between gap-3 text-[13px] font-normal",
+            selected ? "bg-primary/16 text-primary-soft" : "text-foreground",
           )}
         >
           {LIST_KIND_LABELS[kind]}
-          <span className="text-xs text-dim tabular-nums">
+          <span className="text-xs text-subtle-foreground tabular-nums">
             {LIST_SAMPLES[kind]}
           </span>
-        </button>
+        </Button>
       );
     })}
-  </div>
+  </>
 );
 
-interface FormatButtonProps {
+interface FormatButtonProps extends Omit<
+  ComponentProps<typeof Toggle>,
+  "onToggle"
+> {
   icon: LucideIcon;
   label: string;
   active?: boolean;
   disabled?: boolean;
   narrow?: boolean;
-  onClick?: () => void;
+  onToggle?: () => void;
 }
 
 const FormatButton = ({
@@ -207,24 +220,20 @@ const FormatButton = ({
   active,
   disabled,
   narrow,
-  onClick,
+  onToggle,
+  ...props
 }: FormatButtonProps) => (
-  <button
-    type="button"
+  <Toggle
+    size="sm"
     title={label}
     aria-label={label}
-    aria-pressed={active}
+    pressed={Boolean(active)}
     disabled={disabled}
     onMouseDown={(event: MouseEvent) => event.preventDefault()}
-    onClick={onClick}
-    className={cn(
-      "inline-flex h-7.5 items-center justify-center rounded-lg border transition-all duration-150 disabled:cursor-not-allowed",
-      narrow ? "w-5.5" : "w-7.5",
-      active
-        ? "border-accent/32 bg-accent/18 text-accent-soft enabled:hover:bg-accent/24"
-        : "border-transparent bg-transparent text-sub enabled:hover:bg-raise",
-    )}
+    onPressedChange={() => onToggle?.()}
+    className={cn("h-7.5 min-w-0", narrow ? "w-5.5" : "w-7.5")}
+    {...props}
   >
-    <Icon size={15} />
-  </button>
+    <Icon className="size-3.75" />
+  </Toggle>
 );

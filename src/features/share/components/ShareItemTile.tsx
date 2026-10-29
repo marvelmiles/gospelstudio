@@ -1,10 +1,10 @@
 import type { KeyboardEvent } from "react";
 import { Check, Music, Settings } from "lucide-react";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 import { BgSwatch } from "../../../components/controls/BgSwatch";
 import { ImageSurface } from "../../../components/media/ImageSurface";
 import { VideoThumb } from "../../../components/media/VideoThumb";
-import { LazyMount } from "../../../components/ui/LazyMount";
+import { LazyMount } from "@/components/shared/LazyMount";
 import type { ShareItem, SharePreview } from "../../../lib/shareCatalog";
 
 interface ShareItemTileProps {
@@ -37,18 +37,18 @@ export const ShareItemTile = ({
       onKeyDown={onKeyDown}
       className={cn(
         "flex flex-col overflow-hidden rounded-xl border-[1.5px]",
-        picked ? "border-accent bg-accent/12" : "border-line bg-canvas",
+        picked ? "border-primary bg-primary/12" : "border-border bg-background",
         disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer",
       )}
     >
-      <div className="relative aspect-video w-full bg-raise">
+      <div className="relative aspect-video w-full bg-secondary">
         <ShareItemCover preview={item.preview} />
         <span
           aria-hidden
           className={cn(
             "absolute top-1.5 right-1.5 grid size-5.25 place-items-center rounded-[7px] border",
             picked
-              ? "border-accent bg-accent text-on-accent"
+              ? "border-primary bg-primary text-primary-foreground"
               : "border-white/35 bg-black/55 text-white/85",
           )}
         >
@@ -56,11 +56,11 @@ export const ShareItemTile = ({
         </span>
       </div>
       <div className="min-w-0 px-2.5 pt-2 pb-2.5">
-        <div className="truncate text-[12.5px] font-semibold text-fg">
+        <div className="truncate text-[12.5px] font-semibold text-foreground">
           {item.name}
         </div>
         {item.detail && (
-          <div className="mt-0.5 truncate text-[11px] text-dim">
+          <div className="mt-0.5 truncate text-[11px] text-subtle-foreground">
             {item.detail}
           </div>
         )}
@@ -118,7 +118,7 @@ const ShareItemCover = ({ preview }: { preview: SharePreview }) => {
           }}
           className={cn(
             coverTextClassName(Boolean(preview.background)),
-            "overflow-hidden px-2.5 py-2 text-[11px] leading-[1.35] text-fg",
+            "overflow-hidden px-2.5 py-2 text-[11px] leading-[1.35] text-foreground",
             theme?.uppercase && "uppercase",
           )}
         >
@@ -152,7 +152,7 @@ const ShareItemCover = ({ preview }: { preview: SharePreview }) => {
   }
 
   return (
-    <div className="absolute inset-0 grid place-items-center bg-accent/10 text-accent-soft">
+    <div className="absolute inset-0 grid place-items-center bg-primary/10 text-primary-soft">
       {preview.kind === "audio" ? <Music size={22} /> : <Settings size={22} />}
     </div>
   );

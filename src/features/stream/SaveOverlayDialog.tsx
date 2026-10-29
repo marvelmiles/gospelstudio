@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useStore } from "../../store/useStore";
-import { Modal } from "../../components/ui/Modal";
-import { Button } from "../../components/ui/Button";
-import { Field, TextInput } from "../../components/ui/Field";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { Field } from "@/components/shared/Field";
+import { Input } from "@/components/ui/input";
 import { validateName } from "../../lib/validation";
 import { suggestedPresetName } from "./lib/overlayPresets";
 import type { StreamOverlay } from "./lib/streamOverlay";
@@ -56,23 +57,25 @@ export const SaveOverlayDialog = ({
       width={430}
       footer={
         <>
-          <Button onClick={onClose}>Cancel</Button>
-          <Button variant="primary" onClick={save}>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={save}>
             {existing ? "Replace" : "Save overlay"}
           </Button>
         </>
       }
     >
-      <p className="mt-0 mb-3.5 text-[13px] leading-[1.6] text-sub">
+      <p className="mt-0 mb-3.5 text-[13px] leading-[1.6] text-muted-foreground">
         Its placement, styling and what it is showing are kept together, and any
         change you make to it from now on is saved too. Add it to any broadcast
         later from Saved.
       </p>
       <Field label="Name" error={showError ? error : null}>
-        <TextInput
+        <Input
           value={name}
           autoFocus
-          invalid={showError && Boolean(error)}
+          aria-invalid={showError && Boolean(error)}
           placeholder="Welcome announcement"
           onChange={(event) => setName(event.target.value)}
           onKeyDown={(event) => {

@@ -16,7 +16,8 @@ import {
   secondaryCameras,
   useStreamSession,
 } from "../stream/lib/streamSession";
-import { cameraPipWindow } from "../stream/StreamPipLayer";
+import { cameraPipWindow } from "../stream/lib/streamPipWindow";
+import { secondaryLabel } from "./lib/secondaryLabel";
 import { useStreamOverlays } from "../stream/lib/streamOverlayStore";
 import { usePresentation } from "./usePresentation";
 import { usePresentBroadcast } from "./lib/usePresentBroadcast";
@@ -32,16 +33,13 @@ import { Stage } from "./Stage";
 import { PresentationControls } from "./PresentationControls";
 import { PresenterBar } from "./PresenterBar";
 import { PresenterPip } from "./PresenterPip";
-import { PortalSlot } from "../../components/ui/PortalSlot";
-import {
-  SecondaryPipContent,
-  SecondaryPipFrame,
-  secondaryLabel,
-} from "./SecondaryPip";
+import { PortalSlot } from "@/components/shared/PortalSlot";
+import { SecondaryPipContent, SecondaryPipFrame } from "./SecondaryPip";
 import { SecondaryModuleMenu } from "./SecondaryModuleMenu";
 import { VideoSurface } from "../../components/media/VideoSurface";
 import { AudioSurface } from "../../components/media/AudioSurface";
 import { VideoTransportBar } from "../../components/media/VideoTransportBar";
+import type { MediaSurfaceHandle } from "../../hooks/useMediaElementPlayback";
 
 export const Presentation = () => {
   const pushToast = useStore((s) => s.pushToast);
@@ -67,7 +65,10 @@ export const Presentation = () => {
     [mode],
   );
 
-  const presentation = usePresentation(shortcutGate);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<MediaSurfaceHandle>(null);
+  const secondaryVideoRef = useRef<MediaSurfaceHandle>(null);
+  const presentation = usePresentation({ rootRef, videoRef, shortcutGate });
   const togglePopOut = useCallback(() => {
     if (mode === "pip") {
       setPresentationMode("stage");
@@ -90,7 +91,7 @@ export const Presentation = () => {
     isArmed: () => !isCoveredByStreamStage && shortcutGate(),
   });
   const streamOverlays = useStreamOverlays();
-  const secondary = useSecondaryModule();
+  const secondary = useSecondaryModule(secondaryVideoRef);
   const chrome = useAutoHideChrome({ enabled: mode === "stage" });
   const { visible: isChromeVisible, onHoverChange } = chrome;
 
@@ -251,7 +252,7 @@ export const Presentation = () => {
     presentation.frame.content.kind === "video"
       ? createPortal(
           <VideoSurface
-            ref={presentation.videoRef}
+            ref={videoRef}
             item={presentation.frame.content.item}
             playback={mediaPlayback}
             forceMuted={isLive}
@@ -279,7 +280,7 @@ export const Presentation = () => {
           secondary={secondary.state}
           stream={primaryCamera(streamSession)?.stream ?? null}
           playback={secondary.video.playback}
-          videoRef={secondary.video.surfaceRef}
+          videoRef={secondaryVideoRef}
           onVideoTime={secondary.video.onTimeUpdate}
           onVideoEnded={secondary.video.onEnded}
           forceMuted={isLive}
@@ -345,7 +346,7 @@ export const Presentation = () => {
       {videoLayer}
       {secondaryContent}
       <div
-        ref={presentation.rootRef}
+        ref={rootRef}
         style={stageBackgroundStyle(
           presentation.frame.backdrop,
           backdropBlobUrl,

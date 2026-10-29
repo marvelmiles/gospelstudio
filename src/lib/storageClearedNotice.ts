@@ -8,7 +8,7 @@ export const showStorageClearedNotice = (message: string): Promise<void> => {
 
   const card = document.createElement("div");
   card.className =
-    "w-full max-w-95 rounded-[18px] border border-line bg-panel-solid px-6 py-5.5 text-center text-sm leading-[1.7] text-fg shadow-overlay";
+    "w-full max-w-95 rounded-[18px] border border-border bg-card px-6 py-5.5 text-center text-sm leading-[1.7] text-foreground shadow-overlay";
   card.textContent = message;
 
   overlay.append(card);

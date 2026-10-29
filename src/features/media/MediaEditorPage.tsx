@@ -1,8 +1,10 @@
 import { useMemo, useRef } from "react";
+import type { MediaSurfaceHandle } from "@/hooks/useMediaElementPlayback";
+import { useLastDefined } from "@/hooks/useLastDefined";
 import { useNavigate, useParams } from "react-router-dom";
 import { Film, Image as ImageIcon, Undo2 } from "lucide-react";
 import type { MediaItem, MediaKind } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { useWindowSize } from "usehooks-ts";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
@@ -22,9 +24,10 @@ import { formatTrimmedDuration } from "../../lib/media";
 import { syncedPosition } from "../../lib/presentChannel";
 import { formatBytes } from "../../lib/storageStats";
 import { validateName } from "../../lib/validation";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { MissingPage } from "../../components/ui/MissingPage";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { MissingPage } from "@/components/shared/MissingPage";
 import { EditorSplitLayout } from "../../components/layout/EditorSplitLayout";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
 import { ImageLayer } from "../../components/media/ImageLayer";
@@ -52,10 +55,9 @@ const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
   const item = useStore((s) =>
     s.media.find((entry) => entry.id === mediaId && entry.kind === kind),
   );
-  const lastRef = useRef(item);
-  if (item) lastRef.current = item;
+  const shown = useLastDefined(item);
 
-  if (!lastRef.current)
+  if (!shown)
     return (
       <MissingPage
         icon={kind === "image" ? ImageIcon : Film}
@@ -66,7 +68,7 @@ const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
       />
     );
 
-  return <MediaWorkspace key={lastRef.current.id} item={lastRef.current} />;
+  return <MediaWorkspace key={shown.id} item={shown} />;
 };
 
 const MediaWorkspace = ({ item }: { item: MediaItem }) => {
@@ -97,7 +99,10 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
   useDocumentTitle(editor.draft.name);
 
   const videoSettings = editor.draft.video;
-  const video = useMediaPlayback(videoSettings, { autoPlay: false });
+  const videoSurfaceRef = useRef<MediaSurfaceHandle>(null);
+  const video = useMediaPlayback(videoSurfaceRef, videoSettings, {
+    autoPlay: false,
+  });
   const duration = item.duration || video.duration || 0;
   const trimEnd = videoSettings.trimEnd ?? duration;
   const surfaceRef = useRef<HTMLDivElement>(null);
@@ -167,7 +172,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
         <div
           ref={surfaceRef}
           {...(isImage ? {} : mediaSurfaceProps)}
-          className="relative aspect-video max-h-full w-full overflow-hidden rounded-[14px] border border-line bg-black"
+          className="relative aspect-video max-h-full w-full overflow-hidden rounded-[14px] border border-border bg-black"
         >
           {isImage ? (
             <ImageLayer
@@ -178,7 +183,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
           ) : (
             <>
               <VideoSurface
-                ref={video.surfaceRef}
+                ref={videoSurfaceRef}
                 item={item}
                 settings={videoSettings}
                 playback={previewPlayback}
@@ -213,7 +218,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
 
   const sidebar = (
     <div className="p-4.5">
-      <p className="mt-0 mb-1 text-xs leading-[1.6] text-dim">
+      <p className="mt-0 mb-1 text-xs leading-[1.6] text-subtle-foreground">
         {item.width && item.height ? `${item.width}×${item.height} · ` : ""}
         {formatBytes(item.size || 0)}
         {duration ? ` · ${formatTrimmedDuration(duration, videoSettings)}` : ""}
@@ -256,7 +261,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
             />
           ) : (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               title={resetTitle(editor.canResetSettings)}
               disabled={!editor.canResetSettings}

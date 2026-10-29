@@ -6,9 +6,10 @@ import {
   Share2,
   Square,
 } from "lucide-react";
-import { Modal } from "../../components/ui/Modal";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { describeSelection, selectionBytes } from "../../lib/backupPayload";
 import { selectionFrom, type BackupRecordRef } from "../../lib/shareSelection";
 import { formatBytes } from "../../lib/storageStats";
@@ -71,15 +72,16 @@ export const QuickShareModal = ({
         }
         footer={
           quickShare.isBusy ? (
-            <Button variant="danger" onClick={stopPrompt.askForEverything}>
+            <Button variant="destructive" onClick={stopPrompt.askForEverything}>
               <Square size={14} />
               Stop
             </Button>
           ) : (
             <>
-              <Button onClick={onClose}>Cancel</Button>
+              <Button variant="secondary" onClick={onClose}>
+                Cancel
+              </Button>
               <Button
-                variant="primary"
                 disabled={!canSend}
                 onClick={() => void quickShare.send(selection)}
               >
@@ -92,13 +94,14 @@ export const QuickShareModal = ({
           )
         }
       >
-        <p className="mt-0 mb-3 text-[12.5px] leading-[1.6] text-sub">
-          Sending <strong className="text-fg">{title}</strong>: {summary}
+        <p className="mt-0 mb-3 text-[12.5px] leading-[1.6] text-muted-foreground">
+          Sending <strong className="text-foreground">{title}</strong>:{" "}
+          {summary}
           {bytes > 0 ? ` (about ${formatBytes(bytes)})` : ""}. Anything it
           needs, such as its background or sound, travels with it.
         </p>
 
-        <p className="mt-0 mb-2 text-[12.5px] leading-[1.6] text-sub">
+        <p className="mt-0 mb-2 text-[12.5px] leading-[1.6] text-muted-foreground">
           <Share2 size={13} className="inline align-[-2px]" /> The other device
           needs the Quick Share page open.
         </p>
@@ -115,7 +118,7 @@ export const QuickShareModal = ({
         />
         <div className="mt-2.5">
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             disabled={quickShare.isBusy}
             onClick={() => setIsPairing(true)}

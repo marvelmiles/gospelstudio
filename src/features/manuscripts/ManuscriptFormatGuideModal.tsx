@@ -2,10 +2,10 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import { AlertTriangle, BookOpen, Music } from "lucide-react";
 import type { ManuscriptFormat } from "../../types";
-import { Button } from "../../components/ui/Button";
-import { Modal } from "../../components/ui/Modal";
-import { PillTabs } from "../../components/ui/PillTabs";
-import type { PillTab } from "../../components/ui/PillTabs";
+import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/shared/Modal";
+import { PillTabs } from "@/components/shared/PillTabs";
+import type { PillTab } from "@/components/shared/PillTabs";
 
 const FORMAT_TABS: PillTab<ManuscriptFormat>[] = [
   { id: "song", label: "Song", icon: Music },
@@ -31,11 +31,7 @@ export const ManuscriptFormatGuideModal = ({
       onClose={onClose}
       title="Formatting guide"
       width={600}
-      footer={
-        <Button variant="primary" onClick={onClose}>
-          Got it
-        </Button>
-      }
+      footer={<Button onClick={onClose}>Got it</Button>}
     >
       <GuideSection title="Titles and collections">
         Paste the text as it comes. Open with <Mark>HYMN: Ancient Words</Mark>,{" "}
@@ -130,19 +126,23 @@ const GuideSection = ({
   children: ReactNode;
 }) => (
   <section className="mb-3.5">
-    <h4 className="mt-0 mb-1.25 text-[13px] font-semibold text-fg">{title}</h4>
-    <p className="m-0 text-[12.5px] leading-[1.65] text-sub">{children}</p>
+    <h4 className="mt-0 mb-1.25 text-[13px] font-semibold text-foreground">
+      {title}
+    </h4>
+    <p className="m-0 text-[12.5px] leading-[1.65] text-muted-foreground">
+      {children}
+    </p>
   </section>
 );
 
 const Mark = ({ children }: { children: ReactNode }) => (
-  <code className="text-accent-soft">{children}</code>
+  <code className="text-primary-soft">{children}</code>
 );
 
 const RegenerateWarning = () => (
   <div
     role="note"
-    className="flex items-start gap-2.25 rounded-[11px] border border-danger/42 bg-danger/15 px-3 py-2.5 text-[12.5px] leading-[1.55] text-danger-fg"
+    className="flex items-start gap-2.25 rounded-[11px] border border-destructive/42 bg-destructive/15 px-3 py-2.5 text-[12.5px] leading-[1.55] text-destructive-foreground"
   >
     <AlertTriangle size={15} className="mt-0.5 shrink-0" />
     Regenerating rebuilds every slide from the text and resets per-slide styling

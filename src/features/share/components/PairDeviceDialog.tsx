@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { useStore } from "../../../store/useStore";
-import { Modal } from "../../../components/ui/Modal";
-import { Button } from "../../../components/ui/Button";
-import { Spinner } from "../../../components/ui/Spinner";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   CodeExchangePanes,
   ReadCode,
@@ -130,7 +130,7 @@ const PairingSteps = ({
     return (
       <div className="grid justify-items-center gap-3.5">
         <StreamStatusLine tone="danger">{failure}</StreamStatusLine>
-        <Button variant="primary" onClick={startAgain}>
+        <Button onClick={startAgain}>
           <RotateCcw size={14} />
           Start again
         </Button>

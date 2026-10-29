@@ -1,11 +1,18 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { useValueChange } from "@/hooks/useValueChange";
 import { KeyRound, MonitorSmartphone, RotateCcw } from "lucide-react";
 import { useStore } from "../../../store/useStore";
-import { Button } from "../../../components/ui/Button";
-import { Spinner } from "../../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { LobbyActions } from "../components/LobbyActions";
 import { QuickConnectNote } from "../components/QuickConnectNote";
-import { Panel, PanelTitle } from "../../../components/ui/Panel";
+import { Panel, PanelTitle } from "@/components/shared/Panel";
 import { deriveNetworkRoom } from "../../../lib/networkRoom";
 import { watchBroadcasters, type DeviceEntry } from "../lib/signaling";
 import {
@@ -33,27 +40,30 @@ export const AutoReceivePanel = ({
   const [devices, setDevices] = useState<DeviceEntry[]>([]);
   const [searchCount, setSearchCount] = useState(0);
   const roomRef = useRef<string | null>(null);
-  const viewerId = useRef(crypto.randomUUID()).current;
-  const wasActiveRef = useRef(session.active);
+  const [viewerId] = useState(() => crypto.randomUUID());
 
-  useEffect(() => {
-    if (wasActiveRef.current && !session.active) {
-      setSearchCount((count) => count + 1);
-    }
-    wasActiveRef.current = session.active;
-  }, [session.active]);
+  useValueChange(session.active, (active) => {
+    if (!active) setSearchCount((count) => count + 1);
+  });
+
+  useValueChange(searchCount, () => {
+    setIsSearching(true);
+    setDevices([]);
+  });
+
+  const leaveForCode = useEffectEvent(() => {
+    pushToast("Couldn't detect your network. Use a code instead.", "error");
+    onUseCode();
+  });
 
   useEffect(() => {
     let isCancelled = false;
     let stopWatching = () => {};
-    setIsSearching(true);
-    setDevices([]);
 
     void deriveNetworkRoom().then((room) => {
       if (isCancelled) return;
       if (!room) {
-        pushToast("Couldn't detect your network. Use a code instead.", "error");
-        onUseCode();
+        leaveForCode();
         return;
       }
       roomRef.current = room;
@@ -67,7 +77,6 @@ export const AutoReceivePanel = ({
       isCancelled = true;
       stopWatching();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchCount]);
 
   const isFull = session.active && !canJoinCamera(session);
@@ -110,11 +119,11 @@ export const AutoReceivePanel = ({
       <QuickConnectNote />
 
       <LobbyActions>
-        <Button variant="ghost" size="sm" onClick={onUseCode}>
+        <Button variant="secondary" size="sm" onClick={onUseCode}>
           <KeyRound size={14} />
           Pair with a code instead
         </Button>
-        <Button variant="ghost" size="sm" onClick={onBack}>
+        <Button variant="secondary" size="sm" onClick={onBack}>
           <RotateCcw size={14} />
           Back
         </Button>
@@ -127,7 +136,7 @@ const WaitingState = ({ children }: { children: ReactNode }) => {
   return (
     <div className="flex flex-col items-center gap-3 py-7">
       <Spinner size={20} />
-      <span className="text-[13px] text-sub">{children}</span>
+      <span className="text-[13px] text-muted-foreground">{children}</span>
     </div>
   );
 };

@@ -10,11 +10,12 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { keepsSelectionProps } from "../../../lib/selectionScope";
 import { viewCommandTitle } from "../../../lib/viewCommands";
 import { AudioSharingPill } from "../AudioSharingPill";
-import { StreamStatusBadge, connectionBadgeStatus } from "../StreamStatusBadge";
+import { StreamStatusBadge } from "../StreamStatusBadge";
+import { connectionBadgeStatus } from "../lib/streamBadge";
 import type { PeerStatus } from "../lib/peerStatus";
 import type { StageDrawer } from "./StageDrawerPanel";
 
@@ -62,12 +63,12 @@ export const StageHeader = ({
     : undefined;
 
   return (
-    <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-line bg-raise px-3.5 py-2.5">
+    <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b border-border bg-secondary px-3.5 py-2.5">
       <span className="inline-flex min-w-0 flex-wrap items-center gap-2.5">
         <StreamStatusBadge status={connectionBadgeStatus(status, isLive)} />
         <AudioSharingPill available={audioShared} muted={isAudioMuted} />
         {deviceName && (
-          <span className="min-w-0 truncate text-[13px] font-semibold text-fg">
+          <span className="min-w-0 truncate text-[13px] font-semibold text-foreground">
             {deviceName}
           </span>
         )}
@@ -76,7 +77,7 @@ export const StageHeader = ({
       <div className="flex flex-wrap gap-2">
         {audioShared && (
           <Button
-            variant={isAudioMuted ? "ghost" : "primary"}
+            variant={isAudioMuted ? "secondary" : "default"}
             size="sm"
             onClick={onToggleAudio}
             disabled={isAwaitingConnection}
@@ -92,7 +93,7 @@ export const StageHeader = ({
           </Button>
         )}
         <Button
-          variant={drawer === "cameras" ? "primary" : "ghost"}
+          variant={drawer === "cameras" ? "default" : "secondary"}
           size="sm"
           onClick={() => onToggleDrawer("cameras")}
           disabled={isAwaitingConnection}
@@ -106,7 +107,7 @@ export const StageHeader = ({
         </Button>
         <span {...keepsSelectionProps} className="inline-flex">
           <Button
-            variant={drawer === "overlays" ? "primary" : "ghost"}
+            variant={drawer === "overlays" ? "default" : "secondary"}
             size="sm"
             onClick={() => onToggleDrawer("overlays")}
             disabled={isAwaitingConnection}
@@ -120,7 +121,7 @@ export const StageHeader = ({
           </Button>
         </span>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onToggleFullscreen}
           title={viewCommandTitle(
@@ -132,7 +133,7 @@ export const StageHeader = ({
           {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
         </Button>
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           onClick={onPopOut}
           title={viewCommandTitle(
@@ -144,7 +145,7 @@ export const StageHeader = ({
           Pop out
         </Button>
         <Button
-          variant={isLive ? "danger" : "primary"}
+          variant={isLive ? "destructive" : "default"}
           size="sm"
           onClick={onToggleLive}
           disabled={!isLive && (isAwaitingConnection || isDisconnected)}
@@ -153,7 +154,7 @@ export const StageHeader = ({
           {isLive ? <MonitorX size={14} /> : <MonitorPlay size={14} />}
           {isLive ? "End live" : "Go live"}
         </Button>
-        <Button variant="danger" size="sm" onClick={onStop}>
+        <Button variant="destructive" size="sm" onClick={onStop}>
           <X size={14} />
           Stop
         </Button>

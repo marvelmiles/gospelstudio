@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type RefObject,
+} from "react";
+import type { MediaSurfaceHandle } from "../../hooks/useMediaElementPlayback";
 import type { PresentationView, ScripturePassage } from "../../types";
 import { slideIndexForVerse } from "../bible/lib/scriptureSlides";
 import { useStore } from "../../store/useStore";
@@ -27,7 +36,17 @@ const ZOOM_MAX = 3;
 const ZOOM_STEP = 0.1;
 const VIDEO_SEEK_STEP = 5;
 
-export const usePresentation = (shortcutGate?: () => boolean) => {
+interface PresentationOptions {
+  rootRef: RefObject<HTMLDivElement | null>;
+  videoRef: RefObject<MediaSurfaceHandle | null>;
+  shortcutGate?: () => boolean;
+}
+
+export const usePresentation = ({
+  rootRef,
+  videoRef,
+  shortcutGate,
+}: PresentationOptions) => {
   const presentation = useStore((s) => s.presentation);
   const audio = useStore((s) => s.audio);
   const prefs = useStore((s) => s.prefs);
@@ -60,7 +79,6 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
   const tagGroups = useMemo(() => computeTagGroups(textSlides), [textSlides]);
   const ctrlNumBuffer = useRef<string>("");
 
-  const rootRef = useRef<HTMLDivElement>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(rootRef);
 
   const media = useStore((s) => s.media);
@@ -84,9 +102,8 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
   const videoSettings = currentVideoItem
     ? videoSettingsOf(currentVideoItem)
     : undefined;
-  const video = useMediaPlayback(videoSettings);
+  const video = useMediaPlayback(videoRef, videoSettings);
   const {
-    surfaceRef: videoRef,
     getTime: getVideoTime,
     playback: mediaPlayback,
     time: videoTime,
@@ -181,7 +198,9 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
   }, [curVideoId, resetVideo]);
 
   const shortcutGateRef = useRef(shortcutGate);
-  shortcutGateRef.current = shortcutGate;
+  useLayoutEffect(() => {
+    shortcutGateRef.current = shortcutGate;
+  });
 
   const ownsKey = useCallback((e: KeyboardEvent): boolean => {
     if (targetOwnsKey(e)) return false;
@@ -337,8 +356,6 @@ export const usePresentation = (shortcutGate?: () => boolean) => {
   );
 
   return {
-    rootRef,
-    videoRef,
     deck,
     doc,
     theme,

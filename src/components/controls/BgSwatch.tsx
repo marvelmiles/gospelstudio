@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import type { Background, ImageSettings, VideoSettings } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { BackgroundSurface } from "../media/BackgroundSurface";
 
 interface BgSwatchProps {

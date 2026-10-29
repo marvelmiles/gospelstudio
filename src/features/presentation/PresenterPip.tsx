@@ -14,18 +14,19 @@ import {
   X,
 } from "lucide-react";
 import { useFloatingWindow } from "../../hooks/useFloatingWindow";
-import { FloatingWindowTab } from "../../components/ui/FloatingWindowTab";
-import { FloatingWindowHeader } from "../../components/ui/FloatingWindowHeader";
-import { videoProgressPercent, type VideoProgress } from "../../lib/media";
+import { FloatingWindowTab } from "@/components/shared/FloatingWindowTab";
+import { FloatingWindowHeader } from "@/components/shared/FloatingWindowHeader";
+import type { VideoProgress } from "../../lib/media";
+import { Slider } from "@/components/ui/slider";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
 import { viewCommandTitle } from "../../lib/viewCommands";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { ImageSurface } from "../../components/media/ImageSurface";
-import { PortalSlot } from "../../components/ui/PortalSlot";
-import { MiniButton } from "../../components/ui/MiniButton";
+import { PortalSlot } from "@/components/shared/PortalSlot";
+import { MiniButton } from "@/components/shared/MiniButton";
 import { VideoTimecode } from "../../components/media/VideoTimecode";
 import type { StageFrame } from "./stageContent";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 const WIDTH = 320;
 const MARGIN = 16;
@@ -48,7 +49,7 @@ interface PresenterPipProps {
   onRestartVideo: () => void;
   secondaryLayer?: ReactNode;
   secondaryMenu?: ReactNode;
-  rootRef: RefObject<HTMLDivElement>;
+  rootRef: RefObject<HTMLDivElement | null>;
   onPrev: () => void;
   onNext: () => void;
   onTogglePause: () => void;
@@ -168,15 +169,18 @@ export const PresenterPip = ({
         </div>
 
         {notes && (
-          <div className="flex items-start gap-1.75 border-t border-line bg-accent/9 px-2.5 py-2">
-            <StickyNote size={13} className="mt-px shrink-0 text-accent-soft" />
-            <div className="max-h-16.5 min-w-0 flex-1 overflow-y-auto text-[11.5px] leading-[1.45] font-medium whitespace-pre-line text-fg">
+          <div className="flex items-start gap-1.75 border-t border-border bg-primary/9 px-2.5 py-2">
+            <StickyNote
+              size={13}
+              className="mt-px shrink-0 text-primary-soft"
+            />
+            <div className="max-h-16.5 min-w-0 flex-1 overflow-y-auto text-[11.5px] leading-[1.45] font-medium whitespace-pre-line text-foreground">
               {notes}
             </div>
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-1.25 border-t border-line px-2.25 py-2">
+        <div className="flex flex-wrap items-center gap-1.25 border-t border-border px-2.25 py-2">
           {navigable && (
             <MiniButton
               icon={ChevronLeft}
@@ -220,7 +224,7 @@ export const PresenterPip = ({
               />
             </>
           )}
-          <span className="min-w-0 flex-1 truncate text-center text-[10.5px] font-semibold text-dim tabular-nums">
+          <span className="min-w-0 flex-1 truncate text-center text-[10.5px] font-semibold text-subtle-foreground tabular-nums">
             {navigable ? `${slideIndex + 1}/${total}` : ""}
             {navigable && currentLabel ? " · " : ""}
             {currentLabel}
@@ -259,7 +263,7 @@ export const PresenterPip = ({
         <div
           className={cn(
             "px-2.5 pb-2.25 text-[10px] leading-[1.45]",
-            focused ? "text-accent-soft" : "text-dim",
+            focused ? "text-primary-soft" : "text-subtle-foreground",
           )}
         >
           {focused
@@ -279,40 +283,35 @@ interface VideoScrubberProps {
 const VideoScrubber = ({ progress, onSeek }: VideoScrubberProps) => {
   const end = Math.max(progress.end, progress.start + 0.1);
   const position = Math.min(Math.max(progress.time, progress.start), end);
-  const filled = videoProgressPercent(progress);
 
   return (
-    <input
-      type="range"
-      className="absolute inset-x-0 bottom-0 scrubber w-full"
+    <Slider
+      className="absolute inset-x-0 bottom-0 h-2.75 **:data-[slot=slider-thumb]:size-2.75 **:data-[slot=slider-thumb]:border-2 **:data-[slot=slider-thumb]:opacity-0 **:data-[slot=slider-thumb]:shadow-none **:data-[slot=slider-thumb]:transition-opacity hover:**:data-[slot=slider-thumb]:opacity-100 has-focus-visible:**:data-[slot=slider-thumb]:opacity-100 **:data-[slot=slider-track]:h-0.75 **:data-[slot=slider-track]:rounded-none **:data-[slot=slider-track]:bg-white/20"
       aria-label="Clip position"
       min={progress.start}
       max={end}
       step={0.05}
-      value={position}
-      onChange={(event) => onSeek(Number(event.target.value))}
+      value={[position]}
+      onValueChange={([next]) => onSeek(next)}
       onPointerDown={(event) => event.stopPropagation()}
-      style={{
-        background: `linear-gradient(90deg, var(--color-accent) ${filled}%, rgb(255 255 255 / 0.2) ${filled}%)`,
-      }}
     />
   );
 };
 
 const floatingPanelClassName = (focused: boolean): string =>
   cn(
-    "fixed overflow-hidden rounded-[14px] border bg-panel-solid/96 backdrop-blur-[18px] backdrop-saturate-150 transition-[border-color,box-shadow] duration-150 outline-none",
+    "fixed overflow-hidden rounded-[14px] border bg-card/96 backdrop-blur-[18px] backdrop-saturate-150 transition-[border-color,box-shadow] duration-150 outline-none",
     focused
-      ? "border-accent/55 shadow-[0_20px_55px_rgb(0_0_0/0.6),0_0_0_3px_rgb(37_99_235/0.18)]"
-      : "border-line shadow-[0_18px_45px_rgb(0_0_0/0.5)]",
+      ? "border-primary/55 shadow-[0_20px_55px_rgb(0_0_0/0.6),0_0_0_3px_rgb(37_99_235/0.18)]"
+      : "border-border shadow-[0_18px_45px_rgb(0_0_0/0.5)]",
   );
 
 const LiveBadge = ({ title }: { title: string }) => (
   <span
     title={title}
-    className="inline-flex items-center gap-1 rounded-full bg-danger px-1.75 py-0.5 text-[9.5px] font-extrabold tracking-[0.5px] text-on-accent"
+    className="inline-flex items-center gap-1 rounded-full bg-destructive px-1.75 py-0.5 text-[9.5px] font-extrabold tracking-[0.5px] text-primary-foreground"
   >
-    <span className="size-1.25 rounded-full bg-on-accent" />
+    <span className="size-1.25 rounded-full bg-primary-foreground" />
     LIVE
   </span>
 );

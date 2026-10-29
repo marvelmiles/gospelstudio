@@ -38,7 +38,7 @@ export const VerseSnippet = ({
     <>
       {snippet.split(splitter).map((part, index) =>
         isMatch.test(part) ? (
-          <span key={index} className="font-bold text-accent-soft">
+          <span key={index} className="font-bold text-primary-soft">
             {part}
           </span>
         ) : (

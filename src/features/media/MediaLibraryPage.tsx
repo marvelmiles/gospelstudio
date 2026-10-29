@@ -19,38 +19,35 @@ import { formatBytes } from "../../lib/storageStats";
 import { formatDuration, mediaPlayLength } from "../../lib/media";
 import { formatDate } from "../../lib/id";
 import { sortPinnedFirst } from "../../lib/pinning";
-import {
-  DEFAULT_LIBRARY_SORT,
-  sortLibrary,
-  type LibrarySortOption,
-} from "../../lib/librarySort";
+import { sortLibrary } from "../../lib/librarySort";
 import { imageDeckIndex } from "../presentation/useDeck";
-import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { LazyMount } from "../../components/ui/LazyMount";
-import { Button, IconButton } from "../../components/ui/Button";
-import { MoreMenu } from "../../components/ui/MoreMenu";
-import { PinButton } from "../../components/ui/PinControl";
+import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { LazyMount } from "@/components/shared/LazyMount";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { MoreMenu } from "@/components/shared/MoreMenu";
+import { PinButton } from "@/components/shared/PinControl";
 import {
   CardActions,
   CardTitle,
   cardBodyClassName,
   cardClassName,
   cardGridClassName,
-  cardOpenProps,
   cardSubClassName,
   cardThumbBadgeClassName,
   cardThumbClassName,
-} from "../../components/ui/InteractiveCard";
-import { LibrarySortSelect } from "../../components/ui/LibrarySortSelect";
-import { LayoutToggle } from "../../components/ui/LayoutToggle";
+} from "@/components/shared/InteractiveCard";
+import { cardOpenProps } from "@/components/shared/cardOpenProps";
+import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
+import { LayoutToggle } from "@/components/shared/LayoutToggle";
 import {
   LibraryListRow,
   listClassName,
-} from "../../components/ui/LibraryListRow";
-import { PresentMenu } from "../../components/ui/PresentMenu";
+} from "@/components/shared/LibraryListRow";
+import { PresentMenu } from "@/components/shared/PresentMenu";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useBackupSource } from "../share/lib/useBackupSource";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
@@ -58,6 +55,7 @@ import { recordsForMedia } from "../../lib/shareCatalog";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import { VideoThumb } from "../../components/media/VideoThumb";
 import routes from "../../routes";
+import { useLibrarySort } from "@/hooks/useLibrarySort";
 
 interface MediaPageConfig {
   kind: MediaKind;
@@ -110,7 +108,7 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<LibrarySortOption>(DEFAULT_LIBRARY_SORT);
+  const [sort, setSort] = useLibrarySort(config.title.toLowerCase());
   const [deleting, setDeleting] = useState<MediaItem | null>(null);
   const { layout, setLayout } = useLibraryLayout(config.title.toLowerCase());
 
@@ -176,7 +174,7 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
         title={config.title}
         subtitle={config.subtitle}
         actions={
-          <Button variant="primary" onClick={() => inputRef.current?.click()}>
+          <Button onClick={() => inputRef.current?.click()}>
             <Upload size={16} />
             {config.uploadLabel}
           </Button>
@@ -222,10 +220,7 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
             title={config.emptyTitle}
             message={config.emptyMessage}
             action={
-              <Button
-                variant="primary"
-                onClick={() => inputRef.current?.click()}
-              >
+              <Button onClick={() => inputRef.current?.click()}>
                 <ImagePlus size={15} />
                 {config.uploadLabel}
               </Button>

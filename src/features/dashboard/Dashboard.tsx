@@ -1,5 +1,5 @@
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
-import { pageClassName } from "../../components/ui/PageHeader";
+import { pageClassName } from "@/components/shared/PageHeader";
 import { useDashboardData } from "./useDashboardData";
 import { GreetingHeader } from "./components/GreetingHeader";
 import { OverviewGrid } from "./components/OverviewGrid";

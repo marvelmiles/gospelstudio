@@ -13,13 +13,13 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
-import { MiniButton } from "../../components/ui/MiniButton";
-import { Modal } from "../../components/ui/Modal";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { TextInput } from "../../components/ui/Field";
+import { cn } from "../../lib/utils";
+import { MiniButton } from "@/components/shared/MiniButton";
+import { Modal } from "@/components/shared/Modal";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { Input } from "@/components/ui/input";
 import {
   fromSavedOverlay,
   isSavedMarquee,
@@ -190,7 +190,7 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 rounded-[11px] border border-line bg-canvas py-2 pr-2.25 pl-2.75",
+        "flex items-center gap-2 rounded-[11px] border border-border bg-background py-2 pr-2.25 pl-2.75",
         !ready && "opacity-60",
       )}
     >
@@ -204,15 +204,15 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
           }
           className="flex min-w-0 flex-1 items-center gap-2.5 border-none bg-transparent p-0 text-left"
         >
-          <Icon size={15} className="shrink-0 text-accent-soft" />
+          <Icon size={15} className="shrink-0 text-primary-soft" />
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13.5px] font-semibold text-fg">
+            <span className="block truncate text-[13.5px] font-semibold text-foreground">
               {preset.name}
             </span>
             <span
               className={cn(
                 "block truncate text-[11.5px]",
-                ready ? "text-dim" : "text-warning",
+                ready ? "text-subtle-foreground" : "text-warning",
               )}
             >
               {ready
@@ -222,7 +222,7 @@ const PresetRow = ({ preset, ready, onUse, onRemove }: PresetRowProps) => {
           </span>
         </button>
       ) : (
-        <TextInput
+        <Input
           value={draftName}
           autoFocus
           className="min-w-0 flex-1 px-2.25 py-1.5 text-[13px]"

@@ -1,6 +1,5 @@
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
-  Check,
   Expand,
   Maximize,
   Maximize2,
@@ -22,10 +21,17 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { PresentationView } from "../../types";
 import { viewCommandTitle } from "../../lib/viewCommands";
-import { StageButton } from "../../components/ui/Button";
-import { Popover } from "../../components/ui/Popover";
-import { menuSurfaceClassName } from "../../components/ui/MoreMenu";
-import { cn } from "../../lib/cn";
+import { StageButton } from "@/components/shared/StageButton";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { cn } from "../../lib/utils";
 
 const VIEW_OPTIONS: {
   value: PresentationView;
@@ -94,8 +100,6 @@ export const PresentationControls = ({
   onToggleFullscreen,
   onExit,
 }: PresentationControlsProps) => {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   return (
     <div
       onMouseEnter={() => onHoverChange(true)}
@@ -145,65 +149,48 @@ export const PresentationControls = ({
         />
       )}
 
-      <Popover
-        open={menuOpen}
-        onOpenChange={setMenuOpen}
-        align="end"
-        trigger={
-          <StageButton icon={Scan} title="Screen fit (V)" active={menuOpen} />
-        }
-      >
-        <div className={cn(menuSurfaceClassName, "min-w-49 bg-panel-solid/92")}>
-          <div className="px-2.25 pt-1.5 pb-2 text-[10.5px] font-bold tracking-[0.6px] text-dim uppercase">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <StageButton icon={Scan} title="Screen fit (V)" />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="min-w-49 bg-card/92">
+          <DropdownMenuLabel className="text-[10.5px] font-bold tracking-[0.6px] text-subtle-foreground uppercase">
             Screen Fit
-          </div>
-          {VIEW_OPTIONS.map((option) => {
-            const active = view === option.value;
-            return (
-              <button
+          </DropdownMenuLabel>
+          <DropdownMenuRadioGroup
+            value={view}
+            onValueChange={(next) => onSetView(next as PresentationView)}
+          >
+            {VIEW_OPTIONS.map((option) => (
+              <DropdownMenuRadioItem
                 key={option.value}
-                onClick={() => {
-                  onSetView(option.value);
-                  setMenuOpen(false);
-                }}
-                className={cn(
-                  "flex w-full items-center gap-2.5 rounded-lg border-none px-2.5 py-2.25 text-left",
-                  active
-                    ? "bg-accent/16 text-accent-soft"
-                    : "bg-transparent text-fg hover:bg-white/5",
-                )}
+                value={option.value}
+                className="group data-[state=checked]:bg-primary/16 data-[state=checked]:text-primary-soft"
               >
-                <option.icon size={16} />
+                <option.icon className="group-data-[state=checked]:text-primary-soft!" />
                 <span className="flex-1">
-                  <span className="block text-[13.5px] font-semibold">
-                    {option.label}
-                  </span>
-                  <span
-                    className={cn(
-                      "text-[11.5px]",
-                      active ? "text-accent-soft" : "text-sub",
-                    )}
-                  >
+                  <span className="block font-semibold">{option.label}</span>
+                  <span className="text-[11.5px] text-muted-foreground group-data-[state=checked]:text-primary-soft">
                     {option.hint}
                   </span>
                 </span>
-                {active && <Check size={15} />}
-              </button>
-            );
-          })}
-        </div>
-      </Popover>
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <span className="flex items-center gap-0.5">
         <StageButton icon={ZoomOut} title="Zoom out (-)" onClick={onZoomOut} />
-        <button
+        <Button
+          variant="ghost"
           onClick={onResetZoom}
           title="Reset zoom (0)"
-          className="inline-flex h-10 min-w-12 items-center justify-center gap-1.25 rounded-[10px] border border-stage-line bg-white/6 px-2 text-[12.5px] text-white tabular-nums"
+          className="h-10 min-w-12 gap-1.25 rounded-[10px] border-stage-line bg-white/6 px-2 text-[12.5px] font-normal text-white tabular-nums enabled:hover:bg-white/14 enabled:hover:text-white"
         >
-          <RotateCcw size={13} />
+          <RotateCcw className="size-3.25" />
           {Math.round(zoom * 100)}%
-        </button>
+        </Button>
         <StageButton icon={ZoomIn} title="Zoom in (+)" onClick={onZoomIn} />
       </span>
 

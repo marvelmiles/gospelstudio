@@ -8,15 +8,16 @@ import {
   VolumeX,
   X,
 } from "lucide-react";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 import { useAutoHideChrome } from "../../../hooks/useAutoHideChrome";
 import { useFullscreen } from "../../../hooks/useFullscreen";
-import { Button, StageButton } from "../../../components/ui/Button";
-import { Panel, PanelTitle } from "../../../components/ui/Panel";
+import { Button } from "@/components/ui/button";
+import { StageButton } from "@/components/shared/StageButton";
+import { Panel, PanelTitle } from "@/components/shared/Panel";
 import type { FacingMode } from "../lib/cameras";
 
 interface SharingCameraCardProps {
-  videoRef: RefObject<HTMLVideoElement>;
+  videoRef: RefObject<HTMLVideoElement | null>;
   badge?: ReactNode;
   statusLine?: ReactNode;
   isAudioOn: boolean;
@@ -131,7 +132,7 @@ export const SharingCameraCard = ({
         {!isFullscreen && (
           <div className="mt-3.5 flex flex-wrap gap-2">
             <Button
-              variant={isAudioOn ? "primary" : "ghost"}
+              variant={isAudioOn ? "default" : "secondary"}
               size="sm"
               onClick={onToggleAudio}
               title={audioTitle(isAudioOn)}
@@ -140,7 +141,7 @@ export const SharingCameraCard = ({
               {isAudioOn ? "Audio on" : "Include audio"}
             </Button>
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={toggleFullscreen}
               title="Fill this screen with the camera, the way the other device shows it"
@@ -150,7 +151,7 @@ export const SharingCameraCard = ({
             </Button>
             {hasMultipleCameras && (
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={onFlip}
                 title={flipTitle(isFrontCamera)}
@@ -162,7 +163,7 @@ export const SharingCameraCard = ({
                 Switch camera
               </Button>
             )}
-            <Button variant="danger" size="sm" onClick={onStop}>
+            <Button variant="destructive" size="sm" onClick={onStop}>
               <X size={14} />
               Stop
             </Button>

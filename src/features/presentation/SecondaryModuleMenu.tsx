@@ -13,16 +13,20 @@ import type { SecondaryModuleKind } from "../../lib/presentChannel";
 import { useStore } from "../../store/useStore";
 import { sortMediaByRecency } from "../../lib/media";
 import { useThumbUrl } from "../../lib/blobUrls";
-import { Button } from "../../components/ui/Button";
-import { Popover } from "../../components/ui/Popover";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { PillTabs, type PillTab } from "../../components/ui/PillTabs";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { PipPlacementControls } from "../../components/ui/PipPlacementControls";
-import { StageButton } from "../../components/ui/Button";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { PillTabs, type PillTab } from "@/components/shared/PillTabs";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { PipPlacementControls } from "@/components/shared/PipPlacementControls";
+import { StageButton } from "@/components/shared/StageButton";
 import { primaryCamera, useStreamSession } from "../stream/lib/streamSession";
-import { MiniButton } from "../../components/ui/MiniButton";
-import { cn } from "../../lib/cn";
+import { MiniButton } from "@/components/shared/MiniButton";
+import { cn } from "../../lib/utils";
 
 const TABS: PillTab<SecondaryModuleKind>[] = [
   { id: "stream", label: "Live camera", icon: Radio },
@@ -44,20 +48,21 @@ export const SecondaryModuleMenu = ({ variant }: SecondaryModuleMenuProps) => {
     : "Add a second module in a corner of the stage";
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
-      side="bottom"
-      align="end"
-      trigger={
-        variant === "stage" ? (
-          <StageButton icon={Combine} title={title} active={active || open} />
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        {variant === "stage" ? (
+          <StageButton icon={Combine} title={title} active={active} />
         ) : (
-          <MiniButton icon={Combine} title={title} active={active || open} />
-        )
-      }
-    >
-      <SecondaryModulePanel onDone={() => setOpen(false)} />
+          <MiniButton icon={Combine} title={title} active={active} />
+        )}
+      </PopoverTrigger>
+      <PopoverContent
+        side="bottom"
+        align="end"
+        className="flex w-80 max-w-[calc(100vw-24px)] flex-col gap-3 p-3.5"
+      >
+        <SecondaryModulePanel onDone={() => setOpen(false)} />
+      </PopoverContent>
     </Popover>
   );
 };
@@ -97,8 +102,8 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
   };
 
   return (
-    <div className="flex w-80 max-w-[calc(100vw-24px)] flex-col gap-3 rounded-[14px] border border-line bg-panel-solid/97 p-3.5 shadow-[0_20px_55px_rgb(0_0_0/0.55)] backdrop-blur-[18px] backdrop-saturate-150">
-      <div className="flex items-center gap-1.5 text-[15px] font-semibold text-fg">
+    <>
+      <div className="flex items-center gap-1.5 text-[15px] font-semibold text-foreground">
         Second module
         <InfoTip title="Second module">
           Runs in a corner of the stage beside whatever is already on it, on the
@@ -107,15 +112,15 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
       </div>
 
       {secondary && (
-        <div className="flex flex-col gap-2.5 rounded-[11px] border border-accent/35 bg-canvas p-2.75">
+        <div className="flex flex-col gap-2.5 rounded-[11px] border border-primary/35 bg-background p-2.75">
           <div className="flex items-center gap-2">
-            <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-fg">
+            <span className="min-w-0 flex-1 truncate text-[13px] font-bold text-foreground">
               {secondary.kind === "stream"
                 ? (cameraName ?? "Live camera")
                 : (secondary.item?.name ?? "Missing item")}
             </span>
             <Button
-              variant={secondary.muted ? "ghost" : "primary"}
+              variant={secondary.muted ? "secondary" : "default"}
               size="sm"
               onClick={() => setMuted(!secondary.muted)}
               title={
@@ -135,7 +140,7 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
           />
 
           <Button
-            variant="danger"
+            variant="destructive"
             size="sm"
             onClick={() => {
               stopSecondary();
@@ -167,7 +172,7 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
           />
           <div className="flex max-h-55 flex-col gap-1.5 overflow-y-auto">
             {items.length === 0 ? (
-              <span className="px-0.5 py-2.5 text-[12.5px] text-dim">
+              <span className="px-0.5 py-2.5 text-[12.5px] text-subtle-foreground">
                 {query
                   ? "Nothing matches that."
                   : `No ${tab === "video" ? "videos" : "images"} in the library yet.`}
@@ -185,7 +190,7 @@ const SecondaryModulePanel = ({ onDone }: { onDone: () => void }) => {
           </div>
         </>
       )}
-    </div>
+    </>
   );
 };
 
@@ -201,13 +206,13 @@ const CameraChoice = ({
   onChoose: () => void;
 }) => (
   <div className="flex flex-col gap-2">
-    <p className="m-0 text-xs leading-normal text-sub">
+    <p className="m-0 text-xs leading-normal text-muted-foreground">
       {connected
         ? `Shows ${name ?? "the camera"} the Stream module is receiving, live in the corner.`
         : "No camera is connected yet. Join one from the Stream page and it appears here on its own."}
     </p>
     <Button
-      variant={chosen ? "ghost" : "primary"}
+      variant={chosen ? "secondary" : "default"}
       size="sm"
       onClick={onChoose}
       disabled={chosen}
@@ -233,13 +238,13 @@ const MediaChoice = ({
       onClick={onChoose}
       title={chosen ? `${item.name} is already showing` : `Show ${item.name}`}
       className={cn(
-        "flex items-center gap-2.5 rounded-[10px] border p-1.5 text-left text-fg",
+        "flex items-center gap-2.5 rounded-[10px] border p-1.5 text-left text-foreground",
         chosen
-          ? "border-accent/30 bg-accent/16"
+          ? "border-primary/30 bg-primary/16"
           : "border-transparent bg-transparent",
       )}
     >
-      <span className="grid h-7.5 w-13 shrink-0 place-items-center overflow-hidden rounded-md border border-line bg-canvas text-dim">
+      <span className="grid h-7.5 w-13 shrink-0 place-items-center overflow-hidden rounded-md border border-border bg-background text-subtle-foreground">
         {thumbUrl ? (
           <img src={thumbUrl} alt="" className="size-full object-cover" />
         ) : item.kind === "video" ? (

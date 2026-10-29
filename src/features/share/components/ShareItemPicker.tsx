@@ -1,14 +1,10 @@
 import { useMemo, useState } from "react";
 import { LayoutGrid, PackageOpen } from "lucide-react";
-import { EmptyState } from "../../../components/ui/EmptyState";
-import { Select } from "../../../components/ui/Field";
-import { LibrarySortSelect } from "../../../components/ui/LibrarySortSelect";
-import { SearchInput } from "../../../components/ui/SearchInput";
-import {
-  DEFAULT_LIBRARY_SORT,
-  sortLibrary,
-  type LibrarySortOption,
-} from "../../../lib/librarySort";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { sortLibrary } from "../../../lib/librarySort";
 import {
   pickKey,
   type PickedShareItems,
@@ -17,6 +13,8 @@ import {
   type ShareTabId,
 } from "../../../lib/shareCatalog";
 import { ShareItemTile } from "./ShareItemTile";
+import { Button } from "@/components/ui/button";
+import { useLibrarySort } from "@/hooks/useLibrarySort";
 
 interface ShareItemPickerProps {
   tabs: ShareTab[];
@@ -34,7 +32,7 @@ export const ShareItemPicker = ({
   const [activeTab, setActiveTab] = useState<ShareTabId>(
     tabs[0]?.id ?? "manuscripts",
   );
-  const [sort, setSort] = useState<LibrarySortOption>(DEFAULT_LIBRARY_SORT);
+  const [sort, setSort] = useLibrarySort("quick-share");
   const [query, setQuery] = useState("");
 
   const tab = tabs.find((entry) => entry.id === activeTab) ?? tabs[0];
@@ -92,14 +90,14 @@ export const ShareItemPicker = ({
         <div className="relative min-w-42.5 flex-[1_1_190px]">
           <LayoutGrid
             size={15}
-            className="pointer-events-none absolute top-3.25 left-3.25 text-dim"
+            className="pointer-events-none absolute top-3.25 left-3.25 text-subtle-foreground"
           />
-          <Select
+          <OptionSelect
             value={activeTab}
             aria-label="Module to share from"
             options={moduleOptions}
-            onChange={(event) => {
-              setActiveTab(event.target.value as ShareTabId);
+            onValueChange={(next) => {
+              setActiveTab(next as ShareTabId);
               setQuery("");
             }}
             className="pl-9.5"
@@ -177,12 +175,12 @@ const SelectAllAction = ({
   isClearing,
   onClick,
 }: SelectAllActionProps) => (
-  <button
-    type="button"
+  <Button
+    variant="link"
     disabled={disabled}
     onClick={onClick}
-    className="border-none bg-transparent p-0 text-xs font-semibold text-accent-soft disabled:cursor-not-allowed disabled:text-dim"
+    className="h-auto p-0 text-xs disabled:text-subtle-foreground disabled:opacity-100"
   >
     {isClearing ? "Clear these" : "Select all"}
-  </button>
+  </Button>
 );

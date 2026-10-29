@@ -1,10 +1,13 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, type RefObject } from "react";
+import type { MediaSurfaceHandle } from "../../../hooks/useMediaElementPlayback";
 import { useStore } from "../../../store/useStore";
 import { useMediaPlayback } from "../../../hooks/useMediaPlayback";
 import { videoSettingsOf } from "../../../lib/media";
 import type { SecondaryPresentState } from "../../../lib/presentChannel";
 
-export const useSecondaryModule = () => {
+export const useSecondaryModule = (
+  surfaceRef: RefObject<MediaSurfaceHandle | null>,
+) => {
   const secondary = useStore((s) => s.secondaryPresentation);
   const libraryItem = useStore((s) =>
     secondary && secondary.kind !== "stream"
@@ -25,7 +28,7 @@ export const useSecondaryModule = () => {
     () => (clip ? videoSettingsOf(clip) : undefined),
     [clip],
   );
-  const video = useMediaPlayback(settings);
+  const video = useMediaPlayback(surfaceRef, settings);
   const { reset } = video;
 
   useEffect(() => {

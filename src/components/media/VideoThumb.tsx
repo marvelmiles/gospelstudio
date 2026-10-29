@@ -2,7 +2,7 @@ import type { SyntheticEvent } from "react";
 import type { MediaItem } from "../../types";
 import { useBlobUrl } from "../../lib/blobUrls";
 import { buildFilter, videoSettingsOf } from "../../lib/media";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 const COVER_OFFSET_RATIO = 0.1;
 const COVER_OFFSET_MAX_SECONDS = 1;

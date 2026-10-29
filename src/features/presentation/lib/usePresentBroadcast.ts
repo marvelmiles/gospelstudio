@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useEffectEvent, useRef, type RefObject } from "react";
 import {
   MEDIA_SYNC_INTERVAL_MS,
   openPresentChannel,
@@ -40,9 +40,10 @@ export const usePresentBroadcast = (
   mainMedia: MediaSyncSource,
   secondaryMedia: MediaSyncSource,
 ) => {
-  const stateRef = useRef<PresentState | null>(state);
   const channelRef = useRef<BroadcastChannel | null>(null);
-  stateRef.current = state;
+  const sendState = useEffectEvent((channel: BroadcastChannel) => {
+    if (state) channel.postMessage({ type: "state", state });
+  });
 
   useEffect(() => {
     if (state) channelRef.current?.postMessage({ type: "state", state });
@@ -51,14 +52,10 @@ export const usePresentBroadcast = (
   useEffect(() => {
     if (!isLive) return;
     const channel = openPresentChannel((message) => {
-      if (message.type === "request-state" && stateRef.current) {
-        channel.postMessage({ type: "state", state: stateRef.current });
-      }
+      if (message.type === "request-state") sendState(channel);
     });
     channelRef.current = channel;
-    if (stateRef.current) {
-      channel.postMessage({ type: "state", state: stateRef.current });
-    }
+    sendState(channel);
     return () => {
       channel.close();
       channelRef.current = null;

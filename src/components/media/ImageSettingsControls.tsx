@@ -5,11 +5,14 @@ import {
   RotateCw,
 } from "lucide-react";
 import type { ImageSettings } from "../../types";
-import { Button } from "../ui/Button";
-import { Field, SectionTitle, Select, Toggle } from "../ui/Field";
-import { cn } from "../../lib/cn";
+import { Button } from "@/components/ui/button";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { SwitchField } from "@/components/shared/SwitchField";
+import { cn } from "../../lib/utils";
 import { SCREEN_FIT_OPTIONS } from "../../lib/mediaOptions";
-import { AdjustmentControls, settingsColumns } from "./AdjustmentControls";
+import { AdjustmentControls } from "./AdjustmentControls";
+import { settingsColumns } from "./settingsColumns";
 
 interface ImageSettingsControlsProps {
   settings: ImageSettings;
@@ -32,17 +35,17 @@ export const ImageSettingsControls = ({
     <>
       <SectionTitle>Transform</SectionTitle>
       <div className="mb-3 flex flex-wrap items-center gap-2.5">
-        <Button size="sm" variant="ghost" onClick={() => rotateBy(-90)}>
+        <Button size="sm" variant="secondary" onClick={() => rotateBy(-90)}>
           <RotateCcw size={14} />
           Rotate left
         </Button>
-        <Button size="sm" variant="ghost" onClick={() => rotateBy(90)}>
+        <Button size="sm" variant="secondary" onClick={() => rotateBy(90)}>
           <RotateCw size={14} />
           Rotate right
         </Button>
         <Button
           size="sm"
-          variant={settings.flipH ? "primary" : "ghost"}
+          variant={settings.flipH ? "default" : "secondary"}
           onClick={() => onChange({ flipH: !settings.flipH })}
         >
           <FlipHorizontal2 size={14} />
@@ -50,7 +53,7 @@ export const ImageSettingsControls = ({
         </Button>
         <Button
           size="sm"
-          variant={settings.flipV ? "primary" : "ghost"}
+          variant={settings.flipV ? "default" : "secondary"}
           onClick={() => onChange({ flipV: !settings.flipV })}
         >
           <FlipVertical2 size={14} />
@@ -59,16 +62,16 @@ export const ImageSettingsControls = ({
       </div>
       <div className={cn("grid gap-x-4", settingsColumns(narrow))}>
         <Field label="Screen fit">
-          <Select
+          <OptionSelect
             value={settings.fit}
             options={SCREEN_FIT_OPTIONS}
-            onChange={(event) =>
-              onChange({ fit: event.target.value as ImageSettings["fit"] })
+            onValueChange={(next) =>
+              onChange({ fit: next as ImageSettings["fit"] })
             }
           />
         </Field>
         <div className={cn("pb-3", !narrow && "pt-6")}>
-          <Toggle
+          <SwitchField
             label="Darken overlay (legibility)"
             checked={settings.scrim}
             onChange={(scrim) => onChange({ scrim })}

@@ -2,14 +2,13 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { useWindowSize } from "usehooks-ts";
-import { cn } from "../../lib/cn";
-import { IconButton } from "../ui/Button";
+import { cn } from "../../lib/utils";
+import { IconButton } from "@/components/shared/IconButton";
 import { NavDrawer } from "./NavDrawer";
 import { useAppNavigation } from "./appNavigation";
 import { APP_NAME } from "../../lib/appInfo";
 import routes, { isRouteActive } from "../../routes";
 
-/* The header never squeezes items: it shows as many icons as fit, and puts the rest in a menu. */
 const ICON_SLOT = 38;
 const LOGO_SLOT = 34;
 const MENU_SLOT = 38;
@@ -46,7 +45,7 @@ export const AppHeader = () => {
   return (
     <header
       className={cn(
-        "flex h-14.5 shrink-0 items-center gap-2 border-b border-line bg-canvas-2/80 backdrop-blur-md",
+        "flex h-14.5 shrink-0 items-center gap-2 border-b border-border bg-sidebar/80 backdrop-blur-md",
         wide ? "px-5.5" : "px-3",
       )}
     >
@@ -63,7 +62,7 @@ export const AppHeader = () => {
           className="rounded-[9px] shadow-cta"
         />
         {showWordmark && (
-          <span className="text-lg leading-[1.1] font-semibold tracking-[-0.2px] whitespace-nowrap text-fg">
+          <span className="text-lg leading-[1.1] font-semibold tracking-[-0.2px] whitespace-nowrap text-foreground">
             {APP_NAME}
           </span>
         )}
@@ -87,8 +86,8 @@ export const AppHeader = () => {
                 "flex h-8.5 items-center justify-center gap-2 border text-[13.5px] font-semibold whitespace-nowrap no-underline",
                 labelled ? "rounded-[10px] px-3.5" : "w-8.5 rounded-[9px] p-0",
                 active
-                  ? "border-line bg-raise text-fg"
-                  : "border-transparent bg-transparent text-sub",
+                  ? "border-border bg-secondary text-foreground"
+                  : "border-transparent bg-transparent text-muted-foreground",
               )}
             >
               <item.icon size={16} />

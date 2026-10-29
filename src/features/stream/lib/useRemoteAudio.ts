@@ -11,11 +11,7 @@ export const useRemoteAudio = (stream: MediaStream | null): RemoteAudio => {
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    if (!stream) {
-      setAvailable(false);
-      setMuted(false);
-      return;
-    }
+    if (!stream) return;
 
     const bound = new Set<MediaStreamTrack>();
 
@@ -64,5 +60,9 @@ export const useRemoteAudio = (stream: MediaStream | null): RemoteAudio => {
     setMuted(!track.enabled);
   }, [stream]);
 
-  return { available, muted, toggleMuted };
+  return {
+    available: Boolean(stream) && available,
+    muted: Boolean(stream) && muted,
+    toggleMuted,
+  };
 };

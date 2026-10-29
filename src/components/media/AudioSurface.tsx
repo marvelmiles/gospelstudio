@@ -1,4 +1,4 @@
-import { forwardRef } from "react";
+import type { Ref } from "react";
 import type { AudioItem, AudioSettings } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { audioSettingsOf } from "../../lib/media";
@@ -17,11 +17,19 @@ interface AudioSurfaceProps {
   onEnded?: () => void;
 }
 
-export const AudioSurface = forwardRef<MediaSurfaceHandle, AudioSurfaceProps>(
-  ({ item, settings, loop, playback, onTimeUpdate, onEnded }, ref) => {
-    const src = useAssetUrl(item);
-    const applied = settings ?? audioSettingsOf(item);
-    const element = useMediaElementPlayback<HTMLAudioElement>({
+export const AudioSurface = ({
+  item,
+  settings,
+  loop,
+  playback,
+  onTimeUpdate,
+  onEnded,
+  ref,
+}: AudioSurfaceProps & { ref?: Ref<MediaSurfaceHandle> }) => {
+  const src = useAssetUrl(item);
+  const applied = settings ?? audioSettingsOf(item);
+  const { elementRef, mediaEvents } = useMediaElementPlayback<HTMLAudioElement>(
+    {
       handleRef: ref,
       sourceKey: item.id,
       src,
@@ -29,20 +37,9 @@ export const AudioSurface = forwardRef<MediaSurfaceHandle, AudioSurfaceProps>(
       playback,
       onTimeUpdate,
       onEnded,
-    });
+    },
+  );
 
-    if (!src) return null;
-    return (
-      <audio
-        ref={element.ref}
-        src={src}
-        preload="auto"
-        onLoadedMetadata={element.onLoadedMetadata}
-        onTimeUpdate={element.onTimeUpdate}
-        onEnded={element.onEnded}
-      />
-    );
-  },
-);
-
-AudioSurface.displayName = "AudioSurface";
+  if (!src) return null;
+  return <audio ref={elementRef} src={src} preload="auto" {...mediaEvents} />;
+};

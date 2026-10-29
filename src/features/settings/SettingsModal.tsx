@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 import type { Prefs } from "../../types";
 import { useStore } from "../../store/useStore";
 import { keptManuscripts, keptThemes } from "../../lib/keepOnReset";
-import { Modal } from "../../components/ui/Modal";
+import { Modal } from "@/components/shared/Modal";
 import {
   AudioSection,
   DefaultThemesSection,

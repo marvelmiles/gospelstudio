@@ -1,13 +1,14 @@
+import { useValueChange } from "@/hooks/useValueChange";
 import { useEffect, useState } from "react";
 import { RotateCcw } from "lucide-react";
 import type { BibleVerse, BibleVersionId } from "../../types";
 import { bookById } from "../../data/bibleBooks";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import type { ScriptureSelection } from "../../store/useStore";
 import { useSpeech } from "../../hooks/useSpeech";
-import { Button } from "../../components/ui/Button";
-import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { useBibleChapter } from "./useBibleChapter";
 import { usePresentScripture } from "./usePresentScripture";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
@@ -61,13 +62,14 @@ export const BibleReader = ({
   const savePassage = useSavePassageFlow();
   const { selectionStart, selectionEnd, selectedVerses } = selection;
 
+  const { stop: stopSpeech } = speech;
   useEffect(() => {
-    speech.stop();
-  }, [version, bookId, chapter, speech.stop]);
+    stopSpeech();
+  }, [version, bookId, chapter, stopSpeech]);
 
-  useEffect(() => {
-    if (!speech.speaking) setReadingVerse(null);
-  }, [speech.speaking]);
+  useValueChange(speech.speaking, (speaking) => {
+    if (!speaking) setReadingVerse(null);
+  });
 
   useEffect(() => {
     onCurrentVerseChange?.(readingVerse ?? selectionStart);
@@ -166,8 +168,8 @@ export const BibleReader = ({
         )}
         {!loading && error && (
           <div className="glass p-7 text-center">
-            <p className="mt-0 leading-[1.6] text-sub">{error}</p>
-            <Button variant="primary" onClick={retry}>
+            <p className="mt-0 leading-[1.6] text-muted-foreground">{error}</p>
+            <Button onClick={retry}>
               <RotateCcw size={14} />
               Try again
             </Button>

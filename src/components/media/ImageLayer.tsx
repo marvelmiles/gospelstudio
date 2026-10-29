@@ -1,8 +1,8 @@
-import { useRef } from "react";
+import { useRef, type RefObject } from "react";
 import type { ImageSettings } from "../../types";
 import { buildFilter, imageTransformParts } from "../../lib/media";
 import { useResizeObserver } from "usehooks-ts";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 const scrimClassName = "bg-linear-to-t from-black/55 to-black/25";
 
@@ -20,7 +20,9 @@ export const ImageLayer = ({
   className,
 }: ImageLayerProps) => {
   const frameRef = useRef<HTMLDivElement>(null);
-  const { width = 0, height = 0 } = useResizeObserver({ ref: frameRef });
+  const { width = 0, height = 0 } = useResizeObserver({
+    ref: frameRef as RefObject<HTMLDivElement>,
+  });
   const swapAxes =
     (settings.rotate === 90 || settings.rotate === 270) &&
     width > 0 &&

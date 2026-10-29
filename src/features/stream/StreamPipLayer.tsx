@@ -1,28 +1,7 @@
-import type { PipCorner, PipPlacement } from "../../types";
+import type { PipCorner } from "../../types";
+import type { StreamPipWindow } from "./lib/streamPipWindow";
 import { pipFrameStyle } from "../../lib/pipPlacement";
 import { StreamVideo } from "./StreamVideo";
-
-export interface StreamPipWindow {
-  id: string;
-  label: string;
-  stream: MediaStream | null;
-  placement: PipPlacement;
-  muted: boolean;
-}
-
-export const cameraPipWindow = (camera: {
-  deviceId: string;
-  deviceName: string;
-  stream: MediaStream | null;
-  placement: PipPlacement;
-  muted: boolean;
-}): StreamPipWindow => ({
-  id: camera.deviceId,
-  label: camera.deviceName,
-  stream: camera.stream,
-  placement: camera.placement,
-  muted: camera.muted,
-});
 
 export const pipFrameClassName =
   "@container overflow-hidden rounded-[2.5%] bg-black shadow-[0_8px_28px_rgb(0_0_0/0.55)] outline -outline-offset-1 outline-white/22";

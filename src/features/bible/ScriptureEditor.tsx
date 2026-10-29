@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useLastDefined } from "@/hooks/useLastDefined";
 import { useNavigate, useParams } from "react-router-dom";
 import { BookOpen, Settings2 } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { Button, IconButton } from "../../components/ui/Button";
-import { MissingPage } from "../../components/ui/MissingPage";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { MissingPage } from "@/components/shared/MissingPage";
 import { useDeckEditor } from "../editor/useDeckEditor";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import { DeckWorkspace } from "../editor/DeckWorkspace";
@@ -44,9 +46,7 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
     s.scriptures.find((item) => item.id === passageId),
   );
   const upsertScripture = useStore((s) => s.upsertScripture);
-  const lastRef = useRef(current);
-  if (current) lastRef.current = current;
-  const passage = lastRef.current;
+  const passage = useLastDefined(current);
   const editor = useDeckEditor(passage!, upsertScripture);
   const openAssetUsage = useOpenAssetUsageEditor({
     kind: "scripture",
@@ -57,6 +57,12 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
 
   const startPresent = useStore((s) => s.startPresent);
   const ctrlNumBuffer = useRef("");
+  const presentVerse = useEffectEvent((verse: number) => {
+    if (!passage || useStore.getState().presentation) return;
+    const index = slideIndexForVerse(passage, verse);
+    if (index >= 0 && passage.slides?.[index])
+      startPresent("scripture", passage.id, index);
+  });
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && /^[0-9]$/.test(e.key)) {
@@ -68,11 +74,7 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
       if (e.key !== "Control") return;
       const buf = ctrlNumBuffer.current;
       ctrlNumBuffer.current = "";
-      const target = lastRef.current;
-      if (!buf || !target || useStore.getState().presentation) return;
-      const index = slideIndexForVerse(target, parseInt(buf, 10));
-      if (index >= 0 && target.slides?.[index])
-        startPresent("scripture", target.id, index);
+      if (buf) presentVerse(parseInt(buf, 10));
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
@@ -80,7 +82,7 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("keyup", onKeyUp);
     };
-  }, [startPresent]);
+  }, []);
   if (!passage) return null;
 
   const draft = editor.doc;
@@ -125,7 +127,7 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
           />
         ) : (
           <Button
-            variant="ghost"
+            variant="secondary"
             size="sm"
             onClick={() => setSettingsOpen(true)}
           >
@@ -137,11 +139,14 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
       emptyState={
         <div className="grid h-full place-items-center p-6">
           <div className="max-w-80 text-center">
-            <BookOpen size={30} className="mx-auto mb-2.5 text-dim" />
-            <p className="leading-[1.6] text-sub">
+            <BookOpen
+              size={30}
+              className="mx-auto mb-2.5 text-subtle-foreground"
+            />
+            <p className="leading-[1.6] text-muted-foreground">
               This passage has no slides yet.
             </p>
-            <Button variant="primary" onClick={() => setSettingsOpen(true)}>
+            <Button onClick={() => setSettingsOpen(true)}>
               <Settings2 size={15} />
               Passage settings
             </Button>

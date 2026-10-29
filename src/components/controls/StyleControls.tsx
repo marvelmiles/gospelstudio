@@ -2,9 +2,13 @@ import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Align, ResolvedStyle, TextStyle } from "../../types";
 import { FONTS, FONT_WEIGHT_OPTIONS } from "../../data/slideFonts";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { TEXT_SHADOW_PRESET } from "../../lib/inlineStyle";
-import { Field, Range, Select, TextInput, Toggle } from "../ui/Field";
+import { Field } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { Input } from "@/components/ui/input";
+import { SwitchField } from "@/components/shared/SwitchField";
 
 interface StyleControlsProps {
   style: ResolvedStyle;
@@ -21,26 +25,26 @@ export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
   return (
     <>
       <Field label="Font Family">
-        <Select
+        <OptionSelect
           value={style.fontFamily}
           options={FONTS}
-          onChange={(e) => onChange("fontFamily", e.target.value)}
+          onValueChange={(next) => onChange("fontFamily", next)}
         />
       </Field>
       <Field label={`Font Size (${style.fontSize})`}>
-        <Range
+        <RangeSlider
           value={Number(style.fontSize)}
           min={2.5}
           max={10}
           step={0.1}
-          onChange={(e) => onChange("fontSize", Number(e.target.value))}
+          onValueChange={(next) => onChange("fontSize", next)}
         />
       </Field>
       <Field label="Weight">
-        <Select
+        <OptionSelect
           value={String(style.fontWeight)}
           options={FONT_WEIGHT_OPTIONS}
-          onChange={(e) => onChange("fontWeight", Number(e.target.value))}
+          onValueChange={(next) => onChange("fontWeight", next)}
         />
       </Field>
       <Field label="Alignment">
@@ -54,8 +58,8 @@ export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
                 className={cn(
                   "grid flex-1 place-items-center rounded-[9px] border p-2.25",
                   active
-                    ? "border-accent/35 bg-accent/16 text-accent-soft"
-                    : "border-line bg-raise text-sub",
+                    ? "border-primary/35 bg-primary/16 text-primary-soft"
+                    : "border-border bg-secondary text-muted-foreground",
                 )}
               >
                 <Icon size={16} />
@@ -70,41 +74,41 @@ export const StyleControls = ({ style, onChange }: StyleControlsProps) => {
             type="color"
             value={style.color}
             onChange={(e) => onChange("color", e.target.value)}
-            className="h-9.5 w-10.5 cursor-pointer rounded-[9px] border border-line bg-transparent"
+            className="h-9.5 w-10.5 cursor-pointer rounded-[9px] border border-border bg-transparent"
           />
-          <TextInput
+          <Input
             value={style.color}
             onChange={(e) => onChange("color", e.target.value)}
           />
         </div>
       </Field>
       <Field label={`Line Height (${style.lineHeight})`}>
-        <Range
+        <RangeSlider
           value={Number(style.lineHeight)}
           min={1}
           max={2}
           step={0.05}
-          onChange={(e) => onChange("lineHeight", Number(e.target.value))}
+          onValueChange={(next) => onChange("lineHeight", next)}
         />
       </Field>
       <Field label={`Letter Spacing (${style.letterSpacing || 0})`}>
-        <Range
+        <RangeSlider
           value={Number(style.letterSpacing || 0)}
           min={-1}
           max={2}
           step={0.1}
-          onChange={(e) => onChange("letterSpacing", Number(e.target.value))}
+          onValueChange={(next) => onChange("letterSpacing", next)}
         />
       </Field>
       <div className="mb-1.5">
-        <Toggle
+        <SwitchField
           label="Uppercase"
           checked={Boolean(style.uppercase)}
           onChange={(checked) => onChange("uppercase", checked)}
         />
       </div>
       <div className="mb-1">
-        <Toggle
+        <SwitchField
           label="Text shadow"
           checked={style.textShadow !== "none"}
           onChange={(checked) =>

@@ -1,36 +1,56 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { ReactNode } from "react";
-import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Image as ImageIcon,
-  X,
-} from "lucide-react";
+import { ChevronRight, Image as ImageIcon, X } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { inputClassName } from "../../components/ui/Field";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { cn } from "../../lib/cn";
-
-const compactInputClassName = cn(inputClassName, "px-2.5 py-1.75");
-
-const clearButtonClassName =
-  "grid size-7.5 shrink-0 place-items-center overflow-hidden rounded-lg border border-transparent bg-transparent p-0 text-dim";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { cn } from "../../lib/utils";
 
 export const OverlaySectionLabel = ({ children }: { children: string }) => (
-  <div className="mb-1.75 text-[11.5px] font-bold tracking-[0.4px] text-dim uppercase">
+  <div className="mb-1.75 text-[11.5px] font-bold tracking-[0.4px] text-subtle-foreground uppercase">
     {children}
   </div>
 );
 
 const ControlLabel = ({ children }: { children: ReactNode }) => (
-  <span className="text-xs font-semibold text-sub">{children}</span>
+  <span className="text-xs font-semibold text-muted-foreground">
+    {children}
+  </span>
 );
 
 const FieldLabel = ({ children }: { children: ReactNode }) => (
   <span className="mb-1 block">
     <ControlLabel>{children}</ControlLabel>
   </span>
+);
+
+const ClearButton = ({
+  label,
+  onClick,
+}: {
+  label: string;
+  onClick: () => void;
+}) => (
+  <Button
+    variant="ghost"
+    size="icon-sm"
+    title={label}
+    aria-label={label}
+    onClick={onClick}
+    className="text-subtle-foreground"
+  >
+    <X />
+  </Button>
 );
 
 export const OverlaySlider = ({
@@ -50,25 +70,24 @@ export const OverlaySlider = ({
   suffix?: string;
   onChange: (value: number) => void;
 }) => (
-  <label className="block">
-    <span className="mb-1 flex justify-between">
+  <div>
+    <span className="mb-2 flex justify-between">
       <ControlLabel>{label}</ControlLabel>
       {suffix !== undefined && (
         <ControlLabel>
-          <span className="text-dim">{`${value}${suffix}`}</span>
+          <span className="text-subtle-foreground">{`${value}${suffix}`}</span>
         </ControlLabel>
       )}
     </span>
-    <input
-      type="range"
+    <Slider
+      aria-label={label}
       min={min}
       max={max}
       step={step}
-      value={value}
-      onChange={(event) => onChange(Number(event.target.value))}
-      className="w-full accent-accent"
+      value={[value]}
+      onValueChange={([next]) => onChange(next)}
     />
-  </label>
+  </div>
 );
 
 export const OverlaySelect = ({
@@ -82,27 +101,16 @@ export const OverlaySelect = ({
   options: { value: string; label: string }[];
   onChange: (value: string) => void;
 }) => (
-  <label className="block">
+  <div>
     <FieldLabel>{label}</FieldLabel>
-    <select
+    <OptionSelect
+      aria-label={label}
       value={value}
-      onChange={(event) => onChange(event.target.value)}
-      className={cn(
-        compactInputClassName,
-        "cursor-pointer appearance-none text-[12.5px]",
-      )}
-    >
-      {options.map((option) => (
-        <option
-          key={option.value}
-          value={option.value}
-          className="bg-panel-solid"
-        >
-          {option.label}
-        </option>
-      ))}
-    </select>
-  </label>
+      options={options}
+      onValueChange={onChange}
+      className="h-8 text-[12.5px]"
+    />
+  </div>
 );
 
 export const OverlayCheckbox = ({
@@ -115,32 +123,28 @@ export const OverlayCheckbox = ({
   hint?: string;
   checked: boolean;
   onChange: (checked: boolean) => void;
-}) => (
-  <label className="flex cursor-pointer items-start gap-2.25">
-    <span
-      className={cn(
-        "relative mt-px grid size-4.25 shrink-0 place-items-center rounded-[5px] border text-on-accent",
-        checked
-          ? "border-accent bg-accent"
-          : "border-line-strong bg-transparent",
-      )}
-    >
-      <input
-        type="checkbox"
+}) => {
+  const id = useId();
+  return (
+    <div className="flex items-start gap-2.25">
+      <Checkbox
+        id={id}
         checked={checked}
-        onChange={(event) => onChange(event.target.checked)}
-        className="absolute size-0 opacity-0"
+        onCheckedChange={(next) => onChange(next === true)}
+        className="mt-px"
       />
-      {checked && <Check size={12} strokeWidth={3} />}
-    </span>
-    <span className="min-w-0">
-      <span className="flex items-center gap-1 text-[12.5px] font-semibold text-fg">
-        {label}
+      <span className="flex min-w-0 items-center gap-1">
+        <Label
+          htmlFor={id}
+          className="cursor-pointer text-[12.5px] font-semibold text-foreground"
+        >
+          {label}
+        </Label>
         {hint && <InfoTip title={label}>{hint}</InfoTip>}
       </span>
-    </span>
-  </label>
-);
+    </div>
+  );
+};
 
 export const OverlayColorField = ({
   label,
@@ -163,25 +167,17 @@ export const OverlayColorField = ({
           value={pickerValue}
           onChange={(event) => onChange(event.target.value)}
           aria-label={`${label} colour`}
-          className="size-7.5 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-line bg-transparent p-0"
+          className="size-8 shrink-0 cursor-pointer overflow-hidden rounded-lg border bg-transparent p-0"
         />
-        <input
+        <Input
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={clearLabel}
           aria-label={`${label} value`}
-          className={cn(compactInputClassName, "text-xs")}
+          className="h-8 text-xs"
         />
         {value !== "" && (
-          <button
-            type="button"
-            title={clearLabel}
-            aria-label={clearLabel}
-            onClick={() => onChange("")}
-            className={clearButtonClassName}
-          >
-            <X size={14} />
-          </button>
+          <ClearButton label={clearLabel} onClick={() => onChange("")} />
         )}
       </div>
     </div>
@@ -202,29 +198,22 @@ export const OverlayImageField = ({
   <div>
     <FieldLabel>{label}</FieldLabel>
     <div className="flex items-center gap-1.75">
-      <button
-        type="button"
+      <Button
+        variant="secondary"
+        size="sm"
         onClick={onChoose}
         className={cn(
-          "flex min-w-0 flex-1 items-center gap-2 rounded-[9px] border border-line bg-raise px-2.5 py-1.75 text-left text-xs font-semibold",
-          pictureName ? "text-fg" : "text-dim",
+          "min-w-0 flex-1 justify-start text-xs",
+          pictureName ? "text-foreground" : "text-subtle-foreground",
         )}
       >
-        <ImageIcon size={13} className="shrink-0" />
+        <ImageIcon />
         <span className="min-w-0 truncate">
           {pictureName ?? "Choose a picture"}
         </span>
-      </button>
+      </Button>
       {pictureName && (
-        <button
-          type="button"
-          title="Remove the picture"
-          aria-label="Remove the picture"
-          onClick={onClear}
-          className={clearButtonClassName}
-        >
-          <X size={14} />
-        </button>
+        <ClearButton label="Remove the picture" onClick={onClear} />
       )}
     </div>
   </div>
@@ -243,31 +232,22 @@ export const OverlaySettingsGroup = ({
 }) => {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div
-      className={cn(
-        "rounded-[10px] border border-line",
-        open ? "bg-raise/50" : "bg-transparent",
-      )}
+    <Collapsible
+      open={open}
+      onOpenChange={setOpen}
+      className="rounded-[10px] border data-[state=open]:bg-secondary/50"
     >
-      <button
-        type="button"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-2 border-none bg-transparent px-2.5 py-2 text-[12.5px] font-semibold text-fg"
-      >
-        <Icon size={14} className="shrink-0 text-accent-soft" />
+      <CollapsibleTrigger className="group flex w-full items-center gap-2 px-2.5 py-2 text-[12.5px] font-semibold text-foreground">
+        <Icon size={14} className="shrink-0 text-primary-soft" />
         <span className="flex-1 text-left">{title}</span>
-        {open ? (
-          <ChevronDown size={14} className="text-dim" />
-        ) : (
-          <ChevronRight size={14} className="text-dim" />
-        )}
-      </button>
-      {open && (
-        <div className="flex flex-col gap-2.75 px-2.5 pt-0.5 pb-2.75">
-          {children}
-        </div>
-      )}
-    </div>
+        <ChevronRight
+          size={14}
+          className="text-subtle-foreground transition-transform group-data-[state=open]:rotate-90"
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="flex flex-col gap-2.75 px-2.5 pt-0.5 pb-2.75">
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
   );
 };

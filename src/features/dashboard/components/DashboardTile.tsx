@@ -1,6 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { formatCount } from "../../../lib/formatNumber";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 
 type TileTone =
   | "accent"
@@ -13,7 +13,7 @@ type TileTone =
   | "chart-7";
 
 const TONE_CLASSES: Record<TileTone, string> = {
-  accent: "bg-accent-soft/13 text-accent-soft",
+  accent: "bg-primary-soft/13 text-primary-soft",
   "chart-1": "bg-chart-1/13 text-chart-1",
   "chart-2": "bg-chart-2/13 text-chart-2",
   "chart-3": "bg-chart-3/13 text-chart-3",
@@ -51,14 +51,14 @@ export const DashboardTile = ({
     className={cn(
       "flex min-h-21 w-full items-center gap-3.25 glass px-4.25 py-4 text-left transition-[translate,border-color] duration-150 hover:-translate-y-0.5",
       primary
-        ? "border-accent-soft/45 bg-accent shadow-[0_4px_12px_rgb(37_99_235/0.25),inset_0_1px_0_rgb(255_255_255/0.12)]"
-        : "bg-panel hover:border-line-strong",
+        ? "border-primary-soft/45 bg-primary shadow-[0_4px_12px_rgb(37_99_235/0.25),inset_0_1px_0_rgb(255_255_255/0.12)]"
+        : "bg-card/85 hover:border-input",
     )}
   >
     <span
       className={cn(
         "grid size-10.5 shrink-0 place-items-center rounded-xl",
-        primary ? "bg-white/18 text-on-accent" : TONE_CLASSES[tone],
+        primary ? "bg-white/18 text-primary-foreground" : TONE_CLASSES[tone],
       )}
     >
       <Icon size={20} />
@@ -69,7 +69,7 @@ export const DashboardTile = ({
           <span
             className={cn(
               "block text-[14.5px] leading-tight font-semibold",
-              primary ? "text-on-accent" : "text-fg",
+              primary ? "text-primary-foreground" : "text-foreground",
             )}
           >
             {label}
@@ -78,7 +78,7 @@ export const DashboardTile = ({
             <span
               className={cn(
                 "mt-0.75 block truncate text-[12.5px]",
-                primary ? "text-white/78" : "text-sub",
+                primary ? "text-white/78" : "text-muted-foreground",
               )}
             >
               {sub}
@@ -87,10 +87,10 @@ export const DashboardTile = ({
         </>
       ) : (
         <>
-          <span className="block text-[28px] leading-none font-semibold text-fg">
+          <span className="block text-[28px] leading-none font-semibold text-foreground">
             {formatCount(value)}
           </span>
-          <span className="mt-1.25 block truncate text-[13px] text-sub">
+          <span className="mt-1.25 block truncate text-[13px] text-muted-foreground">
             {label}
           </span>
         </>

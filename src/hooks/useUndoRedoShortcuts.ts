@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent } from "react";
 
 interface UndoRedoShortcutOptions {
   canUndo: boolean;
@@ -15,25 +15,22 @@ export const useUndoRedoShortcuts = ({
   redo,
   enabled = true,
 }: UndoRedoShortcutOptions): void => {
-  const state = useRef({ canUndo, canRedo, undo, redo, enabled });
-  state.current = { canUndo, canRedo, undo, redo, enabled };
+  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+    if (!enabled || event.defaultPrevented || event.altKey) return;
+    if (!event.ctrlKey && !event.metaKey) return;
+    const key = event.key.toLowerCase();
+    if (key !== "z" && key !== "y") return;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest?.('[role="dialog"]')) return;
+
+    const redoing = key === "y" || event.shiftKey;
+    if (redoing ? !canRedo : !canUndo) return;
+    event.preventDefault();
+    if (redoing) redo();
+    else undo();
+  });
 
   useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      const current = state.current;
-      if (!current.enabled || event.defaultPrevented || event.altKey) return;
-      if (!event.ctrlKey && !event.metaKey) return;
-      const key = event.key.toLowerCase();
-      if (key !== "z" && key !== "y") return;
-      const target = event.target as HTMLElement | null;
-      if (target?.closest?.('[role="dialog"]')) return;
-
-      const redoing = key === "y" || event.shiftKey;
-      if (redoing ? !current.canRedo : !current.canUndo) return;
-      event.preventDefault();
-      if (redoing) current.redo();
-      else current.undo();
-    };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);

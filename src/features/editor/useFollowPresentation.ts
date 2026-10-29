@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import type { ContentKind, Slide } from "../../types";
 import { useStore } from "../../store/useStore";
 
@@ -13,8 +13,10 @@ export const useFollowPresentation = (
   const isPresentingThisDoc =
     presentation?.kind === kind && presentation.id === docId;
 
-  const slidesRef = useRef(slides);
-  slidesRef.current = slides;
+  const followSlide = useEffectEvent((index: number) => {
+    const slide = slides[index];
+    if (slide) setSelectedId(slide.id);
+  });
   const followedIndex = useRef<number | null>(null);
 
   useEffect(() => {
@@ -24,7 +26,6 @@ export const useFollowPresentation = (
     }
     if (followedIndex.current === presentationIndex) return;
     followedIndex.current = presentationIndex;
-    const slide = slidesRef.current[presentationIndex];
-    if (slide) setSelectedId(slide.id);
-  }, [isPresentingThisDoc, presentationIndex, setSelectedId]);
+    followSlide(presentationIndex);
+  }, [isPresentingThisDoc, presentationIndex]);
 };

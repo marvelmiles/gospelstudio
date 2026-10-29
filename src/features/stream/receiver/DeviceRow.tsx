@@ -1,7 +1,8 @@
 import { Smartphone, Unplug, Wifi } from "lucide-react";
-import { cn } from "../../../lib/cn";
-import { Button } from "../../../components/ui/Button";
-import { StreamStatusBadge, connectionBadgeStatus } from "../StreamStatusBadge";
+import { cn } from "../../../lib/utils";
+import { Button } from "@/components/ui/button";
+import { StreamStatusBadge } from "../StreamStatusBadge";
+import { connectionBadgeStatus } from "../lib/streamBadge";
 import type { DeviceEntry } from "../lib/signaling";
 import {
   MAX_STREAM_CAMERAS,
@@ -37,19 +38,19 @@ export const DeviceRow = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border bg-canvas px-3.5 py-3",
-        isConnected ? "border-accent" : "border-line",
+        "flex items-center gap-3 rounded-xl border bg-background px-3.5 py-3",
+        isConnected ? "border-primary" : "border-border",
       )}
     >
-      <span className="grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-raise text-accent-soft">
+      <span className="grid size-9.5 shrink-0 place-items-center rounded-[10px] bg-secondary text-primary-soft">
         <Smartphone size={18} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-semibold text-fg">
+        <span className="block truncate text-sm font-semibold text-foreground">
           {device.name}
         </span>
         {camera && (
-          <span className="text-[11px] font-bold tracking-[0.4px] text-dim uppercase">
+          <span className="text-[11px] font-bold tracking-[0.4px] text-subtle-foreground uppercase">
             {cameraRole(session, device.id)}
           </span>
         )}
@@ -61,7 +62,7 @@ export const DeviceRow = ({
             size="sm"
           />
           <Button
-            variant="danger"
+            variant="destructive"
             size="sm"
             title="Disconnect this camera"
             onClick={onDisconnect}
@@ -72,7 +73,6 @@ export const DeviceRow = ({
         </>
       ) : (
         <Button
-          variant="primary"
           size="sm"
           onClick={onConnect}
           disabled={isFull}

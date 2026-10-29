@@ -15,10 +15,10 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
-import { Button } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { EmptyState } from "../../components/ui/EmptyState";
+import { cn } from "../../lib/utils";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { keepsSelectionProps } from "../../lib/selectionScope";
 import {
   OverlayContentPicker,
@@ -103,7 +103,7 @@ export const StreamOverlayPanel = ({
         <OverlaySectionLabel>Add to the broadcast</OverlaySectionLabel>
         <div className="flex flex-wrap gap-1.75">
           <Button
-            variant="subtle"
+            variant="ghost"
             size="sm"
             onClick={() => setPickingPassage(true)}
           >
@@ -115,7 +115,7 @@ export const StreamOverlayPanel = ({
             return (
               <Button
                 key={kind}
-                variant="subtle"
+                variant="ghost"
                 size="sm"
                 onClick={() => setPicking(kind)}
               >
@@ -125,7 +125,7 @@ export const StreamOverlayPanel = ({
             );
           })}
           <Button
-            variant="subtle"
+            variant="ghost"
             size="sm"
             onClick={() => setPickingPicture(true)}
           >
@@ -133,7 +133,7 @@ export const StreamOverlayPanel = ({
             Picture
           </Button>
           <Button
-            variant="subtle"
+            variant="ghost"
             size="sm"
             onClick={() =>
               addStreamOverlay(createMarqueeOverlay(DEFAULT_MARQUEE_TEXT))
@@ -143,7 +143,7 @@ export const StreamOverlayPanel = ({
             Announcement
           </Button>
           <Button
-            variant="subtle"
+            variant="ghost"
             size="sm"
             title="Add an overlay you saved for another service"
             onClick={() => setPickingSaved(true)}
@@ -292,13 +292,14 @@ const TextAction = ({
   onClick: () => void;
   children: string;
 }) => (
-  <button
+  <Button
+    variant="link"
     title={label}
     onClick={onClick}
-    className="border-none bg-transparent p-0 text-xs font-semibold text-dim"
+    className="h-auto p-0 text-xs text-subtle-foreground"
   >
     {children}
-  </button>
+  </Button>
 );
 
 const OverlayRow = ({
@@ -320,17 +321,17 @@ const OverlayRow = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-[10px] border bg-canvas py-1.5 pr-1.75 pl-2.5",
-        selected ? "border-accent" : "border-line",
+        "flex items-center gap-1.5 rounded-[10px] border bg-background py-1.5 pr-1.75 pl-2.5",
+        selected ? "border-primary" : "border-border",
         overlay.hidden && "opacity-55",
       )}
     >
       <button
         onClick={onSelect}
         aria-pressed={selected}
-        className="flex min-w-0 flex-1 items-center gap-2.25 border-none bg-transparent p-0 text-left text-[13px] font-semibold text-fg"
+        className="flex min-w-0 flex-1 items-center gap-2.25 border-none bg-transparent p-0 text-left text-[13px] font-semibold text-foreground"
       >
-        <Icon size={14} className="shrink-0 text-accent-soft" />
+        <Icon size={14} className="shrink-0 text-primary-soft" />
         <span className="min-w-0 flex-1 truncate">
           {isMarquee(overlay) ? overlay.text : overlay.label}
         </span>
@@ -395,8 +396,8 @@ const StatusChip = ({
       }
       className={cn(
         "inline-flex shrink-0 items-center gap-1 rounded-full border px-1.75 py-px text-[9.5px] font-bold tracking-[0.3px] uppercase",
-        !onAir && "border-line bg-transparent text-dim",
-        onAir && !waiting && "border-accent bg-accent/18 text-accent",
+        !onAir && "border-border bg-transparent text-subtle-foreground",
+        onAir && !waiting && "border-primary bg-primary/18 text-primary",
         waiting && "border-warning bg-warning/18 text-warning",
       )}
     >
@@ -428,12 +429,12 @@ const RowButton = ({
       onClick={onClick}
       className={cn(
         "grid size-6.25 shrink-0 place-items-center rounded-[7px] border-none",
-        active ? "bg-accent/16" : "bg-transparent",
+        active ? "bg-primary/16" : "bg-transparent",
         danger
-          ? "text-danger"
+          ? "text-destructive"
           : accent || active
-            ? "text-accent-soft"
-            : "text-sub",
+            ? "text-primary-soft"
+            : "text-muted-foreground",
       )}
     >
       <Icon size={13} fill={active ? "currentColor" : "none"} />

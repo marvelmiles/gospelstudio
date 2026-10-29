@@ -1,9 +1,9 @@
-import { forwardRef } from "react";
+import type { Ref } from "react";
 import type { MediaItem, VideoSettings } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { buildFilter, videoSettingsOf } from "../../lib/media";
 import { useBlobUrl } from "../../lib/blobUrls";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import {
   useMediaElementPlayback,
   type MediaSurfaceHandle,
@@ -21,14 +21,20 @@ interface VideoSurfaceProps {
   className?: string;
 }
 
-export const VideoSurface = forwardRef<VideoSurfaceHandle, VideoSurfaceProps>(
-  (
-    { item, settings, playback, forceMuted, onTimeUpdate, onEnded, className },
-    ref,
-  ) => {
-    const src = useBlobUrl(item.id);
-    const applied = settings ?? videoSettingsOf(item);
-    const element = useMediaElementPlayback<HTMLVideoElement>({
+export const VideoSurface = ({
+  item,
+  settings,
+  playback,
+  forceMuted,
+  onTimeUpdate,
+  onEnded,
+  className,
+  ref,
+}: VideoSurfaceProps & { ref?: Ref<VideoSurfaceHandle> }) => {
+  const src = useBlobUrl(item.id);
+  const applied = settings ?? videoSettingsOf(item);
+  const { elementRef, mediaEvents } = useMediaElementPlayback<HTMLVideoElement>(
+    {
       handleRef: ref,
       sourceKey: item.id,
       src,
@@ -37,30 +43,26 @@ export const VideoSurface = forwardRef<VideoSurfaceHandle, VideoSurfaceProps>(
       forceMuted,
       onTimeUpdate,
       onEnded,
-    });
+    },
+  );
 
-    return (
-      <div
-        className={cn(
-          "absolute inset-0 grid place-items-center overflow-hidden bg-black",
-          className,
-        )}
-      >
-        {src && (
-          <video
-            ref={element.ref}
-            src={src}
-            playsInline
-            onLoadedMetadata={element.onLoadedMetadata}
-            onTimeUpdate={element.onTimeUpdate}
-            onEnded={element.onEnded}
-            style={{ objectFit: applied.fit, filter: buildFilter(applied) }}
-            className="size-full"
-          />
-        )}
-      </div>
-    );
-  },
-);
-
-VideoSurface.displayName = "VideoSurface";
+  return (
+    <div
+      className={cn(
+        "absolute inset-0 grid place-items-center overflow-hidden bg-black",
+        className,
+      )}
+    >
+      {src && (
+        <video
+          ref={elementRef}
+          src={src}
+          playsInline
+          {...mediaEvents}
+          style={{ objectFit: applied.fit, filter: buildFilter(applied) }}
+          className="size-full"
+        />
+      )}
+    </div>
+  );
+};

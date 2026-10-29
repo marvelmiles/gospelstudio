@@ -3,7 +3,7 @@ import {
   videoPosition,
   type VideoProgress,
 } from "../../lib/media";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 interface VideoTimecodeProps {
   progress: VideoProgress;

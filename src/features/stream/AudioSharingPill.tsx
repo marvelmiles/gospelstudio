@@ -1,6 +1,7 @@
 import { MicOff, Volume2, VolumeX } from "lucide-react";
-import { cn } from "../../lib/cn";
-import { statusPillClassName } from "./StreamStatusBadge";
+import { cn } from "../../lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { statusPillClassName } from "./lib/streamBadge";
 
 export const AudioSharingPill = ({
   available,
@@ -35,15 +36,17 @@ export const AudioSharingPill = ({
         };
 
   return (
-    <span
+    <Badge
+      variant="secondary"
       title={title}
       className={cn(
         statusPillClassName(small),
-        "border border-line bg-raise",
-        dim ? "text-dim" : "text-sub",
+        "border-border",
+        dim ? "text-subtle-foreground" : "text-muted-foreground",
+        small ? "[&>svg]:size-2.75" : "[&>svg]:size-3",
       )}
     >
-      <Icon size={small ? 11 : 12} /> {label}
-    </span>
+      <Icon /> {label}
+    </Badge>
   );
 };

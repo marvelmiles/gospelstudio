@@ -1,11 +1,12 @@
 import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
-import { Modal } from "../../components/ui/Modal";
-import { SectionTitle } from "../../components/ui/Field";
-import { InfoTip } from "../../components/ui/InfoTip";
+import { cn } from "../../lib/utils";
+import { Modal } from "@/components/shared/Modal";
+import { SectionTitle } from "@/components/shared/Field";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { SHORTCUT_GROUPS } from "../../lib/shortcuts";
+import { Kbd } from "@/components/ui/kbd";
 
 const ARROW_KEYS: Partial<
   Record<string, { label: string; icons: LucideIcon[] }>
@@ -53,25 +54,25 @@ export const ShortcutsModal = () => {
               key={index}
               className={cn(
                 "flex items-center justify-between gap-3 py-2",
-                index < group.shortcuts.length - 1 && "border-b border-line",
+                index < group.shortcuts.length - 1 && "border-b border-border",
               )}
             >
-              <span className="text-[13.5px] text-fg">
+              <span className="text-[13.5px] text-foreground">
                 {shortcut.description}
               </span>
               <span className="flex max-w-65 shrink-0 flex-wrap justify-end gap-1.25">
                 {shortcut.keys.map((key) => (
-                  <kbd
+                  <Kbd
                     key={key}
                     aria-label={ARROW_KEYS[key]?.label}
-                    className="inline-flex min-w-5.5 items-center justify-center gap-0.5 rounded-md border border-line bg-white/7 px-2 py-0.75 font-mono text-xs font-semibold text-fg"
+                    className="h-auto min-w-5.5 gap-0.5 rounded-md border bg-white/7 px-2 py-0.75 font-mono font-semibold text-foreground"
                   >
                     {ARROW_KEYS[key]
                       ? ARROW_KEYS[key].icons.map((Icon, index) => (
                           <Icon key={index} size={12} aria-hidden />
                         ))
                       : key}
-                  </kbd>
+                  </Kbd>
                 ))}
               </span>
             </div>

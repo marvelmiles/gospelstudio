@@ -4,7 +4,7 @@ import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useBgMap } from "../../hooks/useBgMap";
 import { useProjectionFullscreen } from "../../hooks/useProjectionFullscreen";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
-import { ProjectionFullscreenButton } from "../../components/ui/ProjectionFullscreenButton";
+import { ProjectionFullscreenButton } from "@/components/shared/ProjectionFullscreenButton";
 import {
   MEDIA_SYNC_TOLERANCE_SECONDS,
   openPresentChannel,

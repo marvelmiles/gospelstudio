@@ -11,16 +11,17 @@ import {
   useUnsavedChanges,
   UNSAVED_CHANGES_MESSAGE,
 } from "../../hooks/useUnsavedChanges";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { pageClassName } from "../../components/ui/PageHeader";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { pageClassName } from "@/components/shared/PageHeader";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
 import {
   EditorColumns,
   EditorStackedBody,
 } from "../../components/layout/EditorColumns";
-import { PanelTabs, type PanelTab } from "../../components/ui/PanelTabs";
+import { PanelTabs, type PanelTab } from "@/components/shared/PanelTabs";
 import { ThemeListPanel } from "./ThemeListPanel";
 import { ThemeInspectorPanel } from "./ThemeInspectorPanel";
 import { ThemePreviewPanel } from "./ThemePreviewPanel";
@@ -119,7 +120,7 @@ export const ThemesPage = () => {
           title="No themes yet"
           message="Create one to style every slide in a manuscript at once."
           action={
-            <Button variant="primary" onClick={addTheme}>
+            <Button onClick={addTheme}>
               <Plus size={15} />
               New Theme
             </Button>
@@ -181,7 +182,7 @@ export const ThemesPage = () => {
                 />
               ) : (
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   title={resetTitle(canReset)}
                   disabled={!canReset}
@@ -202,7 +203,7 @@ export const ThemesPage = () => {
             {compact ? (
               <IconButton icon={Plus} title="New theme" onClick={addTheme} />
             ) : (
-              <Button variant="ghost" size="sm" onClick={addTheme}>
+              <Button variant="secondary" size="sm" onClick={addTheme}>
                 <Plus size={14} />
                 New Theme
               </Button>

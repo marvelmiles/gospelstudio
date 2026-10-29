@@ -142,12 +142,6 @@ export interface VideoProgress {
 export const videoPosition = ({ time, start, end }: VideoProgress): number =>
   Math.min(Math.max(time, start), Math.max(end, start));
 
-export const videoProgressPercent = (progress: VideoProgress): number => {
-  const span = Math.max(progress.end - progress.start, 0);
-  if (!span) return 0;
-  return ((videoPosition(progress) - progress.start) / span) * 100;
-};
-
 const SECONDS_PER_HOUR = 3600;
 
 const pad = (value: number): string => String(value).padStart(2, "0");

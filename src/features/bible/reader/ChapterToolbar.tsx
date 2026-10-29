@@ -7,10 +7,11 @@ import {
   Square,
   Volume2,
 } from "lucide-react";
-import { cn } from "../../../lib/cn";
-import { Button, IconButton } from "../../../components/ui/Button";
-import { TextInput } from "../../../components/ui/Field";
-import { ClearInputButton } from "../../../components/ui/ClearInputButton";
+import { cn } from "../../../lib/utils";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { Input } from "@/components/ui/input";
+import { ClearInputButton } from "@/components/shared/ClearInputButton";
 
 interface ChapterToolbarProps {
   reference: string;
@@ -49,7 +50,7 @@ export const ChapterToolbar = ({
   return (
     <div className="mb-3.5 flex flex-wrap items-center gap-2.5">
       <div className="relative min-w-47.5 flex-1">
-        <TextInput
+        <Input
           ref={referenceRef}
           value={reference}
           placeholder="Go to reference, like John 3:16-18"
@@ -70,7 +71,7 @@ export const ChapterToolbar = ({
         />
       </div>
       <Button
-        variant="ghost"
+        variant="secondary"
         onClick={onJumpToReference}
         title="Go to reference"
       >
@@ -102,7 +103,7 @@ export const ChapterToolbar = ({
           title="Previous chapter"
           onClick={onPreviousChapter}
         />
-        <span className="min-w-32.5 text-center text-[17px] font-semibold text-fg">
+        <span className="min-w-32.5 text-center text-[17px] font-semibold text-foreground">
           {chapterLabel}
         </span>
         <IconButton

@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
+import type { MediaSurfaceHandle } from "@/hooks/useMediaElementPlayback";
 import { useNavigate, useParams } from "react-router-dom";
 import { Image as ImageIcon, Music, Undo2 } from "lucide-react";
 import type {
@@ -9,7 +10,7 @@ import type {
   MediaItem,
   VideoSettings,
 } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { useWindowSize } from "usehooks-ts";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
@@ -28,10 +29,11 @@ import { shallowEqual } from "../../lib/equality";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
 import { formatTrimmedDuration } from "../../lib/media";
 import { settingsGrouping } from "../../lib/settingsHistory";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { MissingPage } from "../../components/ui/MissingPage";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { MissingPage } from "@/components/shared/MissingPage";
 import { EditorSplitLayout } from "../../components/layout/EditorSplitLayout";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
 import { AudioSettingsControls } from "../../components/media/AudioSettingsControls";
@@ -210,7 +212,7 @@ const UsageFrame = ({
         backTitle={`Back to ${edit.label}`}
         onBack={usage.back}
         leading={
-          <span className="inline-flex items-center gap-1.25 rounded-full border border-accent/30 bg-accent/12 py-1 pr-1.5 pl-2.25 text-[11.5px] font-semibold whitespace-nowrap text-accent-soft">
+          <span className="inline-flex items-center gap-1.25 rounded-full border border-primary/30 bg-primary/12 py-1 pr-1.5 pl-2.25 text-[11.5px] font-semibold whitespace-nowrap text-primary-soft">
             Editing for {edit.label}
             <InfoTip title="Where changes go">
               {assetUsageNote(edit.label, kind)}
@@ -227,7 +229,7 @@ const UsageFrame = ({
             />
           ) : (
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               title={resetTitle(canReset)}
               disabled={!canReset}
@@ -288,7 +290,7 @@ const UsageFrame = ({
 const PreviewSurface = ({ children }: { children: ReactNode }) => (
   <div
     {...mediaSurfaceProps}
-    className="relative aspect-video w-full overflow-hidden rounded-[14px] border border-line bg-black"
+    className="relative aspect-video w-full overflow-hidden rounded-[14px] border border-border bg-black"
   >
     {children}
   </div>
@@ -365,7 +367,8 @@ const VideoUsageWorkspace = ({
     (s) => Boolean(s.presentation) && s.presentationMode === "stage",
   );
   const validation = useValidation();
-  const video = useMediaPlayback(draft, { autoPlay: false });
+  const videoSurfaceRef = useRef<MediaSurfaceHandle>(null);
+  const video = useMediaPlayback(videoSurfaceRef, draft, { autoPlay: false });
   const duration = item.duration || video.duration || 0;
   const trimEnd = draft.trimEnd ?? duration;
 
@@ -405,7 +408,7 @@ const VideoUsageWorkspace = ({
       preview={
         <PreviewSurface>
           <VideoSurface
-            ref={video.surfaceRef}
+            ref={videoSurfaceRef}
             item={item}
             settings={draft}
             playback={playback}
@@ -462,7 +465,8 @@ const AudioUsageWorkspace = ({
     (s) => Boolean(s.presentation) && s.presentationMode === "stage",
   );
   const validation = useValidation();
-  const player = useMediaPlayback(draft, { autoPlay: false });
+  const playerSurfaceRef = useRef<MediaSurfaceHandle>(null);
+  const player = useMediaPlayback(playerSurfaceRef, draft, { autoPlay: false });
   const duration = item.duration || player.duration || 0;
   const trimEnd = draft.trimEnd ?? duration;
 
@@ -519,7 +523,7 @@ const AudioUsageWorkspace = ({
             className="w-full"
           />
           <AudioSurface
-            ref={player.surfaceRef}
+            ref={playerSurfaceRef}
             item={item}
             settings={draft}
             loop={loopAudio}

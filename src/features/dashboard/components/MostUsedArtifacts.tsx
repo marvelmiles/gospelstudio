@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Layers, Volume2, X } from "lucide-react";
-import { EmptyState } from "../../../components/ui/EmptyState";
+import { EmptyState } from "@/components/shared/EmptyState";
 import { formatCount } from "../../../lib/formatNumber";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 import { BgSwatch } from "../../../components/controls/BgSwatch";
 import { RankBar } from "./RankBar";
 import type { UsageTab, UsedItem } from "../utils";
@@ -25,7 +25,7 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
 
   return (
     <div className="glass p-5.5">
-      <h3 className="mt-0 mb-3 text-lg text-fg">Most Used Artifacts</h3>
+      <h3 className="mt-0 mb-3 text-lg text-foreground">Most Used Artifacts</h3>
       <div className="mb-3 flex gap-1.5">
         {USAGE_TABS.map((tab) => {
           const activeTab = usageTab === tab.id;
@@ -36,8 +36,8 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
               className={cn(
                 "flex-1 rounded-[9px] border py-1.75 text-[12.5px] font-semibold",
                 activeTab
-                  ? "border-accent/40 bg-accent/16 text-accent-soft"
-                  : "border-line bg-transparent text-sub",
+                  ? "border-primary/40 bg-primary/16 text-primary-soft"
+                  : "border-border bg-transparent text-muted-foreground",
               )}
             >
               {tab.label}
@@ -59,15 +59,17 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
             {item.bg ? (
               <BgSwatch
                 bg={item.bg}
-                className="h-6.75 w-11.5 shrink-0 rounded-md border border-line"
+                className="h-6.75 w-11.5 shrink-0 rounded-md border border-border"
               />
             ) : (
-              <div className="grid h-6.75 w-11.5 shrink-0 place-items-center rounded-md border border-line bg-accent/14 text-accent-soft">
+              <div className="grid h-6.75 w-11.5 shrink-0 place-items-center rounded-md border border-border bg-primary/14 text-primary-soft">
                 <Volume2 size={14} />
               </div>
             )}
             <div className="min-w-0 flex-1">
-              <div className="truncate text-[13.5px] text-fg">{item.name}</div>
+              <div className="truncate text-[13.5px] text-foreground">
+                {item.name}
+              </div>
               <RankBar
                 value={item.count}
                 max={highestUseCount}
@@ -75,7 +77,7 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
                 className="mt-1 h-1.25"
               />
             </div>
-            <span className="inline-flex items-center text-[12.5px] text-sub tabular-nums">
+            <span className="inline-flex items-center text-[12.5px] text-muted-foreground tabular-nums">
               <X size={11} aria-label="times" />
               {formatCount(item.count)}
             </span>

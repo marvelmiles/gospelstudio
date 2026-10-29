@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
 import { detectDeviceName } from "../../../lib/deviceName";
 import { deriveNetworkRoom } from "../../../lib/networkRoom";
 import { signalingConfigured } from "../../../lib/signalingDb";
@@ -57,18 +58,22 @@ export const useShareLobby = ({
     };
   }, []);
 
-  useEffect(() => {
+  useValueChange(`${announce}:${attempt}:${deviceName}`, () => {
     if (!signalingConfigured || !deviceName) return;
+    setDevices([]);
+    if (isOnline()) {
+      setStatus("starting");
+      return;
+    }
+    setRoom(null);
+    setStatus("offline");
+  });
+
+  useEffect(() => {
+    if (!signalingConfigured || !deviceName || !isOnline()) return;
     let isCancelled = false;
     let stopWatching = () => {};
     let presence: SharePresence | null = null;
-    setDevices([]);
-    if (!isOnline()) {
-      setRoom(null);
-      setStatus("offline");
-      return;
-    }
-    setStatus("starting");
 
     void deriveNetworkRoom().then((networkRoom) => {
       if (isCancelled) return;

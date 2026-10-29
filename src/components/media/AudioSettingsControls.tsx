@@ -1,7 +1,8 @@
 import type { AudioSettings } from "../../types";
 import { formatDuration } from "../../lib/media";
-import { Field, Range, SectionTitle } from "../ui/Field";
-import { InfoTip } from "../ui/InfoTip";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { TrimFields } from "./TrimFields";
 
 interface AudioSettingsControlsProps {
@@ -42,12 +43,12 @@ export const AudioSettingsControls = ({
 
       <SectionTitle>Level</SectionTitle>
       <Field label={`Volume (${settings.volume}%)`}>
-        <Range
+        <RangeSlider
           value={settings.volume}
           min={0}
           max={100}
           suffix="%"
-          onChange={(event) => onChange({ volume: Number(event.target.value) })}
+          onValueChange={(next) => onChange({ volume: next })}
         />
       </Field>
     </>

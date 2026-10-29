@@ -1,4 +1,5 @@
-import { Field, Select } from "../ui/Field";
+import { Field } from "@/components/shared/Field";
+import { OptionSelect } from "@/components/shared/OptionSelect";
 import { ANIMATION_OPTIONS } from "../../lib/animation";
 
 interface AnimationPickerProps {
@@ -20,10 +21,10 @@ export const AnimationPicker = ({
   ];
   return (
     <Field label={label}>
-      <Select
+      <OptionSelect
         value={value}
         options={options}
-        onChange={(e) => onSelect(e.target.value)}
+        onValueChange={(next) => onSelect(next)}
       />
     </Field>
   );

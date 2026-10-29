@@ -6,7 +6,7 @@ import type {
   Slide,
   VideoSettings,
 } from "../types";
-import { cn } from "../lib/cn";
+import { cn } from "../lib/utils";
 import {
   backgroundImageSettings,
   isImageBackground,

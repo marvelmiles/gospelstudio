@@ -127,10 +127,7 @@ export const useBlobUrl = (id: string | undefined | null): string | null => {
   const currentEpoch = useSyncExternalStore(subscribeEpoch, readEpoch);
 
   useEffect(() => {
-    if (!id) {
-      setUrl(null);
-      return;
-    }
+    if (!id) return;
     const dispose = acquireManaged(id, setUrl);
     return () => {
       setUrl(null);
@@ -138,7 +135,7 @@ export const useBlobUrl = (id: string | undefined | null): string | null => {
     };
   }, [id, currentEpoch]);
 
-  return url;
+  return id ? url : null;
 };
 
 export const useThumbUrl = (id: string | undefined | null): string | null => {
@@ -146,10 +143,7 @@ export const useThumbUrl = (id: string | undefined | null): string | null => {
   const currentEpoch = useSyncExternalStore(subscribeEpoch, readEpoch);
 
   useEffect(() => {
-    if (!id) {
-      setUrl(null);
-      return;
-    }
+    if (!id) return;
     let disposed = false;
     let disposeInner: Disposer = acquireManaged(thumbId(id), (thumb) => {
       if (thumb) {
@@ -167,5 +161,5 @@ export const useThumbUrl = (id: string | undefined | null): string | null => {
     };
   }, [id, currentEpoch]);
 
-  return url;
+  return id ? url : null;
 };

@@ -1,9 +1,9 @@
 import { Pause, Play, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
 import { formatTimecode, needsHoursField } from "../../lib/media";
-import { cn } from "../../lib/cn";
-import { StageButton } from "../ui/Button";
-import { sliderFill } from "../ui/Field";
+import { cn } from "../../lib/utils";
+import { StageButton } from "@/components/shared/StageButton";
+import { Slider } from "@/components/ui/slider";
 
 interface VideoTransportBarProps {
   playing: boolean;
@@ -45,7 +45,6 @@ export const VideoTransportBar = ({
   const seekMax = Math.max(end, start + 0.1);
   const position = Math.min(Math.max(time, start), seekMax);
   const span = seekMax - start;
-  const seekPercent = ((position - start) / span) * 100;
   const level = muted ? 0 : volume;
   const withHours = needsHoursField(span);
   const readout = cn(
@@ -82,19 +81,17 @@ export const VideoTransportBar = ({
       <span className={cn(readout, "text-right text-white")}>
         {formatTimecode(position - start, withHours)}
       </span>
-      <input
-        type="range"
-        className="slider min-w-0 flex-1"
+      <Slider
+        className="min-w-0 flex-1"
         aria-label="Playhead"
         min={start}
         max={seekMax}
         step={0.1}
-        value={position}
-        onChange={(event) => onSeek(Number(event.target.value))}
-        style={{ background: sliderFill(seekPercent) }}
+        value={[position]}
+        onValueChange={([next]) => onSeek(next)}
       />
       {!compact && (
-        <span className={cn(readout, "text-sub")}>
+        <span className={cn(readout, "text-muted-foreground")}>
           {formatTimecode(span, withHours)}
         </span>
       )}
@@ -105,15 +102,13 @@ export const VideoTransportBar = ({
         onClick={onToggleMuted}
       />
       {!compact && (
-        <input
-          type="range"
-          className="slider w-21 shrink-0"
+        <Slider
+          className="w-21 shrink-0"
           aria-label="Volume"
           min={0}
           max={100}
-          value={level}
-          onChange={(event) => onVolume(Number(event.target.value))}
-          style={{ background: sliderFill(level) }}
+          value={[level]}
+          onValueChange={([next]) => onVolume(next)}
         />
       )}
     </div>

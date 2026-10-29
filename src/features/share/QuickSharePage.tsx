@@ -12,13 +12,14 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
-import { Button, IconButton } from "../../components/ui/Button";
-import { ConfirmDialog } from "../../components/ui/ConfirmDialog";
-import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
-import { Panel, PanelTitle } from "../../components/ui/Panel";
-import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { IconButton } from "@/components/shared/IconButton";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
+import { Panel, PanelTitle } from "@/components/shared/Panel";
+import { Spinner } from "@/components/ui/spinner";
 import {
   pickedSelection,
   shareCatalog,
@@ -92,7 +93,7 @@ export const QuickSharePage = () => {
           <div className="flex items-center gap-2.75">
             <DeviceBadge />
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold text-fg">
+              <div className="truncate text-sm font-semibold text-foreground">
                 {quickShare.deviceName}
               </div>
               <LobbyStatusLine status={quickShare.status} />
@@ -100,7 +101,7 @@ export const QuickSharePage = () => {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               onClick={() => setIsReceivingCode(true)}
             >
@@ -109,7 +110,7 @@ export const QuickSharePage = () => {
             </Button>
             {quickShare.status !== "unavailable" && (
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={stopPrompt.askForRefresh}
               >
@@ -133,7 +134,7 @@ export const QuickSharePage = () => {
                 info="Open Quick Share on the other device. With internet, devices on the same WiFi show up here on their own. Without it, pair with a code: the two devices only need the same WiFi or hotspot, and nothing leaves it."
                 trailing={
                   <Button
-                    variant="ghost"
+                    variant="secondary"
                     size="sm"
                     disabled={quickShare.isBusy}
                     onClick={() => setIsPairing(true)}
@@ -158,7 +159,6 @@ export const QuickSharePage = () => {
 
             <div className="flex justify-end">
               <Button
-                variant="primary"
                 disabled={quickShare.selectedDeviceIds.length === 0}
                 onClick={() => setStep("items")}
                 title={
@@ -180,7 +180,7 @@ export const QuickSharePage = () => {
               info="Pick from any module; what you tick is kept as you move between them. Whatever arrives is merged into the other device's library, so nothing it already has is lost."
               trailing={
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   size="sm"
                   onClick={() => setStep("devices")}
                 >
@@ -189,9 +189,11 @@ export const QuickSharePage = () => {
                 </Button>
               }
             />
-            <p className="mt-0 mb-3 text-[12.5px] text-dim">
+            <p className="mt-0 mb-3 text-[12.5px] text-subtle-foreground">
               Sending to{" "}
-              <span className="text-fg">{targetNames || "no device yet"}</span>
+              <span className="text-foreground">
+                {targetNames || "no device yet"}
+              </span>
             </p>
             <ShareItemPicker
               tabs={tabs}
@@ -247,13 +249,13 @@ export const QuickSharePage = () => {
 };
 
 const DeviceBadge = () => (
-  <span className="grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-accent/14 text-accent-soft">
+  <span className="grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-primary/14 text-primary-soft">
     <MonitorSmartphone size={19} />
   </span>
 );
 
 const statusLineClassName =
-  "mt-0.75 flex items-center gap-1.5 text-xs text-dim";
+  "mt-0.75 flex items-center gap-1.5 text-xs text-subtle-foreground";
 
 const LobbyStatusLine = ({ status }: { status: LobbyStatus }) => {
   if (status === "starting") {
@@ -266,7 +268,7 @@ const LobbyStatusLine = ({ status }: { status: LobbyStatus }) => {
   }
   if (status === "ready") {
     return (
-      <span className={cn(statusLineClassName, "text-accent-soft")}>
+      <span className={cn(statusLineClassName, "text-primary-soft")}>
         <Wifi size={13} />
         Visible to other devices here
       </span>
@@ -297,11 +299,11 @@ const PairedSenderList = ({ senders, onDisconnect }: PairedSenderListProps) => {
       {senders.map((sender) => (
         <li
           key={sender.id}
-          className="flex items-center gap-2 rounded-[10px] border border-line bg-canvas py-1.5 pr-1.5 pl-2.75 text-[12.5px] text-sub"
+          className="flex items-center gap-2 rounded-[10px] border border-border bg-background py-1.5 pr-1.5 pl-2.75 text-[12.5px] text-muted-foreground"
         >
           <span className="min-w-0 flex-1 truncate">
             Can receive from{" "}
-            <span className="font-semibold text-fg">{sender.name}</span>
+            <span className="font-semibold text-foreground">{sender.name}</span>
           </span>
           <IconButton
             icon={Unlink}

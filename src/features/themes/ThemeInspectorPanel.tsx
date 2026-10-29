@@ -1,9 +1,11 @@
 import type { Theme } from "../../types";
 import { useStore } from "../../store/useStore";
 import { resolveStyle } from "../../lib/resolve";
-import { Field, Range, SectionTitle, Toggle } from "../../components/ui/Field";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { KeepOnResetToggle } from "../../components/ui/KeepOnResetToggle";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { SwitchField } from "@/components/shared/SwitchField";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { KeepOnResetToggle } from "@/components/shared/KeepOnResetToggle";
 import { AnimationPicker } from "../../components/controls/AnimationPicker";
 import { AudioPicker } from "../../components/controls/AudioPicker";
 import { BackgroundPicker } from "../../components/controls/BackgroundPicker";
@@ -77,7 +79,7 @@ export const ThemeInspectorPanel = ({
         Playback
       </SectionTitle>
       <div className="mb-3">
-        <Toggle
+        <SwitchField
           label="Auto-play slides"
           checked={Boolean(draft.autoPlay)}
           onChange={(checked) => patch({ autoPlay: checked })}
@@ -86,14 +88,14 @@ export const ThemeInspectorPanel = ({
       <Field
         label={`Seconds per slide (${draft.slideDurationSeconds ?? DEFAULT_SLIDE_SECONDS}s)`}
       >
-        <Range
+        <RangeSlider
           value={draft.slideDurationSeconds ?? DEFAULT_SLIDE_SECONDS}
           min={3}
           max={60}
           suffix="s"
-          onChange={(event) =>
+          onValueChange={(next) =>
             patch(
-              { slideDurationSeconds: Number(event.target.value) },
+              { slideDurationSeconds: next },
               { coalesceKey: "slideDurationSeconds" },
             )
           }
@@ -109,7 +111,7 @@ export const ThemeInspectorPanel = ({
       />
 
       {draft.builtIn ? (
-        <div className="mt-4.5 flex items-center gap-1 text-[12.5px] text-dim">
+        <div className="mt-4.5 flex items-center gap-1 text-[12.5px] text-subtle-foreground">
           Default theme
           <InfoTip title="Default theme" align="end">
             You can edit a default theme, but it can&apos;t be deleted.

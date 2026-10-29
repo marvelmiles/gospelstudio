@@ -1,15 +1,15 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useStore } from "./store/useStore";
-import { cn } from "./lib/cn";
+import { cn } from "./lib/utils";
 import { AppHeader } from "./components/layout/AppHeader";
-import { Toaster } from "./components/ui/Toaster";
-import { AlertBar } from "./components/ui/AlertBar";
-import { StorageGate } from "./components/ui/StorageGate";
-import { UploadLabelModal } from "./components/ui/UploadLabelModal";
-import { GoLiveTipDialog } from "./components/ui/GoLiveTipDialog";
-import { ResetOverlay } from "./components/ui/ResetOverlay";
-import { LoadingArea } from "./components/ui/Spinner";
+import { Toaster } from "@/components/ui/sonner";
+import { AlertBar } from "@/components/shared/AlertBar";
+import { StorageGate } from "@/components/shared/StorageGate";
+import { UploadLabelModal } from "@/components/shared/UploadLabelModal";
+import { GoLiveTipDialog } from "@/components/shared/GoLiveTipDialog";
+import { ResetOverlay } from "@/components/shared/ResetOverlay";
+import { LoadingArea } from "@/components/shared/LoadingArea";
 import { GuideModal } from "./features/onboarding/GuideModal";
 import { Dashboard } from "./features/dashboard/Dashboard";
 import { ManuscriptLibrary } from "./features/manuscripts/ManuscriptLibrary";
@@ -50,7 +50,7 @@ const App = () => {
   if (location.pathname === routes.streamWindow()) return <StreamWindow />;
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-canvas bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-fg">
+    <div className="flex h-screen flex-col overflow-hidden bg-background bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-foreground">
       <AlertBar />
       <AppHeader />
 
@@ -108,7 +108,7 @@ const App = () => {
       <GuideModal />
       <ResetOverlay />
       <StorageGate />
-      <Toaster />
+      <Toaster position="bottom-center" duration={3400} />
     </div>
   );
 };

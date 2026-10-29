@@ -4,14 +4,18 @@ import {
   needsHoursField,
   timecodeShape,
 } from "../../lib/media";
-import { Field, Range, SectionTitle, Select, Toggle } from "../ui/Field";
-import { InfoTip } from "../ui/InfoTip";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { SwitchField } from "@/components/shared/SwitchField";
+import { InfoTip } from "@/components/shared/InfoTip";
 import {
   PLAYBACK_RATE_OPTIONS,
   SCREEN_FIT_OPTIONS,
 } from "../../lib/mediaOptions";
-import { cn } from "../../lib/cn";
-import { AdjustmentControls, settingsColumns } from "./AdjustmentControls";
+import { cn } from "../../lib/utils";
+import { AdjustmentControls } from "./AdjustmentControls";
+import { settingsColumns } from "./settingsColumns";
 import { TrimFields } from "./TrimFields";
 
 interface VideoSettingsControlsProps {
@@ -60,45 +64,41 @@ export const VideoSettingsControls = ({
       <SectionTitle>Playback</SectionTitle>
       <div className={cn("grid gap-x-4", columns)}>
         <Field label={`Volume (${settings.volume}%)`}>
-          <Range
+          <RangeSlider
             value={settings.volume}
             min={0}
             max={100}
             suffix="%"
-            onChange={(event) =>
-              onChange({ volume: Number(event.target.value) })
-            }
+            onValueChange={(next) => onChange({ volume: next })}
           />
         </Field>
         <Field label="Speed">
-          <Select
+          <OptionSelect
             value={String(settings.playbackRate)}
             options={PLAYBACK_RATE_OPTIONS}
-            onChange={(event) =>
-              onChange({ playbackRate: Number(event.target.value) })
-            }
+            onValueChange={(next) => onChange({ playbackRate: Number(next) })}
           />
         </Field>
         <Field label="Screen fit">
-          <Select
+          <OptionSelect
             value={settings.fit}
             options={SCREEN_FIT_OPTIONS}
-            onChange={(event) =>
-              onChange({ fit: event.target.value as VideoSettings["fit"] })
+            onValueChange={(next) =>
+              onChange({ fit: next as VideoSettings["fit"] })
             }
           />
         </Field>
       </div>
       <div className="mb-1 flex flex-wrap gap-6">
         <div className="min-w-45 flex-1">
-          <Toggle
+          <SwitchField
             label="Muted"
             checked={settings.muted}
             onChange={(muted) => onChange({ muted })}
           />
         </div>
         <div className="min-w-45 flex-1">
-          <Toggle
+          <SwitchField
             label="Loop"
             checked={settings.loop}
             onChange={(loop) => onChange({ loop })}

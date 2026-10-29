@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useProjectionFullscreen } from "../../hooks/useProjectionFullscreen";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
-import { ProjectionFullscreenButton } from "../../components/ui/ProjectionFullscreenButton";
+import { ProjectionFullscreenButton } from "@/components/shared/ProjectionFullscreenButton";
 import { StreamOverlayLayers } from "./StreamOverlayLayers";
 import { StreamPipLayer } from "./StreamPipLayer";
 import { StreamVideo } from "./StreamVideo";

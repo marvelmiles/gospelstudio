@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { AlertTriangle, RotateCcw } from "lucide-react";
 import { useStore } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { InfoTip } from "../../components/ui/InfoTip";
-import { SectionTitle, TextInput } from "../../components/ui/Field";
-import { Modal } from "../../components/ui/Modal";
+import { Button } from "@/components/ui/button";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { SectionTitle } from "@/components/shared/Field";
+import { Input } from "@/components/ui/input";
+import { Modal } from "@/components/shared/Modal";
 import { MAX_KEPT_ITEMS } from "../../lib/keepOnReset";
 import { APP_NAME } from "../../lib/appInfo";
 
@@ -37,7 +38,7 @@ export const ResetSection = ({
         Reset
       </SectionTitle>
       <Button
-        variant="danger"
+        variant="destructive"
         onClick={() => {
           setTypedPhrase("");
           setIsConfirming(true);
@@ -55,9 +56,14 @@ export const ResetSection = ({
           width={480}
           footer={
             <>
-              <Button onClick={() => setIsConfirming(false)}>Cancel</Button>
               <Button
-                variant="danger"
+                variant="secondary"
+                onClick={() => setIsConfirming(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
                 disabled={typedPhrase.trim() !== RESET_PHRASE}
                 onClick={async () => {
                   setIsConfirming(false);
@@ -70,9 +76,12 @@ export const ResetSection = ({
             </>
           }
         >
-          <div className="mb-4 flex gap-3 rounded-[11px] border border-danger/30 bg-danger/10 p-3.5">
-            <AlertTriangle size={20} className="mt-px shrink-0 text-danger" />
-            <div className="text-[13.5px] leading-[1.6] text-fg">
+          <div className="mb-4 flex gap-3 rounded-[11px] border border-destructive/30 bg-destructive/10 p-3.5">
+            <AlertTriangle
+              size={20}
+              className="mt-px shrink-0 text-destructive"
+            />
+            <div className="text-[13.5px] leading-[1.6] text-foreground">
               This permanently deletes{" "}
               <strong>
                 all your manuscripts, custom themes, backgrounds, audio, and
@@ -92,11 +101,12 @@ export const ResetSection = ({
               )}
             </div>
           </div>
-          <p className="mt-0 mb-2 text-[13.5px] leading-[1.6] text-sub">
-            Type <code className="text-fg normal-case">{RESET_PHRASE}</code>{" "}
+          <p className="mt-0 mb-2 text-[13.5px] leading-[1.6] text-muted-foreground">
+            Type{" "}
+            <code className="text-foreground normal-case">{RESET_PHRASE}</code>{" "}
             below to confirm (case-sensitive).
           </p>
-          <TextInput
+          <Input
             value={typedPhrase}
             placeholder={RESET_PHRASE}
             onChange={(event) => setTypedPhrase(event.target.value)}

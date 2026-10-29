@@ -1,8 +1,14 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useEffectEvent,
+  useRef,
+  useState,
+} from "react";
 import { KeyRound } from "lucide-react";
 import { useStore } from "../../../store/useStore";
-import { Button } from "../../../components/ui/Button";
-import { InfoTip } from "../../../components/ui/InfoTip";
+import { Button } from "@/components/ui/button";
+import { InfoTip } from "@/components/shared/InfoTip";
 import { StreamStatusBadge } from "../StreamStatusBadge";
 import { LobbyActions } from "../components/LobbyActions";
 import { QuickConnectNote } from "../components/QuickConnectNote";
@@ -37,6 +43,15 @@ export const AutoBroadcastPanel = ({
   const getSender = useCallback(() => senderRef.current, []);
   const camera = useSharingCamera(getSender);
   const { attachStream, stopCapture, streamRef } = camera;
+
+  const switchToCode = useEffectEvent((message?: string) => {
+    if (message) pushToast(message, "error");
+    onUseCode();
+  });
+  const leaveWithError = useEffectEvent((message: string) => {
+    pushToast(message, "error");
+    onBack();
+  });
 
   useEffect(() => {
     let isCancelled = false;
@@ -79,11 +94,9 @@ export const AutoBroadcastPanel = ({
       const room = await deriveNetworkRoom();
       if (isCancelled) return;
       if (!room) {
-        pushToast(
+        switchToCode(
           "Couldn't detect your network for one-tap. Use a code instead.",
-          "error",
         );
-        onUseCode();
         return;
       }
 
@@ -92,11 +105,9 @@ export const AutoBroadcastPanel = ({
         stream = await openCamera();
       } catch {
         if (isCancelled) return;
-        pushToast(
+        leaveWithError(
           "Couldn't open the camera. Allow camera access and try again.",
-          "error",
         );
-        onBack();
         return;
       }
       if (isCancelled) {
@@ -111,7 +122,7 @@ export const AutoBroadcastPanel = ({
       try {
         broadcast = publishBroadcaster(room, deviceName);
       } catch {
-        onUseCode();
+        switchToCode();
         return;
       }
       broadcastRef.current = broadcast;
@@ -138,8 +149,7 @@ export const AutoBroadcastPanel = ({
       senderRef.current?.close();
       stopCapture();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attachStream, stopCapture, streamRef]);
 
   useEffect(() => {
     if (phase === "live") void broadcastRef.current?.clearCall();
@@ -179,7 +189,7 @@ export const AutoBroadcastPanel = ({
       />
       <QuickConnectNote />
       <LobbyActions>
-        <Button variant="ghost" size="sm" onClick={onUseCode}>
+        <Button variant="secondary" size="sm" onClick={onUseCode}>
           <KeyRound size={14} />
           Pair with a code instead
         </Button>

@@ -7,12 +7,12 @@ import {
   Video,
 } from "lucide-react";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
-import { PageHeader, pageClassName } from "../../components/ui/PageHeader";
+import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { ReceiverLobby } from "./receiver/ReceiverLobby";
 import { SenderLobby } from "./sender/SenderLobby";
 import { CameraPanel } from "./CameraPanel";
 import { useStreamSession } from "./lib/streamSession";
-import { InfoTip } from "../../components/ui/InfoTip";
+import { InfoTip } from "@/components/shared/InfoTip";
 
 type Role = "choose" | "receive" | "send";
 
@@ -26,12 +26,12 @@ export const StreamPage = () => {
     return (
       <div className={pageClassName}>
         <PageHeader title="Stream" subtitle={STREAM_SUBTITLE} />
-        <div className="mx-auto mt-10 max-w-140 rounded-2xl border border-line bg-raise p-6 text-center">
-          <ShieldAlert size={30} className="mx-auto mb-3 text-danger" />
-          <div className="mb-2 text-lg font-semibold text-fg">
+        <div className="mx-auto mt-10 max-w-140 rounded-2xl border border-border bg-secondary p-6 text-center">
+          <ShieldAlert size={30} className="mx-auto mb-3 text-destructive" />
+          <div className="mb-2 text-lg font-semibold text-foreground">
             Streaming needs a secure connection
           </div>
-          <p className="m-0 text-[13.5px] leading-[1.6] text-sub">
+          <p className="m-0 text-[13.5px] leading-[1.6] text-muted-foreground">
             Cameras only open on an <strong>https://</strong> address (or
             localhost). Open this app over https on both devices and try again.
           </p>
@@ -81,10 +81,12 @@ const BroadcastCamerasSection = () => {
   if (!session.active || session.mode !== "pip") return null;
 
   return (
-    <section className="mx-auto mt-5.5 max-w-140 rounded-2xl border border-line bg-raise p-5">
+    <section className="mx-auto mt-5.5 max-w-140 rounded-2xl border border-border bg-secondary p-5">
       <div className="mb-1.5 flex items-center gap-2.25">
-        <Video size={18} className="text-accent-soft" />
-        <span className="text-[17px] font-semibold text-fg">Live cameras</span>
+        <Video size={18} className="text-primary-soft" />
+        <span className="text-[17px] font-semibold text-foreground">
+          Live cameras
+        </span>
         <InfoTip title="Live cameras" variant="modal">
           <p className="mt-0">
             One camera fills the screen. Any other joined camera can sit in a
@@ -118,14 +120,16 @@ const RoleCard = ({
 }) => (
   <button
     onClick={onClick}
-    className="flex flex-col gap-3 rounded-2xl border border-line bg-raise p-5.5 text-left"
+    className="flex flex-col gap-3 rounded-2xl border border-border bg-secondary p-5.5 text-left"
   >
-    <span className="grid size-11.5 place-items-center rounded-xl border border-line bg-canvas text-accent-soft">
+    <span className="grid size-11.5 place-items-center rounded-xl border border-border bg-background text-primary-soft">
       <Icon size={22} />
     </span>
-    <span className="text-lg font-semibold text-fg">{title}</span>
-    <span className="flex-1 text-[13px] leading-[1.55] text-sub">{body}</span>
-    <span className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-accent-soft">
+    <span className="text-lg font-semibold text-foreground">{title}</span>
+    <span className="flex-1 text-[13px] leading-[1.55] text-muted-foreground">
+      {body}
+    </span>
+    <span className="inline-flex items-center gap-1.5 text-[13.5px] font-bold text-primary-soft">
       {cta}
       <ArrowRight size={15} />
     </span>

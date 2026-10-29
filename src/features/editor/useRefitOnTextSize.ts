@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent, useRef } from "react";
 import {
   sameSlideTextMetrics,
   type SlideTextMetrics,
@@ -19,13 +19,13 @@ export const useRefitOnTextSize = ({
   onRefit,
 }: RefitOptions): void => {
   const lastRef = useRef(metrics);
-  const latest = useRef({ reflow, refit, onRefit });
-  latest.current = { reflow, refit, onRefit };
+  const refitTo = useEffectEvent((next: SlideTextMetrics) => {
+    if (refit(next, reflow)) onRefit?.();
+  });
 
   useEffect(() => {
     if (sameSlideTextMetrics(lastRef.current, metrics)) return;
     lastRef.current = metrics;
-    const { refit: apply, reflow: options, onRefit: done } = latest.current;
-    if (apply(metrics, options)) done?.();
+    refitTo(metrics);
   }, [metrics]);
 };

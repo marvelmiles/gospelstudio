@@ -16,6 +16,19 @@ export const librarySortChoices = (nameLabel: string): LibrarySortChoice[] => [
 
 export const DEFAULT_LIBRARY_SORT: LibrarySortOption = "newest";
 
+const LIBRARY_SORT_OPTIONS: readonly string[] = [
+  "newest",
+  "oldest",
+  "modified",
+  "ascending",
+  "descending",
+] satisfies LibrarySortOption[];
+
+export const isLibrarySortOption = (
+  value: unknown,
+): value is LibrarySortOption =>
+  typeof value === "string" && LIBRARY_SORT_OPTIONS.includes(value);
+
 export interface SortableLibraryItem {
   createdAt: string;
   updatedAt: string;

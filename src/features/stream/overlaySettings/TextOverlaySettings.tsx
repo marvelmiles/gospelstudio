@@ -2,7 +2,7 @@ import { Image as ImageIcon, Tag, Type } from "lucide-react";
 import type { Align } from "../../../types";
 import { FONT_WEIGHT_OPTIONS } from "../../../data/slideFonts";
 import { ANIMATION_OPTIONS } from "../../../lib/animation";
-import { Button } from "../../../components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { useDeck } from "../../presentation/useDeck";
 import {
   OverlayCheckbox,
@@ -76,7 +76,7 @@ export const TextOverlaySettings = ({
         </>
       ) : (
         <Button
-          variant={overlay.opaque ? "primary" : "subtle"}
+          variant={overlay.opaque ? "default" : "ghost"}
           size="sm"
           onClick={() =>
             editStreamOverlay(overlay.id, { opaque: !overlay.opaque })
@@ -110,12 +110,12 @@ const BlockStepper = ({
 
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-[12.5px] font-semibold text-sub">
+      <span className="text-[12.5px] font-semibold text-muted-foreground">
         {noun} {index + 1} of {count}
       </span>
       <span className="flex gap-1.5">
         <Button
-          variant="subtle"
+          variant="ghost"
           size="sm"
           onClick={() => step(-1)}
           title="Go back one. Paging goes out straight away."
@@ -123,7 +123,7 @@ const BlockStepper = ({
           Previous
         </Button>
         <Button
-          variant="subtle"
+          variant="ghost"
           size="sm"
           onClick={() => step(1)}
           title="Show the next one. Paging goes out straight away."

@@ -5,7 +5,7 @@ import {
   isVideoBackground,
 } from "../../lib/media";
 import { useBlobUrl, useThumbUrl } from "../../lib/blobUrls";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { ImageLayer } from "./ImageLayer";
 import { VideoThumb } from "./VideoThumb";

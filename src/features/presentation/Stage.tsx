@@ -6,9 +6,9 @@ import type { MediaPlayback } from "../../lib/presentChannel";
 import { ANIMATION_VARIANTS, buildTransition } from "../../lib/animation";
 import { useBlobUrl } from "../../lib/blobUrls";
 import { isMediaBackground } from "../../lib/media";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { SlideCanvas } from "../../components/SlideCanvas";
-import { PortalSlot } from "../../components/ui/PortalSlot";
+import { PortalSlot } from "@/components/shared/PortalSlot";
 import { BackgroundSurface } from "../../components/media/BackgroundSurface";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import {

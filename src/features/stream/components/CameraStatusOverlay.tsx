@@ -1,6 +1,6 @@
 import { WifiOff } from "lucide-react";
-import { Spinner } from "../../../components/ui/Spinner";
-import { cn } from "../../../lib/cn";
+import { Spinner } from "@/components/ui/spinner";
+import { cn } from "../../../lib/utils";
 import { isPeerConnecting, type PeerStatus } from "../lib/peerStatus";
 
 interface CameraStatusOverlayProps {

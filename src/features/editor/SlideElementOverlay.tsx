@@ -3,7 +3,7 @@ import type { KeyboardEvent, PointerEvent } from "react";
 import { ChevronUp, ChevronDown, Copy, Trash2 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { SlideElementKind, SlideFrame } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { clampFrame, MIN_FRAME_SIZE } from "../../lib/slideMedia";
 import { keepsSelection } from "../../lib/selectionScope";
 
@@ -244,8 +244,9 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
                 ? "pointer-events-auto cursor-move"
                 : "pointer-events-none",
               selected
-                ? "outline-2 outline-accent"
-                : !frameOnFocus && "outline-1 outline-accent/45 outline-dashed",
+                ? "outline-2 outline-primary"
+                : !frameOnFocus &&
+                    "outline-1 outline-primary/45 outline-dashed",
             )}
             onPointerDown={
               grabbable ? (event) => begin(event, element, "move") : undefined
@@ -293,7 +294,7 @@ export const SlideElementOverlay = <Kind extends string = SlideElementKind>({
                     key={handle.id}
                     onPointerDown={(event) => begin(event, element, handle.id)}
                     className={cn(
-                      "pointer-events-auto absolute -mt-1.5 -ml-1.5 size-3 touch-none rounded-[3px] border-[1.5px] border-on-accent bg-accent",
+                      "pointer-events-auto absolute -mt-1.5 -ml-1.5 size-3 touch-none rounded-[3px] border-[1.5px] border-primary-foreground bg-primary",
                       handle.position,
                     )}
                   />
@@ -357,7 +358,7 @@ const Toolbar = ({
     <div
       onPointerDown={(event) => event.stopPropagation()}
       className={cn(
-        "pointer-events-auto absolute left-0 flex gap-0.5 rounded-[9px] border border-line bg-panel-solid p-0.75 shadow-[0_8px_22px_rgb(0_0_0/0.4)]",
+        "pointer-events-auto absolute left-0 flex gap-0.5 rounded-[9px] border border-border bg-card p-0.75 shadow-[0_8px_22px_rgb(0_0_0/0.4)]",
         below ? "top-full mt-2" : "bottom-full mb-2",
       )}
     >
@@ -369,7 +370,7 @@ const Toolbar = ({
           onClick={fn}
           className={cn(
             "grid size-6.5 place-items-center rounded-[7px] border-none bg-transparent p-0",
-            danger ? "text-danger" : "text-sub",
+            danger ? "text-destructive" : "text-muted-foreground",
           )}
         >
           <Icon size={14} />

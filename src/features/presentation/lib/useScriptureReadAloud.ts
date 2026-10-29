@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent } from "react";
 import type { ScripturePassage, SlideDeckDoc } from "../../../types";
 import { useSpeech } from "../../../hooks/useSpeech";
 import { stripInlineFormatting } from "../../../lib/inlineFormat";
@@ -51,13 +51,12 @@ export const useScriptureReadAloud = ({
     );
   };
 
-  const toggleRef = useRef(toggleReadAloud);
-  toggleRef.current = toggleReadAloud;
+  const onReadAloudKey = useEffectEvent(toggleReadAloud);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey || event.altKey) return;
-      if (event.key.toLowerCase() === "r") toggleRef.current();
+      if (event.key.toLowerCase() === "r") onReadAloudKey();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);

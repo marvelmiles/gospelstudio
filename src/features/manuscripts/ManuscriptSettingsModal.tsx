@@ -16,16 +16,13 @@ import {
   resolveStyle,
 } from "../../lib/resolve";
 import { validateName } from "../../lib/validation";
-import { Modal } from "../../components/ui/Modal";
-import { InfoTip } from "../../components/ui/InfoTip";
-import {
-  Field,
-  Range,
-  Select,
-  TextInput,
-  Toggle,
-  SectionTitle,
-} from "../../components/ui/Field";
+import { Modal } from "@/components/shared/Modal";
+import { InfoTip } from "@/components/shared/InfoTip";
+import { Field, SectionTitle } from "@/components/shared/Field";
+import { RangeSlider } from "@/components/shared/RangeSlider";
+import { OptionSelect } from "@/components/shared/OptionSelect";
+import { Input } from "@/components/ui/input";
+import { SwitchField } from "@/components/shared/SwitchField";
 import { StyleControls } from "../../components/controls/StyleControls";
 import { BackgroundPicker } from "../../components/controls/BackgroundPicker";
 import { AudioPicker } from "../../components/controls/AudioPicker";
@@ -33,7 +30,7 @@ import { AnimationPicker } from "../../components/controls/AnimationPicker";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import { useOpenAssetLibrary } from "../assets/assetLibraryNavigation";
 import { useStore } from "../../store/useStore";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 interface ManuscriptSettingsModalProps {
   open: boolean;
@@ -68,15 +65,15 @@ const TuneDetails = ({ music }: { music: HymnMusic }) => {
       <dl className={cn(gridClassName, "mt-0 mb-3.25")}>
         {rows.map(([label, value]) => (
           <div key={label}>
-            <dt className="mb-1.5 text-[11.5px] font-semibold tracking-[0.4px] text-dim uppercase">
+            <dt className="mb-1.5 text-[11.5px] font-semibold tracking-[0.4px] text-subtle-foreground uppercase">
               {label}
             </dt>
-            <dd className="m-0 text-[13.5px] text-fg">{value}</dd>
+            <dd className="m-0 text-[13.5px] text-foreground">{value}</dd>
           </div>
         ))}
       </dl>
       {music.source && (
-        <p className="mt-0 mb-3.25 text-[11.5px] leading-normal text-dim">
+        <p className="mt-0 mb-3.25 text-[11.5px] leading-normal text-subtle-foreground">
           {music.source}
         </p>
       )}
@@ -142,31 +139,31 @@ export const ManuscriptSettingsModal = ({
       <SectionTitle>Details</SectionTitle>
       <div className={gridClassName}>
         <Field label="Title" error={titleError}>
-          <TextInput
+          <Input
             value={manuscript.title}
-            invalid={Boolean(titleError)}
+            aria-invalid={Boolean(titleError)}
             onChange={(e) => onPatchManuscript({ title: e.target.value })}
           />
         </Field>
         <Field label="Author">
-          <TextInput
+          <Input
             value={manuscript.author || ""}
             onChange={(e) => onPatchManuscript({ author: e.target.value })}
           />
         </Field>
         <Field label="Collection">
-          <Select
+          <OptionSelect
             value={manuscript.collection || DEFAULT_COLLECTION}
             options={[...COLLECTIONS]}
-            onChange={(e) => onPatchManuscript({ collection: e.target.value })}
+            onValueChange={(next) => onPatchManuscript({ collection: next })}
           />
         </Field>
         <Field label="Theme">
-          <Select
+          <OptionSelect
             value={manuscript.defaultThemeId}
             options={themes.map((t) => ({ value: t.id, label: t.name }))}
-            onChange={(e) =>
-              onPatchManuscript({ defaultThemeId: e.target.value })
+            onValueChange={(next) =>
+              onPatchManuscript({ defaultThemeId: next })
             }
           />
         </Field>
@@ -233,7 +230,7 @@ export const ManuscriptSettingsModal = ({
           </InfoTip>
         }
       >
-        <Select
+        <OptionSelect
           value={manuscript.shortcutMode || "first-slide-per-tag"}
           options={[
             {
@@ -242,9 +239,9 @@ export const ManuscriptSettingsModal = ({
             },
             { value: "all-slides", label: "Every slide" },
           ]}
-          onChange={(e) =>
+          onValueChange={(next) =>
             onPatchManuscript({
-              shortcutMode: e.target.value as Manuscript["shortcutMode"],
+              shortcutMode: next as Manuscript["shortcutMode"],
             })
           }
         />
@@ -262,20 +259,20 @@ export const ManuscriptSettingsModal = ({
         Playback
       </SectionTitle>
       <div className="mb-3">
-        <Toggle
+        <SwitchField
           label="Auto-play slides while presenting"
           checked={autoPlay}
           onChange={(checked) => onPatchManuscript({ autoPlay: checked })}
         />
       </div>
       <Field label={`Seconds per slide (${duration}s)`}>
-        <Range
+        <RangeSlider
           value={duration}
           min={3}
           max={60}
           suffix="s"
-          onChange={(e) =>
-            onPatchManuscript({ slideDurationSeconds: Number(e.target.value) })
+          onValueChange={(next) =>
+            onPatchManuscript({ slideDurationSeconds: next })
           }
         />
       </Field>

@@ -1,5 +1,11 @@
-import { useEffect, useImperativeHandle, useLayoutEffect, useRef } from "react";
-import type { ForwardedRef, RefObject } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useImperativeHandle,
+  useLayoutEffect,
+  useRef,
+} from "react";
+import type { Ref, RefObject } from "react";
 import type { MediaPlayback } from "../lib/presentChannel";
 
 export interface MediaSurfaceHandle {
@@ -18,7 +24,7 @@ export interface PlaybackWindowSettings {
 }
 
 interface MediaElementPlaybackOptions {
-  handleRef: ForwardedRef<MediaSurfaceHandle>;
+  handleRef: Ref<MediaSurfaceHandle> | undefined;
   sourceKey: string;
   src: string | null;
   settings: PlaybackWindowSettings;
@@ -28,11 +34,15 @@ interface MediaElementPlaybackOptions {
   onEnded?: () => void;
 }
 
-export interface MediaElementBindings<E extends HTMLMediaElement> {
-  ref: RefObject<E>;
+interface MediaEvents {
   onLoadedMetadata: () => void;
   onTimeUpdate: () => void;
   onEnded: () => void;
+}
+
+export interface MediaElementBindings<E extends HTMLMediaElement> {
+  elementRef: RefObject<E | null>;
+  mediaEvents: MediaEvents;
 }
 
 export const useMediaElementPlayback = <E extends HTMLMediaElement>({
@@ -91,11 +101,14 @@ export const useMediaElementPlayback = <E extends HTMLMediaElement>({
     else el.pause();
   }, [playing, seekToken, sourceKey, src]);
 
-  useEffect(() => {
+  const seekToRequestedTime = useEffectEvent(() => {
     const el = elementRef.current;
     if (!el || seekToken === undefined || seekTime === undefined) return;
     el.currentTime = seekTime;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  });
+
+  useEffect(() => {
+    seekToRequestedTime();
   }, [seekToken, src]);
 
   const restartLoop = (el: E) => {
@@ -137,9 +150,11 @@ export const useMediaElementPlayback = <E extends HTMLMediaElement>({
   };
 
   return {
-    ref: elementRef,
-    onLoadedMetadata: handleLoadedMetadata,
-    onTimeUpdate: handleTimeUpdate,
-    onEnded: handleEnded,
+    elementRef,
+    mediaEvents: {
+      onLoadedMetadata: handleLoadedMetadata,
+      onTimeUpdate: handleTimeUpdate,
+      onEnded: handleEnded,
+    },
   };
 };

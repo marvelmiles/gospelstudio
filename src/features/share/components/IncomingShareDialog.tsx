@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Inbox, Square } from "lucide-react";
-import { cn } from "../../../lib/cn";
-import { Modal } from "../../../components/ui/Modal";
-import { Button } from "../../../components/ui/Button";
-import { ConfirmDialog } from "../../../components/ui/ConfirmDialog";
-import { ProgressRing } from "../../../components/ui/ProgressRing";
+import { cn } from "../../../lib/utils";
+import { Modal } from "@/components/shared/Modal";
+import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ProgressRing } from "@/components/shared/ProgressRing";
 import { formatBytes } from "../../../lib/storageStats";
 import type { IncomingShare } from "../lib/useIncomingShare";
 
@@ -35,7 +35,8 @@ export const IncomingShareDialog = ({
   const percent =
     bytes > 0 ? Math.min(99, Math.round((receivedBytes / bytes) * 100)) : 0;
 
-  const bodyClassName = "mt-0 text-[13.5px] leading-[1.6] text-sub";
+  const bodyClassName =
+    "mt-0 text-[13.5px] leading-[1.6] text-muted-foreground";
 
   return (
     <>
@@ -48,14 +49,14 @@ export const IncomingShareDialog = ({
         footer={
           isAsking ? (
             <>
-              <Button onClick={onDecline}>Not now</Button>
-              <Button variant="primary" onClick={onAccept}>
-                Accept
+              <Button variant="secondary" onClick={onDecline}>
+                Not now
               </Button>
+              <Button onClick={onAccept}>Accept</Button>
             </>
           ) : (
             <Button
-              variant="danger"
+              variant="destructive"
               disabled={stage === "importing"}
               onClick={() => setIsConfirmingStop(true)}
             >
@@ -66,12 +67,12 @@ export const IncomingShareDialog = ({
         }
       >
         <div className="flex items-start gap-3">
-          <span className="grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-accent/14 text-accent-soft">
+          <span className="grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-primary/14 text-primary-soft">
             <Inbox size={19} />
           </span>
           <div className="min-w-0 flex-1">
             <p className={cn(bodyClassName, isAsking ? "mb-3" : "mb-3.5")}>
-              <strong className="text-fg">{fromName}</strong> is sending{" "}
+              <strong className="text-foreground">{fromName}</strong> is sending{" "}
               {summary}
               {bytes > 0 ? ` (${formatBytes(bytes)})` : ""}.
             </p>
@@ -89,7 +90,7 @@ export const IncomingShareDialog = ({
                   indeterminate={stage === "importing"}
                   label="Receiving"
                 />
-                <span className="text-[12.5px] text-dim tabular-nums">
+                <span className="text-[12.5px] text-subtle-foreground tabular-nums">
                   {stage === "importing"
                     ? "Finishing"
                     : `${formatBytes(receivedBytes)} of ${formatBytes(bytes)}`}

@@ -8,19 +8,21 @@ import {
 } from "lucide-react";
 import { useFloatingWindow } from "../../hooks/useFloatingWindow";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
-import { FloatingWindowTab } from "../../components/ui/FloatingWindowTab";
+import { FloatingWindowTab } from "@/components/shared/FloatingWindowTab";
 import {
   FloatingWindowHeader,
   floatingWindowClassName,
-} from "../../components/ui/FloatingWindowHeader";
-import { MiniButton } from "../../components/ui/MiniButton";
-import { cn } from "../../lib/cn";
+} from "@/components/shared/FloatingWindowHeader";
+import { MiniButton } from "@/components/shared/MiniButton";
+import { cn } from "../../lib/utils";
 import { AudioSharingPill } from "./AudioSharingPill";
 import { CameraStatusOverlay } from "./components/CameraStatusOverlay";
-import { StreamStatusBadge, connectionBadgeStatus } from "./StreamStatusBadge";
+import { StreamStatusBadge } from "./StreamStatusBadge";
+import { connectionBadgeStatus } from "./lib/streamBadge";
 import { StreamOverlayEditor } from "./StreamOverlayEditor";
 import { StreamOverlayLayers } from "./StreamOverlayLayers";
-import { StreamPipLayer, cameraPipWindow } from "./StreamPipLayer";
+import { StreamPipLayer } from "./StreamPipLayer";
+import { cameraPipWindow } from "./lib/streamPipWindow";
 import { StreamVideo } from "./StreamVideo";
 import { viewCommandTitle } from "../../lib/viewCommands";
 import { isPeerConnecting } from "./lib/peerStatus";
@@ -109,7 +111,7 @@ export const StreamPip = () => {
         }}
         className={cn(
           floatingWindowClassName,
-          isFocused ? "border-accent" : "border-line",
+          isFocused ? "border-primary" : "border-border",
         )}
       >
         <FloatingWindowHeader
@@ -149,7 +151,7 @@ export const StreamPip = () => {
           />
         </div>
 
-        <div className="flex items-center gap-1.25 border-t border-line px-2.25 py-2">
+        <div className="flex items-center gap-1.25 border-t border-border px-2.25 py-2">
           <MiniButton
             icon={isLive ? MonitorOff : MonitorUp}
             title={

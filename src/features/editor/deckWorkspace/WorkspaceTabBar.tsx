@@ -1,4 +1,4 @@
-import { PanelTabs, type PanelTab } from "../../../components/ui/PanelTabs";
+import { PanelTabs, type PanelTab } from "@/components/shared/PanelTabs";
 
 export type WorkspaceTab = "slides" | "edit" | "style";
 

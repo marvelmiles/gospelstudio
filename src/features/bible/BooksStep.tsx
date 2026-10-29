@@ -3,9 +3,9 @@ import { ArrowRight, Play } from "lucide-react";
 import type { BibleVersionId } from "../../types";
 import { BIBLE_BOOKS, bookById } from "../../data/bibleBooks";
 import type { ScriptureSelection } from "../../store/useStore";
-import { Button } from "../../components/ui/Button";
-import { SearchInput } from "../../components/ui/SearchInput";
-import { Spinner } from "../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { SearchInput } from "@/components/shared/SearchInput";
+import { Spinner } from "@/components/ui/spinner";
 import { useBibleSearch } from "./useBibleSearch";
 import { useBibleChapter } from "./useBibleChapter";
 import { PresentButton } from "./PresentButton";
@@ -20,7 +20,7 @@ import {
 } from "./lib/reference";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
 import type { ReadingPosition } from "./lib/readingPosition";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 
 export const BooksStep = ({
   position,
@@ -76,7 +76,7 @@ export const BooksStep = ({
         />
         {continueLabel && (
           <Button
-            variant="ghost"
+            variant="secondary"
             onClick={onContinueReading}
             title="Pick up where you left off"
           >
@@ -100,7 +100,7 @@ export const BooksStep = ({
           />
         )}
         {matchingBooks.length === 0 && !search.enabled && (
-          <p className="p-7.5 text-center text-dim">
+          <p className="p-7.5 text-center text-subtle-foreground">
             No book matches "{query}".
           </p>
         )}
@@ -130,7 +130,9 @@ export const BooksStep = ({
                       <span
                         className={cn(
                           "text-[11px] font-medium",
-                          active ? "text-accent-soft" : "text-dim",
+                          active
+                            ? "text-primary-soft"
+                            : "text-subtle-foreground",
                         )}
                       >
                         {b.chapters} chapter{b.chapters === 1 ? "" : "s"}
@@ -157,14 +159,14 @@ export const BooksStep = ({
               </div>
             )}
             {search.error && (
-              <p className="px-0.5 py-2.5 text-[13px] text-danger">
+              <p className="px-0.5 py-2.5 text-[13px] text-destructive">
                 {search.error}
               </p>
             )}
             {!search.loading &&
               !search.error &&
               search.results.length === 0 && (
-                <p className="px-0.5 py-2.5 text-[13px] text-dim">
+                <p className="px-0.5 py-2.5 text-[13px] text-subtle-foreground">
                   No verses in {version} contain "{search.term}".
                 </p>
               )}
@@ -194,7 +196,7 @@ export const BooksStep = ({
                     }
                     presentTitle={`Present ${resultBook.name} ${result.chapter}:${result.verse}`}
                   >
-                    <span className="text-[13.5px] leading-[1.55] text-sub">
+                    <span className="text-[13.5px] leading-[1.55] text-muted-foreground">
                       <VerseSnippet text={result.text} term={search.term} />
                     </span>
                   </ResultRow>
@@ -204,7 +206,7 @@ export const BooksStep = ({
             {search.hasMore && (
               <div className="mt-3 text-center">
                 <Button
-                  variant="ghost"
+                  variant="secondary"
                   onClick={search.loadMore}
                   busy={search.loading}
                 >
@@ -253,16 +255,16 @@ const ResultRow = ({
     }}
     title={title}
     className={cn(
-      "cursor-pointer border bg-raise text-left",
+      "cursor-pointer border bg-secondary text-left",
       emphasis
-        ? "rounded-xl border-accent-soft px-3.75 py-3.25"
-        : "rounded-[10px] border-line px-3.25 py-2.5",
+        ? "rounded-xl border-primary-soft px-3.75 py-3.25"
+        : "rounded-[10px] border-border px-3.25 py-2.5",
     )}
   >
     <div className="mb-1 flex items-center gap-2">
       <span
         className={cn(
-          "font-bold text-accent-soft",
+          "font-bold text-primary-soft",
           emphasis ? "text-[15.5px]" : "text-[12.5px]",
         )}
       >
@@ -275,7 +277,7 @@ const ResultRow = ({
         title={presentTitle}
         disabled={presentDisabled}
       />
-      <ArrowRight size={15} className="shrink-0 text-dim" />
+      <ArrowRight size={15} className="shrink-0 text-subtle-foreground" />
     </div>
     {children}
   </div>
@@ -310,7 +312,7 @@ const PassageJump = ({
         heading={formatParsedReference(reference)}
         emphasis
         meta={
-          <span className="text-[11.5px] font-semibold text-dim">
+          <span className="text-[11.5px] font-semibold text-subtle-foreground">
             {version}
             {!verseStart && verses.length ? ` · ${verses.length} verses` : ""}
           </span>
@@ -330,9 +332,9 @@ const PassageJump = ({
         }}
       >
         {loading && <Spinner size={16} />}
-        {error && <span className="text-[13px] text-danger">{error}</span>}
+        {error && <span className="text-[13px] text-destructive">{error}</span>}
         {!loading && !error && (
-          <span className="text-[13.5px] leading-[1.55] text-sub">
+          <span className="text-[13.5px] leading-[1.55] text-muted-foreground">
             {preview.map((v) => v.t).join(" ")}
           </span>
         )}

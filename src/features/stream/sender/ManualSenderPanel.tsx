@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Radio, RotateCcw } from "lucide-react";
 import { useStore } from "../../../store/useStore";
-import { Button } from "../../../components/ui/Button";
-import { Spinner } from "../../../components/ui/Spinner";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { StreamStatusBadge } from "../StreamStatusBadge";
 import { ReadCode, ShowCode } from "../CodeExchange";
 import { LobbyActions } from "../components/LobbyActions";
-import { Panel, PanelTitle } from "../../../components/ui/Panel";
+import { Panel, PanelTitle } from "@/components/shared/Panel";
 import { StreamStatusLine } from "../components/StreamStatusLine";
 import { openCamera } from "../lib/cameras";
 import type { PeerStatus } from "../lib/peerStatus";
@@ -107,12 +107,12 @@ export const ManualSenderPanel = ({
         </Panel>
         <LobbyActions>
           {onUseOneTap && (
-            <Button variant="ghost" size="sm" onClick={onUseOneTap}>
+            <Button variant="secondary" size="sm" onClick={onUseOneTap}>
               <Radio size={14} />
               Quick connect
             </Button>
           )}
-          <Button variant="ghost" size="sm" onClick={onBack}>
+          <Button variant="secondary" size="sm" onClick={onBack}>
             <RotateCcw size={14} />
             Back
           </Button>

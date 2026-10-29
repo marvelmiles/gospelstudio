@@ -1,7 +1,7 @@
 import { CameraPreviewWindows } from "./CameraPreviewWindow";
 import { ProjectionSurface } from "./ProjectionSurface";
 import { StreamPip } from "./StreamPip";
-import { cameraPipWindow } from "./StreamPipLayer";
+import { cameraPipWindow } from "./lib/streamPipWindow";
 import {
   endStreamSession,
   primaryCamera,

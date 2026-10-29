@@ -1,7 +1,7 @@
 import { KeyRound, RotateCcw, Wifi } from "lucide-react";
-import { Button } from "../../../components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { LobbyActions } from "../components/LobbyActions";
-import { Panel, PanelTitle } from "../../../components/ui/Panel";
+import { Panel, PanelTitle } from "@/components/shared/Panel";
 import { MAX_STREAM_CAMERAS } from "../lib/streamSession";
 
 interface PairedPanelProps {
@@ -25,7 +25,7 @@ export const PairedPanel = ({
     </Panel>
     <LobbyActions>
       <Button
-        variant="ghost"
+        variant="secondary"
         size="sm"
         disabled={!canPairAnother}
         onClick={onPairAnother}
@@ -38,7 +38,7 @@ export const PairedPanel = ({
         <KeyRound size={14} />
         Pair another camera
       </Button>
-      <Button variant="ghost" size="sm" onClick={onBack}>
+      <Button variant="secondary" size="sm" onClick={onBack}>
         <RotateCcw size={14} />
         Back
       </Button>

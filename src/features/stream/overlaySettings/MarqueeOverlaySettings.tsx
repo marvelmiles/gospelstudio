@@ -1,7 +1,5 @@
 import { Baseline } from "lucide-react";
 import { FONT_WEIGHT_OPTIONS } from "../../../data/slideFonts";
-import { inputClassName } from "../../../components/ui/Field";
-import { cn } from "../../../lib/cn";
 import {
   OverlayColorField,
   OverlaySelect,
@@ -17,6 +15,7 @@ import {
 import { editStreamOverlay } from "../lib/streamOverlayStore";
 import { FONT_OPTIONS } from "./overlayOptions";
 import { SurfacePictureField } from "./SurfacePictureField";
+import { Textarea } from "@/components/ui/textarea";
 
 const toSpeed = (crossSeconds: number): number =>
   MIN_MARQUEE_CROSS_SECONDS + MAX_MARQUEE_CROSS_SECONDS - crossSeconds;
@@ -32,16 +31,16 @@ export const MarqueeOverlaySettings = ({
   return (
     <>
       <label className="block">
-        <span className="mb-1.5 block text-xs font-semibold text-sub">
+        <span className="mb-1.5 block text-xs font-semibold text-muted-foreground">
           Announcement
         </span>
-        <textarea
+        <Textarea
           value={overlay.text}
           onChange={(event) =>
             editStreamOverlay(overlay.id, { text: event.target.value })
           }
           rows={2}
-          className={cn(inputClassName, "resize-y leading-normal")}
+          className="resize-y leading-normal"
         />
       </label>
 

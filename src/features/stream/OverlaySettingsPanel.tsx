@@ -1,6 +1,6 @@
 import { Eye, MonitorPlay, MonitorX, RotateCcw, Square } from "lucide-react";
-import { cn } from "../../lib/cn";
-import { Button } from "../../components/ui/Button";
+import { cn } from "../../lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   OverlayCheckbox,
   OverlaySectionLabel,
@@ -37,11 +37,11 @@ export const OverlaySettingsPanel = ({
   const hasStaged = hasStagedEdits(overlay);
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-line bg-canvas p-3.25">
+    <div className="flex flex-col gap-3 rounded-xl border border-border bg-background p-3.25">
       <OverlaySectionLabel>Selected element</OverlaySectionLabel>
 
       <Button
-        variant={isLive ? "danger" : "primary"}
+        variant={isLive ? "destructive" : "default"}
         size="sm"
         onClick={() => toggleStreamOverlayLive(overlay.id)}
         className="w-full"
@@ -59,7 +59,6 @@ export const OverlaySettingsPanel = ({
         <div className="flex flex-col gap-2">
           <div className="flex gap-1.75">
             <Button
-              variant="primary"
               size="sm"
               disabled={!hasStaged}
               onClick={() => applyStreamOverlayEdits(overlay.id)}
@@ -75,7 +74,7 @@ export const OverlaySettingsPanel = ({
             </Button>
             {hasStaged && (
               <Button
-                variant="ghost"
+                variant="secondary"
                 size="sm"
                 onClick={() => discardStreamOverlayEdits(overlay.id)}
                 title="Throw the changes away and go back to what is on air"
@@ -88,7 +87,7 @@ export const OverlaySettingsPanel = ({
           <span
             className={cn(
               "text-[11.5px] leading-[1.45]",
-              hasStaged ? "text-warning" : "text-dim",
+              hasStaged ? "text-warning" : "text-subtle-foreground",
             )}
           >
             {hasStaged
@@ -107,7 +106,7 @@ export const OverlaySettingsPanel = ({
 
       {isLive && overlay.hidden && (
         <Button
-          variant="subtle"
+          variant="ghost"
           size="sm"
           onClick={() => toggleStreamOverlayHidden(overlay.id)}
           className="w-full"

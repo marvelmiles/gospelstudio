@@ -1,32 +1,16 @@
 import { Wifi, WifiOff } from "lucide-react";
-import { cn } from "../../lib/cn";
-import type { PeerStatus } from "./lib/peerStatus";
-
-export type StreamBadgeStatus =
-  | "waiting"
-  | "connecting"
-  | "connected"
-  | "reconnecting"
-  | "disconnected"
-  | "live"
-  | "liveOnDisplay";
+import { cn } from "../../lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { statusPillClassName, type StreamBadgeStatus } from "./lib/streamBadge";
 
 type BadgeTone = "neutral" | "success" | "warning" | "danger";
 
 const TONE_CLASSES: Record<BadgeTone, string> = {
-  neutral: "border border-line bg-raise text-sub",
-  success: "bg-success/90 text-on-accent",
-  warning: "bg-warning/92 text-on-accent",
-  danger: "bg-danger/92 text-on-accent",
+  neutral: "border border-border bg-secondary text-muted-foreground",
+  success: "bg-success/90 text-primary-foreground",
+  warning: "bg-warning/92 text-primary-foreground",
+  danger: "bg-destructive/92 text-primary-foreground",
 };
-
-export const statusPillClassName = (isSmall: boolean): string =>
-  cn(
-    "inline-flex items-center rounded-full font-extrabold tracking-[0.4px] whitespace-nowrap",
-    isSmall
-      ? "gap-1 px-2 py-0.75 text-[10px]"
-      : "gap-1.5 px-2.75 py-1.25 text-[11px]",
-  );
 
 const BADGE_CONFIG: Record<
   StreamBadgeStatus,
@@ -39,22 +23,6 @@ const BADGE_CONFIG: Record<
   disconnected: { label: "Disconnected", tone: "danger" },
   live: { label: "Live", tone: "danger" },
   liveOnDisplay: { label: "Live on display", tone: "danger" },
-};
-
-export const connectionBadgeStatus = (
-  status: PeerStatus,
-  isProjecting: boolean,
-): StreamBadgeStatus => {
-  switch (status) {
-    case "failed":
-      return "disconnected";
-    case "reconnecting":
-      return "reconnecting";
-    case "live":
-      return isProjecting ? "liveOnDisplay" : "connected";
-    default:
-      return "connecting";
-  }
 };
 
 interface StreamStatusBadgeProps {
@@ -73,10 +41,14 @@ export const StreamStatusBadge = ({
   const Icon = status === "disconnected" ? WifiOff : Wifi;
 
   return (
-    <span
-      className={cn(statusPillClassName(isSmall), TONE_CLASSES[config.tone])}
+    <Badge
+      className={cn(
+        statusPillClassName(isSmall),
+        TONE_CLASSES[config.tone],
+        isSmall ? "[&>svg]:size-2.75" : "[&>svg]:size-3",
+      )}
     >
-      <Icon size={isSmall ? 11 : 12} /> {label ?? config.label}
-    </span>
+      <Icon /> {label ?? config.label}
+    </Badge>
   );
 };

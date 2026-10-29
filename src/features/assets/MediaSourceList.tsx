@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { MediaKind } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import {
@@ -19,11 +19,11 @@ import {
   sortMediaByRecency,
 } from "../../lib/media";
 import routes from "../../routes";
-import { Button } from "../../components/ui/Button";
-import { EmptyState } from "../../components/ui/EmptyState";
-import { LazyMount } from "../../components/ui/LazyMount";
-import { LibrarySection } from "../../components/ui/LibrarySection";
-import { SegmentedTabs } from "../../components/ui/SegmentedTabs";
+import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { LazyMount } from "@/components/shared/LazyMount";
+import { LibrarySection } from "@/components/shared/LibrarySection";
+import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import { VideoThumb } from "../../components/media/VideoThumb";
 import type { AssetSection } from "./assetLibraryNavigation";
@@ -127,11 +127,7 @@ export const MediaSourceList = ({
       meta={`${formatCount(items.length)} of ${formatCount(library.length)}`}
       description={description}
       action={
-        <Button
-          variant="primary"
-          size="sm"
-          onClick={() => fileInput.current?.click()}
-        >
+        <Button size="sm" onClick={() => fileInput.current?.click()}>
           <Upload size={14} />
           {copy.uploadLabel}
         </Button>
@@ -200,7 +196,7 @@ export const MediaSourceList = ({
                 <div
                   className={cn(
                     "relative aspect-video overflow-hidden rounded-[9px] border-[1.5px] bg-black",
-                    added ? "border-accent" : "border-line",
+                    added ? "border-primary" : "border-border",
                   )}
                 >
                   <LazyMount>
@@ -226,9 +222,11 @@ export const MediaSourceList = ({
                 </div>
                 <div className="mt-1.5 flex items-center justify-between gap-1.5">
                   <div className="min-w-0">
-                    <div className="truncate text-xs text-fg">{item.name}</div>
+                    <div className="truncate text-xs text-foreground">
+                      {item.name}
+                    </div>
                     {mediaPlayLength(item) ? (
-                      <div className="text-[11.5px] text-sub tabular-nums">
+                      <div className="text-[11.5px] text-muted-foreground tabular-nums">
                         {formatDuration(mediaPlayLength(item))}
                       </div>
                     ) : null}
@@ -244,8 +242,8 @@ export const MediaSourceList = ({
                     className={cn(
                       "inline-flex shrink-0 items-center gap-1.25 rounded-full border px-2.25 py-1 text-[11.5px] font-semibold",
                       added
-                        ? "border-accent/40 bg-accent/16 text-accent-soft"
-                        : "border-line bg-transparent text-sub",
+                        ? "border-primary/40 bg-primary/16 text-primary-soft"
+                        : "border-border bg-transparent text-muted-foreground",
                     )}
                   >
                     {added ? <Check size={12} /> : <Plus size={12} />}

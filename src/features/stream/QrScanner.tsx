@@ -1,4 +1,4 @@
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useQrScanner, type ScanFacing } from "./lib/useQrScanner";
 
 interface QrScannerProps {
@@ -20,7 +20,7 @@ export const QrScanner = ({
   const statusText = isCameraReady ? "Looking for a code" : "Starting camera";
 
   return (
-    <div className="relative aspect-square w-full max-w-90 overflow-hidden rounded-2xl border border-line bg-stage">
+    <div className="relative aspect-square w-full max-w-90 overflow-hidden rounded-2xl border border-border bg-stage">
       <video
         ref={videoRef}
         playsInline
@@ -34,12 +34,12 @@ export const QrScanner = ({
         aria-hidden
         className={cn(
           "absolute inset-[8%] overflow-hidden rounded-xl border-2 shadow-[0_0_0_100vmax_rgb(0_0_0/0.35)]",
-          isCameraReady ? "border-accent-soft" : "border-white/50",
+          isCameraReady ? "border-primary-soft" : "border-white/50",
         )}
       >
         {isCameraReady && (
-          <div className="pointer-events-none absolute inset-0 animate-scan-sweep motion-reduce:[animation-duration:6s]">
-            <div className="-mt-px h-0.5 bg-accent-soft shadow-[0_0_12px_3px_rgb(59_130_246/0.6)]" />
+          <div className="pointer-events-none absolute inset-0 animate-scan-sweep motion-reduce:animation-duration-[6s]">
+            <div className="-mt-px h-0.5 bg-primary-soft shadow-[0_0_12px_3px_rgb(59_130_246/0.6)]" />
           </div>
         )}
       </div>

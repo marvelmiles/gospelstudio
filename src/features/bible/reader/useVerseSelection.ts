@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useValueChange } from "@/hooks/useValueChange";
 import type { BibleVerse } from "../../../types";
 import type { VerseSpan } from "../lib/reference";
 
@@ -12,6 +13,10 @@ interface UseVerseSelectionOptions {
   focusRange?: VerseSpan | null;
   chapterKey: string;
   isLoading: boolean;
+}
+
+interface ScrollRequest {
+  verse: number;
 }
 
 const isTextEntry = (target: EventTarget | null): boolean => {
@@ -32,8 +37,12 @@ export const useVerseSelection = ({
 }: UseVerseSelectionOptions) => {
   const [selection, setSelection] = useState<VerseSelection | null>(null);
   const verseRefs = useRef<Record<number, HTMLDivElement | null>>({});
-  const pendingScrollVerse = useRef<number | null>(null);
-  const pendingSelection = useRef<VerseSelection | null>(null);
+  const [pendingSelection, setPendingSelection] =
+    useState<VerseSelection | null>(null);
+  const [scrollRequest, setScrollRequest] = useState<ScrollRequest | null>(
+    null,
+  );
+  const handledScroll = useRef<ScrollRequest | null>(null);
 
   const selectionStart = selection
     ? Math.min(selection.anchor, selection.focus)
@@ -58,29 +67,31 @@ export const useVerseSelection = ({
 
   const selectAfterNavigation = useCallback(
     (next: VerseSelection, scrollTo: number) => {
-      pendingSelection.current = next;
-      pendingScrollVerse.current = scrollTo;
+      setPendingSelection(next);
+      setScrollRequest({ verse: scrollTo });
     },
     [],
   );
 
-  useEffect(() => {
-    setSelection(pendingSelection.current);
-    pendingSelection.current = null;
-  }, [chapterKey]);
+  const focusOn = (range: VerseSpan | null | undefined) => {
+    if (!range) return;
+    setSelection({ anchor: range.start, focus: range.end });
+    setScrollRequest({ verse: range.start });
+  };
+
+  useValueChange(chapterKey, () => {
+    setSelection(pendingSelection);
+    setPendingSelection(null);
+    focusOn(focusRange);
+  });
+  useValueChange(focusRange, focusOn, { onMount: true });
 
   useEffect(() => {
-    if (!focusRange) return;
-    setSelection({ anchor: focusRange.start, focus: focusRange.end });
-    pendingScrollVerse.current = focusRange.start;
-  }, [focusRange, chapterKey]);
-
-  useEffect(() => {
-    const target = pendingScrollVerse.current;
-    if (target === null || isLoading || !verses.length) return;
-    pendingScrollVerse.current = null;
-    scrollToVerse(target);
-  }, [isLoading, verses, scrollToVerse]);
+    if (!scrollRequest || scrollRequest === handledScroll.current) return;
+    if (isLoading || !verses.length) return;
+    handledScroll.current = scrollRequest;
+    scrollToVerse(scrollRequest.verse);
+  }, [scrollRequest, isLoading, verses, scrollToVerse]);
 
   const selectedVerses = useMemo(() => {
     if (selectionStart === null || selectionEnd === null) return [];

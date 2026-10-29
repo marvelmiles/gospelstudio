@@ -25,10 +25,7 @@ export const useOpenerLiveComposition = (enabled = true): LiveComposition => {
   );
 
   useEffect(() => {
-    if (!enabled) {
-      setComposition(EMPTY_LIVE_COMPOSITION);
-      return;
-    }
+    if (!enabled) return;
     let seenVersion = -1;
     const pull = () => {
       const read = readBridge();
@@ -41,5 +38,5 @@ export const useOpenerLiveComposition = (enabled = true): LiveComposition => {
     return () => window.clearInterval(timer);
   }, [enabled]);
 
-  return composition;
+  return enabled ? composition : EMPTY_LIVE_COMPOSITION;
 };

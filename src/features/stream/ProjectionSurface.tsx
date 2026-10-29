@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { useMediaQuery } from "usehooks-ts";
 import { useFullscreen } from "../../hooks/useFullscreen";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
 import { CameraStatusOverlay } from "./components/CameraStatusOverlay";
 import { StreamOverlayEditor } from "./StreamOverlayEditor";
 import { StreamOverlayLayers } from "./StreamOverlayLayers";
-import { StreamPipLayer, type StreamPipWindow } from "./StreamPipLayer";
+import { StreamPipLayer } from "./StreamPipLayer";
+import type { StreamPipWindow } from "./lib/streamPipWindow";
 import { StreamVideo } from "./StreamVideo";
 import { useSavedOverlaySync } from "./lib/useSavedOverlaySync";
 import { StageDrawerPanel, type StageDrawer } from "./stage/StageDrawerPanel";
@@ -80,7 +81,7 @@ export const ProjectionSurface = ({
   return (
     <div
       ref={shellRef}
-      className="fixed inset-x-0 top-0 z-200 flex h-dvh flex-col overflow-x-hidden overflow-y-auto bg-canvas"
+      className="fixed inset-x-0 top-0 z-200 flex h-dvh flex-col overflow-x-hidden overflow-y-auto bg-background"
     >
       <StageHeader
         status={status}

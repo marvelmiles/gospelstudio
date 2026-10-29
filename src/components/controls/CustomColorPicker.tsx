@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { Check, Plus } from "lucide-react";
-import { Button } from "../ui/Button";
-import { TextInput } from "../ui/Field";
-import { InfoTip } from "../ui/InfoTip";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { InfoTip } from "@/components/shared/InfoTip";
 
 interface CustomColorPickerProps {
   onAdd: (value: string, name: string) => void;
@@ -28,7 +28,7 @@ const PALETTE: { value: string; name: string }[] = [
 ];
 
 const captionClassName =
-  "mt-0 mb-1.75 text-[10.5px] font-bold tracking-[0.5px] text-dim uppercase";
+  "mt-0 mb-1.75 text-[10.5px] font-bold tracking-[0.5px] text-subtle-foreground uppercase";
 
 export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
   const [color, setColor] = useState("#1b1733");
@@ -48,7 +48,7 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
   };
 
   return (
-    <div className="mb-3 rounded-[11px] border border-line bg-raise p-3">
+    <div className="mb-3 rounded-[11px] border border-border bg-secondary p-3">
       <p className={captionClassName}>Presets</p>
       <div className="mb-3.5 grid grid-cols-8 gap-1.5">
         {PALETTE.map((swatch) => (
@@ -57,7 +57,7 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
             title={swatch.name}
             onClick={() => onAdd(swatch.value, swatch.name)}
             style={{ background: swatch.value }}
-            className="aspect-square rounded-[7px] border border-line"
+            className="aspect-square rounded-[7px] border border-border"
           />
         ))}
       </div>
@@ -69,7 +69,7 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
           Presets already include a name.
         </InfoTip>
       </p>
-      <TextInput
+      <Input
         value={label}
         placeholder="Label (e.g. Soft Cream)"
         onChange={(event) => setLabel(event.target.value)}
@@ -80,10 +80,10 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
           type="color"
           value={color}
           onChange={(event) => setColor(event.target.value)}
-          className="h-9.5 w-10.5 cursor-pointer rounded-[9px] border border-line bg-transparent"
+          className="h-9.5 w-10.5 cursor-pointer rounded-[9px] border border-border bg-transparent"
         />
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           disabled={!trimmed}
           onClick={addColor}
@@ -94,13 +94,13 @@ export const CustomColorPicker = ({ onAdd }: CustomColorPickerProps) => {
       </div>
 
       <div className="flex gap-2">
-        <TextInput
+        <Input
           value={css}
           placeholder="#1b1733, rgba(20,20,40,1), linear-gradient(…)"
           onChange={(event) => setCss(event.target.value)}
         />
         <Button
-          variant="ghost"
+          variant="secondary"
           size="sm"
           disabled={!trimmed || !css.trim()}
           onClick={addCss}

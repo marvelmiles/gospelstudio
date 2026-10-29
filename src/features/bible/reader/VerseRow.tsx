@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react";
 import type { BibleVerse } from "../../../types";
-import { cn } from "../../../lib/cn";
+import { cn } from "../../../lib/utils";
 
 interface VerseRowProps {
   verse: BibleVerse;
@@ -29,7 +29,7 @@ export const VerseRow = ({
     className={cn(
       "mb-0.5 flex cursor-pointer gap-3 rounded-[10px] border px-3 py-2.25 select-none",
       isSelected
-        ? "border-accent/35 bg-accent/13"
+        ? "border-primary/35 bg-primary/13"
         : isBeingRead
           ? "border-info/40 bg-info/14"
           : "border-transparent bg-transparent",
@@ -38,7 +38,7 @@ export const VerseRow = ({
     <span
       className={cn(
         "min-w-5.5 pt-0.75 text-right text-xs font-bold tabular-nums",
-        isSelected ? "text-accent" : "text-dim",
+        isSelected ? "text-primary" : "text-subtle-foreground",
       )}
     >
       {verse.v}
@@ -46,7 +46,7 @@ export const VerseRow = ({
     <span
       className={cn(
         "text-[15px] leading-[1.65] whitespace-pre-line",
-        isSelected || isBeingRead ? "text-fg" : "text-sub",
+        isSelected || isBeingRead ? "text-foreground" : "text-muted-foreground",
       )}
     >
       {verse.t}

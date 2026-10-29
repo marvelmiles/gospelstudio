@@ -15,8 +15,10 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { ActionContextMenu } from "@/components/shared/ContextMenu";
+import type { MenuItem } from "@/components/shared/menuItem";
 import type { Background, Slide, SlideDeckDoc, Theme } from "../../types";
-import { cn } from "../../lib/cn";
+import { cn } from "../../lib/utils";
 import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
 import { SlideCanvas } from "../../components/SlideCanvas";
@@ -31,7 +33,7 @@ interface SortableSlideListProps {
   theme: Theme;
   bgMap: Record<string, Background>;
   onReorder: (next: Slide[]) => void;
-  onContextMenu: (slideIndex: number, x: number, y: number) => void;
+  slideMenuItems: (slideIndex: number) => MenuItem[];
   tagGroups?: TagGroup[];
 }
 
@@ -43,7 +45,7 @@ interface RowProps {
   doc: SlideDeckDoc;
   theme: Theme;
   bgMap: Record<string, Background>;
-  onContextMenu: (slideIndex: number, x: number, y: number) => void;
+  slideMenuItems: (slideIndex: number) => MenuItem[];
   shortcutNum?: number;
   fixedShortcut?: { letter: string; label: string };
 }
@@ -65,7 +67,7 @@ const ShortcutBadge = ({
       className={cn(
         "inline-flex items-center rounded-[3px] border border-b-2 px-1 py-px font-mono text-[8px] leading-[1.4] font-extrabold tracking-[0.2px]",
         highlight
-          ? "border-accent/50 bg-accent/20 text-accent"
+          ? "border-primary/50 bg-primary/20 text-primary"
           : "border-white/30 bg-white/15 text-white",
       )}
     >
@@ -74,7 +76,7 @@ const ShortcutBadge = ({
     <span
       className={cn(
         "font-mono text-[9px] font-extrabold",
-        highlight ? "text-accent" : "text-white/70",
+        highlight ? "text-primary" : "text-white/70",
       )}
     >
       +{label}
@@ -90,7 +92,7 @@ const SortableRow = ({
   doc,
   theme,
   bgMap,
-  onContextMenu,
+  slideMenuItems,
   shortcutNum,
   fixedShortcut,
 }: RowProps) => {
@@ -126,81 +128,81 @@ const SortableRow = ({
   const background = useBackgroundView(slide, doc, theme, bgMap);
 
   return (
-    <div
-      ref={setRefs}
-      onClick={() => setSelId(slide.id)}
-      onContextMenu={(e) => {
-        e.preventDefault();
-        setSelId(slide.id);
-        onContextMenu(index, e.clientX, e.clientY);
-      }}
-      style={{ transform: CSS.Transform.toString(transform), transition }}
-      className={cn(
-        "mb-2 flex cursor-pointer scroll-mt-16 items-stretch gap-2.25 rounded-[11px] border p-1.75",
-        selected
-          ? "border-accent/35 bg-accent/12"
-          : "border-transparent bg-transparent",
-        isDragging && "opacity-40",
-      )}
+    <ActionContextMenu
+      items={() => slideMenuItems(index)}
+      onOpen={() => setSelId(slide.id)}
     >
       <div
-        {...attributes}
-        {...listeners}
-        title="Drag to reorder"
-        onClick={(e) => e.stopPropagation()}
-        className="flex cursor-grab touch-none flex-col justify-center text-dim"
+        ref={setRefs}
+        onClick={() => setSelId(slide.id)}
+        style={{ transform: CSS.Transform.toString(transform), transition }}
+        className={cn(
+          "mb-2 flex cursor-pointer scroll-mt-16 items-stretch gap-2.25 rounded-[11px] border p-1.75",
+          selected
+            ? "border-primary/35 bg-primary/12"
+            : "border-transparent bg-transparent",
+          isDragging && "opacity-40",
+        )}
       >
-        <GripVertical size={15} />
-      </div>
-      <div className="flex w-8 items-center text-xs text-dim tabular-nums">
-        {index + 1}
-      </div>
-      <div className="min-w-0 flex-1">
-        <SlideCanvas
-          slide={slide}
-          bg={background.background}
-          bgImage={background.image}
-          bgVideo={background.video}
-          style={resolveStyle(slide, doc, theme)}
-          lineStyles={slide.lines.map((_, i) =>
-            resolveLineStyle(slide, i, doc, theme),
-          )}
-          showLabel={false}
-          radius={7}
-        />
-        <div className="mt-1.25 flex items-center justify-between gap-1">
-          <div
-            className={cn(
-              "min-w-0 truncate text-[11px]",
-              selected ? "text-accent-soft" : "text-sub",
+        <div
+          {...attributes}
+          {...listeners}
+          title="Drag to reorder"
+          onClick={(e) => e.stopPropagation()}
+          className="flex cursor-grab touch-none flex-col justify-center text-subtle-foreground"
+        >
+          <GripVertical size={15} />
+        </div>
+        <div className="flex w-8 items-center text-xs text-subtle-foreground tabular-nums">
+          {index + 1}
+        </div>
+        <div className="min-w-0 flex-1">
+          <SlideCanvas
+            slide={slide}
+            bg={background.background}
+            bgImage={background.image}
+            bgVideo={background.video}
+            style={resolveStyle(slide, doc, theme)}
+            lineStyles={slide.lines.map((_, i) =>
+              resolveLineStyle(slide, i, doc, theme),
             )}
-          >
-            {slide.label}
-          </div>
-          {(shortcutNum !== undefined || fixedShortcut) && (
-            <div className="flex shrink-0 gap-1.25">
-              {shortcutNum !== undefined && (
-                <ShortcutBadge
-                  label={String(shortcutNum)}
-                  title={
-                    allSlidesMode
-                      ? `Press Ctrl then type ${shortcutNum}, release Ctrl to jump here`
-                      : `Press Ctrl then hold and type ${shortcutNum}, release Ctrl to jump here`
-                  }
-                />
+            showLabel={false}
+            radius={7}
+          />
+          <div className="mt-1.25 flex items-center justify-between gap-1">
+            <div
+              className={cn(
+                "min-w-0 truncate text-[11px]",
+                selected ? "text-primary-soft" : "text-muted-foreground",
               )}
-              {fixedShortcut && (
-                <ShortcutBadge
-                  label={fixedShortcut.letter.toUpperCase()}
-                  title={`Press Ctrl+${fixedShortcut.letter.toUpperCase()} to jump to first ${fixedShortcut.label} slide`}
-                  highlight
-                />
-              )}
+            >
+              {slide.label}
             </div>
-          )}
+            {(shortcutNum !== undefined || fixedShortcut) && (
+              <div className="flex shrink-0 gap-1.25">
+                {shortcutNum !== undefined && (
+                  <ShortcutBadge
+                    label={String(shortcutNum)}
+                    title={
+                      allSlidesMode
+                        ? `Press Ctrl then type ${shortcutNum}, release Ctrl to jump here`
+                        : `Press Ctrl then hold and type ${shortcutNum}, release Ctrl to jump here`
+                    }
+                  />
+                )}
+                {fixedShortcut && (
+                  <ShortcutBadge
+                    label={fixedShortcut.letter.toUpperCase()}
+                    title={`Press Ctrl+${fixedShortcut.letter.toUpperCase()} to jump to first ${fixedShortcut.label} slide`}
+                    highlight
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ActionContextMenu>
   );
 };
 
@@ -212,7 +214,7 @@ export const SortableSlideList = ({
   theme,
   bgMap,
   onReorder,
-  onContextMenu,
+  slideMenuItems,
   tagGroups,
 }: SortableSlideListProps) => {
   const sensors = useSensors(
@@ -255,7 +257,7 @@ export const SortableSlideList = ({
               doc={doc}
               theme={theme}
               bgMap={bgMap}
-              onContextMenu={onContextMenu}
+              slideMenuItems={slideMenuItems}
               shortcutNum={shortcutNum}
               fixedShortcut={fixedShortcut}
             />
