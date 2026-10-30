@@ -1,22 +1,18 @@
 # GospelStudio
 
-**Church presentation software that runs in your web browser. It works without internet and needs no account.**
+**Church media application that runs in your web browser and works offline.**
 
-GospelStudio helps your church show song lyrics, hymns, Bible verses, sermon notes, pictures and videos on a projector or TV. Paste the words of a song and it turns them into slides for you. Then present them full screen with backgrounds, smooth animations, background music, notes for the presenter and simple keyboard controls. You can also use a phone as a live camera, and send your songs and slides to another device in the room.
+GospelStudio is a church media application for displaying lyrics, hymns, Bible verses, sermon notes, pictures, and videos on projectors or TVs. It also supports live broadcasts using phone cameras. It works offline, stores content on your device, and requires no installation.
 
-Everything is saved on your own device. There is no account, no subscription and no upload.
-
-**Try it here: [gospelstudio.netlify.app](https://gospelstudio.netlify.app/)**
-
-Keywords: church presentation software, worship slides, lyrics to slides, hymn projection, Bible verse projection, sermon slides, ProPresenter alternative, EasyWorship alternative, OpenLP alternative, offline PWA, React, TypeScript.
+**Try it here: [gospelstudio.app](https://gospelstudio.app/)**
 
 ## Why I built it
 
-I built GospelStudio for my own church.
+I started GospelStudio because of a real problem at my church.
 
-I was running the media, and the slide program we used kept freezing in the middle of the service. Hymns, pictures and videos would stutter right when people needed to read along. On top of that, most programs made for this job have to be bought, installed and kept on one computer, and the WiFi in our hall is not something I can count on when the first song starts.
+I was handling the media, and the presentation software we used kept freezing in the middle of services. Hymns, pictures, and videos would stutter just when people needed them most. On top of that, most software designed for this purpose requires a paid licence, installation, or an internet connection. And the Wi-Fi in my church wasn't something I could rely on when the first song started.
 
-So I made the one I wanted. It runs in the browser, keeps everything on the device, opens without internet, and nobody has to install anything.
+So I made the one I wanted. Simple to set up and easy for any volunteer to use. It runs in the browser, stores everything on the device, works offline, and requires no installation.
 
 Everything else in the app comes from how our church actually works:
 
@@ -166,7 +162,10 @@ Then open the address Vite prints. By default that is http://localhost:5173.
 | `pnpm test` / `test:watch`     | Run the Vitest tests                                    |
 | `pnpm generate:hymns`          | Rebuild `src/data/hymns.json` from the freehymns hymnal |
 | `pnpm generate:icons`          | Create the PNG icons from `public/icon.svg`             |
+| `pnpm generate:thumbnails`     | Create small previews of the built-in background images |
 | `pnpm generate:bible-layout`   | Rebuild the list of Bible books and chapters            |
+
+Run `pnpm generate:thumbnails` after adding a picture to `public/assets/images`. Lists and editors show the small copy from `public/assets/images/thumbs`, and only the projector loads the full picture.
 
 ## Environment variables
 
@@ -186,6 +185,8 @@ Cameras also need a secure page. Open the app over `https://` or `localhost` on 
 ## Deployment
 
 `pnpm build` creates a static `dist/` folder that any static host can serve. The repo includes a `netlify.toml` for Netlify. On other hosts, publish `dist/` and send any unknown path to `index.html` so links inside the app keep working.
+
+The build also writes one HTML file for each main page, such as `manuscripts.html` and `bible.html`, with that page's own title and description. Hosts serve them at `/manuscripts` and `/bible`, so a link shared on WhatsApp or another app shows the right preview. The titles and descriptions live in `src/lib/pageMeta.ts`.
 
 ## Tech stack
 

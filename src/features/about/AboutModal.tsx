@@ -33,15 +33,17 @@ export const AboutModal = () => {
       </div>
       <p className="mt-2.5 text-sm leading-[1.7] text-foreground">
         I started {APP_NAME} because of a real problem at my church. I was
-        running the media, and the slide program we used kept freezing in the
-        middle of the service. Hymns, pictures and videos would stutter just
-        when people needed to read along. Every freeze made people trust the
-        media team a little less, and pulled their attention away from worship.
+        handling the media, and the presentation software we used kept freezing
+        in the middle of services. Hymns, pictures, and videos would stutter
+        just when people needed them most. On top of that, most software
+        designed for this purpose requires a paid licence, installation, or an
+        internet connection. And the Wi-Fi in my church wasn't something I could
+        rely on when the first song started.
       </p>
       <p className="mt-2.5 text-sm leading-[1.7] text-muted-foreground">
-        So I built something lighter, made for one job: showing worship content
-        clearly, without freezing. It works without internet, keeps everything
-        on your own device, and is simple enough for any volunteer to use.
+        So I made the one I wanted. Simple to set up and easy for any volunteer
+        to use. It runs in the browser, stores everything on the device, works
+        offline, and requires no installation.{" "}
       </p>
 
       <SectionTitle>Frequently Asked Questions</SectionTitle>

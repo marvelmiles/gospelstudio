@@ -22,7 +22,9 @@ export const ImageSurface = ({
   );
   return (
     <ImageLayer
-      src={variant === "thumb" ? (item.src ?? thumbUrl) : fullUrl}
+      src={
+        variant === "thumb" ? (item.thumbSrc ?? item.src ?? thumbUrl) : fullUrl
+      }
       alt={item.name}
       settings={settings ?? imageSettingsOf(item)}
       className={className}

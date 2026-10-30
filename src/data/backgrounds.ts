@@ -5,6 +5,7 @@ import {
 } from "../lib/media";
 
 const IMAGE_ASSETS_PATH = "/assets/images";
+const IMAGE_THUMBS_PATH = `${IMAGE_ASSETS_PATH}/thumbs`;
 const VIDEO_ASSETS_PATH = "/assets/videos";
 
 interface BuiltInAsset {
@@ -46,6 +47,9 @@ const VIDEO_ASSETS: BuiltInAsset[] = [
   { file: "warp-streaks-red", name: "Warp Streaks Red", category: "Motion" },
 ];
 
+const imageSrcOf = (file: string): string => `${IMAGE_ASSETS_PATH}/${file}.jpg`;
+const imageThumbSrcOf = (file: string): string =>
+  `${IMAGE_THUMBS_PATH}/${file}.jpg`;
 const imageIdOf = (file: string): string => `image-${file}`;
 const clipIdOf = (file: string): string => `clip-${file}`;
 const imageBackgroundIdOf = (file: string): string => `bg-image-${file}`;
@@ -66,7 +70,8 @@ const imageBackground = ({
   category,
   type: "image",
   builtIn: true,
-  src: `${IMAGE_ASSETS_PATH}/${file}.jpg`,
+  src: imageSrcOf(file),
+  thumbSrc: imageThumbSrcOf(file),
   mediaId: imageIdOf(file),
   createdAt: BUILT_IN_ASSETS_DATE,
 });
@@ -91,7 +96,8 @@ const builtInImage = ({ file, name }: BuiltInAsset): MediaItem => ({
   name,
   mimeType: "image/jpeg",
   size: 0,
-  src: `${IMAGE_ASSETS_PATH}/${file}.jpg`,
+  src: imageSrcOf(file),
+  thumbSrc: imageThumbSrcOf(file),
   image: { ...DEFAULT_BACKGROUND_IMAGE_SETTINGS },
   builtIn: true,
   createdAt: BUILT_IN_ASSETS_DATE,

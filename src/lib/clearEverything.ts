@@ -1,88 +1,62 @@
+import { APP_NAME } from "./appInfo";
 import { showStorageClearedNotice } from "./storageClearedNotice";
 
-const clearEverything = async () => {
-  try {
-    localStorage.clear();
-  } catch (err) {
-    console.error("Local Storage:", err);
+const CLEARING_MESSAGE = `Clearing everything ${APP_NAME} saved on this device. The page will reload in a moment.`;
+
+export const FRESH_START_MESSAGE = `${APP_NAME} has been updated. What the earlier version saved on this device is being cleared so it can start fresh. The page will reload in a moment.`;
+
+const clearCookies = (): void => {
+  for (const cookie of document.cookie.split(";")) {
+    const separator = cookie.indexOf("=");
+    const name = (
+      separator > -1 ? cookie.substring(0, separator) : cookie
+    ).trim();
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+    document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
   }
+};
 
+const deleteDatabase = (name: string): Promise<void> =>
+  new Promise((resolve) => {
+    const request = indexedDB.deleteDatabase(name);
+    request.onsuccess = () => resolve();
+    request.onerror = () => {
+      console.error(`IndexedDB: failed deleting ${name}`);
+      resolve();
+    };
+  });
+
+const deleteAllDatabases = async (): Promise<void> => {
+  const databases = await indexedDB.databases();
+  for (const { name } of databases) if (name) await deleteDatabase(name);
+};
+
+const deleteAllCaches = async (): Promise<void> => {
+  const names = await caches.keys();
+  await Promise.all(names.map((name) => caches.delete(name)));
+};
+
+const attempt = async (
+  label: string,
+  task: () => void | Promise<void>,
+): Promise<void> => {
   try {
-    sessionStorage.clear();
-  } catch (err) {
-    console.error("Session Storage:", err);
+    await task();
+  } catch (error) {
+    console.error(`${label}:`, error);
   }
+};
 
-  try {
-    document.cookie.split(";").forEach((cookie) => {
-      const eqPos = cookie.indexOf("=");
-      const name =
-        eqPos > -1 ? cookie.substring(0, eqPos).trim() : cookie.trim();
+const clearEverything = async (message = CLEARING_MESSAGE): Promise<void> => {
+  const noticeShown = showStorageClearedNotice(message);
 
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-      document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-    });
-  } catch (err) {
-    console.error("Cookies:", err);
-  }
+  await attempt("Local Storage", () => localStorage.clear());
+  await attempt("Session Storage", () => sessionStorage.clear());
+  await attempt("Cookies", clearCookies);
+  await attempt("IndexedDB", deleteAllDatabases);
+  await attempt("Cache Storage", deleteAllCaches);
 
-  try {
-    if ("databases" in indexedDB) {
-      const databases = await (
-        indexedDB as IDBFactory & {
-          databases(): Promise<{ name?: string }[]>;
-        }
-      ).databases();
-
-      for (const db of databases) {
-        const name = db.name;
-        if (!name) continue;
-
-        await new Promise<void>((resolve) => {
-          const request = indexedDB.deleteDatabase(name);
-
-          request.onsuccess = () => {
-            resolve();
-          };
-
-          request.onerror = () => {
-            console.error(`Failed deleting ${name}`);
-            resolve();
-          };
-
-          request.onblocked = () => {
-            resolve();
-          };
-        });
-      }
-    } else {
-      console.warn(
-        "Browser doesn't support indexedDB.databases(). Delete manually.",
-      );
-    }
-  } catch (err) {
-    console.error("IndexedDB:", err);
-  }
-
-  try {
-    if ("caches" in window) {
-      const cacheNames = await caches.keys();
-
-      await Promise.all(
-        cacheNames.map(async (cache) => {
-          await caches.delete(cache);
-          console.log(`Deleted cache: ${cache}`);
-        }),
-      );
-    }
-  } catch (err) {
-    console.error("Cache Storage:", err);
-  }
-
-  await showStorageClearedNotice(
-    "All browser storage has been cleared. The page will now reload.",
-  );
-
+  await noticeShown;
   window.location.replace(window.location.pathname);
 };
 

@@ -4,7 +4,8 @@ import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import "./fonts";
 import "./index.css";
 import "./pwa";
-import clearEverything from "./lib/clearEverything";
+import clearEverything, { FRESH_START_MESSAGE } from "./lib/clearEverything";
+import { hasIncompatibleDatabase } from "./lib/storage";
 import routes from "./routes";
 
 const PROJECTION_PATHS = new Set([
@@ -22,6 +23,8 @@ const bootstrap = async () => {
 
   if (params.has("reset")) {
     await clearEverything();
+  } else if (await hasIncompatibleDatabase()) {
+    await clearEverything(FRESH_START_MESSAGE);
   }
 
   const { default: Root } = await loadRoot();

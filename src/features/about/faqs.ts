@@ -24,7 +24,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
     faqs: [
       {
         question: `What is ${APP_NAME}?`,
-        answer: `${APP_NAME} helps your church put song lyrics, hymns, Bible verses, sermon notes, pictures and videos on a projector or TV. You can also run a live broadcast, using phone cameras to show what is happening in the room on the big screen, with text and pictures on top. It runs in your web browser, works without internet, and keeps everything on your own device.`,
+        answer: `${APP_NAME} is a church media application for displaying lyrics, hymns, Bible verses, sermon notes, pictures, and videos on projectors or TVs. It also supports live broadcasts using phone cameras. It works offline, stores content on your device, and requires no installation.`,
       },
       {
         question: "Do I need the internet?",

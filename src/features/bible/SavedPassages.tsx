@@ -5,7 +5,7 @@ import type { ScripturePassage, Theme } from "../../types";
 import { useStore } from "../../store/useStore";
 import { useBgMap } from "../../hooks/useBgMap";
 import type { BgMap } from "../../hooks/useBgMap";
-import { sortPinnedFirst } from "../../lib/pinning";
+import { pinnedCount, sortPinnedFirst } from "../../lib/pinning";
 import { sortLibrary } from "../../lib/librarySort";
 import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { LoadMoreFooter } from "@/components/shared/LoadMoreFooter";
 import { MoreMenu } from "@/components/shared/MoreMenu";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
@@ -33,6 +34,7 @@ import { PresentMenu } from "@/components/shared/PresentMenu";
 import routes from "../../routes";
 import { formatCountLabel } from "../../lib/formatNumber";
 import { useLibrarySort } from "@/hooks/useLibrarySort";
+import { useIncrementalList } from "../../hooks/useIncrementalList";
 
 export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
   const navigate = useNavigate();
@@ -67,6 +69,12 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
     return term || trashView ? ordered : sortPinnedFirst(ordered);
   }, [saved, query, trashView, sort]);
 
+  const shown = useIncrementalList(
+    list,
+    `${trashView}|${sort}|${query.trim()}`,
+  );
+  const usedPins = useMemo(() => pinnedCount(saved), [saved]);
+
   return (
     <>
       {!trashView && (
@@ -100,11 +108,11 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
         )
       ) : (
         <div className={cardGridClassName}>
-          {list.map((passage) => (
+          {shown.visibleItems.map((passage) => (
             <PassageCard
               key={passage.id}
               passage={passage}
-              library={saved}
+              usedPins={usedPins}
               themes={themes}
               bgMap={bgMap}
               trashView={trashView}
@@ -125,6 +133,7 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
           ))}
         </div>
       )}
+      <LoadMoreFooter list={shown} noun="passages" />
 
       {quickShare.target && (
         <QuickShareModal
@@ -139,7 +148,7 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
 
 interface PassageCardProps {
   passage: ScripturePassage;
-  library: ScripturePassage[];
+  usedPins: number;
   themes: Theme[];
   bgMap: BgMap;
   trashView: boolean;
@@ -153,7 +162,7 @@ interface PassageCardProps {
 
 const PassageCard = ({
   passage,
-  library,
+  usedPins,
   themes,
   bgMap,
   trashView,
@@ -212,7 +221,7 @@ const PassageCard = ({
           ) : (
             <>
               <PresentMenu fill onPresent={({ live }) => onPresent(live)} />
-              <PinButton kind="scripture" item={passage} library={library} />
+              <PinButton kind="scripture" item={passage} usedPins={usedPins} />
               <IconButton
                 filled
                 danger

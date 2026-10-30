@@ -27,12 +27,10 @@ export const useKeepOnResetState = (
   kind: KeepableKind,
   item: KeepableItem,
 ): KeepOnResetState => {
-  const manuscripts = useStore((s) => s.manuscripts);
-  const themes = useStore((s) => s.themes);
+  const used = useStore((s) => keptCount(s.manuscripts, s.themes));
   const toggleKeepOnReset = useStore((s) => s.toggleKeepOnReset);
 
   const kept = Boolean(item.keepOnReset);
-  const used = keptCount(manuscripts, themes);
   const full = !kept && used >= MAX_KEPT_ITEMS;
 
   return {

@@ -1,4 +1,4 @@
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { pageClassName } from "@/components/shared/PageHeader";
 import { useDashboardData } from "./useDashboardData";
 import { GreetingHeader } from "./components/GreetingHeader";
@@ -9,7 +9,7 @@ import { ManuscriptsByCategory } from "./components/ManuscriptsByCategory";
 import { MostUsedArtifacts } from "./components/MostUsedArtifacts";
 
 export const Dashboard = () => {
-  useDocumentTitle("Dashboard");
+  usePageMeta("home");
   const {
     greeting,
     counts,

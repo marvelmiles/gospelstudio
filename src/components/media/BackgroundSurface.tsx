@@ -71,11 +71,15 @@ const ImageBackgroundSurface = ({
   const blobId = background?.blobId;
   const thumbUrl = useThumbUrl(variant === "thumb" ? blobId : null);
   const fullUrl = useBlobUrl(variant === "full" ? blobId : null);
+  const fileSrc =
+    variant === "thumb"
+      ? (background?.thumbSrc ?? background?.src)
+      : background?.src;
   const src = blobId
     ? variant === "thumb"
       ? thumbUrl
       : fullUrl
-    : background?.src || null;
+    : fileSrc || null;
 
   return (
     <ImageLayer

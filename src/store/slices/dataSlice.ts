@@ -137,9 +137,9 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
       readAllRecords<Prefs>("prefs"),
     ]);
 
-    let prefs = withSupportedBibleVersion(
-      prefsRows[0] ? { ...DEFAULT_PREFS, ...prefsRows[0] } : DEFAULT_PREFS,
-    );
+    let prefs = prefsRows[0]
+      ? { ...DEFAULT_PREFS, ...prefsRows[0] }
+      : DEFAULT_PREFS;
 
     let manuscripts = storedManuscripts;
     if (prefs.hymnalVersion !== HYMNAL_VERSION) {

@@ -3,7 +3,6 @@ import { useStore } from "../../store/useStore";
 import {
   MAX_PINNED_ITEMS,
   isPinned,
-  pinnedCount,
   type Pinnable,
   type PinnableKind,
 } from "../../lib/pinning";
@@ -16,7 +15,7 @@ interface PinTarget extends Pinnable {
 interface PinButtonProps {
   kind: PinnableKind;
   item: PinTarget;
-  library: Pinnable[];
+  usedPins: number;
   size?: "sm" | "md";
 }
 
@@ -27,10 +26,13 @@ interface PinState {
   toggle: () => void;
 }
 
-const usePinState = ({ kind, item, library }: PinButtonProps): PinState => {
+const usePinState = ({
+  kind,
+  item,
+  usedPins: used,
+}: PinButtonProps): PinState => {
   const togglePin = useStore((s) => s.togglePin);
   const pinned = isPinned(item);
-  const used = pinnedCount(library);
 
   return {
     pinned,
@@ -47,10 +49,10 @@ const usePinState = ({ kind, item, library }: PinButtonProps): PinState => {
 export const PinButton = ({
   kind,
   item,
-  library,
+  usedPins,
   size = "sm",
 }: PinButtonProps) => {
-  const state = usePinState({ kind, item, library });
+  const state = usePinState({ kind, item, usedPins });
   return (
     <IconButton
       filled

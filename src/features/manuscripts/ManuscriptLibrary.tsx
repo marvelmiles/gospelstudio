@@ -1,59 +1,56 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, PenLine, Plus, Share2, Trash2 } from "lucide-react";
-import type { Manuscript, Theme } from "../../types";
+import { FileText, Plus } from "lucide-react";
+import type { Manuscript } from "../../types";
 import { COLLECTIONS } from "../../data/collections";
 import { useStore } from "../../store/useStore";
 import { useBgMap } from "../../hooks/useBgMap";
-import type { BgMap } from "../../hooks/useBgMap";
-import { sortPinnedFirst } from "../../lib/pinning";
+import { pinnedCount, sortPinnedFirst } from "../../lib/pinning";
 import { sortLibrary } from "../../lib/librarySort";
-import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
-import { useBackgroundView } from "../../hooks/useBackgroundView";
-import { SlideCanvas } from "../../components/SlideCanvas";
-import { BgSwatch } from "../../components/controls/BgSwatch";
 import { Button } from "@/components/ui/button";
-import { IconButton } from "@/components/shared/IconButton";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { PillTabs } from "@/components/shared/PillTabs";
 import { buildSearchIndex, matchesSearch } from "../../lib/search";
-import { formatCountLabel } from "../../lib/formatNumber";
-import { formatDate } from "../../lib/id";
-import { LazyMount } from "@/components/shared/LazyMount";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { MoreMenu } from "@/components/shared/MoreMenu";
+import { LoadMoreFooter } from "@/components/shared/LoadMoreFooter";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
-import type { MenuItem } from "@/components/shared/menuItem";
-import { useKeepOnResetAction } from "@/components/shared/useKeepOnReset";
-import { KeepOnResetBadge } from "@/components/shared/KeepOnResetToggle";
-import { PinButton } from "@/components/shared/PinControl";
-import {
-  CardActions,
-  CardTitle,
-  cardBodyClassName,
-  cardClassName,
-  cardGridClassName,
-  cardSubClassName,
-  cardThumbBadgeClassName,
-} from "@/components/shared/InteractiveCard";
-import { cardOpenProps } from "@/components/shared/cardOpenProps";
+import { cardGridClassName } from "@/components/shared/InteractiveCard";
 import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
 import { LayoutToggle } from "@/components/shared/LayoutToggle";
-import {
-  LibraryListRow,
-  listClassName,
-} from "@/components/shared/LibraryListRow";
-import { PresentMenu } from "@/components/shared/PresentMenu";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { listClassName } from "@/components/shared/LibraryListRow";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { useLibraryLayout } from "../../hooks/useLibraryLayout";
+import { useIncrementalList } from "../../hooks/useIncrementalList";
 import routes from "../../routes";
 import { useLibrarySort } from "@/hooks/useLibrarySort";
+import {
+  ManuscriptCard,
+  ManuscriptRow,
+  type ManuscriptItemActions,
+} from "./ManuscriptLibraryItem";
+
+const searchTextCache = new WeakMap<Manuscript, string>();
+
+const searchTextOf = (manuscript: Manuscript): string => {
+  const cached = searchTextCache.get(manuscript);
+  if (cached !== undefined) return cached;
+  const text = buildSearchIndex([
+    manuscript.title,
+    manuscript.author,
+    manuscript.collection,
+    manuscript.music?.tune,
+    manuscript.music?.composer,
+    manuscript.body,
+  ]);
+  searchTextCache.set(manuscript, text);
+  return text;
+};
 
 export const ManuscriptLibrary = () => {
-  useDocumentTitle("Manuscripts");
+  usePageMeta("manuscripts");
   const navigate = useNavigate();
   const manuscripts = useStore((s) => s.manuscripts);
   const themes = useStore((s) => s.themes);
@@ -67,42 +64,40 @@ export const ManuscriptLibrary = () => {
   const [sort, setSort] = useLibrarySort("manuscripts");
   const [deleting, setDeleting] = useState<Manuscript | null>(null);
   const quickShare = useQuickShareTarget();
+  const openQuickShare = quickShare.open;
   const { layout, setLayout } = useLibraryLayout("manuscripts");
 
   const onNew = () => navigate(routes.newManuscript());
 
-  const searching = Boolean(query.trim());
-
-  /* Built once, not on every keystroke: the hymnal alone has hundreds of songs to search. */
-  const searchIndex = useMemo(() => {
-    const index = new Map<string, string>();
-    for (const manuscript of manuscripts)
-      index.set(
-        manuscript.id,
-        buildSearchIndex([
-          manuscript.title,
-          manuscript.author,
-          manuscript.collection,
-          manuscript.music?.tune,
-          manuscript.music?.composer,
-          manuscript.body,
-        ]),
-      );
-    return index;
-  }, [manuscripts]);
+  const term = query.trim();
+  const searching = Boolean(term);
 
   const list = useMemo(() => {
     let base = manuscripts.filter((m) => !m.deleted);
     if (collection !== "All")
       base = base.filter((m) => m.collection === collection);
-    const term = query.trim();
-    if (term)
-      base = base.filter((m) =>
-        matchesSearch(searchIndex.get(m.id) ?? "", term),
-      );
+    if (term) base = base.filter((m) => matchesSearch(searchTextOf(m), term));
     const ordered = sortLibrary(base, sort, (m) => m.title);
     return term ? ordered : sortPinnedFirst(ordered);
-  }, [manuscripts, searchIndex, query, collection, sort]);
+  }, [manuscripts, term, collection, sort]);
+
+  const shown = useIncrementalList(list, `${collection}|${sort}|${term}`);
+  const usedPins = useMemo(() => pinnedCount(manuscripts), [manuscripts]);
+
+  const actions = useMemo<ManuscriptItemActions>(
+    () => ({
+      open: (manuscript) => navigate(routes.manuscript(manuscript.id)),
+      present: (manuscript, live) =>
+        startPresent("manuscript", manuscript.id, 0, { live }),
+      share: (manuscript) =>
+        openQuickShare(
+          [{ collection: "manuscripts", id: manuscript.id }],
+          manuscript.title,
+        ),
+      remove: setDeleting,
+    }),
+    [navigate, startPresent, openQuickShare],
+  );
 
   const confirmDelete = () => {
     if (deleting) {
@@ -111,6 +106,8 @@ export const ManuscriptLibrary = () => {
     }
     setDeleting(null);
   };
+
+  const ManuscriptItem = layout === "grid" ? ManuscriptCard : ManuscriptRow;
 
   return (
     <div className={pageClassName}>
@@ -172,29 +169,18 @@ export const ManuscriptLibrary = () => {
         ))}
 
       <div className={layout === "grid" ? cardGridClassName : listClassName}>
-        {list.map((manuscript) => {
-          const props = {
-            manuscript,
-            library: manuscripts,
-            themes,
-            bgMap,
-            onOpen: () => navigate(routes.manuscript(manuscript.id)),
-            onPresent: (live: boolean) =>
-              startPresent("manuscript", manuscript.id, 0, { live }),
-            onQuickShare: () =>
-              quickShare.open(
-                [{ collection: "manuscripts", id: manuscript.id }],
-                manuscript.title,
-              ),
-            onDelete: () => setDeleting(manuscript),
-          };
-          return layout === "grid" ? (
-            <ManuscriptCard key={manuscript.id} {...props} />
-          ) : (
-            <ManuscriptRow key={manuscript.id} {...props} />
-          );
-        })}
+        {shown.visibleItems.map((manuscript) => (
+          <ManuscriptItem
+            key={manuscript.id}
+            manuscript={manuscript}
+            themes={themes}
+            bgMap={bgMap}
+            usedPins={usedPins}
+            actions={actions}
+          />
+        ))}
       </div>
+      <LoadMoreFooter list={shown} noun="manuscripts" />
 
       {quickShare.target && (
         <QuickShareModal
@@ -211,177 +197,6 @@ export const ManuscriptLibrary = () => {
         onConfirm={confirmDelete}
         onCancel={() => setDeleting(null)}
       />
-    </div>
-  );
-};
-
-const manuscriptMenuItems = (
-  onOpen: () => void,
-  onQuickShare: () => void,
-  keepAction: MenuItem | null,
-): MenuItem[] => [
-  { label: "Open in editor", icon: PenLine, onClick: onOpen },
-  {
-    label: "Quick share",
-    icon: Share2,
-    title: "Send this to another device on your WiFi",
-    onClick: onQuickShare,
-  },
-  ...(keepAction ? [keepAction] : []),
-];
-
-interface ManuscriptCardProps {
-  manuscript: Manuscript;
-  library: Manuscript[];
-  themes: Theme[];
-  bgMap: BgMap;
-  onOpen: () => void;
-  onPresent: (live: boolean) => void;
-  onQuickShare: () => void;
-  onDelete: () => void;
-}
-
-const useManuscriptCover = (
-  manuscript: Manuscript,
-  themes: Theme[],
-  bgMap: BgMap,
-): ReactNode => {
-  const first = manuscript.slides?.[0];
-  const theme =
-    themes.find((t) => t.id === manuscript.defaultThemeId) || themes[0];
-  const { background, image, video } = useBackgroundView(
-    first,
-    manuscript,
-    theme,
-    bgMap,
-  );
-
-  const swatch = (
-    <BgSwatch bg={background} settings={image} className="aspect-video" />
-  );
-
-  if (!first) return swatch;
-
-  return (
-    <LazyMount placeholder={swatch}>
-      <SlideCanvas
-        slide={first}
-        bg={background}
-        bgImage={image}
-        bgVideo={video}
-        radius={0}
-        style={resolveStyle(first, manuscript, theme)}
-        lineStyles={first.lines.map((_, i) =>
-          resolveLineStyle(first, i, manuscript, theme),
-        )}
-      />
-    </LazyMount>
-  );
-};
-
-const manuscriptDetails = (manuscript: Manuscript): string[] => [
-  manuscript.author || "Unknown author",
-  ...(manuscript.collection ? [manuscript.collection] : []),
-  formatCountLabel(manuscript.slides?.length || 0, "slide"),
-  `Added ${formatDate(manuscript.createdAt)}`,
-  `Last modified ${formatDate(manuscript.updatedAt)}`,
-];
-
-const deleteTitle = (manuscript: Manuscript): string =>
-  manuscript.builtIn
-    ? "Default manuscripts can't be deleted"
-    : "Delete manuscript";
-
-const ManuscriptRow = ({
-  manuscript,
-  library,
-  themes,
-  bgMap,
-  onOpen,
-  onPresent,
-  onQuickShare,
-  onDelete,
-}: ManuscriptCardProps) => {
-  const keepAction = useKeepOnResetAction("manuscript", manuscript);
-  const cover = useManuscriptCover(manuscript, themes, bgMap);
-
-  return (
-    <LibraryListRow
-      cover={cover}
-      title={manuscript.title}
-      badges={<KeepOnResetBadge item={manuscript} />}
-      details={manuscriptDetails(manuscript)}
-      onOpen={onOpen}
-      actions={
-        <>
-          <PresentMenu onPresent={({ live }) => onPresent(live)} />
-          <PinButton kind="manuscript" item={manuscript} library={library} />
-          <IconButton
-            filled
-            danger
-            size="sm"
-            icon={Trash2}
-            disabled={manuscript.builtIn}
-            title={deleteTitle(manuscript)}
-            onClick={onDelete}
-          />
-          <MoreMenu
-            filled
-            size="sm"
-            items={manuscriptMenuItems(onOpen, onQuickShare, keepAction)}
-          />
-        </>
-      }
-    />
-  );
-};
-
-const ManuscriptCard = ({
-  manuscript,
-  library,
-  themes,
-  bgMap,
-  onOpen,
-  onPresent,
-  onQuickShare,
-  onDelete,
-}: ManuscriptCardProps) => {
-  const keepAction = useKeepOnResetAction("manuscript", manuscript);
-  const cover = useManuscriptCover(manuscript, themes, bgMap);
-
-  const menuItems = manuscriptMenuItems(onOpen, onQuickShare, keepAction);
-
-  return (
-    <div className={cardClassName} {...cardOpenProps(manuscript.title, onOpen)}>
-      <div className="relative">
-        {cover}
-        <div className={cardThumbBadgeClassName}>
-          {formatCountLabel(manuscript.slides?.length || 0, "slide")}
-        </div>
-      </div>
-      <div className={cardBodyClassName}>
-        <CardTitle title={manuscript.title}>
-          <KeepOnResetBadge item={manuscript} />
-        </CardTitle>
-        <div className={cardSubClassName}>
-          {manuscript.author || "Unknown"}
-          {manuscript.collection ? ` · ${manuscript.collection}` : ""}
-        </div>
-        <CardActions>
-          <PresentMenu fill onPresent={({ live }) => onPresent(live)} />
-          <PinButton kind="manuscript" item={manuscript} library={library} />
-          <IconButton
-            filled
-            danger
-            size="sm"
-            icon={Trash2}
-            disabled={manuscript.builtIn}
-            title={deleteTitle(manuscript)}
-            onClick={onDelete}
-          />
-          <MoreMenu filled size="sm" items={menuItems} />
-        </CardActions>
-      </div>
     </div>
   );
 };

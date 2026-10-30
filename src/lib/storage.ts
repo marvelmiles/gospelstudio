@@ -16,7 +16,7 @@ interface HasId {
 }
 
 const DB_NAME = "gospelstudio";
-const DB_VERSION = 5;
+const DB_VERSION = 1;
 const STORES: StoreName[] = [
   "manuscripts",
   "scriptures",
@@ -59,19 +59,35 @@ const openIDB = (): Promise<IDBDatabase | null> => {
       if (typeof indexedDB === "undefined") return resolve(null);
       const req = indexedDB.open(DB_NAME, DB_VERSION);
       req.onupgradeneeded = () => {
-        const db = req.result;
-        STORES.forEach((s) => {
-          if (!db.objectStoreNames.contains(s))
-            db.createObjectStore(s, { keyPath: "id" });
-        });
+        for (const store of STORES)
+          req.result.createObjectStore(store, { keyPath: "id" });
       };
-      req.onsuccess = () => resolve(req.result);
+      req.onsuccess = () => {
+        const db = req.result;
+        db.onversionchange = () => {
+          db.close();
+          window.location.reload();
+        };
+        resolve(db);
+      };
       req.onerror = () => resolve(null);
       req.onblocked = () => resolve(null);
     } catch {
       resolve(null);
     }
   });
+};
+
+export const hasIncompatibleDatabase = async (): Promise<boolean> => {
+  try {
+    const databases = await indexedDB.databases();
+    return databases.some(
+      (database) =>
+        database.name === DB_NAME && (database.version ?? 0) > DB_VERSION,
+    );
+  } catch {
+    return false;
+  }
 };
 
 const sessionAvailable = (): boolean => {

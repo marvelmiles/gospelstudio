@@ -6,7 +6,7 @@ import {
   ShieldAlert,
   Video,
 } from "lucide-react";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { ReceiverLobby } from "./receiver/ReceiverLobby";
 import { SenderLobby } from "./sender/SenderLobby";
@@ -19,7 +19,7 @@ type Role = "choose" | "receive" | "send";
 const STREAM_SUBTITLE = "Share and project cameras over WiFi.";
 
 export const StreamPage = () => {
-  useDocumentTitle("Stream");
+  usePageMeta("stream");
   const [role, setRole] = useState<Role>("choose");
 
   if (!window.isSecureContext) {

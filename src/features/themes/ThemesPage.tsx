@@ -4,7 +4,7 @@ import { Palette, Plus, RotateCcw, Trash2 } from "lucide-react";
 import type { Background } from "../../types";
 import { useStore } from "../../store/useStore";
 import { useAttention } from "../../hooks/useAttention";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { useWindowSize } from "usehooks-ts";
 import { useUndoRedoShortcuts } from "../../hooks/useUndoRedoShortcuts";
 import {
@@ -55,7 +55,7 @@ export const ThemesPage = () => {
   const isStacked = width < STACKED_WIDTH;
   const compact = width < COMPACT_WIDTH;
 
-  useDocumentTitle("Themes");
+  usePageMeta("themes");
 
   const controller = useThemeDraft(themeId ?? null);
   const {

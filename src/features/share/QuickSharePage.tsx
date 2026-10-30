@@ -13,7 +13,7 @@ import {
   WifiOff,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
@@ -44,7 +44,7 @@ const SHARE_SUBTITLE =
 type Step = "devices" | "items";
 
 export const QuickSharePage = () => {
-  useDocumentTitle("Quick Share");
+  usePageMeta("share");
   const source = useBackupSource();
 
   const [step, setStep] = useState<Step>("devices");
@@ -80,8 +80,8 @@ export const QuickSharePage = () => {
 
       <div
         className={cn(
-          "mx-auto flex flex-col gap-4 pb-24",
-          step === "items" ? "max-w-215" : "max-w-155",
+          "mx-auto flex flex-col gap-4",
+          step === "items" ? "max-w-215 pb-24" : "max-w-155",
         )}
       >
         <Panel>

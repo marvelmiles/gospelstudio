@@ -13,12 +13,14 @@ import {
 import type { LucideIcon } from "lucide-react";
 import type { MediaItem, MediaKind } from "../../types";
 import { useStore } from "../../store/useStore";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { usePageMeta } from "../../hooks/usePageMeta";
+import type { PageName } from "../../lib/pageMeta";
 import { useLibraryLayout } from "../../hooks/useLibraryLayout";
+import { useIncrementalList } from "../../hooks/useIncrementalList";
 import { formatBytes } from "../../lib/storageStats";
 import { formatDuration, mediaPlayLength } from "../../lib/media";
 import { formatDate } from "../../lib/id";
-import { sortPinnedFirst } from "../../lib/pinning";
+import { pinnedCount, sortPinnedFirst } from "../../lib/pinning";
 import { sortLibrary } from "../../lib/librarySort";
 import { imageDeckIndex } from "../presentation/useDeck";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
@@ -26,6 +28,7 @@ import { SearchInput } from "@/components/shared/SearchInput";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { LazyMount } from "@/components/shared/LazyMount";
+import { LoadMoreFooter } from "@/components/shared/LoadMoreFooter";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { MoreMenu } from "@/components/shared/MoreMenu";
@@ -59,6 +62,7 @@ import { useLibrarySort } from "@/hooks/useLibrarySort";
 
 interface MediaPageConfig {
   kind: MediaKind;
+  page: PageName;
   title: string;
   subtitle: string;
   uploadLabel: string;
@@ -71,6 +75,7 @@ interface MediaPageConfig {
 const CONFIGS: Record<MediaKind, MediaPageConfig> = {
   image: {
     kind: "image",
+    page: "images",
     title: "Images",
     subtitle: "Upload, edit and project images.",
     uploadLabel: "Upload Images",
@@ -81,6 +86,7 @@ const CONFIGS: Record<MediaKind, MediaPageConfig> = {
   },
   video: {
     kind: "video",
+    page: "videos",
     title: "Videos",
     subtitle: "Upload, trim and play videos live.",
     uploadLabel: "Upload Videos",
@@ -93,7 +99,7 @@ const CONFIGS: Record<MediaKind, MediaPageConfig> = {
 
 const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
   const config = CONFIGS[kind];
-  useDocumentTitle(config.title);
+  usePageMeta(config.page);
 
   const media = useStore((s) => s.media);
   const backgrounds = useStore((s) => s.backgrounds);
@@ -142,6 +148,9 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
     const ordered = sortLibrary(base, sort, (m) => m.name);
     return term ? ordered : sortPinnedFirst(ordered);
   }, [library, query, sort]);
+
+  const shown = useIncrementalList(list, `${kind}|${sort}|${query.trim()}`);
+  const usedPins = useMemo(() => pinnedCount(library), [library]);
 
   const backgroundImageIds = useMemo(
     () =>
@@ -229,10 +238,10 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
         )
       ) : (
         <div className={layout === "grid" ? cardGridClassName : listClassName}>
-          {list.map((item) => {
+          {shown.visibleItems.map((item) => {
             const props = {
               item,
-              library,
+              usedPins,
               isBackground: backgroundImageIds.has(item.id),
               onOpen: () => openEditor(item),
               onPresent: (live: boolean) => present(item, live),
@@ -252,6 +261,7 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
           })}
         </div>
       )}
+      <LoadMoreFooter list={shown} noun={`${kind}s`} />
 
       {quickShare.target && (
         <QuickShareModal
@@ -280,7 +290,7 @@ const MediaLibraryPage = ({ kind }: { kind: MediaKind }) => {
 
 interface MediaCardProps {
   item: MediaItem;
-  library: MediaItem[];
+  usedPins: number;
   isBackground: boolean;
   onOpen: () => void;
   onPresent: (live: boolean) => void;
@@ -355,7 +365,7 @@ const MediaMenu = ({
 
 const MediaRow = ({
   item,
-  library,
+  usedPins,
   isBackground,
   onOpen,
   onPresent,
@@ -371,7 +381,7 @@ const MediaRow = ({
     actions={
       <>
         <PresentMenu onPresent={({ live }) => onPresent(live)} />
-        <PinButton kind={item.kind} item={item} library={library} />
+        <PinButton kind={item.kind} item={item} usedPins={usedPins} />
         <IconButton
           filled
           danger
@@ -394,7 +404,7 @@ const MediaRow = ({
 
 const MediaCard = ({
   item,
-  library,
+  usedPins,
   isBackground,
   onOpen,
   onPresent,
@@ -415,7 +425,7 @@ const MediaCard = ({
         </div>
         <CardActions>
           <PresentMenu fill onPresent={({ live }) => onPresent(live)} />
-          <PinButton kind={item.kind} item={item} library={library} />
+          <PinButton kind={item.kind} item={item} usedPins={usedPins} />
           <IconButton
             filled
             danger

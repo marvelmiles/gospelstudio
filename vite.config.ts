@@ -4,35 +4,67 @@ import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import {
-  APP_DESCRIPTION,
-  APP_NAME,
-  APP_SHORT_DESCRIPTION,
-  APP_TITLE,
-  APP_URL,
-} from "./app.config";
+import { APP_INSTALL_NAME, APP_NAME, APP_URL } from "./app.config";
+import { PAGE_META, pageUrl, type PageMeta } from "./src/lib/pageMeta";
 
 const { version } = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
 ) as { version: string };
 
-const HTML_IDENTITY: Record<string, string> = {
-  APP_TITLE,
-  APP_NAME,
-  APP_DESCRIPTION,
-  APP_SHORT_DESCRIPTION,
-  APP_URL,
-};
+const HTML_IDENTITY: Record<string, string> = { APP_NAME, APP_URL };
+
+const escapeHtml = (value: string): string =>
+  value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+const fillPlaceholders = (
+  html: string,
+  values: Record<string, string>,
+): string =>
+  html.replace(
+    /\{\{([A-Z_]+)\}\}/g,
+    (match, key: string) => values[key] ?? match,
+  );
+
+const pagePlaceholders = (meta: PageMeta): Record<string, string> => ({
+  PAGE_TITLE: escapeHtml(meta.title),
+  PAGE_DESCRIPTION: escapeHtml(meta.description),
+  PAGE_URL: escapeHtml(pageUrl(meta)),
+});
+
+const pageHtmlFileName = (meta: PageMeta): string =>
+  `${meta.path.slice(1)}.html`;
 
 const appHtmlIdentity = (): Plugin => ({
   name: "app-html-identity",
+  enforce: "post",
   transformIndexHtml: {
     order: "pre",
-    handler: (html) =>
-      html.replace(
-        /\{\{(APP_[A-Z_]+)\}\}/g,
-        (match, key: string) => HTML_IDENTITY[key] ?? match,
+    handler: (html, { server }) =>
+      fillPlaceholders(
+        html,
+        server
+          ? { ...HTML_IDENTITY, ...pagePlaceholders(PAGE_META.home) }
+          : HTML_IDENTITY,
       ),
+  },
+  generateBundle(_options, bundle) {
+    const index = bundle["index.html"];
+    if (index?.type !== "asset") return;
+    const template = String(index.source);
+    for (const meta of Object.values(PAGE_META)) {
+      const source = fillPlaceholders(template, pagePlaceholders(meta));
+      if (meta.path === PAGE_META.home.path) index.source = source;
+      else
+        this.emitFile({
+          type: "asset",
+          fileName: pageHtmlFileName(meta),
+          source,
+        });
+    }
   },
 });
 
@@ -65,7 +97,7 @@ export default defineConfig({
         "apple-touch-icon.png",
       ],
       manifest: {
-        name: APP_TITLE,
+        name: APP_INSTALL_NAME,
         short_name: APP_NAME,
         description:
           "Present songs, Bible passages, images and videos live, installable and offline-ready.",

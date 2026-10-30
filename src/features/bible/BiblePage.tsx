@@ -12,7 +12,7 @@ import type { BibleVersionId } from "../../types";
 import { BIBLE_VERSIONS, bookById } from "../../data/bibleBooks";
 import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
-import { useDocumentTitle } from "../../hooks/useDocumentTitle";
+import { usePageMeta } from "../../hooks/usePageMeta";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { PillTabs } from "@/components/shared/PillTabs";
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ const versionOptions = BIBLE_VERSIONS.map((v) => ({
 }));
 
 export const BiblePage = () => {
-  useDocumentTitle("Bible");
+  usePageMeta("bible");
 
   const prefs = useStore((s) => s.prefs);
   const setBibleVersion = useStore((s) => s.setBibleVersion);
