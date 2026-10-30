@@ -1,52 +1,35 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="GospelStudio">
-  <!-- A beamed music note lit over the bar of a projected slide, in the studio
-       theme's neutral dark and blue accent.
-       scripts/generate-icons.mjs derives the PNG set from this file:
-       it strips rx + #ring and rescales #art for maskable/apple variants. -->
+  <!-- scripts/generate-icons.mjs renders the PNG set from this file and
+       scales #art onto a solid background for the maskable and apple icons. -->
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#26272c"/>
-      <stop offset="55%" stop-color="#1a1b1f"/>
-      <stop offset="100%" stop-color="#101013"/>
+    <linearGradient id="bladeA" gradientUnits="userSpaceOnUse" x1="256" y1="256" x2="216" y2="452">
+      <stop offset="0" stop-color="#60a5fa"/>
+      <stop offset="1" stop-color="#2563eb"/>
     </linearGradient>
-    <radialGradient id="aura" cx="0.5" cy="0.36" r="0.62">
-      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.5"/>
-      <stop offset="55%" stop-color="#2563eb" stop-opacity="0.14"/>
-      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="note" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#bfdbfe"/>
+    <linearGradient id="bladeB" gradientUnits="userSpaceOnUse" x1="256" y1="256" x2="60" y2="216">
+      <stop offset="0" stop-color="#4f46e5"/>
+      <stop offset="1" stop-color="#312e81"/>
     </linearGradient>
-    <linearGradient id="bar" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#3b82f6"/>
-      <stop offset="100%" stop-color="#2563eb"/>
+    <linearGradient id="bladeC" gradientUnits="userSpaceOnUse" x1="256" y1="256" x2="316" y2="60">
+      <stop offset="0" stop-color="#22d3ee"/>
+      <stop offset="1" stop-color="#3b82f6"/>
     </linearGradient>
-    <radialGradient id="noteGlow" cx="0.5" cy="0.5" r="0.5">
-      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.42"/>
-      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="ring" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="512" y2="512">
+      <stop offset="0" stop-color="#67e8f9"/>
+      <stop offset="0.5" stop-color="#3b82f6"/>
+      <stop offset="1" stop-color="#4338ca"/>
+    </linearGradient>
+    <mask id="cuts" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+      <rect width="512" height="512" fill="#fff"/>
+      <path d="M209 337.41 Q150.54 371.16 74.11 329.02 M209 174.59 Q209 107.09 283.7 61.97 M350 256 Q408.46 289.75 410.19 377.01" fill="none" stroke="#000" stroke-width="15" stroke-linecap="round"/>
+    </mask>
   </defs>
-
-  <rect width="512" height="512" rx="116" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="116" fill="url(#aura)"/>
-  <rect id="ring" x="7" y="7" width="498" height="498" rx="109" fill="none" stroke="#60a5fa" stroke-opacity="0.24" stroke-width="6"/>
-
   <g id="art">
-    <!-- Soft light behind the note -->
-    <ellipse cx="256" cy="232" rx="194" ry="184" fill="url(#noteGlow)"/>
-
-    <!-- Beamed note -->
-    <g fill="url(#note)" transform="translate(4 -16)">
-      <path d="M191 150 L353 120 L353 166 L191 196 Z"/>
-      <rect x="191" y="152" width="21" height="208"/>
-      <rect x="332" y="122" width="21" height="214"/>
-      <ellipse cx="182" cy="362" rx="37" ry="28" transform="rotate(-18 182 362)"/>
-      <ellipse cx="323" cy="338" rx="37" ry="28" transform="rotate(-18 323 338)"/>
+    <circle cx="256" cy="256" r="236" fill="none" stroke="url(#ring)" stroke-width="16"/>
+    <g mask="url(#cuts)">
+      <path d="M350 256 L209 337.41 Q150.54 371.16 74.11 329.02 A196 196 0 0 0 410.19 377.01 Q408.46 289.75 350 256 Z" fill="url(#bladeA)"/>
+      <path d="M209 337.41 L209 174.59 Q209 107.09 283.7 61.97 A196 196 0 0 0 74.11 329.02 Q150.54 371.16 209 337.41 Z" fill="url(#bladeB)"/>
+      <path d="M209 174.59 L350 256 Q408.46 289.75 410.19 377.01 A196 196 0 0 0 283.7 61.97 Q209 107.09 209 174.59 Z" fill="url(#bladeC)"/>
     </g>
-
-    <!-- The lit bar of the slide the note stands on -->
-    <rect x="140" y="404" width="232" height="18" rx="9" fill="url(#bar)"/>
-    <rect x="186" y="436" width="140" height="10" rx="5" fill="#3b82f6" fill-opacity="0.32"/>
   </g>
 </svg>

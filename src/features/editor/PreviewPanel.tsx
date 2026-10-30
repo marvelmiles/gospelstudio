@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 import type {
+  AnimationKind,
   Background,
   ImageSettings,
   VideoSettings,
@@ -19,9 +20,12 @@ import type { TextFormattingController } from "../../hooks/useTextFormatting";
 import { SlideElementOverlay } from "./SlideElementOverlay";
 import type { SlideElement, SlideElementEditing } from "./SlideElementOverlay";
 import { Input } from "@/components/ui/input";
+import { useAnimationPreview } from "./useAnimationPreview";
 
 interface PreviewPanelProps {
   slide: Slide;
+  animation: AnimationKind;
+  animationReplay: number;
   style: ResolvedStyle;
   lineStyles?: ResolvedStyle[];
   background: Background;
@@ -38,6 +42,8 @@ interface PreviewPanelProps {
 
 export const PreviewPanel = ({
   slide,
+  animation,
+  animationReplay,
   style,
   lineStyles,
   background,
@@ -54,6 +60,12 @@ export const PreviewPanel = ({
   const editing = useSlideTextEditor({ text, formatting });
   const { focusAt } = editing;
   const pendingPoint = useRef<ClickPoint | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  useAnimationPreview(contentRef, {
+    slideId: slide.id,
+    animation,
+    replay: animationReplay,
+  });
 
   const elements = useMemo<SlideElement[]>(
     () => [
@@ -102,6 +114,7 @@ export const PreviewPanel = ({
           editingTextBoxId={activeTextBoxId}
           onActivateText={activateText}
           mediaControlsFor={elementEditing.selectedId}
+          contentRef={contentRef}
           overlay={
             elements.length ? (
               <SlideElementOverlay elements={elements} {...elementEditing} />

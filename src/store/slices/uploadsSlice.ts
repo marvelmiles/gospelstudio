@@ -2,7 +2,7 @@ import { uid } from "../../lib/id";
 import { afterWrite, blockWrite } from "../helpers";
 import type { SliceCreator, StoreState } from "../storeTypes";
 
-export type UploadKind = "background" | "audio" | "image" | "video";
+export type UploadKind = "audio" | "image" | "video";
 
 interface PendingUpload {
   token: string;
@@ -27,7 +27,6 @@ export interface UploadsSlice {
 }
 
 const UPLOAD_NOUNS: Record<UploadKind, { one: string; many: string }> = {
-  background: { one: "Background", many: "backgrounds" },
   audio: { one: "Sound", many: "sounds" },
   image: { one: "Image", many: "images" },
   video: { one: "Video", many: "videos" },
@@ -40,8 +39,7 @@ const discardSavedUploads = async (
 ): Promise<void> => {
   for (const id of ids) {
     if (!id) continue;
-    if (kind === "background") await state.removeBackground(id);
-    else if (kind === "audio") await state.removeAudio(id);
+    if (kind === "audio") await state.removeAudio(id);
     else await state.removeMedia(id);
   }
 };
@@ -95,8 +93,7 @@ export const createUploadsSlice: SliceCreator<UploadsSlice> = (set, get) => ({
       const file = files[i];
       const label = labels[i];
       let id: string;
-      if (kind === "background") id = await get().uploadBackground(file, label);
-      else if (kind === "audio") id = await get().uploadAudio(file, label);
+      if (kind === "audio") id = await get().uploadAudio(file, label);
       else id = await get().uploadMedia(kind, file, label);
       if (id) savedIds.push(id);
     }

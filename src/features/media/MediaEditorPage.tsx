@@ -18,9 +18,9 @@ import {
   useUnsavedChanges,
   UNSAVED_CHANGES_MESSAGE,
 } from "../../hooks/useUnsavedChanges";
-import { useBlobUrl } from "../../lib/blobUrls";
+import { useMediaUrl } from "../../lib/blobUrls";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
-import { formatTrimmedDuration } from "../../lib/media";
+import { findMediaItem, formatTrimmedDuration } from "../../lib/media";
 import { syncedPosition } from "../../lib/presentChannel";
 import { formatBytes } from "../../lib/storageStats";
 import { validateName } from "../../lib/validation";
@@ -52,9 +52,7 @@ const BACK_TITLE: Record<MediaKind, string> = {
 const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
   const { mediaId } = useParams();
   const navigate = useNavigate();
-  const item = useStore((s) =>
-    s.media.find((entry) => entry.id === mediaId && entry.kind === kind),
-  );
+  const item = useStore((s) => findMediaItem(s, mediaId, kind));
   const shown = useLastDefined(item);
 
   if (!shown)
@@ -73,9 +71,10 @@ const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
 
 const MediaWorkspace = ({ item }: { item: MediaItem }) => {
   const editorReturn = useEditorReturn(
-    routes.mediaLibrary(item.kind),
+    item.builtIn ? routes.dashboard() : routes.mediaLibrary(item.kind),
     item.id,
-    BACK_TITLE[item.kind],
+    item.builtIn ? "Back to the background library" : BACK_TITLE[item.kind],
+    item.builtIn ? "backgrounds" : undefined,
   );
   const { width } = useWindowSize();
   const stacked = width < 1080;
@@ -85,7 +84,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
     (s) => Boolean(s.presentation) && s.presentationMode === "stage",
   );
   const editor = useMediaEditor(item);
-  const src = useBlobUrl(item.id);
+  const src = useMediaUrl(item);
   const leaveGuard = useUnsavedChanges(editor.dirty);
   const resetAll = useConfirmedAction(editor.resetSettings);
   const isImage = item.kind === "image";

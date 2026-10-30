@@ -242,9 +242,22 @@ export const resolveAutoPlay = (
   return doc?.autoPlay ?? theme?.autoPlay ?? false;
 };
 
+export const resolveLoopSlides = (
+  doc: SlideDeckDoc | undefined,
+  theme?: Theme,
+): boolean => {
+  return doc?.loopSlides ?? theme?.loopSlides ?? false;
+};
+
+export const DEFAULT_SLIDE_SECONDS = 15;
+
 export const resolveSlideDuration = (
   doc: SlideDeckDoc | undefined,
   theme?: Theme,
 ): number => {
-  return doc?.slideDurationSeconds ?? theme?.slideDurationSeconds ?? 15;
+  return (
+    doc?.slideDurationSeconds ??
+    theme?.slideDurationSeconds ??
+    DEFAULT_SLIDE_SECONDS
+  );
 };

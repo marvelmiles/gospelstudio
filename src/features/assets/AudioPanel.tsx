@@ -1,74 +1,67 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { Film, Music, Pencil, Share2, Trash2, Upload } from "lucide-react";
 import type { AudioItem } from "../../types";
 import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { useAssetUrl } from "../../hooks/useAssetUrl";
+import { useLibrarySort } from "../../hooks/useLibrarySort";
+import type { LibrarySortOption } from "../../lib/librarySort";
 import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
 import { audioPlayLength, formatDuration } from "../../lib/media";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LibrarySection } from "@/components/shared/LibrarySection";
+import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
 import { MoreMenu } from "@/components/shared/MoreMenu";
-import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
-import type { SegmentedTab } from "@/components/shared/SegmentedTabs";
-import { pillTabPanelProps } from "@/components/shared/tabPanel";
 import { QuickShareModal } from "../share/QuickShareModal";
 import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
 import { useOpenAssetEditor } from "./assetLibraryNavigation";
-import { MediaSourceList } from "./MediaSourceList";
+import { LibraryAddList } from "./LibraryAddList";
+import { sortAssets } from "./assetSort";
 import routes from "../../routes";
 import { formatCount } from "../../lib/formatNumber";
 
-type AudioTab = "sounds" | "videos";
-
-const TAB_PREFIX = "asset-audio";
-
 interface AudioPanelProps {
   attentionId: string | null;
-  targetItemId: string | null;
 }
 
-export const AudioPanel = ({ attentionId, targetItemId }: AudioPanelProps) => {
+export const AudioPanel = ({ attentionId }: AudioPanelProps) => {
   const audio = useStore((s) => s.audio);
-  const media = useStore((s) => s.media);
-  const [tab, setTab] = useState<AudioTab>(() =>
-    media.some((item) => item.id === targetItemId) ? "videos" : "sounds",
-  );
-
-  const fromVideos = useMemo(
-    () => audio.filter((item) => Boolean(item.mediaId)).length,
+  const addVideoAudio = useStore((s) => s.addVideoAudio);
+  const [sort, setSort] = useLibrarySort("asset-audio");
+  const addedVideoIds = useMemo(
+    () =>
+      new Set(audio.flatMap((item) => (item.mediaId ? [item.mediaId] : []))),
     [audio],
   );
 
-  const tabs: SegmentedTab<AudioTab>[] = [
-    { id: "sounds", label: "Sounds", icon: Music, count: audio.length },
-    { id: "videos", label: "From videos", icon: Film, count: fromVideos },
-  ];
-
   return (
     <div className="flex flex-col gap-3.5">
-      <SegmentedTabs<AudioTab>
-        ariaLabel="Audio sources"
-        idPrefix={TAB_PREFIX}
-        tabs={tabs}
-        value={tab}
-        onChange={setTab}
+      <SoundsList attentionId={attentionId} sort={sort} onSort={setSort} />
+      <LibraryAddList
+        kind="video"
+        title="Sound from your videos"
+        description="Use the soundtrack of a clip from your Videos page as a sound."
+        addedMediaIds={addedVideoIds}
+        addLabel="Use sound"
+        sort={sort}
+        attentionId={attentionId}
+        onAdd={addVideoAudio}
       />
-      <div {...pillTabPanelProps(TAB_PREFIX, tab)}>
-        {tab === "sounds" ? (
-          <SoundsTab attentionId={attentionId} />
-        ) : (
-          <VideoSoundsTab attentionId={attentionId} />
-        )}
-      </div>
     </div>
   );
 };
 
-const SoundsTab = ({ attentionId }: { attentionId: string | null }) => {
+interface SoundsListProps {
+  attentionId: string | null;
+  sort: LibrarySortOption;
+  onSort: (sort: LibrarySortOption) => void;
+}
+
+const SoundsList = ({ attentionId, sort, onSort }: SoundsListProps) => {
   const audio = useStore((s) => s.audio);
+  const sounds = useMemo(() => sortAssets(audio, sort), [audio, sort]);
   const beginUpload = useStore((s) => s.beginUpload);
   const removeAudio = useStore((s) => s.removeAudio);
   const openEditor = useOpenAssetEditor();
@@ -78,13 +71,16 @@ const SoundsTab = ({ attentionId }: { attentionId: string | null }) => {
   return (
     <LibrarySection
       title="Sounds"
-      meta={`${formatCount(audio.length)} saved`}
+      meta={formatCount(audio.length)}
       description="Background audio you can attach to a theme, a manuscript or a single slide."
       action={
-        <Button size="sm" onClick={() => audioInput.current?.click()}>
-          <Upload size={14} />
-          Upload audio
-        </Button>
+        <>
+          <LibrarySortSelect value={sort} onChange={onSort} nameLabel="Name" />
+          <Button size="sm" onClick={() => audioInput.current?.click()}>
+            <Upload size={14} />
+            Upload audio
+          </Button>
+        </>
       }
     >
       <input
@@ -99,7 +95,7 @@ const SoundsTab = ({ attentionId }: { attentionId: string | null }) => {
           event.target.value = "";
         }}
       />
-      {audio.length === 0 ? (
+      {sounds.length === 0 ? (
         <EmptyState
           icon={Music}
           title="No sounds yet"
@@ -108,7 +104,7 @@ const SoundsTab = ({ attentionId }: { attentionId: string | null }) => {
           bare
         />
       ) : (
-        audio.map((item) => (
+        sounds.map((item) => (
           <AudioRow
             key={item.id}
             item={item}
@@ -129,35 +125,6 @@ const SoundsTab = ({ attentionId }: { attentionId: string | null }) => {
         />
       )}
     </LibrarySection>
-  );
-};
-
-const VideoSoundsTab = ({ attentionId }: { attentionId: string | null }) => {
-  const audio = useStore((s) => s.audio);
-  const addVideoAudio = useStore((s) => s.addVideoAudio);
-  const removeAudio = useStore((s) => s.removeAudio);
-  const added = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const item of audio) if (item.mediaId) map.set(item.mediaId, item.id);
-    return map;
-  }, [audio]);
-
-  return (
-    <MediaSourceList
-      kind="video"
-      title="Sound from videos"
-      description="Your Videos page. Take the soundtrack of a clip and keep it alongside your sounds; the pencil opens the clip in the video editor."
-      attentionId={attentionId}
-      addedByMediaId={added}
-      onAdd={addVideoAudio}
-      onRemove={(audioId) => void removeAudio(audioId)}
-      addLabel="Use sound"
-      addedLabel="In sounds"
-      addedFilterLabel="Sounds from videos"
-      section="audio"
-      filterable
-      emptyMessage="Upload a video and its sound is added to your sounds."
-    />
   );
 };
 
@@ -192,7 +159,7 @@ const AudioRow = ({
         <div className="text-sm text-foreground">{item.name}</div>
         <div className="text-[11.5px] text-muted-foreground">
           {item.builtIn
-            ? "Default"
+            ? "Built in"
             : item.mediaId
               ? "From a video"
               : "Uploaded"}

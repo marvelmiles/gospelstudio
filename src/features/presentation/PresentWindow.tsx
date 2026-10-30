@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { useStore } from "../../store/useStore";
 import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useBgMap } from "../../hooks/useBgMap";
@@ -17,6 +18,7 @@ import { useMirroredStreamOverlays } from "../stream/lib/streamOverlayStore";
 import { useOverlayContentSync } from "../stream/lib/useOverlayContentSync";
 import { useDeck } from "./useDeck";
 import { applyPresentAssets } from "./lib/presentAssets";
+import { usePreloadNeighborSlides } from "./lib/usePreloadNeighborSlides";
 import { buildStageFrame } from "./stageContent";
 import { SecondaryPip } from "./SecondaryPip";
 import { Stage } from "./Stage";
@@ -101,7 +103,8 @@ export const PresentWindow = () => {
     return () => window.clearTimeout(timer);
   }, [state, deck, load]);
 
-  const media = useStore((s) => s.media);
+  const library = useMediaLibrary();
+  usePreloadNeighborSlides(deck, state?.slideIndex ?? 0, bgMap, library);
   const frame =
     deck && state
       ? buildStageFrame(
@@ -109,7 +112,7 @@ export const PresentWindow = () => {
           deck.slides[state.slideIndex],
           bgMap,
           prefs.transition,
-          media,
+          library,
         )
       : null;
 

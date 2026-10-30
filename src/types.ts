@@ -115,6 +115,7 @@ export interface SlideDeckDoc {
   defaultAudioSettings?: AudioSettings;
   animation?: AnimationKind;
   autoPlay?: boolean;
+  loopSlides?: boolean;
   slideDurationSeconds?: number;
   shortcutMode?: ShortcutMode;
   style?: TextStyle;
@@ -243,6 +244,7 @@ export interface Theme {
   backgroundId: string;
   animation?: AnimationKind;
   autoPlay?: boolean;
+  loopSlides?: boolean;
   slideDurationSeconds?: number;
   defaultAudioId?: string | null;
 }
@@ -262,6 +264,7 @@ export interface Background {
   light?: boolean;
   builtIn?: boolean;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AudioSettings {

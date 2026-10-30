@@ -8,6 +8,7 @@ import {
   Image as ImageIcon,
   Keyboard,
   Menu,
+  MessageSquareHeart,
   MonitorUp,
   Palette,
   Radio,
@@ -63,13 +64,18 @@ const TIPS: { icon: LucideIcon; title: string; desc: string }[] = [
     title: "Install it & use it offline",
     desc: `${APP_NAME} can be installed straight from your browser. Look for Install in the address bar, or "Add to Home Screen" on mobile. It then opens in its own window and runs fully offline; your whole library is saved on the device. Back up or move to another device with Export / Import in Settings.`,
   },
+  {
+    icon: MessageSquareHeart,
+    title: "Found a bug or have an idea?",
+    desc: "Click the help icon in the header to open About & Help, then scroll down to the Contact section to report a bug, suggest a feature or share how you use the app.",
+  },
 ];
 
 const HEADER_ICONS: { icon: LucideIcon; name: string; desc: string }[] = [
   {
     icon: HelpCircle,
     name: "About & Help",
-    desc: "The story behind the app, FAQs, and how to reach me.",
+    desc: "The story behind the app, FAQs, and the Contact section for bugs and ideas.",
   },
   {
     icon: ImageIcon,
@@ -121,7 +127,8 @@ export const GuideModal = () => {
         aria-describedby={undefined}
         onInteractOutside={(event) => event.preventDefault()}
         onEscapeKeyDown={(event) => event.preventDefault()}
-        className="flex max-h-[90vh] max-w-[min(580px,calc(100%-2rem))] flex-col gap-0 overflow-hidden rounded-[18px] p-0 sm:max-w-none"
+        style={{ maxWidth: "min(580px, calc(100% - 2rem))" }}
+        className="flex max-h-[90vh] flex-col gap-0 overflow-hidden rounded-[18px] p-0 sm:max-w-none"
       >
         <div className="border-b border-border px-6 pt-5.5 pb-4">
           <div className="text-[11px] font-bold tracking-[0.6px] text-primary uppercase">
@@ -144,7 +151,7 @@ export const GuideModal = () => {
           }}
           className="flex-1 overflow-y-auto p-6"
         >
-          <p className="mt-0 text-sm leading-[1.7] text-muted-foreground">
+          <p className="mt-0 mb-4 text-sm leading-[1.7] text-muted-foreground">
             {APP_NAME} is a light, distraction-free studio for presenting
             manuscripts, scripture, images, videos and live cameras reliably.
             Here are a few things worth knowing before you start.

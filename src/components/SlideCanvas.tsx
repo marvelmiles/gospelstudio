@@ -1,4 +1,4 @@
-import type { PointerEvent, ReactNode } from "react";
+import type { PointerEvent, ReactNode, Ref } from "react";
 import type {
   Background,
   ImageSettings,
@@ -43,6 +43,7 @@ interface SlideCanvasProps {
   live?: boolean;
   playBackground?: boolean;
   overlay?: ReactNode;
+  contentRef?: Ref<HTMLDivElement>;
 }
 
 export const SlideCanvas = ({
@@ -64,6 +65,7 @@ export const SlideCanvas = ({
   live,
   playBackground,
   overlay,
+  contentRef,
 }: SlideCanvasProps) => {
   const editable = Boolean(editing);
   const paintsPicture = !noBackground && isImageBackground(bg);
@@ -112,42 +114,44 @@ export const SlideCanvas = ({
           variant={playBackground || live ? "full" : "thumb"}
         />
       )}
-      {showBody && (
-        <SlideTextBlock
-          lines={bodyLines}
-          style={style}
-          lineStyles={lineStyles}
-          selectedLine={bodyActive ? selectedLine : null}
-          editing={bodyActive ? editing : undefined}
-          marked={editable}
-          padding={SLIDE_BODY_PADDING}
-          onPointerDown={
-            onActivateText ? (event) => activate(null, event) : undefined
-          }
-        />
-      )}
-      {slide.media && slide.media.length > 0 && (
-        <SlideMediaLayers
-          media={slide.media}
-          live={live}
-          controlsFor={mediaControlsFor}
-        />
-      )}
-      {textBoxes.length > 0 && (
-        <SlideTextBoxLayers
-          boxes={textBoxes}
-          style={style}
-          editing={editing}
-          editingBoxId={editingTextBoxId}
-          selectedLine={selectedLine}
-          marked={editable}
-          onPointerDownBox={
-            onActivateText
-              ? (boxId, event) => activate(boxId, event)
-              : undefined
-          }
-        />
-      )}
+      <div ref={contentRef} className="absolute inset-0">
+        {showBody && (
+          <SlideTextBlock
+            lines={bodyLines}
+            style={style}
+            lineStyles={lineStyles}
+            selectedLine={bodyActive ? selectedLine : null}
+            editing={bodyActive ? editing : undefined}
+            marked={editable}
+            padding={SLIDE_BODY_PADDING}
+            onPointerDown={
+              onActivateText ? (event) => activate(null, event) : undefined
+            }
+          />
+        )}
+        {slide.media && slide.media.length > 0 && (
+          <SlideMediaLayers
+            media={slide.media}
+            live={live}
+            controlsFor={mediaControlsFor}
+          />
+        )}
+        {textBoxes.length > 0 && (
+          <SlideTextBoxLayers
+            boxes={textBoxes}
+            style={style}
+            editing={editing}
+            editingBoxId={editingTextBoxId}
+            selectedLine={selectedLine}
+            marked={editable}
+            onPointerDownBox={
+              onActivateText
+                ? (boxId, event) => activate(boxId, event)
+                : undefined
+            }
+          />
+        )}
+      </div>
       {overlay}
       {showLabel && slide.label && (
         <div className="absolute bottom-[3cqw] left-[3.5cqw] rounded-full bg-black/32 px-[1.4cqw] py-[0.6cqw] font-sans text-[2.2cqw] font-semibold tracking-[0.15cqw] text-white/78 uppercase backdrop-blur-xs">

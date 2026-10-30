@@ -17,6 +17,7 @@ interface EmptyStateProps {
   action?: ReactNode;
   compact?: boolean;
   bare?: boolean;
+  className?: string;
 }
 
 interface MissingArtifactProps {
@@ -71,12 +72,14 @@ export const EmptyState = ({
   action,
   compact,
   bare,
+  className,
 }: EmptyStateProps) => (
   <Empty
     className={cn(
       "gap-4.5 border-solid",
       bare ? "border-none" : "glass",
       compact ? "px-6 py-8.5 md:px-6 md:py-8.5" : "px-7 py-14 md:px-7 md:py-14",
+      className,
     )}
   >
     <EmptyHeader className="max-w-95 gap-1.5">

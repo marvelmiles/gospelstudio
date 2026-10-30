@@ -2,7 +2,6 @@ import type { Manuscript } from "../types";
 import { now } from "../lib/id";
 import { parseManuscriptSlides } from "../lib/parser";
 import {
-  HYMN_BACKGROUND_ID,
   HYMN_COLLECTION,
   HYMN_MAX_LINES,
   HYMN_STYLE,
@@ -17,7 +16,7 @@ const buildManuscript = (hymn: HymnSource, timestamp: string): Manuscript => ({
   author: hymn.author,
   collection: HYMN_COLLECTION,
   defaultThemeId: HYMN_THEME_ID,
-  defaultBackgroundId: HYMN_BACKGROUND_ID,
+  defaultBackgroundId: "",
   defaultAudioId: null,
   body: hymn.body,
   maxLines: HYMN_MAX_LINES,

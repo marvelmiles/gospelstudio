@@ -10,6 +10,8 @@ import {
 import type { MediaSurfaceHandle } from "../../hooks/useMediaElementPlayback";
 import type { PresentationView, ScripturePassage } from "../../types";
 import { slideIndexForVerse } from "../bible/lib/scriptureSlides";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
+import { usePreloadNeighborSlides } from "./lib/usePreloadNeighborSlides";
 import { useStore } from "../../store/useStore";
 import { useFullscreen } from "../../hooks/useFullscreen";
 import { useBgMap } from "../../hooks/useBgMap";
@@ -21,8 +23,10 @@ import {
   resolveAudioId,
   resolveAudioSettings,
   resolveAutoPlay,
+  resolveLoopSlides,
   resolveSlideDuration,
 } from "../../lib/resolve";
+import { nextSlideIndex } from "./lib/slideOrder";
 import {
   computeTagGroups,
   FIXED_SHORTCUT_BY_LETTER,
@@ -81,19 +85,24 @@ export const usePresentation = ({
 
   const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(rootRef);
 
-  const media = useStore((s) => s.media);
-  const currentSlide = slides[slideIndex];
-  const next = slides[slideIndex + 1];
-  const frame = deck
-    ? buildStageFrame(deck, currentSlide, bgMap, prefs.transition, media)
-    : null;
-  const nextFrame =
-    deck && next
-      ? buildStageFrame(deck, next, bgMap, prefs.transition, media)
-      : null;
-
+  const library = useMediaLibrary();
   const doc = deck?.doc;
   const theme = deck?.theme;
+  const autoPlay = doc ? resolveAutoPlay(doc, theme) : false;
+  const loopSlides = autoPlay && resolveLoopSlides(doc, theme);
+  const slideDuration = resolveSlideDuration(doc, theme);
+  const currentSlide = slides[slideIndex];
+  const nextIndex = nextSlideIndex(slideIndex, slides.length, loopSlides);
+  const next = nextIndex === null ? undefined : slides[nextIndex];
+  const frame = deck
+    ? buildStageFrame(deck, currentSlide, bgMap, prefs.transition, library)
+    : null;
+  usePreloadNeighborSlides(deck, slideIndex, bgMap, library);
+  const nextFrame =
+    deck && next
+      ? buildStageFrame(deck, next, bgMap, prefs.transition, library)
+      : null;
+
   const currentTextSlide =
     currentSlide?.kind === "text" ? currentSlide.slide : undefined;
   const isVideoSlide = currentSlide?.kind === "video";
@@ -120,31 +129,21 @@ export const usePresentation = ({
 
   const audioId = doc ? resolveAudioId(currentTextSlide, doc, theme) : null;
   const audioItem = audio.find((a) => a.id === audioId);
-  const autoPlay = doc ? resolveAutoPlay(doc, theme) : false;
-  const slideDuration = resolveSlideDuration(doc, theme);
 
   const go = useCallback(
     (delta: number) => {
-      setPaused((isPaused) => {
-        if (!isPaused)
-          setSlideIndex((i) =>
-            Math.max(0, Math.min(slides.length - 1, i + delta)),
-          );
-        return isPaused;
-      });
+      if (paused) return;
+      setSlideIndex((i) => Math.max(0, Math.min(slides.length - 1, i + delta)));
     },
-    [slides.length],
+    [paused, slides.length],
   );
 
   const goTo = useCallback(
     (target: number) => {
-      setPaused((isPaused) => {
-        if (!isPaused)
-          setSlideIndex(Math.max(0, Math.min(slides.length - 1, target)));
-        return isPaused;
-      });
+      if (paused) return;
+      setSlideIndex(Math.max(0, Math.min(slides.length - 1, target)));
     },
-    [slides.length],
+    [paused, slides.length],
   );
 
   const exit = useCallback(() => {
@@ -320,10 +319,10 @@ export const usePresentation = ({
   useEffect(() => {
     if (!autoPlay || paused || slides.length < 2) return;
     const timer = window.setInterval(() => {
-      setSlideIndex((i) => (i >= slides.length - 1 ? i : i + 1));
+      setSlideIndex((i) => nextSlideIndex(i, slides.length, loopSlides) ?? i);
     }, slideDuration * 1000);
     return () => window.clearInterval(timer);
-  }, [autoPlay, slideDuration, paused, slides.length, slideIndex]);
+  }, [autoPlay, loopSlides, slideDuration, paused, slides.length, slideIndex]);
 
   useEffect(() => {
     if (paused) return;

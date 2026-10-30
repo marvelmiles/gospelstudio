@@ -1,8 +1,11 @@
 import type { Background, MediaItem } from "../types";
+import {
+  DEFAULT_BACKGROUND_IMAGE_SETTINGS,
+  DEFAULT_BACKGROUND_VIDEO_SETTINGS,
+} from "../lib/media";
 
 const IMAGE_ASSETS_PATH = "/assets/images";
 const VIDEO_ASSETS_PATH = "/assets/videos";
-const BUILT_IN_ASSETS_DATE = "2026-10-29T00:00:00.000Z";
 
 interface BuiltInAsset {
   file: string;
@@ -43,19 +46,29 @@ const VIDEO_ASSETS: BuiltInAsset[] = [
   { file: "warp-streaks-red", name: "Warp Streaks Red", category: "Motion" },
 ];
 
+const imageIdOf = (file: string): string => `image-${file}`;
 const clipIdOf = (file: string): string => `clip-${file}`;
+const imageBackgroundIdOf = (file: string): string => `bg-image-${file}`;
+const videoBackgroundIdOf = (file: string): string => `bg-video-${file}`;
 
+export const BLACK_SAND_BACKGROUND_ID = imageBackgroundIdOf("black-sand");
+export const BIBLE_THORN_BACKGROUND_ID =
+  imageBackgroundIdOf("bible-thorn-branch");
+
+const BUILT_IN_ASSETS_DATE = "2026-10-29T00:00:00.000Z";
 const imageBackground = ({
   file,
   name,
   category,
 }: BuiltInAsset): Background => ({
-  id: `bg-image-${file}`,
+  id: imageBackgroundIdOf(file),
   name,
   category,
   type: "image",
   builtIn: true,
   src: `${IMAGE_ASSETS_PATH}/${file}.jpg`,
+  mediaId: imageIdOf(file),
+  createdAt: BUILT_IN_ASSETS_DATE,
 });
 
 const videoBackground = ({
@@ -63,12 +76,26 @@ const videoBackground = ({
   name,
   category,
 }: BuiltInAsset): Background => ({
-  id: `bg-video-${file}`,
+  id: videoBackgroundIdOf(file),
   name,
   category,
   type: "video",
   builtIn: true,
   mediaId: clipIdOf(file),
+  createdAt: BUILT_IN_ASSETS_DATE,
+});
+
+const builtInImage = ({ file, name }: BuiltInAsset): MediaItem => ({
+  id: imageIdOf(file),
+  kind: "image",
+  name,
+  mimeType: "image/jpeg",
+  size: 0,
+  src: `${IMAGE_ASSETS_PATH}/${file}.jpg`,
+  image: { ...DEFAULT_BACKGROUND_IMAGE_SETTINGS },
+  builtIn: true,
+  createdAt: BUILT_IN_ASSETS_DATE,
+  updatedAt: BUILT_IN_ASSETS_DATE,
 });
 
 const builtInClip = ({ file, name }: BuiltInAsset): MediaItem => ({
@@ -78,12 +105,16 @@ const builtInClip = ({ file, name }: BuiltInAsset): MediaItem => ({
   mimeType: "video/mp4",
   size: 0,
   src: `${VIDEO_ASSETS_PATH}/${file}.mp4`,
+  video: { ...DEFAULT_BACKGROUND_VIDEO_SETTINGS },
   builtIn: true,
   createdAt: BUILT_IN_ASSETS_DATE,
   updatedAt: BUILT_IN_ASSETS_DATE,
 });
 
-export const BUILT_IN_CLIPS: MediaItem[] = VIDEO_ASSETS.map(builtInClip);
+export const BUILT_IN_MEDIA: MediaItem[] = [
+  ...IMAGE_ASSETS.map(builtInImage),
+  ...VIDEO_ASSETS.map(builtInClip),
+];
 
 const COLOR_BACKGROUNDS: Background[] = [
   {

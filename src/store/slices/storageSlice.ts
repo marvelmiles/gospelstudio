@@ -11,7 +11,7 @@ import {
   computeStorageInfo,
 } from "../../lib/storageStats";
 import type { StorageInfo } from "../../lib/storageStats";
-import { BACKGROUNDS } from "../../data/backgrounds";
+import { BACKGROUNDS, BUILT_IN_MEDIA } from "../../data/backgrounds";
 import { THEMES } from "../../data/themes";
 import { DEFAULT_AUDIO } from "../../data/sounds";
 import { seedManuscripts } from "../../data/seed";
@@ -68,6 +68,7 @@ export const createStorageSlice: SliceCreator<StorageSlice> = (set, get) => ({
       manuscripts,
       scriptures: [],
       media: [],
+      builtInMedia: BUILT_IN_MEDIA,
       themes: THEMES,
       backgrounds: BACKGROUNDS,
       audio: DEFAULT_AUDIO,

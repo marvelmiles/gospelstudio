@@ -6,6 +6,7 @@ import type {
   MediaItem,
   VideoSettings,
 } from "../../types";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { useStore } from "../../store/useStore";
 import { cn } from "../../lib/utils";
 import {
@@ -124,7 +125,8 @@ export const BackgroundPicker = ({
   videoSettings,
   onEditUsage,
 }: BackgroundPickerProps) => {
-  const media = useStore((s) => s.media);
+  const library = useMediaLibrary();
+  const { media } = library;
   const beginUpload = useStore((s) => s.beginUpload);
   const attachImageBackground = useStore((s) => s.attachImageBackground);
   const attachVideoBackground = useStore((s) => s.attachVideoBackground);
@@ -134,7 +136,7 @@ export const BackgroundPicker = ({
   const activeId = highlightId ?? value;
 
   const clipFor = (background?: Background) =>
-    findBackgroundClip(media, background?.mediaId);
+    findBackgroundClip(library, background?.mediaId);
 
   const attachedFileIds = useMemo(
     () => backgroundFileIds(backgrounds),
@@ -339,13 +341,11 @@ export const BackgroundPicker = ({
           onChange={(e) => {
             const files = Array.from(e.target.files || []);
             if (files.length)
-              beginUpload(
-                "background",
-                files,
-                (ids) =>
-                  ids[0] &&
-                  onUploaded(ids[0], { ...DEFAULT_BACKGROUND_IMAGE_SETTINGS }),
-              );
+              beginUpload("image", files, (ids) => {
+                const [first] = ids.filter(Boolean).map(attachImageBackground);
+                if (first)
+                  onUploaded(first, { ...DEFAULT_BACKGROUND_IMAGE_SETTINGS });
+              });
             e.target.value = "";
           }}
         />

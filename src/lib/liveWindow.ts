@@ -30,8 +30,12 @@ export interface GoLiveResult {
   display?: string;
 }
 
+export interface GoLiveOptions {
+  onOpening?: (expected: GoLiveResult) => Promise<void> | void;
+}
+
 export interface LiveWindowController {
-  goLive: () => Promise<GoLiveResult>;
+  goLive: (options?: GoLiveOptions) => Promise<GoLiveResult>;
   endLive: () => void;
   subscribe: (listener: () => void) => () => void;
   getState: () => LiveWindowState;
@@ -110,6 +114,16 @@ const settledPlacement = (
   return placementOfWindow(opened);
 };
 
+const expectedPlacement = (
+  projector: ProjectorScreen | null,
+  access: ScreenAccess,
+  isExtended: boolean,
+): GoLivePlacement | null => {
+  if (projector) return "external";
+  if (access === "prompt") return "pending";
+  return isExtended ? null : "same-screen";
+};
+
 const whenLoaded = (opened: Window, run: () => void): void => {
   try {
     if (opened.document.readyState === "complete") {
@@ -168,7 +182,9 @@ export const createLiveWindow = (
     }
   };
 
-  const goLive = async (): Promise<GoLiveResult> => {
+  const goLive = async ({
+    onOpening,
+  }: GoLiveOptions = {}): Promise<GoLiveResult> => {
     const isExtended = isExtendedDisplay();
 
     let access = await screenAccess();
@@ -200,6 +216,16 @@ export const createLiveWindow = (
       }
       endLive();
     }
+
+    const expected = expectedPlacement(projector, access, isExtended);
+    if (expected && onOpening)
+      await onOpening({
+        ok: true,
+        placement: expected,
+        isExtended,
+        access,
+        display: projector?.label,
+      });
 
     const opened = window.open(
       route,

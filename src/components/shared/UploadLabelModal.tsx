@@ -12,13 +12,12 @@ import { InfoTip } from "./InfoTip";
 const stripExtension = (name: string) => name.replace(/\.[^.]+$/, "");
 
 const KIND_NOUNS: Record<UploadKind, { one: string; many: string }> = {
-  background: { one: "background", many: "backgrounds" },
   audio: { one: "sound", many: "sounds" },
   image: { one: "image", many: "images" },
   video: { one: "video", many: "videos" },
 };
 
-const visualKinds: UploadKind[] = ["background", "image"];
+const visualKinds: UploadKind[] = ["image"];
 
 type RowStatus = "saved" | "saving" | "waiting" | "naming";
 

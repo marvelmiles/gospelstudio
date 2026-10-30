@@ -13,7 +13,7 @@ import { IconButton } from "./IconButton";
 interface ModalProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  title: React.ReactNode;
   children: ReactNode;
   width?: number;
   footer?: ReactNode;

@@ -1,6 +1,7 @@
-import { useEffect, useEffectEvent, useRef } from "react";
+import { startTransition, useEffect, useEffectEvent } from "react";
 import type { ContentKind, Slide } from "../../types";
 import { useStore } from "../../store/useStore";
+import type { StoreState } from "../../store/storeTypes";
 
 export const useFollowPresentation = (
   kind: ContentKind,
@@ -8,24 +9,23 @@ export const useFollowPresentation = (
   slides: Slide[],
   setSelectedId: (id: string) => void,
 ): void => {
-  const presentation = useStore((s) => s.presentation);
-  const presentationIndex = useStore((s) => s.presentationIndex);
-  const isPresentingThisDoc =
-    presentation?.kind === kind && presentation.id === docId;
-
   const followSlide = useEffectEvent((index: number) => {
     const slide = slides[index];
-    if (slide) setSelectedId(slide.id);
+    if (slide) startTransition(() => setSelectedId(slide.id));
   });
-  const followedIndex = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!isPresentingThisDoc) {
-      followedIndex.current = null;
-      return;
-    }
-    if (followedIndex.current === presentationIndex) return;
-    followedIndex.current = presentationIndex;
-    followSlide(presentationIndex);
-  }, [isPresentingThisDoc, presentationIndex]);
+    let followedIndex: number | null = null;
+    const follow = ({ presentation, presentationIndex }: StoreState) => {
+      if (presentation?.kind !== kind || presentation.id !== docId) {
+        followedIndex = null;
+        return;
+      }
+      if (followedIndex === presentationIndex) return;
+      followedIndex = presentationIndex;
+      followSlide(presentationIndex);
+    };
+    follow(useStore.getState());
+    return useStore.subscribe(follow);
+  }, [docId, kind]);
 };

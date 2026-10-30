@@ -1,4 +1,3 @@
-import type { Target, Transition } from "framer-motion";
 import type { AnimationKind, EasingKind } from "../types";
 
 export const ANIMATION_OPTIONS: { value: AnimationKind; label: string }[] = [
@@ -12,48 +11,132 @@ export const ANIMATION_OPTIONS: { value: AnimationKind; label: string }[] = [
   { value: "slide-down", label: "Slide Down" },
 ];
 
-export const ANIMATION_VARIANTS: Record<
-  AnimationKind,
-  { initial: Target; animate: Target }
-> = {
-  fade: { initial: { opacity: 0 }, animate: { opacity: 1 } },
-  crossfade: { initial: { opacity: 0 }, animate: { opacity: 1 } },
+export interface LayerMotion {
+  keyframes: Keyframe[];
+  durationMs: number;
+  easing: string;
+  delayMs?: number;
+}
+
+export interface SlideTransition {
+  enter: LayerMotion;
+  exit: LayerMotion;
+  waitForExit: boolean;
+}
+
+interface TransitionShape {
+  enterFrom: Keyframe;
+  exitTo: Keyframe;
+  clearsFirst?: boolean;
+}
+
+const SLIDE_DISTANCE = "16%";
+const ZOOM_FROM = "scale(0.88)";
+const ZOOM_PAST = "scale(1.12)";
+const DISSOLVE_BLUR = "blur(14px)";
+
+const SHAPES: Record<AnimationKind, TransitionShape> = {
+  fade: { enterFrom: {}, exitTo: {}, clearsFirst: true },
+  crossfade: { enterFrom: {}, exitTo: {} },
   dissolve: {
-    initial: { opacity: 0, filter: "blur(10px)" },
-    animate: { opacity: 1, filter: "blur(0px)" },
+    enterFrom: { filter: DISSOLVE_BLUR },
+    exitTo: { filter: DISSOLVE_BLUR },
   },
   zoom: {
-    initial: { opacity: 0, scale: 1.07 },
-    animate: { opacity: 1, scale: 1 },
+    enterFrom: { transform: ZOOM_FROM },
+    exitTo: { transform: ZOOM_PAST },
   },
   "slide-left": {
-    initial: { opacity: 0, x: "7%" },
-    animate: { opacity: 1, x: 0 },
+    enterFrom: { transform: `translateX(${SLIDE_DISTANCE})` },
+    exitTo: { transform: `translateX(-${SLIDE_DISTANCE})` },
   },
   "slide-right": {
-    initial: { opacity: 0, x: "-7%" },
-    animate: { opacity: 1, x: 0 },
+    enterFrom: { transform: `translateX(-${SLIDE_DISTANCE})` },
+    exitTo: { transform: `translateX(${SLIDE_DISTANCE})` },
   },
   "slide-up": {
-    initial: { opacity: 0, y: "7%" },
-    animate: { opacity: 1, y: 0 },
+    enterFrom: { transform: `translateY(${SLIDE_DISTANCE})` },
+    exitTo: { transform: `translateY(-${SLIDE_DISTANCE})` },
   },
   "slide-down": {
-    initial: { opacity: 0, y: "-7%" },
-    animate: { opacity: 1, y: 0 },
+    enterFrom: { transform: `translateY(-${SLIDE_DISTANCE})` },
+    exitTo: { transform: `translateY(${SLIDE_DISTANCE})` },
   },
 };
 
-const EASE_MAP: Record<EasingKind, "easeInOut" | "easeOut" | "linear"> = {
-  ease: "easeInOut",
-  "ease-in-out": "easeInOut",
-  "ease-out": "easeOut",
+const RESTING: Keyframe = {
+  transform: "none",
+  filter: "none",
+};
+
+const CSS_EASING: Record<EasingKind, string> = {
+  ease: "ease-in-out",
+  "ease-in-out": "ease-in-out",
+  "ease-out": "ease-out",
   linear: "linear",
 };
 
-export const buildTransition = (
+const OUTGOING_GONE_AT = 0.55;
+const INCOMING_SHOWS_FROM = 0.3;
+
+const CLEAR_SHARE = 0.35;
+const MAX_CLEAR_MS = 180;
+
+const restingKeysOf = (keyframe: Keyframe): Keyframe =>
+  Object.fromEntries(
+    Object.keys(keyframe).map((key) => [key, RESTING[key]]),
+  ) as Keyframe;
+
+interface TransitionOptions {
+  opaque?: boolean;
+}
+
+export const slideTransition = (
+  animation: AnimationKind,
   durationMs: number,
   easing: EasingKind,
-): Transition => {
-  return { duration: durationMs / 1000, ease: EASE_MAP[easing] || "easeInOut" };
+  { opaque = false }: TransitionOptions = {},
+): SlideTransition => {
+  const shape = SHAPES[animation] ?? SHAPES.fade;
+  const curve = CSS_EASING[easing] ?? CSS_EASING.ease;
+  const clearsFirst = Boolean(shape.clearsFirst) && !opaque;
+  const staggered = Boolean(shape.exitTo.transform) && !opaque;
+
+  const enter: LayerMotion = {
+    keyframes: [
+      { opacity: 0, ...shape.enterFrom, offset: 0 },
+      ...(staggered ? [{ opacity: 0, offset: INCOMING_SHOWS_FROM }] : []),
+      { opacity: 1, ...restingKeysOf(shape.enterFrom), offset: 1 },
+    ],
+    durationMs,
+    easing: curve,
+  };
+
+  const exit: LayerMotion = clearsFirst
+    ? {
+        keyframes: [{ opacity: 0 }],
+        durationMs: Math.min(MAX_CLEAR_MS, durationMs * CLEAR_SHARE),
+        easing: "ease-out",
+      }
+    : {
+        keyframes: staggered
+          ? [
+              { opacity: 0, offset: OUTGOING_GONE_AT },
+              { opacity: 0, ...shape.exitTo, offset: 1 },
+            ]
+          : [{ opacity: 0, ...shape.exitTo }],
+        durationMs,
+        easing: opaque && !shape.exitTo.transform ? "ease-in" : curve,
+      };
+
+  return { enter, exit, waitForExit: clearsFirst };
 };
+
+export const fadeOverTransition = (
+  durationMs: number,
+  easing: EasingKind,
+): SlideTransition => ({
+  enter: slideTransition("crossfade", durationMs, easing).enter,
+  exit: { keyframes: [{ opacity: 1 }], durationMs, easing: "linear" },
+  waitForExit: false,
+});

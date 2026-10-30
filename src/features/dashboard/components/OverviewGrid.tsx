@@ -86,7 +86,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
     {
       icon: Plus,
       label: "New Manuscript",
-      sub: "Start writing a set",
+      sub: "Start a set",
       primary: true,
       title: "Create a new manuscript",
       onClick: newManuscript,
@@ -94,21 +94,21 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
     {
       icon: Palette,
       label: "Manage Themes",
-      sub: "Fonts, colors, backgrounds",
-      title: "Open the themes page: Fonts, colors, backgrounds",
+      sub: "Fonts, colors",
+      title: "Open the themes page to edit fonts, colors and backgrounds",
       onClick: () => navigate(routes.themes()),
     },
     {
       icon: Upload,
       label: "Upload Assets",
-      sub: "Backgrounds and sounds",
-      title: "Open the asset library: Backgrounds and sounds",
+      sub: "Media, sounds",
+      title: "Open the asset library to manage backgrounds and sounds",
       onClick: () => openOverlay("assets"),
     },
   ];
 
   return (
-    <div className="mb-6.5 grid grid-cols-2 gap-3.5 min-[620px]:grid-cols-3 min-[900px]:grid-cols-4 min-[1140px]:grid-cols-5">
+    <div className="mb-6.5 grid grid-cols-2 gap-3.5 min-[780px]:grid-cols-3 min-[1024px]:grid-cols-4 min-[1260px]:grid-cols-5">
       {tiles.map((tile) => (
         <DashboardTile key={tile.label} {...tile} />
       ))}

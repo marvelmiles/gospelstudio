@@ -23,14 +23,19 @@ import { AudioPicker } from "../../components/controls/AudioPicker";
 import { AnimationPicker } from "../../components/controls/AnimationPicker";
 import {
   resolveAudioSettings,
+  resolveAutoPlay,
   resolveBackgroundImage,
   resolveBackgroundVideo,
+  resolveLoopSlides,
+  resolveSlideDuration,
   resolveStyle,
 } from "../../lib/resolve";
 import { findBackgroundClip } from "../../lib/media";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { getChapterVerses } from "./lib/offlineBible";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import type { DeckEditor } from "../editor/useDeckEditor";
+import { PlaybackSettings } from "../../components/controls/PlaybackSettings";
 
 interface PassageSettingsModalProps {
   open: boolean;
@@ -50,7 +55,7 @@ export const PassageSettingsModal = ({
   const themes = useStore((s) => s.themes);
   const backgrounds = useStore((s) => s.backgrounds);
   const audio = useStore((s) => s.audio);
-  const media = useStore((s) => s.media);
+  const library = useMediaLibrary();
   const addCustomBackground = useStore((s) => s.addCustomBackground);
   const rebuildScriptureSlides = useStore((s) => s.rebuildScriptureSlides);
   const pushToast = useStore((s) => s.pushToast);
@@ -98,7 +103,7 @@ export const PassageSettingsModal = ({
     (bg) => bg.id === (passage.defaultBackgroundId || theme.backgroundId),
   );
   const backgroundVideoItem = findBackgroundClip(
-    media,
+    library,
     effectiveBackground?.mediaId,
   );
   const backgroundImage = effectiveBackground
@@ -329,6 +334,14 @@ export const PassageSettingsModal = ({
             animation: (value || undefined) as ScripturePassage["animation"],
           })
         }
+      />
+
+      <PlaybackSettings
+        autoPlay={resolveAutoPlay(passage, theme)}
+        loopSlides={resolveLoopSlides(passage, theme)}
+        seconds={resolveSlideDuration(passage, theme)}
+        info="With auto-play on, the passage advances on its own after the seconds set here, and looping starts it again from the first slide. With it off, slides change only when you navigate."
+        onChange={editor.patchDoc}
       />
     </Modal>
   );

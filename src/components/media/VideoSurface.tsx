@@ -1,4 +1,4 @@
-import type { Ref } from "react";
+import { useState, type Ref } from "react";
 import type { MediaItem, VideoSettings } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { buildFilter, videoSettingsOf } from "../../lib/media";
@@ -32,6 +32,7 @@ export const VideoSurface = ({
   ref,
 }: VideoSurfaceProps & { ref?: Ref<VideoSurfaceHandle> }) => {
   const src = useMediaUrl(item);
+  const [readySrc, setReadySrc] = useState<string | null>(null);
   const applied = settings ?? videoSettingsOf(item);
   const { elementRef, mediaEvents } = useMediaElementPlayback<HTMLVideoElement>(
     {
@@ -59,8 +60,12 @@ export const VideoSurface = ({
           src={src}
           playsInline
           {...mediaEvents}
+          onLoadedData={() => setReadySrc(src)}
           style={{ objectFit: applied.fit, filter: buildFilter(applied) }}
-          className="size-full"
+          className={cn(
+            "size-full transition-opacity duration-300 ease-out",
+            readySrc === src ? "opacity-100" : "opacity-0",
+          )}
         />
       )}
     </div>

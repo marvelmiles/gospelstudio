@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { ComponentProps, ReactNode } from "react";
-import { ArrowDownToLine, Copy, Trash2 } from "lucide-react";
+import { ArrowDownToLine, Copy, Play, Trash2 } from "lucide-react";
 import type {
   AudioItem,
   Background,
@@ -54,6 +54,7 @@ interface InspectorPanelProps {
   activeTextBoxId: string | null;
   elements: SlideElementCapabilities;
   onAddTextBox: () => void;
+  onPreviewAnimation: () => void;
   onEditAsset: (request: AssetUsageRequest, slideId: string | null) => void;
 }
 
@@ -92,6 +93,7 @@ export const InspectorPanel = ({
   activeTextBoxId,
   elements,
   onAddTextBox,
+  onPreviewAnimation,
   onEditAsset,
 }: InspectorPanelProps) => {
   const { selectedSlide: slide, selectedIndex } = editor;
@@ -356,12 +358,31 @@ export const InspectorPanel = ({
         {...audioProps}
       />
 
-      <SectionTitle>Animation</SectionTitle>
+      <SectionTitle
+        info={
+          <InfoTip title="Slide animation" align="end">
+            How this slide arrives when you move to it while presenting. The
+            preview plays it as soon as you pick one, and Preview plays it
+            again.
+          </InfoTip>
+        }
+      >
+        Animation
+      </SectionTitle>
       <AnimationPicker
         value={slide.overrides?.animation || ""}
-        inheritLabel="Use document / theme"
+        inheritLabel={`Use ${documentNoun} / theme`}
         onSelect={(value) => setOverride("animation", value)}
       />
+      <Button
+        size="sm"
+        variant="secondary"
+        onClick={onPreviewAnimation}
+        className="-mt-1 mb-1"
+      >
+        <Play size={14} />
+        Preview animation
+      </Button>
 
       <SectionTitle>Presenter Notes</SectionTitle>
       <Textarea

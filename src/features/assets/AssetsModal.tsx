@@ -2,6 +2,7 @@ import { useValueChange } from "@/hooks/useValueChange";
 import { useMemo, useRef, useState } from "react";
 import { Image as ImageIcon, Music } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Background } from "../../types";
 import { useStore } from "../../store/useStore";
 import { useAttention } from "../../hooks/useAttention";
 import { parseOverlayTarget } from "../../lib/overlayTarget";
@@ -35,6 +36,15 @@ const SECTIONS: Record<AssetSection, AssetSectionMeta> = {
 
 const TAB_PREFIX = "asset-library";
 
+const backgroundMatches = (
+  background: Background,
+  itemId: string | null,
+): boolean =>
+  Boolean(itemId) &&
+  [background.id, background.mediaId, background.blobId].includes(
+    itemId ?? undefined,
+  );
+
 const isAssetSection = (value?: string): value is AssetSection =>
   value === "backgrounds" || value === "audio";
 
@@ -54,11 +64,13 @@ export const AssetsModal = () => {
   const target =
     overlay === "assets" ? parseOverlayTarget(overlayContext) : null;
   const targetItemId = target?.itemId ?? null;
-  const attentionTarget =
-    backgrounds.find((bg) => bg.type === "video" && bg.id === targetItemId)
-      ?.mediaId ?? targetItemId;
-  const attentionId = useAttention(attentionTarget, contentRef);
   const targetSection = target?.section;
+  const attentionTarget =
+    targetSection === "audio"
+      ? targetItemId
+      : (backgrounds.find((bg) => backgroundMatches(bg, targetItemId))?.id ??
+        targetItemId);
+  const attentionId = useAttention(attentionTarget, contentRef);
   useValueChange(
     targetSection,
     (section) => {
@@ -111,10 +123,7 @@ export const AssetsModal = () => {
               targetItemId={attentionTarget}
             />
           ) : (
-            <AudioPanel
-              attentionId={attentionId}
-              targetItemId={attentionTarget}
-            />
+            <AudioPanel attentionId={attentionId} />
           )}
         </div>
       </div>

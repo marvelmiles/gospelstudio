@@ -14,7 +14,7 @@ import {
   resolveLineStyle,
   resolveStyle,
 } from "../../lib/resolve";
-import { findBackgroundClip } from "../../lib/media";
+import { findBackgroundClip, type MediaLibrary } from "../../lib/media";
 import type { Deck, DeckSlide } from "./useDeck";
 
 export type StageContent =
@@ -36,12 +36,14 @@ export interface StageFrame {
   backdrop: Background | null;
 }
 
+const EMPTY_LIBRARY: MediaLibrary = { media: [], builtInMedia: [] };
+
 export const buildStageFrame = (
   deck: Deck,
   deckSlide: DeckSlide | undefined,
   bgMap: Record<string, Background>,
   fallbackAnimation: AnimationKind,
-  media: MediaItem[] = [],
+  library: MediaLibrary = EMPTY_LIBRARY,
 ): StageFrame | null => {
   if (!deckSlide) return null;
 
@@ -50,7 +52,7 @@ export const buildStageFrame = (
     if (!theme) return null;
     const slide = deckSlide.slide;
     const backgroundId = resolveBackgroundId(slide, doc, theme);
-    const clip = findBackgroundClip(media, bgMap[backgroundId]?.mediaId);
+    const clip = findBackgroundClip(library, bgMap[backgroundId]?.mediaId);
     const background = resolveBackgroundView(slide, doc, theme, bgMap, clip);
     return {
       content: {

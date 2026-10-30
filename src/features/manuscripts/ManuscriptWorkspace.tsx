@@ -192,7 +192,7 @@ export const ManuscriptWorkspace = ({
         themes={themes}
         backgrounds={backgrounds}
         audio={audio}
-        onPatchManuscript={(changes) => editor.patchDoc(changes)}
+        onPatchManuscript={editor.patchDoc}
         onStyleChange={editor.updateDocStyle}
         onEditAsset={(request) =>
           openAssetUsage(request, {

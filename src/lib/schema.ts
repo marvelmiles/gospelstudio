@@ -173,6 +173,7 @@ const manuscriptSchema = z
     defaultAudioSettings: audioSettingsSchema.optional().catch(undefined),
     animation: animationSchema,
     autoPlay: z.boolean().optional(),
+    loopSlides: z.boolean().optional(),
     slideDurationSeconds: z.number().optional(),
     style: textStyleSchema.optional(),
     createdAt: z.string().optional(),

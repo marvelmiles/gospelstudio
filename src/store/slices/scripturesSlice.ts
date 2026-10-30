@@ -11,11 +11,11 @@ import { deleteRecord, saveRecord } from "../../lib/storage";
 import { buildScriptureSlides } from "../../features/bible/lib/scriptureSlides";
 import { formatReference } from "../../features/bible/lib/reference";
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
+import { DEFAULT_SCRIPTURE_THEME_ID } from "../../data/themes";
 import type { PresentStartOptions } from "./presentSlice";
 import type { SliceCreator } from "../storeTypes";
 
 const QUICK_PASSAGE_ID = "scripture-quick-present";
-const SCRIPTURE_THEME_ID = "scripture";
 
 export interface ScriptureSelection {
   version: BibleVersionId;
@@ -70,7 +70,7 @@ const buildPassage = (
   options: SavePassageOptions,
   id: string,
   quick: boolean,
-  themeId: string = SCRIPTURE_THEME_ID,
+  themeId: string = DEFAULT_SCRIPTURE_THEME_ID,
 ): ScripturePassage => {
   const versesPerSlide = options.versesPerSlide ?? 1;
   const showVerseNumbers = options.showVerseNumbers ?? true;
@@ -238,5 +238,5 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
 const scriptureThemeId = (
   get: () => { prefs: { defaultScriptureThemeId: string } },
 ): string => {
-  return get().prefs.defaultScriptureThemeId || SCRIPTURE_THEME_ID;
+  return get().prefs.defaultScriptureThemeId || DEFAULT_SCRIPTURE_THEME_ID;
 };

@@ -1,7 +1,7 @@
 import type { Collection } from "./collections";
 import type { HymnMusic, TextStyle } from "../types";
 import { DEFAULT_SLIDE_FONT_SIZE, slideRowCapacity } from "../lib/slideLayout";
-import { builtInTheme } from "./themes";
+import { DEFAULT_MANUSCRIPT_THEME_ID, builtInTheme } from "./themes";
 
 export interface HymnSource {
   id: string;
@@ -15,15 +15,13 @@ export interface HymnSource {
  * Bumped whenever the generated hymnal changes, so an install that already has
  * an older set reconciles its built-in manuscripts on the next load.
  */
-export const HYMNAL_VERSION = 5;
+export const HYMNAL_VERSION = 6;
 
 export const HYMN_COLLECTION: Collection = "Hymns";
 
-export const HYMN_THEME_ID = "hymnbook";
+export const HYMN_THEME_ID = DEFAULT_MANUSCRIPT_THEME_ID;
 
-export const HYMN_BACKGROUND_ID = "bg-parchment";
-
-/** Hymns read at the app-wide slide size, straight from the Hymn Book theme. */
+/** Hymns read at the app-wide slide size, straight from the default manuscript theme. */
 export const HYMN_STYLE: TextStyle = { fontSize: DEFAULT_SLIDE_FONT_SIZE };
 
 /**

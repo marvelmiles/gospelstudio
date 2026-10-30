@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { useStore } from "../../store/useStore";
 import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useGoLive } from "../../hooks/useGoLive";
-import { useGoLiveToast } from "../../hooks/useGoLiveToast";
+import { useAnnouncedGoLive } from "../../hooks/useAnnouncedGoLive";
+import { presentLiveWindow } from "../../lib/liveWindow";
 import { useWindowSize } from "usehooks-ts";
 import { usePortalHost } from "../../hooks/usePortalHost";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
@@ -49,8 +51,9 @@ export const Presentation = () => {
   const publishPresentedMedia = useStore((s) => s.publishPresentedMedia);
   const isLiveTarget = useStore((s) => Boolean(s.presentation?.live));
   const markPresentationLive = useStore((s) => s.markPresentationLive);
-  const media = useStore((s) => s.media);
-  const { isExtended, isLive, goLive, endLive } = useGoLive();
+  const library = useMediaLibrary();
+  const { isExtended, isLive, endLive } = useGoLive();
+  const goLive = useAnnouncedGoLive(presentLiveWindow, "Presentation window");
   const isBroadcasting = isLive && isLiveTarget;
 
   const pipRef = useRef<HTMLDivElement>(null);
@@ -78,7 +81,6 @@ export const Presentation = () => {
     setPresentationMode("pip");
   }, [mode, setPresentationMode]);
 
-  const announceGoLive = useGoLiveToast("Presentation window");
   const streamSession = useStreamSession();
 
   const isCoveredByStreamStage =
@@ -118,8 +120,8 @@ export const Presentation = () => {
   const videoRate = videoSettings?.playbackRate ?? 1;
   const { bgMap } = presentation;
   const presentAssets = useMemo(
-    () => (deck ? collectPresentAssets(deck, bgMap, media) : undefined),
-    [deck, bgMap, media],
+    () => (deck ? collectPresentAssets(deck, bgMap, library) : undefined),
+    [deck, bgMap, library],
   );
 
   const presentState: PresentState | null = useMemo(
@@ -221,7 +223,6 @@ export const Presentation = () => {
       return;
     }
     void goLive().then((result) => {
-      announceGoLive(result);
       if (result.ok) markPresentationLive();
     });
   };

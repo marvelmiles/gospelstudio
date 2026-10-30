@@ -7,6 +7,8 @@ import { APP_NAME } from "../../lib/appInfo";
 
 type OverlayName = "assets" | "settings" | "shortcuts" | "about";
 
+export type ToastId = string | number;
+
 interface OverlayOptions {
   lockSection?: boolean;
 }
@@ -25,7 +27,8 @@ export interface UiSlice {
     options?: OverlayOptions,
   ) => void;
   closeOverlay: () => void;
-  pushToast: (message: string, kind?: ToastKind) => void;
+  pushToast: (message: string, kind?: ToastKind) => ToastId;
+  dismissToast: (id: ToastId) => void;
   pushAlert: (message: string, kind?: AppAlert["kind"], key?: string) => void;
   dismissAlert: (id: string) => void;
   clearAlert: (key: string) => void;
@@ -52,9 +55,11 @@ export const createUiSlice: SliceCreator<UiSlice> = (set, get) => ({
   closeOverlay: () =>
     set({ overlay: null, overlayContext: null, overlaySectionLocked: false }),
 
-  pushToast: (message, kind = "success") => {
-    if (kind === "error") toast.error(message);
-    else toast.success(message);
+  pushToast: (message, kind = "success") =>
+    kind === "error" ? toast.error(message) : toast.success(message),
+
+  dismissToast: (id) => {
+    toast.dismiss(id);
   },
 
   pushAlert: (message, kind = "warning", key) =>

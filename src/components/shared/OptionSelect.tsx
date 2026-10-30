@@ -45,7 +45,10 @@ export const OptionSelect = ({
     <SelectTrigger aria-label={ariaLabel} className={cn("w-full", className)}>
       <SelectValue />
     </SelectTrigger>
-    <SelectContent position="popper" className="max-h-80">
+    <SelectContent
+      position="popper"
+      className="max-h-[min(24rem,var(--radix-select-content-available-height))]"
+    >
       {options.map((option) => (
         <SelectItem
           key={optionValue(option)}

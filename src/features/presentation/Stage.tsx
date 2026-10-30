@@ -1,14 +1,14 @@
 import { useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import type { Ref } from "react";
 import type { AnimationKind, EasingKind, PresentationView } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
-import { ANIMATION_VARIANTS, buildTransition } from "../../lib/animation";
-import { useBlobUrl } from "../../lib/blobUrls";
+import { fadeOverTransition, slideTransition } from "../../lib/animation";
+import { useMediaUrl } from "../../lib/blobUrls";
 import { isMediaBackground } from "../../lib/media";
 import { cn } from "../../lib/utils";
 import { SlideCanvas } from "../../components/SlideCanvas";
 import { PortalSlot } from "@/components/shared/PortalSlot";
+import { TransitionLayers } from "@/components/shared/TransitionLayers";
 import { BackgroundSurface } from "../../components/media/BackgroundSurface";
 import { ImageSurface } from "../../components/media/ImageSurface";
 import {
@@ -59,21 +59,11 @@ export const Stage = ({
   onVideoEnded,
   videoHost,
 }: StageProps) => {
-  const variant = ANIMATION_VARIANTS[animation] || ANIMATION_VARIANTS.fade;
-  const transition = buildTransition(durationMs, easing);
-
   const dragging = useRef(false);
   const last = useRef({ x: 0, y: 0 });
   const [grabbing, setGrabbing] = useState(false);
 
-  const backdrop = content.kind === "text" ? content.background : null;
-  const backdropImage =
-    content.kind === "text" ? content.backgroundImage : null;
-  const backdropVideo =
-    content.kind === "text" ? content.backgroundVideo : null;
-  const ambientUrl = useBlobUrl(
-    content.kind === "image" ? content.item.id : null,
-  );
+  const opaqueContent = content.kind !== "text";
 
   return (
     <div
@@ -101,78 +91,100 @@ export const Stage = ({
         grabbing ? "cursor-grabbing" : "cursor-grab",
       )}
     >
+      <TransitionLayers
+        transitionKey={backdropKeyOf(content)}
+        transition={fadeOverTransition(durationMs, easing)}
+        className="pointer-events-none absolute inset-0"
+      >
+        <StageBackdrop content={content} />
+      </TransitionLayers>
+
+      <TransitionLayers
+        transitionKey={slideIndex}
+        transition={slideTransition(animation, durationMs, easing, {
+          opaque: opaqueContent,
+        })}
+        className="pointer-events-none absolute inset-0 grid place-items-center"
+      >
+        <div
+          style={{
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          }}
+          className={cn("relative origin-center", VIEW_SIZE[view])}
+        >
+          {content.kind === "text" && (
+            <SlideCanvas
+              slide={content.slide}
+              style={content.style}
+              lineStyles={content.lineStyles}
+              bg={content.background}
+              radius={0}
+              fill
+              noBackground
+              live
+            />
+          )}
+          {content.kind === "image" && (
+            <ImageSurface item={content.item} className="bg-transparent" />
+          )}
+          {content.kind === "video" &&
+            (videoHost ? (
+              <PortalSlot host={videoHost} className="pointer-events-auto" />
+            ) : (
+              <VideoSurface
+                ref={videoRef}
+                item={content.item}
+                playback={playback}
+                forceMuted={forceMutedVideo}
+                onTimeUpdate={onVideoTime}
+                onEnded={onVideoEnded}
+                className="pointer-events-auto bg-transparent"
+              />
+            ))}
+        </div>
+      </TransitionLayers>
+    </div>
+  );
+};
+
+const backdropKeyOf = (content: StageContent): string => {
+  if (content.kind === "text") return `background:${content.background.id}`;
+  if (content.kind === "image") return `ambient:${content.item.id}`;
+  return "video";
+};
+
+const StageBackdrop = ({ content }: { content: StageContent }) => {
+  const ambientUrl = useMediaUrl(
+    content.kind === "image" ? content.item : null,
+  );
+
+  if (content.kind === "text") {
+    const { background } = content;
+    return (
       <div
         aria-hidden
-        style={
-          backdrop
-            ? { background: backgroundCssOf(backdrop) }
-            : ambientUrl
-              ? { backgroundImage: `url(${ambientUrl})` }
-              : undefined
-        }
-        className={cn(
-          "pointer-events-none absolute inset-0 bg-black",
-          !backdrop &&
-            ambientUrl &&
-            "scale-112 bg-cover bg-center blur-[48px] brightness-55 saturate-110",
-        )}
+        style={{ background: backgroundCssOf(background) }}
+        className="absolute inset-0 bg-black"
       >
-        {isMediaBackground(backdrop ?? undefined) && (
+        {isMediaBackground(background) && (
           <BackgroundSurface
-            background={backdrop ?? undefined}
-            settings={backdropImage}
-            videoSettings={backdropVideo}
+            background={background}
+            settings={content.backgroundImage}
+            videoSettings={content.backgroundVideo}
           />
         )}
       </div>
+    );
+  }
 
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={slideIndex}
-          initial={variant.initial}
-          animate={variant.animate}
-          exit={{ opacity: 0 }}
-          transition={transition}
-          className="pointer-events-none absolute inset-0 grid place-items-center"
-        >
-          <div
-            style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-            }}
-            className={cn("relative origin-center", VIEW_SIZE[view])}
-          >
-            {content.kind === "text" && (
-              <SlideCanvas
-                slide={content.slide}
-                style={content.style}
-                lineStyles={content.lineStyles}
-                bg={content.background}
-                radius={0}
-                fill
-                noBackground
-                live
-              />
-            )}
-            {content.kind === "image" && (
-              <ImageSurface item={content.item} className="bg-transparent" />
-            )}
-            {content.kind === "video" &&
-              (videoHost ? (
-                <PortalSlot host={videoHost} className="pointer-events-auto" />
-              ) : (
-                <VideoSurface
-                  ref={videoRef}
-                  item={content.item}
-                  playback={playback}
-                  forceMuted={forceMutedVideo}
-                  onTimeUpdate={onVideoTime}
-                  onEnded={onVideoEnded}
-                  className="pointer-events-auto"
-                />
-              ))}
-          </div>
-        </motion.div>
-      </AnimatePresence>
+  return (
+    <div aria-hidden className="absolute inset-0 overflow-hidden bg-black">
+      {ambientUrl && (
+        <div
+          style={{ backgroundImage: `url(${ambientUrl})` }}
+          className="absolute inset-0 scale-112 bg-cover bg-center blur-[48px] brightness-55 saturate-110"
+        />
+      )}
     </div>
   );
 };

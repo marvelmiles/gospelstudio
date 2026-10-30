@@ -1,37 +1,147 @@
-import { useMemo, useState } from "react";
-import { Film, Image as ImageIcon, Palette, Pencil, X } from "lucide-react";
-import type { Background } from "../../types";
+import { useMemo, useRef, useState } from "react";
+import {
+  Film,
+  Image as ImageIcon,
+  Palette,
+  Pencil,
+  Plus,
+  Trash2,
+  Upload,
+  X,
+} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { Background, MediaItem, MediaKind } from "../../types";
 import { useStore } from "../../store/useStore";
-import { ATTENTION_CLASS, attentionAttribute } from "../../hooks/useAttention";
-import { isImageBackground, isVideoBackground } from "../../lib/media";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
+import { useLibrarySort } from "../../hooks/useLibrarySort";
+import {
+  findMediaItem,
+  isImageBackground,
+  type MediaLibrary,
+} from "../../lib/media";
+import type { LibrarySortOption } from "../../lib/librarySort";
+import { formatCount } from "../../lib/formatNumber";
+import routes from "../../routes";
+import { Button } from "@/components/ui/button";
 import { LibrarySection } from "@/components/shared/LibrarySection";
+import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
 import { SegmentedTabs } from "@/components/shared/SegmentedTabs";
 import type { SegmentedTab } from "@/components/shared/SegmentedTabs";
 import { pillTabPanelProps } from "@/components/shared/tabPanel";
 import { BgSwatch } from "../../components/controls/BgSwatch";
 import { CustomColorPicker } from "../../components/controls/CustomColorPicker";
-import { BackgroundImageEditorModal } from "../../components/media/BackgroundImageEditorModal";
-import { MediaSourceList } from "./MediaSourceList";
+import { useOpenAssetEditor } from "./assetLibraryNavigation";
+import { AssetTile } from "./AssetTile";
+import { sortAssets } from "./assetSort";
+import { LibraryAddList } from "./LibraryAddList";
+import { RenameBackgroundModal } from "./RenameBackgroundModal";
 import {
   assetGridClassName,
   cardOverlayButtonClassName,
 } from "./assetCardStyles";
-import { cn } from "../../lib/utils";
-import { formatCount } from "../../lib/formatNumber";
 
-type BackgroundTab = "images" | "colors" | "videos";
+type BackgroundKind = "images" | "videos" | "colors";
+
+interface KindCopy {
+  label: string;
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}
+
+const KINDS: Record<BackgroundKind, KindCopy> = {
+  images: {
+    label: "Images",
+    icon: ImageIcon,
+    title: "Image backgrounds",
+    description:
+      "Pictures you can set behind any slide. Upload your own or add one from your Images page.",
+  },
+  videos: {
+    label: "Videos",
+    icon: Film,
+    title: "Video backgrounds",
+    description:
+      "Motion loops that play silently behind your slides. Upload a clip or add one from your Videos page.",
+  },
+  colors: {
+    label: "Colors",
+    icon: Palette,
+    title: "Colors and gradients",
+    description:
+      "Solid colors and gradients. Pick a preset or write any CSS color of your own.",
+  },
+};
+
+const KIND_ORDER: BackgroundKind[] = ["images", "videos", "colors"];
+
+const UPLOAD_KIND: Partial<Record<BackgroundKind, MediaKind>> = {
+  images: "image",
+  videos: "video",
+};
 
 const TAB_PREFIX = "asset-backgrounds";
 
-const isColorBackground = (background: Background): boolean =>
-  background.type === "solid" || background.type === "gradient";
-
-const tabOf = (background: Background): BackgroundTab =>
-  background.type === "image"
+const kindOf = (background: Background): BackgroundKind =>
+  isImageBackground(background)
     ? "images"
     : background.type === "video"
       ? "videos"
       : "colors";
+
+const initialKind = (
+  backgrounds: Background[],
+  media: MediaItem[],
+  targetItemId: string | null,
+): BackgroundKind => {
+  const target = backgrounds.find((bg) => bg.id === targetItemId);
+  if (target) return kindOf(target);
+  const item = media.find((entry) => entry.id === targetItemId);
+  return item?.kind === "video" ? "videos" : "images";
+};
+
+const groupByKind = (
+  backgrounds: Background[],
+  sort: LibrarySortOption,
+): Record<BackgroundKind, Background[]> => {
+  const groups: Record<BackgroundKind, Background[]> = {
+    images: [],
+    videos: [],
+    colors: [],
+  };
+  for (const background of backgrounds)
+    groups[kindOf(background)].push(background);
+  for (const kind of KIND_ORDER) groups[kind] = sortAssets(groups[kind], sort);
+  return groups;
+};
+
+const addedMediaIdsOf = (
+  backgrounds: Background[],
+  kind: MediaKind,
+): Set<string> =>
+  new Set(
+    backgrounds.flatMap((background) => {
+      const mediaId = kind === "image" ? background.blobId : background.mediaId;
+      return mediaId && !background.builtIn ? [mediaId] : [];
+    }),
+  );
+
+const editorPathOf = (
+  background: Background,
+  library: MediaLibrary,
+): string | null => {
+  if (background.type === "video") {
+    const clip = findMediaItem(library, background.mediaId, "video");
+    return clip ? routes.video(clip.id) : null;
+  }
+  if (background.type !== "image") return null;
+  const picture = findMediaItem(
+    library,
+    background.builtIn ? background.mediaId : background.blobId,
+    "image",
+  );
+  return picture ? routes.image(picture.id) : null;
+};
 
 interface BackgroundsPanelProps {
   attentionId: string | null;
@@ -44,295 +154,224 @@ export const BackgroundsPanel = ({
 }: BackgroundsPanelProps) => {
   const backgrounds = useStore((s) => s.backgrounds);
   const media = useStore((s) => s.media);
-  const [tab, setTab] = useState<BackgroundTab>(() => {
-    const target = backgrounds.find((bg) => bg.id === targetItemId);
-    if (target) return tabOf(target);
-    const item = media.find((entry) => entry.id === targetItemId);
-    return item?.kind === "video" ? "videos" : "images";
-  });
+  const attachImageBackground = useStore((s) => s.attachImageBackground);
+  const attachVideoBackground = useStore((s) => s.attachVideoBackground);
+  const [kind, setKind] = useState<BackgroundKind>(() =>
+    initialKind(backgrounds, media, targetItemId),
+  );
+  const [sort, setSort] = useLibrarySort("asset-backgrounds");
 
-  const images = useMemo(
-    () => backgrounds.filter(isImageBackground),
-    [backgrounds],
+  const groups = useMemo(
+    () => groupByKind(backgrounds, sort),
+    [backgrounds, sort],
   );
-  const colors = useMemo(
-    () => backgrounds.filter(isColorBackground),
-    [backgrounds],
+  const addedImageIds = useMemo(
+    () => addedMediaIdsOf(groups.images, "image"),
+    [groups.images],
   );
-  const videoCount = useMemo(
-    () => backgrounds.filter(isVideoBackground).length,
-    [backgrounds],
+  const addedVideoIds = useMemo(
+    () => addedMediaIdsOf(groups.videos, "video"),
+    [groups.videos],
   );
 
-  const tabs: SegmentedTab<BackgroundTab>[] = [
-    { id: "images", label: "Images", icon: ImageIcon, count: images.length },
-    { id: "colors", label: "Colors", icon: Palette, count: colors.length },
-    { id: "videos", label: "Videos", icon: Film, count: videoCount },
-  ];
+  const tabs: SegmentedTab<BackgroundKind>[] = KIND_ORDER.map((id) => ({
+    id,
+    label: KINDS[id].label,
+    icon: KINDS[id].icon,
+    count: groups[id].length,
+  }));
 
   return (
     <div className="flex flex-col gap-3.5">
-      <SegmentedTabs<BackgroundTab>
+      <SegmentedTabs<BackgroundKind>
         ariaLabel="Background kinds"
         idPrefix={TAB_PREFIX}
         tabs={tabs}
-        value={tab}
-        onChange={setTab}
+        value={kind}
+        onChange={setKind}
         minSegmentWidth={104}
       />
-      <div {...pillTabPanelProps(TAB_PREFIX, tab)}>
-        {tab === "images" && (
-          <ImagesTab images={images} attentionId={attentionId} />
+      <div
+        {...pillTabPanelProps(TAB_PREFIX, kind)}
+        className="flex flex-col gap-3.5"
+      >
+        <BackgroundList
+          key={kind}
+          kind={kind}
+          backgrounds={groups[kind]}
+          attentionId={attentionId}
+          sort={sort}
+          onSort={setSort}
+        />
+        {kind === "images" && (
+          <LibraryAddList
+            kind="image"
+            title="From your Images page"
+            description="Pictures you uploaded elsewhere that are not backgrounds yet."
+            addedMediaIds={addedImageIds}
+            addLabel="Add"
+            sort={sort}
+            attentionId={attentionId}
+            onAdd={attachImageBackground}
+          />
         )}
-        {tab === "colors" && (
-          <ColorsTab colors={colors} attentionId={attentionId} />
+        {kind === "videos" && (
+          <LibraryAddList
+            kind="video"
+            title="From your Videos page"
+            description="Clips you uploaded elsewhere that are not backgrounds yet."
+            addedMediaIds={addedVideoIds}
+            addLabel="Add"
+            sort={sort}
+            attentionId={attentionId}
+            onAdd={attachVideoBackground}
+          />
         )}
-        {tab === "videos" && <VideosTab attentionId={attentionId} />}
       </div>
     </div>
   );
 };
 
-interface BackgroundTabProps {
+interface BackgroundListProps {
+  kind: BackgroundKind;
+  backgrounds: Background[];
   attentionId: string | null;
+  sort: LibrarySortOption;
+  onSort: (sort: LibrarySortOption) => void;
 }
 
-const ImagesTab = ({
-  images,
+const BackgroundList = ({
+  kind,
+  backgrounds,
   attentionId,
-}: BackgroundTabProps & { images: Background[] }) => {
-  const media = useStore((s) => s.media);
+  sort,
+  onSort,
+}: BackgroundListProps) => {
+  const beginUpload = useStore((s) => s.beginUpload);
   const attachImageBackground = useStore((s) => s.attachImageBackground);
+  const attachVideoBackground = useStore((s) => s.attachVideoBackground);
+  const addCustomBackground = useStore((s) => s.addCustomBackground);
   const removeBackground = useStore((s) => s.removeBackground);
-  const [editing, setEditing] = useState<Background | null>(null);
+  const library = useMediaLibrary();
+  const openEditor = useOpenAssetEditor();
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [colorPickerOpen, setColorPickerOpen] = useState(false);
+  const [renaming, setRenaming] = useState<Background | null>(null);
 
-  const pictureIds = useMemo(
-    () =>
-      new Set(
-        media.flatMap((item) => (item.kind === "image" ? [item.id] : [])),
-      ),
-    [media],
-  );
+  const copy = KINDS[kind];
+  const uploadKind = UPLOAD_KIND[kind];
 
-  const attached = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const background of images)
-      if (background.blobId && pictureIds.has(background.blobId))
-        map.set(background.blobId, background.id);
-    return map;
-  }, [images, pictureIds]);
+  const upload = (files: File[]) => {
+    if (!uploadKind) return;
+    const attach =
+      uploadKind === "image" ? attachImageBackground : attachVideoBackground;
+    beginUpload(uploadKind, files, (ids) => {
+      for (const id of ids) if (id) attach(id);
+    });
+  };
 
-  const defaults = useMemo(
-    () => images.filter((background) => background.builtIn),
-    [images],
-  );
+  const editActionOf = (background: Background): (() => void) | null => {
+    if (kind === "colors") return () => setRenaming(background);
+    const editorPath = editorPathOf(background, library);
+    return editorPath ? () => openEditor(editorPath, "backgrounds") : null;
+  };
 
-  const standalone = useMemo(
-    () =>
-      images.filter(
-        (background) =>
-          !background.builtIn &&
-          (!background.blobId || !pictureIds.has(background.blobId)),
-      ),
-    [images, pictureIds],
-  );
-
-  return (
+  const action = (
     <>
-      <MediaSourceList
-        kind="image"
-        title="Image backgrounds"
-        description="Your Images page. Attach a picture to set it behind any slide; the pencil opens it in the image editor."
-        attentionId={attentionId}
-        addedByMediaId={attached}
-        onAdd={attachImageBackground}
-        onRemove={(backgroundId) => void removeBackground(backgroundId)}
-        addLabel="Attach"
-        addedLabel="Attached"
-        addedFilterLabel="Background images"
-        section="backgrounds"
-        filterable
-        emptyMessage="Upload a picture and it is attached as a background."
-      />
-      <DefaultBackgroundsSection
-        title="Default pictures"
-        description="Pictures that ship with the app, ready to set behind any slide."
-        backgrounds={defaults}
-        attentionId={attentionId}
-      />
-      {standalone.length > 0 && (
-        <div className="mt-3.5">
-          <LibrarySection
-            title="Saved pictures"
-            meta={`${formatCount(standalone.length)} saved`}
-            description="Backgrounds saved on their own rather than from your Images page."
-          >
-            <BackgroundGrid
-              backgrounds={standalone}
-              attentionId={attentionId}
-              onEditImage={setEditing}
-            />
-          </LibrarySection>
-        </div>
-      )}
-      {editing && (
-        <BackgroundImageEditorModal
-          key={editing.id}
-          background={editing}
-          onClose={() => setEditing(null)}
-        />
+      <LibrarySortSelect value={sort} onChange={onSort} nameLabel="Name" />
+      {uploadKind ? (
+        <Button size="sm" onClick={() => fileInput.current?.click()}>
+          <Upload size={14} />
+          Upload {copy.label.toLowerCase()}
+        </Button>
+      ) : (
+        <Button
+          size="sm"
+          variant={colorPickerOpen ? "secondary" : "default"}
+          aria-expanded={colorPickerOpen}
+          onClick={() => setColorPickerOpen((open) => !open)}
+        >
+          {colorPickerOpen ? <X size={14} /> : <Plus size={14} />}
+          {colorPickerOpen ? "Close" : "New color"}
+        </Button>
       )}
     </>
   );
-};
-
-const ColorsTab = ({
-  colors,
-  attentionId,
-}: BackgroundTabProps & { colors: Background[] }) => {
-  const addCustomBackground = useStore((s) => s.addCustomBackground);
 
   return (
     <LibrarySection
-      title="Colors and gradients"
-      meta={`${formatCount(colors.length)} saved`}
-      description="Pick a preset or write any CSS color or gradient of your own."
+      title={copy.title}
+      meta={formatCount(backgrounds.length)}
+      description={copy.description}
+      action={action}
     >
-      <CustomColorPicker
-        onAdd={(value, name) => addCustomBackground(value, name)}
-      />
-      <BackgroundGrid backgrounds={colors} attentionId={attentionId} />
+      {uploadKind && (
+        <input
+          ref={fileInput}
+          type="file"
+          accept={`${uploadKind}/*`}
+          multiple
+          hidden
+          onChange={(event) => {
+            const files = Array.from(event.target.files || []);
+            if (files.length) upload(files);
+            event.target.value = "";
+          }}
+        />
+      )}
+      {kind === "colors" && colorPickerOpen && (
+        <CustomColorPicker
+          onAdd={(value, name) => addCustomBackground(value, name)}
+        />
+      )}
+      <div className={assetGridClassName}>
+        {backgrounds.map((background) => {
+          const editBackground = editActionOf(background);
+          return (
+            <AssetTile
+              key={background.id}
+              id={background.id}
+              name={background.name}
+              highlighted={background.id === attentionId}
+              detail={background.builtIn ? "Built in" : undefined}
+              preview={<BgSwatch bg={background} className="size-full" />}
+              overlayActions={
+                <>
+                  {editBackground && (
+                    <button
+                      type="button"
+                      onClick={editBackground}
+                      aria-label={`Edit ${background.name}`}
+                      title={kind === "colors" ? "Rename" : "Edit"}
+                      className={cardOverlayButtonClassName}
+                    >
+                      <Pencil size={13} />
+                    </button>
+                  )}
+                  {!background.builtIn && (
+                    <button
+                      type="button"
+                      onClick={() => void removeBackground(background.id)}
+                      aria-label={`Remove ${background.name}`}
+                      title="Remove from backgrounds"
+                      className={cardOverlayButtonClassName}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </>
+              }
+            />
+          );
+        })}
+      </div>
+      {renaming && (
+        <RenameBackgroundModal
+          key={renaming.id}
+          background={renaming}
+          onClose={() => setRenaming(null)}
+        />
+      )}
     </LibrarySection>
-  );
-};
-
-const VideosTab = ({ attentionId }: BackgroundTabProps) => {
-  const backgrounds = useStore((s) => s.backgrounds);
-  const defaults = useMemo(
-    () =>
-      backgrounds.filter(
-        (background) => background.builtIn && isVideoBackground(background),
-      ),
-    [backgrounds],
-  );
-  const attachVideoBackground = useStore((s) => s.attachVideoBackground);
-  const removeBackground = useStore((s) => s.removeBackground);
-  const attached = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const bg of backgrounds)
-      if (isVideoBackground(bg) && bg.mediaId) map.set(bg.mediaId, bg.id);
-    return map;
-  }, [backgrounds]);
-
-  return (
-    <>
-      <MediaSourceList
-        kind="video"
-        title="Video backgrounds"
-        description="Your Videos page. Attach a clip to loop it behind slides; the pencil opens it in the video editor."
-        attentionId={attentionId}
-        addedByMediaId={attached}
-        onAdd={attachVideoBackground}
-        onRemove={(backgroundId) => void removeBackground(backgroundId)}
-        addLabel="Attach"
-        addedLabel="Attached"
-        addedFilterLabel="Background videos"
-        section="backgrounds"
-        filterable
-        emptyMessage="Upload a video and it is attached as a background."
-      />
-      <DefaultBackgroundsSection
-        title="Default videos"
-        description="Motion loops that ship with the app, ready to play behind any slide."
-        backgrounds={defaults}
-        attentionId={attentionId}
-      />
-    </>
-  );
-};
-
-interface DefaultBackgroundsSectionProps {
-  title: string;
-  description: string;
-  backgrounds: Background[];
-  attentionId: string | null;
-}
-
-const DefaultBackgroundsSection = ({
-  title,
-  description,
-  backgrounds,
-  attentionId,
-}: DefaultBackgroundsSectionProps) => {
-  if (!backgrounds.length) return null;
-  return (
-    <div className="mt-3.5">
-      <LibrarySection
-        title={title}
-        meta={`${formatCount(backgrounds.length)} included`}
-        description={description}
-      >
-        <BackgroundGrid backgrounds={backgrounds} attentionId={attentionId} />
-      </LibrarySection>
-    </div>
-  );
-};
-
-interface BackgroundGridProps {
-  backgrounds: Background[];
-  attentionId: string | null;
-  onEditImage?: (background: Background) => void;
-}
-
-const BackgroundGrid = ({
-  backgrounds,
-  attentionId,
-  onEditImage,
-}: BackgroundGridProps) => {
-  const removeBackground = useStore((s) => s.removeBackground);
-
-  return (
-    <div className={assetGridClassName}>
-      {backgrounds.map((bg) => (
-        <div
-          key={bg.id}
-          {...attentionAttribute(bg.id)}
-          className={cn(
-            "relative rounded-[11px]",
-            bg.id === attentionId && ATTENTION_CLASS,
-          )}
-        >
-          <BgSwatch
-            bg={bg}
-            className="aspect-video rounded-[9px] border border-border"
-          />
-          <div className="mt-1.25 truncate text-xs text-foreground">
-            {bg.name}
-          </div>
-          {!bg.builtIn && (
-            <div className="absolute top-1.5 right-1.5 flex gap-1.25">
-              {onEditImage && (
-                <button
-                  onClick={() => onEditImage(bg)}
-                  aria-label={`Edit ${bg.name}`}
-                  title="Edit image"
-                  className={cardOverlayButtonClassName}
-                >
-                  <Pencil size={13} />
-                </button>
-              )}
-              <button
-                onClick={() => void removeBackground(bg.id)}
-                aria-label={`Remove ${bg.name}`}
-                title="Remove"
-                className={cardOverlayButtonClassName}
-              >
-                <X size={13} />
-              </button>
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
   );
 };

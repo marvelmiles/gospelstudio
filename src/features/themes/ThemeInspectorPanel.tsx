@@ -1,19 +1,16 @@
 import type { Theme } from "../../types";
 import { useStore } from "../../store/useStore";
-import { resolveStyle } from "../../lib/resolve";
-import { Field, SectionTitle } from "@/components/shared/Field";
-import { RangeSlider } from "@/components/shared/RangeSlider";
-import { SwitchField } from "@/components/shared/SwitchField";
+import { DEFAULT_SLIDE_SECONDS, resolveStyle } from "../../lib/resolve";
+import { SectionTitle } from "@/components/shared/Field";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { KeepOnResetToggle } from "@/components/shared/KeepOnResetToggle";
 import { AnimationPicker } from "../../components/controls/AnimationPicker";
 import { AudioPicker } from "../../components/controls/AudioPicker";
 import { BackgroundPicker } from "../../components/controls/BackgroundPicker";
+import { PlaybackSettings } from "../../components/controls/PlaybackSettings";
 import { StyleControls } from "../../components/controls/StyleControls";
 import { useOpenAssetLibrary } from "../assets/assetLibraryNavigation";
 import type { ThemeDraftController } from "./useThemeDraft";
-
-const DEFAULT_SLIDE_SECONDS = 15;
 
 interface ThemeInspectorPanelProps {
   controller: ThemeDraftController;
@@ -68,39 +65,14 @@ export const ThemeInspectorPanel = ({
         />
       </div>
 
-      <SectionTitle
-        info={
-          <InfoTip title="Playback" align="end">
-            Auto-play walks the slides on by itself at the pace set here. A
-            manuscript can set its own pace, and that wins over the theme.
-          </InfoTip>
-        }
-      >
-        Playback
-      </SectionTitle>
-      <div className="mb-3">
-        <SwitchField
-          label="Auto-play slides"
-          checked={Boolean(draft.autoPlay)}
-          onChange={(checked) => patch({ autoPlay: checked })}
-        />
-      </div>
-      <Field
-        label={`Seconds per slide (${draft.slideDurationSeconds ?? DEFAULT_SLIDE_SECONDS}s)`}
-      >
-        <RangeSlider
-          value={draft.slideDurationSeconds ?? DEFAULT_SLIDE_SECONDS}
-          min={3}
-          max={60}
-          suffix="s"
-          onValueChange={(next) =>
-            patch(
-              { slideDurationSeconds: next },
-              { coalesceKey: "slideDurationSeconds" },
-            )
-          }
-        />
-      </Field>
+      <PlaybackSettings
+        autoPlay={Boolean(draft.autoPlay)}
+        loopSlides={Boolean(draft.loopSlides)}
+        seconds={draft.slideDurationSeconds ?? DEFAULT_SLIDE_SECONDS}
+        info="Auto-play walks the slides on by itself at the pace set here, and looping starts again from the first slide. A manuscript or passage can set its own playback, and that wins over the theme."
+        infoAlign="end"
+        onChange={patch}
+      />
 
       <SectionTitle>Audio</SectionTitle>
       <AudioPicker

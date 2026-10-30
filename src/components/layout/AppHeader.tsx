@@ -54,13 +54,7 @@ export const AppHeader = () => {
         aria-label={`${APP_NAME} home`}
         className="flex shrink-0 items-center gap-2.75 no-underline"
       >
-        <img
-          src="/favicon.svg"
-          alt=""
-          width={34}
-          height={34}
-          className="rounded-[9px] shadow-cta"
-        />
+        <img src="/favicon.svg" alt="" width={34} height={34} />
         {showWordmark && (
           <span className="text-lg leading-[1.1] font-semibold tracking-[-0.2px] whitespace-nowrap text-foreground">
             {APP_NAME}

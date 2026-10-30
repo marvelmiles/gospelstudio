@@ -23,6 +23,7 @@ export const MissingPage = ({
       icon={icon}
       title={title}
       message={message}
+      className="w-full max-w-110"
       action={
         <Button onClick={onAction}>
           <ArrowLeft size={15} />

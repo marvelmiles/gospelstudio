@@ -12,25 +12,26 @@ import {
   resolveAutoPlay,
   resolveBackgroundImage,
   resolveBackgroundVideo,
+  resolveLoopSlides,
   resolveSlideDuration,
   resolveStyle,
 } from "../../lib/resolve";
 import { findBackgroundClip } from "../../lib/media";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { validateName } from "../../lib/validation";
 import { Modal } from "@/components/shared/Modal";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { Field, SectionTitle } from "@/components/shared/Field";
-import { RangeSlider } from "@/components/shared/RangeSlider";
 import { OptionSelect } from "@/components/shared/OptionSelect";
 import { Input } from "@/components/ui/input";
-import { SwitchField } from "@/components/shared/SwitchField";
 import { StyleControls } from "../../components/controls/StyleControls";
 import { BackgroundPicker } from "../../components/controls/BackgroundPicker";
 import { AudioPicker } from "../../components/controls/AudioPicker";
 import { AnimationPicker } from "../../components/controls/AnimationPicker";
+import { PlaybackSettings } from "../../components/controls/PlaybackSettings";
+import type { DraftEditOptions } from "../../hooks/useDraftHistory";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import { useOpenAssetLibrary } from "../assets/assetLibraryNavigation";
-import { useStore } from "../../store/useStore";
 import { cn } from "../../lib/utils";
 
 interface ManuscriptSettingsModalProps {
@@ -41,7 +42,10 @@ interface ManuscriptSettingsModalProps {
   themes: Theme[];
   backgrounds: Background[];
   audio: AudioItem[];
-  onPatchManuscript: (changes: Partial<Manuscript>) => void;
+  onPatchManuscript: (
+    changes: Partial<Manuscript>,
+    options?: DraftEditOptions,
+  ) => void;
   onStyleChange: (key: keyof TextStyle, value: unknown) => void;
   onEditAsset: (request: AssetUsageRequest) => void;
 }
@@ -95,11 +99,9 @@ export const ManuscriptSettingsModal = ({
   onEditAsset,
 }: ManuscriptSettingsModalProps) => {
   const openAssetLibrary = useOpenAssetLibrary();
-  const media = useStore((s) => s.media);
+  const library = useMediaLibrary();
   const titleError = validateName(manuscript.title, "manuscript title");
   const manuscriptStyle = resolveStyle(undefined, manuscript, theme);
-  const duration = resolveSlideDuration(manuscript, theme);
-  const autoPlay = resolveAutoPlay(manuscript, theme);
   const themeAudio = theme.defaultAudioId
     ? audio.find((a) => a.id === theme.defaultAudioId)
     : undefined;
@@ -107,7 +109,7 @@ export const ManuscriptSettingsModal = ({
     (bg) => bg.id === (manuscript.defaultBackgroundId || theme.backgroundId),
   );
   const backgroundVideoItem = findBackgroundClip(
-    media,
+    library,
     effectiveBackground?.mediaId,
   );
   const backgroundImage = effectiveBackground
@@ -249,35 +251,13 @@ export const ManuscriptSettingsModal = ({
         />
       </Field>
 
-      <SectionTitle
-        info={
-          <InfoTip title="Playback">
-            With auto-play on, slides advance on their own after the seconds
-            below. With it off, slides change only when you navigate, animating
-            in with their chosen animation.
-          </InfoTip>
-        }
-      >
-        Playback
-      </SectionTitle>
-      <div className="mb-3">
-        <SwitchField
-          label="Auto-play slides while presenting"
-          checked={autoPlay}
-          onChange={(checked) => onPatchManuscript({ autoPlay: checked })}
-        />
-      </div>
-      <Field label={`Seconds per slide (${duration}s)`}>
-        <RangeSlider
-          value={duration}
-          min={3}
-          max={60}
-          suffix="s"
-          onValueChange={(next) =>
-            onPatchManuscript({ slideDurationSeconds: next })
-          }
-        />
-      </Field>
+      <PlaybackSettings
+        autoPlay={resolveAutoPlay(manuscript, theme)}
+        loopSlides={resolveLoopSlides(manuscript, theme)}
+        seconds={resolveSlideDuration(manuscript, theme)}
+        info="With auto-play on, slides advance on their own after the seconds set here, and looping starts the slideshow again from the first slide. With it off, slides change only when you navigate, animating in with their chosen animation."
+        onChange={onPatchManuscript}
+      />
     </Modal>
   );
 };

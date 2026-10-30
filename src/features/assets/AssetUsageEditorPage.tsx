@@ -72,9 +72,7 @@ export const AssetUsageEditorPage = () => {
     s.backgrounds.find((item) => item.id === assetId),
   );
   const sound = useStore((s) => s.audio.find((item) => item.id === assetId));
-  const clip = useStore((s) =>
-    findBackgroundClip(s.media, background?.mediaId),
-  );
+  const clip = useStore((s) => findBackgroundClip(s, background?.mediaId));
 
   if (!usage)
     return (

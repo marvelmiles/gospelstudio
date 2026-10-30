@@ -1,9 +1,9 @@
-import { AnimatePresence, motion } from "framer-motion";
 import type { Align } from "../../types";
 import { useStore } from "../../store/useStore";
-import { ANIMATION_VARIANTS, buildTransition } from "../../lib/animation";
+import { slideTransition } from "../../lib/animation";
 import { FormattedText } from "../../components/FormattedText";
 import { cn } from "../../lib/utils";
+import { TransitionLayers } from "@/components/shared/TransitionLayers";
 import { OverlayPicture } from "./OverlayPicture";
 import {
   BADGE_GAP_RATIO,
@@ -28,27 +28,27 @@ export const OverlayTextBlock = ({ overlay }: { overlay: ContentOverlay }) => {
   if (blocks.length === 0) return null;
   const index = Math.min(Math.max(overlay.slideIndex, 0), blocks.length - 1);
   const current = blocks[index];
-  const variant =
-    ANIMATION_VARIANTS[overlay.animation] ?? ANIMATION_VARIANTS.fade;
-  const transition = buildTransition(prefs.transitionDuration, prefs.easing);
   const showBadge = badge.show && current.badge.trim() !== "";
 
   return (
     <div className="absolute inset-0 overflow-hidden">
       <Backdrop style={block} />
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={index}
-          initial={variant.initial}
-          animate={variant.animate}
-          exit={{ opacity: 0 }}
-          transition={transition}
+      <TransitionLayers
+        transitionKey={index}
+        transition={slideTransition(
+          overlay.animation,
+          prefs.transitionDuration,
+          prefs.easing,
+        )}
+        className="absolute inset-0"
+      >
+        <div
           style={{
             gap: `${badge.fontSize * BADGE_GAP_RATIO}cqw`,
             padding: `${block.padding}cqw`,
           }}
           className={cn(
-            "absolute inset-0 flex flex-col justify-center",
+            "flex size-full flex-col justify-center",
             FLEX_ALIGN[block.align],
           )}
         >
@@ -70,8 +70,8 @@ export const OverlayTextBlock = ({ overlay }: { overlay: ContentOverlay }) => {
               </div>
             ))}
           </div>
-        </motion.div>
-      </AnimatePresence>
+        </div>
+      </TransitionLayers>
     </div>
   );
 };

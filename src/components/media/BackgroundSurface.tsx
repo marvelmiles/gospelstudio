@@ -98,7 +98,7 @@ const VideoBackgroundSurface = ({
   variant: SurfaceVariant;
   className?: string;
 }) => {
-  const item = useStore((s) => findBackgroundClip(s.media, mediaId));
+  const item = useStore((s) => findBackgroundClip(s, mediaId));
   const surfaceClassName = cn("absolute inset-0 bg-thumbnail", className);
 
   if (!item) return <div className={surfaceClassName} />;

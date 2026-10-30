@@ -6,8 +6,8 @@ import type { PresentedMedia } from "../../store/slices/presentSlice";
 import { useDraftHistory } from "../../hooks/useDraftHistory";
 import type { PresentOptions } from "../../hooks/usePresentActions";
 import {
-  DEFAULT_IMAGE_SETTINGS,
-  DEFAULT_VIDEO_SETTINGS,
+  defaultImageSettingsOf,
+  defaultVideoSettingsOf,
   imageSettingsOf,
   videoSettingsOf,
 } from "../../lib/media";
@@ -94,20 +94,23 @@ export const useMediaEditor = (item: MediaItem): MediaEditor => {
     [patch, draft.video],
   );
 
+  const defaultImage = defaultImageSettingsOf(item);
+  const defaultVideo = defaultVideoSettingsOf(item);
+
   const resetSettings = useCallback(
     () =>
       apply({
         ...draft,
-        image: { ...DEFAULT_IMAGE_SETTINGS },
-        video: { ...DEFAULT_VIDEO_SETTINGS },
+        image: { ...defaultImage },
+        video: { ...defaultVideo },
       }),
-    [apply, draft],
+    [apply, draft, defaultImage, defaultVideo],
   );
 
   const canResetSettings =
     item.kind === "image"
-      ? !shallowEqual(draft.image, DEFAULT_IMAGE_SETTINGS)
-      : !shallowEqual(draft.video, DEFAULT_VIDEO_SETTINGS);
+      ? !shallowEqual(draft.image, defaultImage)
+      : !shallowEqual(draft.video, defaultVideo);
 
   const onMainStage =
     presentation?.kind === item.kind && presentation.id === item.id;

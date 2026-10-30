@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { CSSProperties } from "react";
+import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { useStore } from "../../store/useStore";
 import { useBgMap } from "../../hooks/useBgMap";
 import { trimmedDuration, videoSettingsOf } from "../../lib/media";
@@ -98,12 +99,12 @@ const DeckOverlayLayer = ({
 }) => {
   const prefs = useStore((s) => s.prefs);
   const bgMap = useBgMap();
-  const media = useStore((s) => s.media);
+  const library = useMediaLibrary();
   const deck = useDeck(overlay.kind, overlay.contentId);
   const slide = deck?.slides[Math.max(0, overlay.slideIndex)];
   const frame =
     deck && slide
-      ? buildStageFrame(deck, slide, bgMap, prefs.transition, media)
+      ? buildStageFrame(deck, slide, bgMap, prefs.transition, library)
       : null;
 
   if (frame?.content.kind !== "text") return null;

@@ -1,4 +1,5 @@
-import type { MediaItem, MediaKind } from "../../types";
+import type { Background, MediaItem, MediaKind } from "../../types";
+import { BUILT_IN_MEDIA } from "../../data/backgrounds";
 import { now, uid } from "../../lib/id";
 import {
   deleteFileBlob,
@@ -17,7 +18,13 @@ import {
   probeVideoFile,
   type MediaProbe,
 } from "../../lib/media";
-import { afterDelete, afterWrite, blockWrite } from "../helpers";
+import {
+  afterDelete,
+  afterWrite,
+  blockWrite,
+  builtInMediaEdit,
+  replaceById,
+} from "../helpers";
 import type { SliceCreator } from "../storeTypes";
 
 interface MediaUpdateOptions {
@@ -26,6 +33,7 @@ interface MediaUpdateOptions {
 
 export interface MediaSlice {
   media: MediaItem[];
+  builtInMedia: MediaItem[];
 
   uploadMedia: (kind: MediaKind, file: File, name?: string) => Promise<string>;
   updateMedia: (
@@ -40,8 +48,38 @@ export interface MediaSlice {
 const QUOTA_TOAST =
   "Not enough storage space for that file. Free up space and try again.";
 
+const isLinkedBackground = (background: Background, mediaId: string) => {
+  if (background.type === "video") return background.mediaId === mediaId;
+  if (background.type !== "image") return false;
+  return background.builtIn
+    ? background.mediaId === mediaId
+    : background.blobId === mediaId;
+};
+
+const backgroundsFollowing = (
+  backgrounds: Background[],
+  previous: MediaItem,
+  next: MediaItem,
+): Background[] => {
+  const renamed = next.name !== previous.name;
+  const restyled =
+    Boolean(next.builtIn) &&
+    next.kind === "image" &&
+    next.image !== previous.image;
+  if (!renamed && !restyled) return [];
+  return backgrounds
+    .filter((background) => isLinkedBackground(background, next.id))
+    .map((background) => ({
+      ...background,
+      ...(renamed && { name: next.name }),
+      ...(restyled && background.builtIn && { image: next.image }),
+      updatedAt: next.updatedAt,
+    }));
+};
+
 export const createMediaSlice: SliceCreator<MediaSlice> = (set, get) => ({
   media: [],
+  builtInMedia: BUILT_IN_MEDIA,
 
   uploadMedia: async (kind, file, name) => {
     if (!isAcceptedMediaFile(kind, file)) {
@@ -99,36 +137,39 @@ export const createMediaSlice: SliceCreator<MediaSlice> = (set, get) => ({
 
   updateMedia: (id, changes, { touch = true }: MediaUpdateOptions = {}) => {
     if (blockWrite(get)) return false;
-    const current = get().media.find((m) => m.id === id);
+    const state = get();
+    const builtIn = state.builtInMedia.find((m) => m.id === id);
+    const current = builtIn ?? state.media.find((m) => m.id === id);
     if (!current) return false;
     const next: MediaItem = {
       ...current,
-      ...changes,
+      ...(builtIn ? builtInMediaEdit(changes) : changes),
       id,
       updatedAt: touch ? now() : current.updatedAt,
     };
-    const renamedBackgrounds =
-      next.name === current.name
-        ? []
-        : get()
-            .backgrounds.filter((b) => b.type === "video" && b.mediaId === id)
-            .map((b) => ({ ...b, name: next.name }));
-    set((state) => ({
-      media: state.media.map((m) => (m.id === id ? next : m)),
-      backgrounds: renamedBackgrounds.length
-        ? state.backgrounds.map(
-            (b) => renamedBackgrounds.find((r) => r.id === b.id) ?? b,
-          )
-        : state.backgrounds,
+    const syncedBackgrounds = backgroundsFollowing(
+      state.backgrounds,
+      current,
+      next,
+    );
+    set((s) => ({
+      media: builtIn ? s.media : s.media.map((m) => (m.id === id ? next : m)),
+      builtInMedia: builtIn
+        ? s.builtInMedia.map((m) => (m.id === id ? next : m))
+        : s.builtInMedia,
+      backgrounds: syncedBackgrounds.length
+        ? replaceById(s.backgrounds, syncedBackgrounds)
+        : s.backgrounds,
     }));
     void saveRecord("media", next);
-    for (const background of renamedBackgrounds)
+    for (const background of syncedBackgrounds)
       void saveRecord("backgrounds", background);
     afterWrite(get);
     return true;
   },
 
   removeMedia: async (id) => {
+    if (get().builtInMedia.some((m) => m.id === id)) return;
     const videoBackgroundIds = get()
       .backgrounds.filter((b) => b.type === "video" && b.mediaId === id)
       .map((b) => b.id);

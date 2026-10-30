@@ -8,7 +8,7 @@ import type {
   ScripturePassage,
   Theme,
 } from "../../types";
-import { BACKGROUNDS } from "../../data/backgrounds";
+import { BACKGROUNDS, BUILT_IN_MEDIA } from "../../data/backgrounds";
 import { DEFAULT_BIBLE_VERSION, isBibleVersion } from "../../data/bibleBooks";
 import { THEMES } from "../../data/themes";
 import { DEFAULT_AUDIO } from "../../data/sounds";
@@ -38,9 +38,12 @@ import {
   WARN_MSG,
   customAudio,
   customBackgrounds,
+  customMedia,
   ensureBuiltInThemes,
   mergeById,
   sortBuiltInFirst,
+  withBuiltInBackgroundEdits,
+  withBuiltInMediaEdits,
 } from "../helpers";
 import {
   normalizeImportedBackground,
@@ -160,9 +163,13 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
     set({
       manuscripts,
       scriptures,
-      media,
+      media: customMedia(media),
+      builtInMedia: withBuiltInMediaEdits(media),
       themes: sortBuiltInFirst(ensureBuiltInThemes(themes)),
-      backgrounds: [...BACKGROUNDS, ...customBackgrounds(backgrounds)],
+      backgrounds: [
+        ...withBuiltInBackgroundEdits(backgrounds),
+        ...customBackgrounds(backgrounds),
+      ],
       audio: [...DEFAULT_AUDIO, ...customAudio(audio)],
       overlayPresets: newestFirst(overlayPresets),
       prefs,
@@ -213,7 +220,9 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
         };
       }
 
-      const incomingMedia = data.media?.map(normalizeImportedMedia);
+      const incomingMedia = data.media
+        ? customMedia(data.media.map(normalizeImportedMedia))
+        : undefined;
       const incomingBackgrounds = data.backgrounds
         ? customBackgrounds(data.backgrounds.map(normalizeImportedBackground))
         : undefined;
@@ -324,8 +333,14 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
         manuscripts,
         scriptures: [...keptQuickScriptures, ...scriptures],
         media,
+        builtInMedia: isOverride ? BUILT_IN_MEDIA : state.builtInMedia,
         themes,
-        backgrounds: [...BACKGROUNDS, ...customBg],
+        backgrounds: [
+          ...(isOverride
+            ? BACKGROUNDS
+            : state.backgrounds.filter((background) => background.builtIn)),
+          ...customBg,
+        ],
         audio: [...DEFAULT_AUDIO, ...customAud],
         overlayPresets,
         prefs,
@@ -414,6 +429,7 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
         manuscripts: survivors.manuscripts,
         scriptures: [],
         media: [],
+        builtInMedia: BUILT_IN_MEDIA,
         themes: survivors.themes,
         backgrounds: BACKGROUNDS,
         audio: DEFAULT_AUDIO,

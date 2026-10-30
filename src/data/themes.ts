@@ -1,12 +1,19 @@
 import type { Theme } from "../types";
 import { DEFAULT_SLIDE_FONT_SIZE } from "../lib/slideLayout";
+import {
+  BIBLE_THORN_BACKGROUND_ID,
+  BLACK_SAND_BACKGROUND_ID,
+} from "./backgrounds";
+
+export const DEFAULT_MANUSCRIPT_THEME_ID = "classic";
+export const DEFAULT_SCRIPTURE_THEME_ID = "scripture";
 
 export const SCRIPTURE_PASSAGE_FONT_SIZE = DEFAULT_SLIDE_FONT_SIZE;
 export const SCRIPTURE_REFERENCE_FONT_SIZE = 4.2;
 
 export const THEMES: Theme[] = [
   {
-    id: "classic",
+    id: DEFAULT_MANUSCRIPT_THEME_ID,
     name: "Classic Worship",
     builtIn: true,
     fontFamily: "Cormorant Garamond",
@@ -18,7 +25,7 @@ export const THEMES: Theme[] = [
     fontSize: DEFAULT_SLIDE_FONT_SIZE,
     uppercase: false,
     textShadow: "0 2px 22px rgba(0,0,0,0.55)",
-    backgroundId: "bg-dawn",
+    backgroundId: BLACK_SAND_BACKGROUND_ID,
     animation: "fade",
   },
   {
@@ -86,7 +93,7 @@ export const THEMES: Theme[] = [
     animation: "zoom",
   },
   {
-    id: "scripture",
+    id: DEFAULT_SCRIPTURE_THEME_ID,
     name: "Scripture",
     builtIn: true,
     fontFamily: "Cormorant Garamond",
@@ -98,7 +105,7 @@ export const THEMES: Theme[] = [
     fontSize: SCRIPTURE_PASSAGE_FONT_SIZE,
     uppercase: false,
     textShadow: "0 2px 20px rgba(0,0,0,0.6)",
-    backgroundId: "bg-royal",
+    backgroundId: BIBLE_THORN_BACKGROUND_ID,
     animation: "fade",
   },
 ];

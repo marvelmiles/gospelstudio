@@ -11,7 +11,11 @@ import {
   useUnsavedChanges,
   UNSAVED_CHANGES_MESSAGE,
 } from "../../hooks/useUnsavedChanges";
-import { resolveLineStyle, resolveStyle } from "../../lib/resolve";
+import {
+  resolveAnimation,
+  resolveLineStyle,
+  resolveStyle,
+} from "../../lib/resolve";
 import { computeTagGroups } from "../../lib/tagGroups";
 import { slideTextMetrics, type SlideTextMetrics } from "../../lib/slideLayout";
 import type { ReflowOptions } from "../../lib/slideReflow";
@@ -93,6 +97,8 @@ export const DeckWorkspace = ({
   const updatePresentation = useStore((s) => s.updatePresentation);
   const presentation = useStore((s) => s.presentation);
   const pushToast = useStore((s) => s.pushToast);
+  const defaultAnimation = useStore((s) => s.prefs.transition);
+  const [animationReplay, setAnimationReplay] = useState(0);
 
   const [tab, setTab] = useState<WorkspaceTab>("edit");
 
@@ -217,6 +223,8 @@ export const DeckWorkspace = ({
   const previewPanel = slide ? (
     <PreviewPanel
       slide={slide}
+      animation={resolveAnimation(slide, doc, theme, defaultAnimation)}
+      animationReplay={animationReplay}
       elementEditing={elementEditing.editing}
       style={resolveStyle(slide, doc, theme)}
       lineStyles={slide.lines.map((_, index) =>
@@ -258,6 +266,7 @@ export const DeckWorkspace = ({
       activeTextBoxId={textSurface.activeTextBoxId}
       elements={elements}
       onAddTextBox={elementEditing.addTextBox}
+      onPreviewAnimation={() => setAnimationReplay((count) => count + 1)}
       onEditAsset={(request, forSlideId) =>
         openAssetUsage(request, {
           label: forSlideId ? "this slide" : `this ${documentNoun}`,

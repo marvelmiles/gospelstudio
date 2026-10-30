@@ -126,7 +126,14 @@ export const AboutModal = () => {
     <Modal
       open={overlay === "about"}
       onClose={close}
-      title="About & Help"
+      title={
+        <span>
+          About & Help{" "}
+          <span className="text-xs text-subtle-foreground">
+            {APP_VERSION_LABEL}
+          </span>
+        </span>
+      }
       width={640}
     >
       <div className="flex items-center gap-2 text-[11px] font-bold tracking-[0.6px] text-primary uppercase">
@@ -209,7 +216,7 @@ export const AboutModal = () => {
       </p>
 
       <SectionTitle>Contact</SectionTitle>
-      <p className="mt-0 text-[13.5px] leading-[1.6] text-muted-foreground">
+      <p className="mt-0 mb-4 text-[13.5px] leading-[1.6] text-muted-foreground">
         Have feedback, found a bug, or want a feature? I'd genuinely love to
         hear from you.
       </p>
@@ -220,9 +227,6 @@ export const AboutModal = () => {
         <Mail size={16} />
         {CONTACT_EMAIL}
       </a>
-      <p className="mt-4.5 mb-0 text-xs text-subtle-foreground">
-        {APP_NAME} {APP_VERSION_LABEL}
-      </p>
     </Modal>
   );
 };

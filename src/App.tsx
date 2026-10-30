@@ -23,10 +23,8 @@ import {
 } from "./features/media/MediaEditorPage";
 import { StreamPage } from "./features/stream/StreamPage";
 import { QuickSharePage } from "./features/share/QuickSharePage";
-import { StreamWindow } from "./features/stream/StreamWindow";
 import { StreamProjectionRoot } from "./features/stream/StreamProjectionRoot";
 import { Presentation } from "./features/presentation/Presentation";
-import { PresentWindow } from "./features/presentation/PresentWindow";
 import { AssetsModal } from "./features/assets/AssetsModal";
 import { AudioEditorPage } from "./features/assets/AudioEditorPage";
 import { AssetUsageEditorPage } from "./features/assets/AssetUsageEditorPage";
@@ -45,9 +43,6 @@ const App = () => {
   useEffect(() => {
     void load();
   }, [load]);
-
-  if (location.pathname === routes.presentWindow()) return <PresentWindow />;
-  if (location.pathname === routes.streamWindow()) return <StreamWindow />;
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-foreground">

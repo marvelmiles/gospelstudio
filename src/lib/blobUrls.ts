@@ -1,4 +1,9 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import {
+  useEffect,
+  useEffectEvent,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { getFileBlob, thumbId } from "./fileStore";
 
 interface UrlEntry {
@@ -122,20 +127,71 @@ const acquireManaged = (
   };
 };
 
+const peekBlobUrl = (id: string): string | null => entries.get(id)?.url ?? null;
+
+interface ResolvedUrl {
+  id: string;
+  epoch: number;
+  url: string | null;
+}
+
 export const useBlobUrl = (id: string | undefined | null): string | null => {
-  const [url, setUrl] = useState<string | null>(null);
+  const [resolved, setResolved] = useState<ResolvedUrl | null>(null);
   const currentEpoch = useSyncExternalStore(subscribeEpoch, readEpoch);
 
   useEffect(() => {
     if (!id) return;
-    const dispose = acquireManaged(id, setUrl);
-    return () => {
-      setUrl(null);
-      dispose();
-    };
+    return acquireManaged(id, (url) =>
+      setResolved({ id, epoch: currentEpoch, url }),
+    );
   }, [id, currentEpoch]);
 
-  return id ? url : null;
+  if (!id) return null;
+  if (resolved?.id === id && resolved.epoch === currentEpoch)
+    return resolved.url;
+  return peekBlobUrl(id);
+};
+
+export interface WarmFile {
+  id?: string;
+  src?: string;
+  decode: boolean;
+}
+
+const decodeImage = (url: string): void => {
+  const image = new Image();
+  image.decoding = "async";
+  image.src = url;
+  void image.decode().catch(() => {});
+};
+
+const warmFileKey = (file: WarmFile): string =>
+  `${file.decode ? "image" : "file"}:${file.id ?? file.src ?? ""}`;
+
+export const useWarmFiles = (files: WarmFile[]): void => {
+  const currentEpoch = useSyncExternalStore(subscribeEpoch, readEpoch);
+  const signature = files.map(warmFileKey).join("|");
+
+  const warm = useEffectEvent((): Disposer => {
+    const disposers: Disposer[] = [];
+    for (const file of files) {
+      if (file.src) {
+        if (file.decode) decodeImage(file.src);
+        continue;
+      }
+      if (!file.id) continue;
+      disposers.push(
+        acquireManaged(file.id, (url) => {
+          if (url && file.decode) decodeImage(url);
+        }),
+      );
+    }
+    return () => {
+      for (const dispose of disposers) dispose();
+    };
+  });
+
+  useEffect(() => warm(), [signature, currentEpoch]);
 };
 
 interface MediaSource {

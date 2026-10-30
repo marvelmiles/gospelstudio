@@ -1,6 +1,6 @@
 import type { ImageSettings, MediaItem } from "../../types";
 import { imageSettingsOf } from "../../lib/media";
-import { useBlobUrl, useThumbUrl } from "../../lib/blobUrls";
+import { useMediaUrl, useThumbUrl } from "../../lib/blobUrls";
 import { ImageLayer } from "./ImageLayer";
 
 interface ImageSurfaceProps {
@@ -16,11 +16,13 @@ export const ImageSurface = ({
   variant = "full",
   className,
 }: ImageSurfaceProps) => {
-  const fullUrl = useBlobUrl(variant === "full" ? item.id : null);
-  const thumbUrl = useThumbUrl(variant === "thumb" ? item.id : null);
+  const fullUrl = useMediaUrl(variant === "full" ? item : null);
+  const thumbUrl = useThumbUrl(
+    variant === "thumb" && !item.src ? item.id : null,
+  );
   return (
     <ImageLayer
-      src={variant === "thumb" ? thumbUrl : fullUrl}
+      src={variant === "thumb" ? (item.src ?? thumbUrl) : fullUrl}
       alt={item.name}
       settings={settings ?? imageSettingsOf(item)}
       className={className}

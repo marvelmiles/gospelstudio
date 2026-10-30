@@ -5,19 +5,22 @@ import {
   deleteFileWithThumb,
   isQuotaError,
   putFileBlob,
-  thumbId,
 } from "../../lib/fileStore";
 import { invalidateBlobUrl } from "../../lib/blobUrls";
 import { deleteRecord, saveRecord, saveRecordStrict } from "../../lib/storage";
-import { probeAudioFile, probeImageFile } from "../../lib/media";
-import { afterDelete, afterWrite, blockWrite } from "../helpers";
+import { probeAudioFile } from "../../lib/media";
+import {
+  afterDelete,
+  afterWrite,
+  blockWrite,
+  builtInBackgroundEdit,
+} from "../helpers";
 import type { SliceCreator } from "../storeTypes";
 
 export interface AssetsSlice {
   backgrounds: Background[];
   audio: AudioItem[];
 
-  uploadBackground: (file: File, name?: string) => Promise<string>;
   addCustomBackground: (value: string, name?: string) => string;
   updateBackground: (id: string, changes: Partial<Background>) => void;
   removeBackground: (id: string) => Promise<void>;
@@ -35,36 +38,6 @@ const QUOTA_TOAST =
 export const createAssetsSlice: SliceCreator<AssetsSlice> = (set, get) => ({
   backgrounds: [],
   audio: [],
-
-  uploadBackground: async (file, name) => {
-    const id = uid();
-    try {
-      const probe = await probeImageFile(file);
-      await putFileBlob(id, file);
-      if (probe.thumbnail) await putFileBlob(thumbId(id), probe.thumbnail);
-      const background: Background = {
-        id,
-        name: name?.trim() || file.name.replace(/\.[^.]+$/, ""),
-        category: "Custom",
-        type: "image",
-        blobId: id,
-        size: file.size,
-        builtIn: false,
-        createdAt: now(),
-      };
-      await saveRecordStrict("backgrounds", background);
-      set((state) => ({ backgrounds: [...state.backgrounds, background] }));
-      return id;
-    } catch (err) {
-      await deleteFileWithThumb(id).catch(() => {});
-      get().pushToast(
-        isQuotaError(err) ? QUOTA_TOAST : `Couldn't save "${file.name}".`,
-        "error",
-      );
-      afterWrite(get);
-      return "";
-    }
-  },
 
   addCustomBackground: (value, name) => {
     if (blockWrite(get)) return "";
@@ -89,8 +62,13 @@ export const createAssetsSlice: SliceCreator<AssetsSlice> = (set, get) => ({
   updateBackground: (id, changes) => {
     if (blockWrite(get)) return;
     const current = get().backgrounds.find((b) => b.id === id);
-    if (!current || current.builtIn) return;
-    const next: Background = { ...current, ...changes, id };
+    if (!current) return;
+    const next: Background = {
+      ...current,
+      ...(current.builtIn ? builtInBackgroundEdit(changes) : changes),
+      id,
+      updatedAt: now(),
+    };
     set((state) => ({
       backgrounds: state.backgrounds.map((b) => (b.id === id ? next : b)),
     }));

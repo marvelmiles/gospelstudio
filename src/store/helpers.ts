@@ -1,5 +1,6 @@
-import type { AudioItem, Background, Theme } from "../types";
+import type { AudioItem, Background, MediaItem, Theme } from "../types";
 import { THEMES } from "../data/themes";
+import { BACKGROUNDS, BUILT_IN_MEDIA } from "../data/backgrounds";
 import type { Getter } from "./storeTypes";
 
 export const BLOCK_MSG =
@@ -9,6 +10,60 @@ export const WARN_MSG =
 
 export const customBackgrounds = (items: Background[]) =>
   items.filter((b) => !b.builtIn);
+
+export const customMedia = (items: MediaItem[]) =>
+  items.filter((item) => !item.builtIn);
+
+export const builtInBackgroundEdit = ({
+  name,
+  image,
+  updatedAt,
+}: Partial<Background>): Partial<Background> => ({
+  ...(name !== undefined && { name }),
+  ...(image !== undefined && { image }),
+  ...(updatedAt !== undefined && { updatedAt }),
+});
+
+export const builtInMediaEdit = ({
+  name,
+  image,
+  video,
+  updatedAt,
+}: Partial<MediaItem>): Partial<MediaItem> => ({
+  ...(name !== undefined && { name }),
+  ...(image !== undefined && { image }),
+  ...(video !== undefined && { video }),
+  ...(updatedAt !== undefined && { updatedAt }),
+});
+
+const withBuiltInEdits = <T extends { id: string; builtIn?: boolean }>(
+  shipped: T[],
+  stored: T[],
+  pickEdit: (edit: T) => Partial<T>,
+): T[] => {
+  const edits = new Map(
+    stored.flatMap((item) => (item.builtIn ? [[item.id, item] as const] : [])),
+  );
+  return shipped.map((item) => {
+    const edit = edits.get(item.id);
+    return edit ? { ...item, ...pickEdit(edit) } : item;
+  });
+};
+
+export const withBuiltInBackgroundEdits = (stored: Background[]) =>
+  withBuiltInEdits(BACKGROUNDS, stored, builtInBackgroundEdit);
+
+export const withBuiltInMediaEdits = (stored: MediaItem[]) =>
+  withBuiltInEdits(BUILT_IN_MEDIA, stored, builtInMediaEdit);
+
+export const replaceById = <T extends { id: string }>(
+  items: T[],
+  replacements: T[],
+): T[] => {
+  const byId = new Map(replacements.map((item) => [item.id, item]));
+  return items.map((item) => byId.get(item.id) ?? item);
+};
+
 export const customAudio = (items: AudioItem[]) =>
   items.filter((a) => !a.builtIn);
 

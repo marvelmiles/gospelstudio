@@ -24,8 +24,7 @@ export const useGoLive = (
     return () => screen.removeEventListener?.("change", onChange);
   }, []);
 
-  const goLive = useCallback(() => controller.goLive(), [controller]);
   const endLive = useCallback(() => controller.endLive(), [controller]);
 
-  return { isExtended, isLive, goLive, endLive };
+  return { isExtended, isLive, endLive };
 };

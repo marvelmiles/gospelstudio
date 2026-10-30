@@ -5,9 +5,9 @@ import type {
   ImageSettings,
   MediaAdjustments,
   MediaItem,
+  MediaKind,
   VideoSettings,
 } from "../types";
-import { BUILT_IN_CLIPS } from "../data/backgrounds";
 
 const DEFAULT_ADJUSTMENTS: MediaAdjustments = {
   brightness: 100,
@@ -54,6 +54,12 @@ export const DEFAULT_BACKGROUND_IMAGE_SETTINGS: ImageSettings = {
   scrim: true,
 };
 
+export const defaultImageSettingsOf = (item: MediaItem): ImageSettings =>
+  item.builtIn ? DEFAULT_BACKGROUND_IMAGE_SETTINGS : DEFAULT_IMAGE_SETTINGS;
+
+export const defaultVideoSettingsOf = (item: MediaItem): VideoSettings =>
+  item.builtIn ? DEFAULT_BACKGROUND_VIDEO_SETTINGS : DEFAULT_VIDEO_SETTINGS;
+
 export const imageSettingsOf = (item: MediaItem): ImageSettings => ({
   ...DEFAULT_IMAGE_SETTINGS,
   ...(item.image || {}),
@@ -65,15 +71,26 @@ export const isImageBackground = (background?: Background): boolean =>
 export const isVideoBackground = (background?: Background): boolean =>
   background?.type === "video" && Boolean(background.mediaId);
 
-export const findBackgroundClip = (
-  media: MediaItem[],
-  mediaId?: string,
+export interface MediaLibrary {
+  media: MediaItem[];
+  builtInMedia: MediaItem[];
+}
+
+export const findMediaItem = (
+  { media, builtInMedia }: MediaLibrary,
+  id: string | undefined,
+  kind?: MediaKind,
 ): MediaItem | undefined => {
-  if (!mediaId) return undefined;
-  const isClip = (item: MediaItem) =>
-    item.id === mediaId && item.kind === "video";
-  return media.find(isClip) ?? BUILT_IN_CLIPS.find(isClip);
+  if (!id) return undefined;
+  const matches = (item: MediaItem) =>
+    item.id === id && (!kind || item.kind === kind);
+  return media.find(matches) ?? builtInMedia.find(matches);
 };
+
+export const findBackgroundClip = (
+  library: MediaLibrary,
+  mediaId?: string,
+): MediaItem | undefined => findMediaItem(library, mediaId, "video");
 
 export const isMediaBackground = (background?: Background): boolean =>
   isImageBackground(background) || isVideoBackground(background);
