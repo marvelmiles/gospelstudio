@@ -1,6 +1,6 @@
 import type { SyntheticEvent } from "react";
 import type { MediaItem } from "../../types";
-import { useBlobUrl } from "../../lib/blobUrls";
+import { useMediaUrl } from "../../lib/blobUrls";
 import { buildFilter, videoSettingsOf } from "../../lib/media";
 import { cn } from "../../lib/utils";
 
@@ -28,7 +28,7 @@ export const VideoThumb = ({
   applySettings,
   className,
 }: VideoThumbProps) => {
-  const src = useBlobUrl(item.id);
+  const src = useMediaUrl(item);
   if (!src) return null;
   const { trimStart } = videoSettingsOf(item);
   const settings = applySettings ? videoSettingsOf(item) : null;

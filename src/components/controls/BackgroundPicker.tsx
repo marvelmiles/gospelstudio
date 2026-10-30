@@ -12,6 +12,7 @@ import {
   DEFAULT_BACKGROUND_IMAGE_SETTINGS,
   backgroundImageSettings,
   backgroundVideoSettings,
+  findBackgroundClip,
   isImageBackground,
   isVideoBackground,
   snapshotBackgroundImage,
@@ -133,9 +134,7 @@ export const BackgroundPicker = ({
   const activeId = highlightId ?? value;
 
   const clipFor = (background?: Background) =>
-    background?.mediaId
-      ? media.find((item) => item.id === background.mediaId)
-      : undefined;
+    findBackgroundClip(media, background?.mediaId);
 
   const attachedFileIds = useMemo(
     () => backgroundFileIds(backgrounds),

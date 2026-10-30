@@ -15,6 +15,7 @@ import {
   resolveSlideDuration,
   resolveStyle,
 } from "../../lib/resolve";
+import { findBackgroundClip } from "../../lib/media";
 import { validateName } from "../../lib/validation";
 import { Modal } from "@/components/shared/Modal";
 import { InfoTip } from "@/components/shared/InfoTip";
@@ -105,8 +106,9 @@ export const ManuscriptSettingsModal = ({
   const effectiveBackground = backgrounds.find(
     (bg) => bg.id === (manuscript.defaultBackgroundId || theme.backgroundId),
   );
-  const backgroundVideoItem = media.find(
-    (item) => item.id === effectiveBackground?.mediaId,
+  const backgroundVideoItem = findBackgroundClip(
+    media,
+    effectiveBackground?.mediaId,
   );
   const backgroundImage = effectiveBackground
     ? resolveBackgroundImage(undefined, manuscript, effectiveBackground)

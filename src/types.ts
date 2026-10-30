@@ -213,6 +213,7 @@ export interface MediaItem {
   width?: number;
   height?: number;
   hasThumb?: boolean;
+  src?: string;
   image?: ImageSettings;
   video?: VideoSettings;
   createdAt: string;
@@ -253,7 +254,7 @@ export interface Background {
   type: BgType;
   css?: string;
   color?: string;
-  dataUrl?: string;
+  src?: string;
   blobId?: string;
   image?: ImageSettings;
   mediaId?: string;

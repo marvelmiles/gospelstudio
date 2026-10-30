@@ -122,11 +122,17 @@ const ImagesTab = ({
     return map;
   }, [images, pictureIds]);
 
+  const defaults = useMemo(
+    () => images.filter((background) => background.builtIn),
+    [images],
+  );
+
   const standalone = useMemo(
     () =>
       images.filter(
         (background) =>
-          !background.blobId || !pictureIds.has(background.blobId),
+          !background.builtIn &&
+          (!background.blobId || !pictureIds.has(background.blobId)),
       ),
     [images, pictureIds],
   );
@@ -147,6 +153,12 @@ const ImagesTab = ({
         section="backgrounds"
         filterable
         emptyMessage="Upload a picture and it is attached as a background."
+      />
+      <DefaultBackgroundsSection
+        title="Default pictures"
+        description="Pictures that ship with the app, ready to set behind any slide."
+        backgrounds={defaults}
+        attentionId={attentionId}
       />
       {standalone.length > 0 && (
         <div className="mt-3.5">
@@ -196,6 +208,13 @@ const ColorsTab = ({
 
 const VideosTab = ({ attentionId }: BackgroundTabProps) => {
   const backgrounds = useStore((s) => s.backgrounds);
+  const defaults = useMemo(
+    () =>
+      backgrounds.filter(
+        (background) => background.builtIn && isVideoBackground(background),
+      ),
+    [backgrounds],
+  );
   const attachVideoBackground = useStore((s) => s.attachVideoBackground);
   const removeBackground = useStore((s) => s.removeBackground);
   const attached = useMemo(() => {
@@ -206,21 +225,56 @@ const VideosTab = ({ attentionId }: BackgroundTabProps) => {
   }, [backgrounds]);
 
   return (
-    <MediaSourceList
-      kind="video"
-      title="Video backgrounds"
-      description="Your Videos page. Attach a clip to loop it behind slides; the pencil opens it in the video editor."
-      attentionId={attentionId}
-      addedByMediaId={attached}
-      onAdd={attachVideoBackground}
-      onRemove={(backgroundId) => void removeBackground(backgroundId)}
-      addLabel="Attach"
-      addedLabel="Attached"
-      addedFilterLabel="Background videos"
-      section="backgrounds"
-      filterable
-      emptyMessage="Upload a video and it is attached as a background."
-    />
+    <>
+      <MediaSourceList
+        kind="video"
+        title="Video backgrounds"
+        description="Your Videos page. Attach a clip to loop it behind slides; the pencil opens it in the video editor."
+        attentionId={attentionId}
+        addedByMediaId={attached}
+        onAdd={attachVideoBackground}
+        onRemove={(backgroundId) => void removeBackground(backgroundId)}
+        addLabel="Attach"
+        addedLabel="Attached"
+        addedFilterLabel="Background videos"
+        section="backgrounds"
+        filterable
+        emptyMessage="Upload a video and it is attached as a background."
+      />
+      <DefaultBackgroundsSection
+        title="Default videos"
+        description="Motion loops that ship with the app, ready to play behind any slide."
+        backgrounds={defaults}
+        attentionId={attentionId}
+      />
+    </>
+  );
+};
+
+interface DefaultBackgroundsSectionProps {
+  title: string;
+  description: string;
+  backgrounds: Background[];
+  attentionId: string | null;
+}
+
+const DefaultBackgroundsSection = ({
+  title,
+  description,
+  backgrounds,
+  attentionId,
+}: DefaultBackgroundsSectionProps) => {
+  if (!backgrounds.length) return null;
+  return (
+    <div className="mt-3.5">
+      <LibrarySection
+        title={title}
+        meta={`${formatCount(backgrounds.length)} included`}
+        description={description}
+      >
+        <BackgroundGrid backgrounds={backgrounds} attentionId={attentionId} />
+      </LibrarySection>
+    </div>
   );
 };
 

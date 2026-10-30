@@ -25,7 +25,7 @@ export const stageBackgroundStyle = (
   blobUrl: string | null,
 ): CSSProperties => {
   if (background?.type === "image") {
-    const url = background.blobId ? blobUrl : background.dataUrl;
+    const url = background.blobId ? blobUrl : background.src;
     return { backgroundImage: url ? `url(${url})` : undefined };
   }
   return { background: backgroundCssOf(background) };

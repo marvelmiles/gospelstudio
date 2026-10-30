@@ -1,6 +1,7 @@
 import type { Slide, SlideDeckDoc, Theme } from "../types";
 import { useStore } from "../store/useStore";
 import { resolveBackgroundView } from "../lib/resolve";
+import { findBackgroundClip } from "../lib/media";
 import type { ResolvedBackground } from "../lib/resolve";
 import type { BgMap } from "./useBgMap";
 
@@ -12,9 +13,7 @@ export const useBackgroundView = (
 ): ResolvedBackground => {
   const media = useStore((s) => s.media);
   const background = resolveBackgroundView(slide, doc, theme, bgMap);
-  const item = background.background.mediaId
-    ? media.find((entry) => entry.id === background.background.mediaId)
-    : undefined;
+  const item = findBackgroundClip(media, background.background.mediaId);
   return item
     ? resolveBackgroundView(slide, doc, theme, bgMap, item)
     : background;

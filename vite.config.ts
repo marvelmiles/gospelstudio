@@ -117,6 +117,19 @@ export default defineConfig({
         clientsClaim: true,
         skipWaiting: true,
         navigateFallback: "index.html",
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) =>
+              url.pathname.startsWith("/assets/images/") ||
+              url.pathname.startsWith("/assets/videos/"),
+            handler: "CacheFirst",
+            options: {
+              cacheName: "background-assets",
+              rangeRequests: true,
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: true,

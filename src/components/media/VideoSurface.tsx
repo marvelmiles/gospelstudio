@@ -2,7 +2,7 @@ import type { Ref } from "react";
 import type { MediaItem, VideoSettings } from "../../types";
 import type { MediaPlayback } from "../../lib/presentChannel";
 import { buildFilter, videoSettingsOf } from "../../lib/media";
-import { useBlobUrl } from "../../lib/blobUrls";
+import { useMediaUrl } from "../../lib/blobUrls";
 import { cn } from "../../lib/utils";
 import {
   useMediaElementPlayback,
@@ -31,7 +31,7 @@ export const VideoSurface = ({
   className,
   ref,
 }: VideoSurfaceProps & { ref?: Ref<VideoSurfaceHandle> }) => {
-  const src = useBlobUrl(item.id);
+  const src = useMediaUrl(item);
   const applied = settings ?? videoSettingsOf(item);
   const { elementRef, mediaEvents } = useMediaElementPlayback<HTMLVideoElement>(
     {

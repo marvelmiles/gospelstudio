@@ -27,6 +27,7 @@ import {
   resolveBackgroundVideo,
   resolveStyle,
 } from "../../lib/resolve";
+import { findBackgroundClip } from "../../lib/media";
 import { getChapterVerses } from "./lib/offlineBible";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import type { DeckEditor } from "../editor/useDeckEditor";
@@ -96,8 +97,9 @@ export const PassageSettingsModal = ({
   const effectiveBackground = backgrounds.find(
     (bg) => bg.id === (passage.defaultBackgroundId || theme.backgroundId),
   );
-  const backgroundVideoItem = media.find(
-    (item) => item.id === effectiveBackground?.mediaId,
+  const backgroundVideoItem = findBackgroundClip(
+    media,
+    effectiveBackground?.mediaId,
   );
   const backgroundImage = effectiveBackground
     ? resolveBackgroundImage(undefined, passage, effectiveBackground)

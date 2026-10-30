@@ -138,6 +138,18 @@ export const useBlobUrl = (id: string | undefined | null): string | null => {
   return id ? url : null;
 };
 
+interface MediaSource {
+  id: string;
+  src?: string;
+}
+
+export const useMediaUrl = (
+  item: MediaSource | undefined | null,
+): string | null => {
+  const blobUrl = useBlobUrl(item && !item.src ? item.id : null);
+  return item?.src ?? blobUrl;
+};
+
 export const useThumbUrl = (id: string | undefined | null): string | null => {
   const [url, setUrl] = useState<string | null>(null);
   const currentEpoch = useSyncExternalStore(subscribeEpoch, readEpoch);

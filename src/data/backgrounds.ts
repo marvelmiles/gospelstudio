@@ -1,6 +1,91 @@
-import type { Background } from "../types";
+import type { Background, MediaItem } from "../types";
 
-export const BACKGROUNDS: Background[] = [
+const IMAGE_ASSETS_PATH = "/assets/images";
+const VIDEO_ASSETS_PATH = "/assets/videos";
+const BUILT_IN_ASSETS_DATE = "2026-10-29T00:00:00.000Z";
+
+interface BuiltInAsset {
+  file: string;
+  name: string;
+  category: string;
+}
+
+const IMAGE_ASSETS: BuiltInAsset[] = [
+  { file: "sermon", name: "Sermon", category: "Service" },
+  { file: "bible-study", name: "Bible Study", category: "Service" },
+  { file: "testimony-time", name: "Testimony Time", category: "Service" },
+  { file: "offering", name: "Offering", category: "Service" },
+  { file: "announcement", name: "Announcement", category: "Service" },
+  { file: "jesus", name: "Jesus", category: "Worship" },
+  { file: "raised-hands", name: "Raised Hands", category: "Worship" },
+  { file: "hand-on-bible", name: "Hand on Bible", category: "Scripture" },
+  { file: "bible-on-grass", name: "Bible on Grass", category: "Scripture" },
+  { file: "bible-on-quilt", name: "Bible on Quilt", category: "Scripture" },
+  {
+    file: "bible-thorn-branch",
+    name: "Bible and Thorn Branch",
+    category: "Scripture",
+  },
+  { file: "coins-basket", name: "Coins Basket", category: "Giving" },
+  { file: "offering-basket", name: "Offering Basket", category: "Giving" },
+  { file: "rain-ripples", name: "Rain Ripples", category: "Texture" },
+  { file: "green-smoke", name: "Green Smoke", category: "Texture" },
+  { file: "black-sand", name: "Black Sand", category: "Texture" },
+];
+
+const VIDEO_ASSETS: BuiltInAsset[] = [
+  { file: "light-burst-blue", name: "Light Burst Blue", category: "Motion" },
+  {
+    file: "particle-wave-blue",
+    name: "Particle Wave Blue",
+    category: "Motion",
+  },
+  { file: "warp-streaks-red", name: "Warp Streaks Red", category: "Motion" },
+];
+
+const clipIdOf = (file: string): string => `clip-${file}`;
+
+const imageBackground = ({
+  file,
+  name,
+  category,
+}: BuiltInAsset): Background => ({
+  id: `bg-image-${file}`,
+  name,
+  category,
+  type: "image",
+  builtIn: true,
+  src: `${IMAGE_ASSETS_PATH}/${file}.jpg`,
+});
+
+const videoBackground = ({
+  file,
+  name,
+  category,
+}: BuiltInAsset): Background => ({
+  id: `bg-video-${file}`,
+  name,
+  category,
+  type: "video",
+  builtIn: true,
+  mediaId: clipIdOf(file),
+});
+
+const builtInClip = ({ file, name }: BuiltInAsset): MediaItem => ({
+  id: clipIdOf(file),
+  kind: "video",
+  name,
+  mimeType: "video/mp4",
+  size: 0,
+  src: `${VIDEO_ASSETS_PATH}/${file}.mp4`,
+  builtIn: true,
+  createdAt: BUILT_IN_ASSETS_DATE,
+  updatedAt: BUILT_IN_ASSETS_DATE,
+});
+
+export const BUILT_IN_CLIPS: MediaItem[] = VIDEO_ASSETS.map(builtInClip);
+
+const COLOR_BACKGROUNDS: Background[] = [
   {
     id: "bg-dawn",
     name: "Sunrise",
@@ -99,4 +184,10 @@ export const BACKGROUNDS: Background[] = [
     builtIn: true,
     color: "#101a3d",
   },
+];
+
+export const BACKGROUNDS: Background[] = [
+  ...COLOR_BACKGROUNDS,
+  ...IMAGE_ASSETS.map(imageBackground),
+  ...VIDEO_ASSETS.map(videoBackground),
 ];

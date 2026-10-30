@@ -28,7 +28,7 @@ export const useSlideMediaFile = (media: SlideMedia): SlideMediaFile => {
 
   if (fromAssets)
     return {
-      url: background?.blobId ? blobUrl : (background?.dataUrl ?? null),
+      url: background?.blobId ? blobUrl : (background?.src ?? null),
       name: background?.name ?? "",
       missing: !background,
     };

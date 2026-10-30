@@ -27,7 +27,7 @@ import {
 import { useBlobUrl } from "../../lib/blobUrls";
 import { shallowEqual } from "../../lib/equality";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
-import { formatTrimmedDuration } from "../../lib/media";
+import { findBackgroundClip, formatTrimmedDuration } from "../../lib/media";
 import { settingsGrouping } from "../../lib/settingsHistory";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
@@ -73,7 +73,7 @@ export const AssetUsageEditorPage = () => {
   );
   const sound = useStore((s) => s.audio.find((item) => item.id === assetId));
   const clip = useStore((s) =>
-    s.media.find((item) => item.id === background?.mediaId),
+    findBackgroundClip(s.media, background?.mediaId),
   );
 
   if (!usage)
@@ -333,7 +333,7 @@ const ImageUsageWorkspace = ({
       preview={
         <PreviewSurface>
           <ImageLayer
-            src={blobUrl ?? background.dataUrl ?? null}
+            src={blobUrl ?? background.src ?? null}
             alt={background.name}
             settings={draft}
           />

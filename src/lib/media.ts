@@ -7,6 +7,7 @@ import type {
   MediaItem,
   VideoSettings,
 } from "../types";
+import { BUILT_IN_CLIPS } from "../data/backgrounds";
 
 const DEFAULT_ADJUSTMENTS: MediaAdjustments = {
   brightness: 100,
@@ -63,6 +64,16 @@ export const isImageBackground = (background?: Background): boolean =>
 
 export const isVideoBackground = (background?: Background): boolean =>
   background?.type === "video" && Boolean(background.mediaId);
+
+export const findBackgroundClip = (
+  media: MediaItem[],
+  mediaId?: string,
+): MediaItem | undefined => {
+  if (!mediaId) return undefined;
+  const isClip = (item: MediaItem) =>
+    item.id === mediaId && item.kind === "video";
+  return media.find(isClip) ?? BUILT_IN_CLIPS.find(isClip);
+};
 
 export const isMediaBackground = (background?: Background): boolean =>
   isImageBackground(background) || isVideoBackground(background);

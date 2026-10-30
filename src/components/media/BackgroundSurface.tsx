@@ -1,6 +1,7 @@
 import type { Background, ImageSettings, VideoSettings } from "../../types";
 import {
   backgroundImageSettings,
+  findBackgroundClip,
   isImageBackground,
   isVideoBackground,
 } from "../../lib/media";
@@ -74,7 +75,7 @@ const ImageBackgroundSurface = ({
     ? variant === "thumb"
       ? thumbUrl
       : fullUrl
-    : background?.dataUrl || null;
+    : background?.src || null;
 
   return (
     <ImageLayer
@@ -97,9 +98,7 @@ const VideoBackgroundSurface = ({
   variant: SurfaceVariant;
   className?: string;
 }) => {
-  const item = useStore((s) =>
-    s.media.find((entry) => entry.id === mediaId && entry.kind === "video"),
-  );
+  const item = useStore((s) => findBackgroundClip(s.media, mediaId));
   const surfaceClassName = cn("absolute inset-0 bg-thumbnail", className);
 
   if (!item) return <div className={surfaceClassName} />;
