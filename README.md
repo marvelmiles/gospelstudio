@@ -1,12 +1,12 @@
 # GospelStudio
 
-**A church worship presentation studio that runs in your browser, works offline, and needs no server.**
+**Church presentation software that runs in your web browser. It works without internet and needs no account.**
 
-Paste lyrics, a hymn, a sermon outline or a Bible reference and GospelStudio turns it into slides, then projects them full screen with themes, backgrounds, video, audio, presenter notes and keyboard control. It also streams phone cameras into a service and hands your whole library to another device across the room.
+GospelStudio helps your church show song lyrics, hymns, Bible verses, sermon notes, pictures and videos on a projector or TV. Paste the words of a song and it turns them into slides for you. Then present them full screen with backgrounds, smooth animations, background music, notes for the presenter and simple keyboard controls. You can also use a phone as a live camera, and send your songs and slides to another device in the room.
 
-Everything is stored in the browser (IndexedDB). No account, no subscription, no upload.
+Everything is saved on your own device. There is no account, no subscription and no upload.
 
-**Live demo: [gospelstudio.netlify.app](https://gospelstudio.netlify.app/)**
+**Try it here: [gospelstudio.netlify.app](https://gospelstudio.netlify.app/)**
 
 Keywords: church presentation software, worship slides, lyrics to slides, hymn projection, Bible verse projection, sermon slides, ProPresenter alternative, EasyWorship alternative, OpenLP alternative, offline PWA, React, TypeScript.
 
@@ -14,73 +14,79 @@ Keywords: church presentation software, worship slides, lyrics to slides, hymn p
 
 I built GospelStudio for my own church.
 
-Our services run on a laptop, a projector and whoever is free to run the slides that morning. The programs made for this job are desktop programs with a licence to buy and one machine to keep them on, and the hall WiFi is not something I can count on when the first song starts. So I wrote the one I wanted: everything in the browser's own storage, opens with no connection, and nobody has to install anything.
+I was running the media, and the slide program we used kept freezing in the middle of the service. Hymns, pictures and videos would stutter right when people needed to read along. On top of that, most programs made for this job have to be bought, installed and kept on one computer, and the WiFi in our hall is not something I can count on when the first song starts.
 
-The rest follows from that room:
+So I made the one I wanted. It runs in the browser, keeps everything on the device, opens without internet, and nobody has to install anything.
 
-- **The internet is not a given.** The app stores everything locally and pairs devices by QR code when there is no network to find them on.
-- **Nothing should leave the building.** Our songs, notes and photographs are the church's own, so nothing is uploaded and sharing goes device to device.
-- **The operator is a volunteer.** Pasting the lyrics is the whole import step, and jumping to Verse 2 or the chorus is one keystroke.
-- **The equipment is what we already own.** A laptop, a projector and someone's phone is a full camera setup.
+Everything else in the app comes from how our church actually works:
 
-## About the project
+- **We can't count on the internet.** Everything is saved on the device, and devices can connect by scanning a QR code when there is no network.
+- **Our things stay with us.** Our songs, notes and photos belong to the church, so nothing is uploaded. Sharing goes straight from one device to another.
+- **The person running slides is a volunteer.** Pasting the lyrics is all it takes to add a song, and jumping to Verse 2 or the chorus takes one key press.
+- **We use what we already have.** A laptop, a projector and someone's phone are enough for a full camera setup.
 
-A single page React and TypeScript app that behaves like a desktop presentation program:
+## What's inside
 
-- **The library** holds manuscripts, an offline Bible, images, videos, sounds, backgrounds, themes and saved overlays.
-- **The editor** is the slide itself, so what you type is already what the room will see.
-- **Presentation mode** fills the projector while the operator keeps notes, the next slide and a timer on the laptop.
-- **Stream** joins up to three phone cameras over WebRTC and stages overlays on top.
-- **Quick Share** copies a library to a nearby device, over the WiFi or by code.
+GospelStudio is a single page React and TypeScript app that works like a desktop presentation program:
 
-It builds to a static bundle, installs as a PWA and updates itself through a service worker.
+- **The library** keeps your manuscripts (songs, hymns and sermons), an offline Bible, images, videos, sounds, backgrounds, themes and saved camera overlays.
+- **The editor** lets you type straight on the slide, so what you see is what the room will see.
+- **Presentation mode** fills the projector, while your laptop shows your notes, the next slide and a timer.
+- **Stream** connects up to three phone cameras and lets you put text and pictures on top of them.
+- **Quick Share** copies your library to a nearby device, over WiFi or with a code.
+
+It builds to plain static files, can be installed as an app (PWA), and updates itself in the background.
 
 ## Features
 
-**Library and editing**
+**Songs, slides and editing**
 
-- **Paste and it becomes slides.** Section tags such as `[verse]` and `[chorus]` are recognised and numbered, and long sections split across slides.
-- **Manuscript library.** Lyrics, hymns, sermons and general decks, searchable by title, author or text, organised by collection, with a trash that restores.
-- **Offline Bible.** The King James and American Standard versions are bundled, so any passage can be read, searched, saved and presented with no connection.
-- **Write on the slide itself.** The slide in the editor is the text area, so there is no separate box to keep in step.
-- **Slide styling.** Font, size, weight, colour, alignment, spacing and shadow, per slide or for the whole manuscript.
-- **Pictures, clips and text boxes.** Drop them on a slide, drag, resize and stack them. A selected clip hands over its own player.
-- **Word style formatting.** Bold, italic, underline, strikethrough and highlight, stored as plain text so they survive copy and paste.
-- **One list for backgrounds, one for sounds.** Scoped to the slide or the whole manuscript, with a radio option that hands the choice back to the manuscript.
-- **Silence is a choice.** None plays nothing and stops there, rather than falling through to the manuscript's or theme's sound.
-- **Tune an asset for one place.** The pencil opens a picture, clip or sound in its own editor, and what you change comes back to that one use only.
-- **Images and videos.** Import once and use anywhere, as a background, on a slide, over a broadcast or sent to another device.
-- **Themes.** Built in themes set a manuscript's default look, and the theme editor builds more.
+- **Paste and it becomes slides.** Tags like `[verse]` and `[chorus]` are recognised and numbered, and long parts are split across slides so the text stays big enough to read.
+- **Manuscript library.** Lyrics, hymns, sermons and other decks, sorted into collections. Search by title, author or words.
+- **Pin your favourites.** Keep up to five items at the top of each library.
+- **Offline Bible.** The King James Version and the American Standard Version are built in. Read, search, save and present any passage with no internet, or have it read aloud.
+- **Type on the slide itself.** The slide in the editor is where you type, so there is no separate text box to keep in sync.
+- **Slide styling.** Font, size, weight, color, alignment, spacing and shadow, for one slide or the whole manuscript.
+- **Pictures, clips and text boxes.** Drop them anywhere on a slide, then drag, resize and stack them. A selected clip shows its own player controls.
+- **Text formatting.** Bold, italic, underline, strikethrough and highlight. The formatting is stored as plain text, so it survives copy and paste.
+- **Backgrounds and sounds.** Pick one for a single slide or for the whole manuscript. Choosing None means silence, not the theme's sound.
+- **Edit an asset for one place only.** The pencil opens a picture, clip or sound in its editor, and your changes apply to that one use only.
+- **Built-in backgrounds.** Pictures, moving video backgrounds, colors and gradients come ready to use. You can edit them, but not delete them.
+- **Images and videos.** Upload once and use them anywhere: as a background, on a slide, over a live camera, or sent to another device.
+- **Themes.** A theme sets the whole look of a manuscript. Use the built-in ones or make your own in the theme editor.
 
 **Presenting**
 
-- **Presentation mode.** Full screen with transitions, a presenter bar with notes, next slide, timer and counter, black and white screen, pause and looping audio.
-- **Go Live puts it on the projector.** With a screen on HDMI the audience window opens already filling it, through the browser's Window Management API.
-- **Grant the display permission up front.** Settings has a Projector section, so the first Go Live projects instead of spending the click on the prompt.
-- **A second module in the corner.** A picture, a clip or the live camera runs in a corner of the slide and follows its source live.
-- **Keyboard control.** Hold `Ctrl` and type a number for a verse, `Ctrl+C` for the chorus, and the slide list shows each badge before you start.
+- **Presentation mode.** Full screen, with a presenter bar that shows your notes, the next slide, a timer and a slide counter. You can pause, and background music can loop while you present.
+- **Slide animations.** Fade, Cross Fade, Dissolve, Zoom and Slide in four directions. Set one for the whole app, a theme, a manuscript or a single slide, and preview it in the editor.
+- **Auto-play.** Slides move forward by themselves after the number of seconds you choose, and can loop back to the start for announcement slideshows.
+- **Go live or preview.** Go live sends the slides to the audience screen. Preview here shows them only on your own screen.
+- **Go live fills the projector.** With a screen connected over HDMI, the audience window opens already full screen on it, using the browser's Window Management API.
+- **Allow the projector ahead of time.** The Projector section in Settings lets you give the display permission before the service starts, so your first Go live goes straight to the projector.
+- **A second module in the corner.** Show a picture, a clip or a live camera in a corner of the slides. It plays live alongside them.
+- **Keyboard control.** Hold `Ctrl` and type a number to jump to a verse, or press `Ctrl+C` for the chorus. The slide list shows each shortcut before you start.
 
 **Live camera**
 
-- **Up to three cameras at once.** One fills the screen while the others sit in corners or wait off screen, already flowing and ready to cut to.
-- **Pairing.** On the same WiFi a phone appears in the list and one tap connects it. Offline, the devices swap QR codes instead.
-- **Codes a webcam can actually read.** A long code is shown as several small frames in turn, and the scanner searches the whole camera view.
-- **It survives a sleeping phone.** A wake lock and an inaudible tone keep the page alive, and a dropped connection reconnects itself.
-- **Full screen on the phone.** The sharing device fills its screen with what it is sending, including on iPhones, where the Fullscreen API is reserved.
-- **Overlays saved for next time.** Save any staged element with its placement and styling, then add it to a later broadcast from Saved.
+- **Up to three cameras at once.** One fills the screen while the others sit in a corner or wait off screen, ready to switch to.
+- **Easy pairing.** On the same WiFi, a phone shows up in a list and one tap connects it. With no internet, the devices scan each other's QR codes instead.
+- **Codes a webcam can read.** The pairing code is squeezed into one small QR code, and the scanner looks for it across the whole camera view.
+- **Keeps going when the phone sleeps.** A wake lock and a silent sound keep the page awake, and a dropped connection reconnects by itself.
+- **Full screen on the phone.** The phone fills its screen with what it is sending, even on iPhones, where websites normally can't go full screen.
+- **Save overlays for next time.** Save any text, picture or clip you put over the camera, with its position and style, and add it to a later broadcast from Saved.
 
 **Sharing and data**
 
-- **Quick Share.** Every device with the page open on the same WiFi sees the others; pick who to send to, then pick items from a tab per part of the library.
-- **Whatever an item needs travels with it.** A manuscript takes its background, sound, placed clips and theme, and the receiving device accepts or declines.
-- **No network, no problem.** Devices that cannot see each other pair by QR or typed code, exactly as the camera does.
-- **Sends you can watch.** Each device card has its own progress and stop button, and a transfer survives the phone sleeping.
-- **Backup.** Export the whole library, media included, to one `.zip` and restore it later, validated on import.
-- **Installs and works offline.** A service worker caches the app, so it opens with no connection and prompts when a new version is ready.
+- **Quick Share.** Every device with the page open on the same WiFi can see the others. Pick who to send to, then pick what to send from each part of your library.
+- **Everything an item needs goes with it.** A manuscript brings its background, sound, clips and theme. The other device can accept or decline.
+- **Works with no internet.** Devices that can't find each other pair with a QR code or a typed code, just like the cameras.
+- **Watch your sends.** Each device shows its own progress and a stop button, and a transfer keeps going if the phone goes to sleep.
+- **Backup.** Export your whole library, pictures and videos included, into one `.zip` file and bring it back later. The file is checked before anything is imported.
+- **Install it and use it offline.** The app is saved on your device, so it opens with no internet and tells you when a new version is ready.
 
 ### Keyboard shortcuts (presentation)
 
-**Navigation**
+**Moving between slides**
 
 | Key                                   | Action         |
 | ------------------------------------- | -------------- |
@@ -89,46 +95,47 @@ It builds to a static bundle, installs as a PWA and updates itself through a ser
 | Home                                  | First slide    |
 | End                                   | Last slide     |
 
-**Tag navigation** _(numbers are verse only; every other section type has a fixed letter)_
+**Jumping to a part of the song** _(only verses use numbers; every other part has its own letter)_
 
-Hold `Ctrl`, type one or more digits, then release `Ctrl` to jump to that verse. Numbers follow the order verses appear in the slide list, and `[solo]` counts as a verse. Other sections are never numbered, so each has its own letter instead.
+Hold `Ctrl`, type one or more numbers, then let go of `Ctrl` to jump to that verse. Verses are numbered in the order they appear in the slide list, and `[solo]` counts as a verse. Other parts are never numbered, so each one has its own letter instead.
 
-| Keys                                 | Action                             |
-| ------------------------------------ | ---------------------------------- |
-| `Ctrl` hold + `1`, `2`… then release | Jump to **Verse** N                |
-| `Ctrl` + `C`                         | Jump to first **Chorus** slide     |
-| `Ctrl` + `B`                         | Jump to first **Bridge** slide     |
-| `Ctrl` + `I`                         | Jump to first **Intro** slide      |
-| `Ctrl` + `O`                         | Jump to first **Outro** slide      |
-| `Ctrl` + `P`                         | Jump to first **Pre-Chorus** slide |
-| `Ctrl` + `R`                         | Jump to first **Refrain** slide    |
-| `Ctrl` + `T`                         | Jump to first **Tag** slide        |
+| Keys                                | Action                             |
+| ----------------------------------- | ---------------------------------- |
+| Hold `Ctrl` + `1`, `2`… then let go | Jump to **Verse** N                |
+| `Ctrl` + `C`                        | Jump to first **Chorus** slide     |
+| `Ctrl` + `B`                        | Jump to first **Bridge** slide     |
+| `Ctrl` + `I`                        | Jump to first **Intro** slide      |
+| `Ctrl` + `O`                        | Jump to first **Outro** slide      |
+| `Ctrl` + `P`                        | Jump to first **Pre-Chorus** slide |
+| `Ctrl` + `R`                        | Jump to first **Refrain** slide    |
+| `Ctrl` + `T`                        | Jump to first **Tag** slide        |
 
-In the editor slide list, each verse's first slide shows a `^N` badge and every other section its letter badge, so you can see the shortcut before you present. Install the app as a PWA to keep the shortcuts a browser tab would otherwise take.
+In the editor's slide list, the first slide of each verse shows a `^N` badge and every other part shows its letter, so you can see the shortcut before you present. Install the app (PWA) to keep the shortcuts that a browser tab would otherwise use for itself.
 
 **Playback**
 
-| Key | Action            |
-| --- | ----------------- |
-| `P` | Pause / resume    |
-| Esc | Exit presentation |
+| Key | Action                              |
+| --- | ----------------------------------- |
+| `P` | Pause / resume                      |
+| `R` | Read the Bible passage aloud / stop |
+| Esc | Leave the presentation              |
 
-On a clip the playback keys drive the clip: Space and `P` play and pause, the left and right arrows seek five seconds, `M` mutes. A focused slider keeps the arrow and Page keys for itself.
+When a clip is on screen, the playback keys control the clip: Space and `P` play and pause, the left and right arrows jump five seconds, and `M` mutes. When a slider is selected, it keeps the arrow and Page keys for itself.
 
 **View**
 
-| Key | Action                                   |
-| --- | ---------------------------------------- |
-| `F` | Toggle fullscreen                        |
-| `I` | Toggle presenter bar                     |
-| `V` | Cycle screen fit (normal / cover / fill) |
-| `+` | Zoom in                                  |
-| `-` | Zoom out                                 |
-| `0` | Reset zoom                               |
+| Key | Action                                                |
+| --- | ----------------------------------------------------- |
+| `F` | Full screen on or off                                 |
+| `I` | Show or hide the presenter bar                        |
+| `V` | Change how it fits the screen (normal / cover / fill) |
+| `+` | Zoom in                                               |
+| `-` | Zoom out                                              |
+| `0` | Reset zoom                                            |
 
 ## Setup
 
-You need Node 18 or newer (20 or 22 recommended) and pnpm. npm and yarn work too. No server, database or account is required: the app keeps everything in the browser.
+You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. There is no server, database or account to set up, because the app keeps everything in the browser.
 
 ## Installation
 
@@ -144,26 +151,28 @@ pnpm install
 pnpm dev
 ```
 
-Then open the URL Vite prints, by default http://localhost:5173.
+Then open the address Vite prints. By default that is http://localhost:5173.
 
 ### Scripts
 
 | Command                        | What it does                                            |
 | ------------------------------ | ------------------------------------------------------- |
-| `pnpm dev`                     | Start the Vite dev server with HMR                      |
-| `pnpm build`                   | Type check with `tsc`, then build to `dist/`            |
+| `pnpm dev`                     | Start the Vite dev server with hot reload               |
+| `pnpm build`                   | Check types with `tsc`, then build into `dist/`         |
 | `pnpm preview`                 | Preview the production build, service worker included   |
-| `pnpm typecheck`               | Run the TypeScript compiler without emitting            |
-| `pnpm lint` / `lint:fix`       | ESLint over the repo                                    |
-| `pnpm format` / `format:check` | Prettier over `src/`                                    |
-| `pnpm test` / `test:watch`     | Vitest suite                                            |
-| `pnpm generate:hymns`          | Rebuild `src/data/hymns.json` from the freehymns corpus |
-| `pnpm generate:icons`          | Render the PNG icon set from `public/icon.svg`          |
-| `pnpm generate:bible-layout`   | Rebuild the Bible book and chapter layout data          |
+| `pnpm typecheck`               | Check types without building                            |
+| `pnpm lint` / `lint:fix`       | Run ESLint over the repo                                |
+| `pnpm format` / `format:check` | Run Prettier over `src/`                                |
+| `pnpm test` / `test:watch`     | Run the Vitest tests                                    |
+| `pnpm generate:hymns`          | Rebuild `src/data/hymns.json` from the freehymns hymnal |
+| `pnpm generate:icons`          | Create the PNG icons from `public/icon.svg`             |
+| `pnpm generate:bible-layout`   | Rebuild the list of Bible books and chapters            |
 
 ## Environment variables
 
-All optional. Without them, cameras and Quick Share still pair by QR or pasted code, which needs no server. Copy `.env.example` to `.env` to add one tap pairing over your WiFi through the Firebase Realtime Database, which relays the WebRTC handshake and none of the media (see `src/features/stream/STREAM_SIGNALING.md`):
+All of these are optional. Without them, cameras and Quick Share still pair with a QR code or a pasted code, which needs no server at all.
+
+To add one-tap pairing over WiFi, copy `.env.example` to `.env` and fill in your Firebase Realtime Database details. Firebase only passes along the short WebRTC handshake that introduces the two devices. The video and your files never go through it (see `src/features/stream/STREAM_SIGNALING.md`).
 
 | Variable                     | What it is            |
 | ---------------------------- | --------------------- |
@@ -172,65 +181,76 @@ All optional. Without them, cameras and Quick Share still pair by QR or pasted c
 | `VITE_FIREBASE_APP_ID`       | Firebase web app id   |
 | `VITE_FIREBASE_DATABASE_URL` | Realtime Database URL |
 
-Cameras also need a secure context: serve over `https://` or `localhost` on both devices, or the browser will not open one.
+Cameras also need a secure page. Open the app over `https://` or `localhost` on both devices, or the browser will not turn the camera on.
 
 ## Deployment
 
-`pnpm build` emits a static `dist/` that any static host serves. The repo ships a `netlify.toml`. Elsewhere, publish `dist/` and route unknown paths to `index.html` so client side routing works.
+`pnpm build` creates a static `dist/` folder that any static host can serve. The repo includes a `netlify.toml` for Netlify. On other hosts, publish `dist/` and send any unknown path to `index.html` so links inside the app keep working.
 
 ## Tech stack
 
-Vite, React 19 and TypeScript, with React Router and Zustand. Tailwind CSS 4 for all styling and shadcn/ui (Radix UI primitives, tw-animate-css) for the interface components, with clsx, tailwind-merge and class-variance-authority for composing classes, Sonner for toasts and usehooks-ts for window size, media queries, element size and local storage. IndexedDB for documents and files, WebRTC with jsQR and qrcode-generator for cameras and sharing, Firebase Realtime Database as an optional signalling relay, @dnd-kit for dragging slides, Framer Motion for transitions, Zod for validating backups, fflate for the `.zip` format, vite-plugin-pwa and Workbox for offline, and lucide-react for icons.
+- **App:** Vite, React 19, TypeScript, React Router and Zustand.
+- **Styling:** Tailwind CSS 4 and shadcn/ui (Radix UI primitives and tw-animate-css), with clsx, tailwind-merge and class-variance-authority for combining classes.
+- **Interface helpers:** Sonner for toasts, usehooks-ts for window size, media queries, element size and local storage, @dnd-kit for dragging slides, and lucide-react for icons.
+- **Slide transitions:** the browser's Web Animations API.
+- **Storage:** IndexedDB for documents and files, Zod to check backups, and fflate for the `.zip` format.
+- **Cameras and sharing:** WebRTC, with jsQR and qrcode-generator for pairing codes, and Firebase Realtime Database as an optional signalling relay.
+- **Offline:** vite-plugin-pwa and Workbox.
 
 ## Architecture
 
 ```
 src/
-  index.css     Tailwind entry: the shadcn theme variables, shadows, animations and custom utilities
-  lib/          parser, style and background resolution, storage, zod schema, cn() in utils.ts
-  data/         built-in backgrounds, themes, collections, fonts, seed manuscripts
-                (hymns.json holds the bundled hymnal, generated, not edited by hand)
-  store/        Zustand store (state, actions and persistence)
+  index.css        Tailwind entry: the shadcn theme variables, shadows, animations and custom utilities
+  lib/             parser, slide animations, style and background resolution, storage, zod schema, cn() in utils.ts
+  data/            built-in backgrounds, themes, collections, fonts and seed manuscripts
+                   (hymns.json holds the bundled hymnal, generated, not edited by hand)
+  store/           Zustand store (state, actions and saving)
   components/
-    ui/         shadcn/ui primitives (Button, Dialog, DropdownMenu, Select, Slider, Tabs, ...)
-    shared/     app components composed from them (Modal, MoreMenu, InfoTip, Field, EmptyState)
-    layout/     header, navigation drawer and editor columns
-    controls/   slide styling, background, audio and formatting pickers
-    media/      image, video and audio surfaces and their settings
-  hooks/        shared behaviour (text editing, media playback, wake lock, layout)
+    ui/            shadcn/ui primitives (Button, Dialog, DropdownMenu, Select, Slider, Tabs, ...)
+    shared/        app components built from them (Modal, MoreMenu, InfoTip, Field, EmptyState, TransitionLayers)
+    layout/        header, navigation drawer and editor columns
+    controls/      slide styling, background, audio, animation, playback and formatting pickers
+    media/         image, video and audio surfaces and their settings
+  hooks/           shared behaviour (text editing, media playback, wake lock, Go live, layout)
   features/
-    dashboard/    Dashboard
-    manuscripts/  Manuscript library, editor, text and settings modals
-    editor/       Shared deck workspace, its edit hooks (deckEditor/) and slide list
-    bible/        Reader, passage editor and the reader's selection and save hooks
-    media/        Image and video libraries and editors
-    presentation/ Presentation overlay (Framer Motion) and its projection hooks
-    settings/     Settings modal, split per section
-    share/        Quick Share: handing a library to a nearby device
-    stream/       Camera sharing: sender/, receiver/, stage/, overlays and lib/
-    assets/       Asset library
-  routes.ts     every path in the app, one function per route
-  App.tsx       layout shell, routes, global overlays
-  main.tsx      entry (Router)
+    dashboard/     Dashboard
+    manuscripts/   Manuscript library, editor, text and settings modals
+    editor/        Shared slide workspace, its edit hooks (deckEditor/) and slide list
+    bible/         Reader, passage editor and the reader's selection and save hooks
+    media/         Image and video libraries and editors
+    assets/        Asset library: backgrounds, colors and sounds
+    themes/        Themes page and theme editor
+    presentation/  Presentation view, presenter bar, second module and projection hooks
+    stream/        Camera sharing: sender/, receiver/, stage/, overlays and lib/
+    share/         Quick Share: handing a library to a nearby device
+    settings/      Settings modal, split into one file per section
+    about/         About & Help modal and its FAQ list
+    onboarding/    First-run welcome guide
+    shortcuts/     Keyboard shortcuts modal
+  routes.ts        every path in the app, one function per route
+  App.tsx          layout shell, routes and global overlays
+  ProjectionApp.tsx  the live window shown on the projector
+  main.tsx         entry point (Router)
 ```
 
-Components are functions declared as `const`, files stay focused on one job, and anything shared lives in a hook, a component or a `lib/` module.
+Components are written as `const` functions, each file does one job, and anything shared lives in a hook, a component or a `lib/` module.
 
-## Notes and intentional scope choices
+## Notes and design choices
 
-- **Styling is Tailwind first, on the shadcn/ui theme contract.** The palette lives once as CSS variables on `:root` in `src/index.css` (`--background`, `--primary`, `--card`, `--border` and the rest, plus app tokens such as `--success` and `--stage`), mapped to utilities by `@theme inline`. The app is dark only, so `<html>` carries the `dark` class. Components use utility classes and `cn()` merges conditional classes. Inline styles are kept only for values known at run time, such as a slide's user chosen font, colour or position.
-- **`components/ui` is owned code.** Primitives are added with `pnpm dlx shadcn@latest add <name>` (see `components.json`) and then adapted: the app's variants live in them, floating layers portal into the fullscreen element when one is active, and dialogs sit above the app's floating windows. App specific components belong in `components/shared`.
-- **Editing is live bound rather than form managed.** Fields write straight to the store for instant preview; Zod guards the one place it earns its keep, imported backups.
-- **The presenter view is a bar or a floating window**, not a separate second monitor application.
-- **Only the current `.zip` backup format is read.** The older inline JSON exports are not imported.
-- **The service worker runs in development too**, so offline and install behaviour can be checked without a production build.
+- **Styling is Tailwind first, built on the shadcn/ui theme.** The colors live in one place, as CSS variables on `:root` in `src/index.css` (`--background`, `--primary`, `--card`, `--border` and the rest, plus app tokens such as `--success` and `--stage`), and `@theme inline` turns them into utility classes. The app is dark only, so `<html>` carries the `dark` class. Components use utility classes, and `cn()` merges classes that depend on state. Inline styles are only used for values known while the app runs, such as a slide's chosen font, color or position.
+- **`components/ui` is our own code.** Primitives are added with `pnpm dlx shadcn@latest add <name>` (see `components.json`) and then adjusted: the app's variants live in them, floating layers open inside the full screen element when there is one, and dialogs sit above the app's floating windows. App-specific components belong in `components/shared`.
+- **Fields save straight to the store.** Editing updates the store as you type, so the preview changes instantly. Zod checks the one place where it really matters: imported backups.
+- **The presenter view is a bar or a floating window**, not a separate app on a second monitor.
+- **Only the current `.zip` backup format can be imported.** Older JSON exports are not supported.
+- **The service worker also runs in development**, so you can test offline and install behaviour without a production build.
 
 ## Hymn library
 
-The default manuscripts are the English hymnal from [freehymns/hymns](https://github.com/freehymns/hymns), bundled as `src/data/hymns.json` and seeded on first load, marked `builtIn` so they cannot be deleted by accident.
+The hymns that come with the app are the English hymnal from [freehymns/hymns](https://github.com/freehymns/hymns). They are stored in `src/data/hymns.json`, added on first load, and marked `builtIn` so they can't be deleted by accident.
 
-`pnpm generate:hymns` rebuilds that file through `src/lib/manuscript/hymnal.ts`, the same module the parser uses, so pasted hymnal text is treated exactly like the bundled corpus. Normalizing turns `Verse 1:` and `Refrain:` headings into sections, lifts an `Author:` line out of the lyrics, drops tune cues, and closes up singing hyphens so `a-bide` is stored as `abide`. That join only runs on documents that really are syllabified, so `self-control` in a manuscript you typed stays intact.
+`pnpm generate:hymns` rebuilds that file using `src/lib/manuscript/hymnal.ts`, the same code the parser uses, so pasted hymn text is handled exactly like the built-in hymns. It turns headings like `Verse 1:` and `Refrain:` into sections, moves an `Author:` line out of the lyrics, drops tune notes, and joins up words split for singing, so `a-bide` becomes `abide`. That joining only runs on text that is really split for singing, so a word like `self-control` in your own manuscript stays as it is.
 
 ## License
 
-Seed content is the public domain hymnal from [freehymns/hymns](https://github.com/freehymns/hymns), transcribed from The Cyber Hymnal and marked `Terms:Public Domain` at source. The code is provided for you to use and adapt for your church or project.
+The hymns are the public domain hymnal from [freehymns/hymns](https://github.com/freehymns/hymns), copied from The Cyber Hymnal and marked `Terms:Public Domain` at the source. You are welcome to use and adapt the code for your church or your own project.
