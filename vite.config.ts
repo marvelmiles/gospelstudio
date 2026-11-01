@@ -113,7 +113,8 @@ export default defineConfig({
         shortcuts: [
           { name: "Manuscripts", url: "/manuscripts" },
           { name: "Bible", url: "/bible" },
-          { name: "Stream", url: "/stream" },
+          { name: "Studio", url: "/studio" },
+          { name: "Share camera", url: "/camera" },
         ],
         icons: [
           {

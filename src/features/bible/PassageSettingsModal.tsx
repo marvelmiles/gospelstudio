@@ -33,6 +33,7 @@ import {
 import { findBackgroundClip } from "../../lib/media";
 import { useMediaLibrary } from "../../hooks/useMediaLibrary";
 import { getChapterVerses } from "./lib/offlineBible";
+import { rebuildPassage } from "./lib/scripturePassage";
 import type { AssetUsageRequest } from "../../lib/assetUsage";
 import type { DeckEditor } from "../editor/useDeckEditor";
 import { PlaybackSettings } from "../../components/controls/PlaybackSettings";
@@ -57,7 +58,6 @@ export const PassageSettingsModal = ({
   const audio = useStore((s) => s.audio);
   const library = useMediaLibrary();
   const addCustomBackground = useStore((s) => s.addCustomBackground);
-  const rebuildScriptureSlides = useStore((s) => s.rebuildScriptureSlides);
   const pushToast = useStore((s) => s.pushToast);
 
   const safeVersion = (value: BibleVersionId) =>
@@ -142,7 +142,7 @@ export const PassageSettingsModal = ({
         pushToast("That verse range is empty in this chapter.", "error");
         return;
       }
-      rebuildScriptureSlides(passage.id, {
+      const rebuilt = rebuildPassage(passage, {
         version,
         range: {
           bookId,
@@ -156,7 +156,7 @@ export const PassageSettingsModal = ({
         showVerseNumbers,
         showReference,
       });
-      editor.setSelectedId(null);
+      editor.replaceDoc(rebuilt);
       pushToast("Slides rebuilt from the passage.");
       onClose();
     } catch (err) {

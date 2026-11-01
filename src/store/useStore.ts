@@ -5,7 +5,6 @@ import { createManuscriptsSlice } from "./slices/manuscriptsSlice";
 import { createScripturesSlice } from "./slices/scripturesSlice";
 import { createMediaSlice } from "./slices/mediaSlice";
 import { createAssetsSlice } from "./slices/assetsSlice";
-import { createOverlayPresetsSlice } from "./slices/overlayPresetsSlice";
 import { createUploadsSlice } from "./slices/uploadsSlice";
 import { createThemesSlice } from "./slices/themesSlice";
 import { createPrefsSlice } from "./slices/prefsSlice";
@@ -27,7 +26,6 @@ export const useStore = create<StoreState>()((...args) => ({
   ...createScripturesSlice(...args),
   ...createMediaSlice(...args),
   ...createAssetsSlice(...args),
-  ...createOverlayPresetsSlice(...args),
   ...createUploadsSlice(...args),
   ...createThemesSlice(...args),
   ...createPrefsSlice(...args),

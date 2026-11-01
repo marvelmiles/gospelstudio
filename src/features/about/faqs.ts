@@ -2,7 +2,6 @@ import { APP_NAME } from "../../lib/appInfo";
 import { ANIMATION_OPTIONS } from "../../lib/animation";
 import { MAX_KEPT_ITEMS } from "../../lib/keepOnReset";
 import { MAX_PINNED_ITEMS } from "../../lib/pinning";
-import { MAX_STREAM_CAMERAS } from "../stream/lib/streamSession";
 
 export interface Faq {
   question: string;
@@ -24,21 +23,21 @@ export const FAQ_GROUPS: FaqGroup[] = [
     faqs: [
       {
         question: `What is ${APP_NAME}?`,
-        answer: `${APP_NAME} is a church media application for displaying lyrics, hymns, Bible verses, sermon notes, pictures, and videos on projectors or TVs. It also supports live broadcasts using phone cameras. It works offline, stores content on your device, and requires no installation.`,
+        answer: `${APP_NAME} is a church media application for displaying lyrics, hymns, Bible verses, sermon notes, pictures, and videos on projectors or TVs. Its Studio puts a camera, Bible verses, manuscripts and subtitles on the big screen together, and any phone, tablet or laptop can join it as a camera. It works offline, stores content on your device, and requires no installation.`,
       },
       {
         question: "Do I need the internet?",
-        answer: `No. Once the page has loaded one time, ${APP_NAME} works fully offline. You can also install it like a normal app. On a computer, click the Install icon in your browser's address bar. On a phone or tablet, choose "Add to Home Screen". It then opens in its own window. The only parts that use the internet are the one-tap connect for cameras and finding nearby devices in Quick Share, and both have an offline option called Pair with a code.`,
+        answer: `No. Once the page has loaded one time, ${APP_NAME} works fully offline. You can also install it like a normal app. On a computer, click the Install icon in your browser's address bar. On a phone or tablet, choose "Add to Home Screen". It then opens in its own window. The only parts that use the internet are the one-tap connect for cameras and finding nearby devices in Share, and both have an offline option called Pair with a code.`,
       },
       {
         question: "Does it work on a phone or tablet?",
         answer:
-          "Yes. Every page fits small screens. On a phone, the editors split into Slides, Edit and Style tabs, and any header icons that do not fit move into a menu. To send slides to a projector you still need a computer, but a phone makes a great camera for the Stream page.",
+          "Yes. Every page fits small screens. On a phone, the editors split into Slides, Edit and Style tabs, and any header icons that do not fit move into a menu. To send slides to a projector you still need a computer, but a phone makes a great camera for the Studio. Open the Share camera page on it and press Start sharing.",
       },
       {
         question: "How do I save my work?",
         answer:
-          "Your changes are kept as a draft until you save them, so you can try things freely. The Save button turns blue when there is something to save, and Ctrl+S saves too. If you try to leave with unsaved work, the app asks you first. Ctrl+Z undoes a change and Ctrl+Y brings it back. If you change a song while it is already on the screen, press Ctrl+Shift+U to send your saved changes to the running presentation.",
+          "Your changes are kept as a draft until you save them, so you can try things freely. The Save button turns blue when there is something to save, and Ctrl+S saves too. If you try to leave with unsaved work, the app asks you first. Ctrl+Z undoes a change and Ctrl+Y brings it back. If you change a song while it is already on the screen, press Ctrl+Shift+U to send your saved changes to the running presentation. Editors opened from the Studio work on that production's copy instead, with Update scene in place of Save.",
       },
       {
         question: "Does New Manuscript create something straight away?",
@@ -139,9 +138,9 @@ export const FAQ_GROUPS: FaqGroup[] = [
           "Use the arrow keys or Space to move between slides, P to pause, F for full screen, V to change how the picture fits the screen, + and - to zoom, 0 to reset the zoom, and I to show or hide the presenter bar. To jump to a verse, hold Ctrl, type its number and let go (Ctrl+2 goes to Verse 2). Other parts have their own keys: Ctrl+C for Chorus, Ctrl+B for Bridge, Ctrl+I for Intro, Ctrl+O for Outro, Ctrl+P for Pre-Chorus, Ctrl+R for Refrain and Ctrl+T for Tag. Click the keyboard icon in the header to see every shortcut. If you use the floating presenter window, click it first so it hears your keys.",
       },
       {
-        question: "Can I show a picture, video or camera in a corner?",
+        question: "Can I show a camera next to my slides?",
         answer:
-          "Yes. While presenting, press the second module button in the controls and choose a live camera, a video or a picture. It shows in a corner of the slides, and you can move it or remove it at any time.",
+          "Yes, in the Studio. Add a camera and a manuscript or passage to the same scene, place them where you like, and press GO LIVE. A presentation from the other pages always fills the screen with its own slides.",
       },
     ],
   },
@@ -187,21 +186,108 @@ export const FAQ_GROUPS: FaqGroup[] = [
     ],
   },
   {
-    title: "Cameras and sharing",
+    title: "Studio",
     faqs: [
       {
-        question: "How do I show a phone camera on the screen?",
-        answer: `Open the Stream page on both devices. On the computer connected to the projector, choose Show a camera here. On the phone, choose Share this camera. If both devices are online, the phone shows up in a list on the computer, and one click connects it. With no internet, choose Pair with a code instead: the phone scans the code on the computer, then the computer scans the reply on the phone. You can also copy and paste the codes. The video goes straight between the two devices over your WiFi, and it keeps going even if the phone screen goes to sleep. You can connect up to ${MAX_STREAM_CAMERAS} cameras: show one full screen and keep the others ready to switch to. Both devices need an address that starts with https://, because browsers only allow cameras on secure pages.`,
+        question: "What is the Studio?",
+        answer: `It builds the projector screen out of layers, so the room can see a live camera, a Bible passage, a manuscript, images, videos, announcements, subtitles and a speaker's name at the same time. Each arrangement is a scene. You prepare a scene in the Preview, then press GO LIVE to show it on the Live screen.`,
+      },
+      {
+        question:
+          "How do I put the preacher and a Bible passage on the screen?",
+        answer:
+          "Open the Studio, press Choose camera and pick your webcam, capture card or a phone. Pick the layout called Camera with Bible passage, click the passage box, then press Find a passage and search for a reference such as John 3:16. Point at Present at the top and choose Go live to open the projector screen, then press GO LIVE.",
+      },
+      {
+        question: "What is the difference between Preview and Live screen?",
+        answer:
+          "Preview is what you are preparing. Live screen is what everyone in the room sees right now. Nothing you change in the Preview reaches the room until you press GO LIVE, or Cut to switch straight away, so you can get the next scene ready during the service.",
+      },
+      {
+        question: "Can I check a scene full screen before it goes live?",
+        answer:
+          "Yes. Point at Present at the top of the Studio and choose Preview. A new tab shows the scene exactly as GO LIVE would, filling the whole tab, while the room still sees the Live screen. If you change the scene afterwards, the tab shows an Update screen button. Press it to see your changes.",
+      },
+      {
+        question:
+          "Can I change the manuscript or verses without starting again?",
+        answer:
+          "Yes. Live controls sit under the GO LIVE button. Use them to step through the slides of a manuscript or passage, play or pause a video, or hide and show anything in the scene. The camera keeps running while you do. For a smaller remote, open the item's PiP window.",
+      },
+      {
+        question:
+          "How do I change a manuscript or passage for one service only?",
+        answer:
+          "In the list called In this scene, press the three dots next to the item and choose Open editor. The manuscript, Bible, image or video editor opens on this production's own copy, so the one in your library stays the same. With Auto update on, which it is by default, every change reaches the scene by itself. Turn it off to collect your changes and press Update scene when you are ready. Preview shows the edited version on your screen first. If the item is on the Live screen, an update shows there straight away. To go back to the library version, select the item and press Use the library version.",
+      },
+      {
+        question: "What is the PiP window?",
+        answer:
+          "A small floating window for one manuscript, passage or video in a scene. It shows the current slide and its presenter notes, and lets you step through it from any page, even while its editor is open. Each item gets its own window, so a hymn, a sermon and a Bible passage can all be open at once. Click a window, then use the arrow keys, Home and End, hold Ctrl and type a slide number, or press Space to pause and resume auto-play. Esc closes that window. Choose Open PiP from the item's menu, and it opens by itself when you open the editor for an item that is in the Preview or on the Live screen.",
+      },
+      {
+        question: "What does Lock in place do?",
+        answer:
+          "It pins an item where it is. It can't be dragged, resized or nudged with the arrow keys, and clicks on the preview pass through it to whatever is underneath, which helps when a camera or background fills the screen and you want to click the words on top. You can still select it from the list called In this scene to change it, hide it or delete it. Backgrounds start locked. Choose Unlock from the same menu to move it again.",
+      },
+      {
+        question: "Can I record the service?",
+        answer:
+          "Yes. Press Record at the top of the Studio. Your browser asks what to record: pick the projector screen window (open it first with Present, then Go live) or the screen it is on. A timer shows how long you have recorded. Pause stops the recording and the timer, Resume carries on, and Stop saves the video straight to this computer's downloads. Sound from cameras on other devices is included. Every recording is a landscape 1080p HD video that fits TVs and monitors, kept small at about 16 MB a minute at most.",
+      },
+      {
+        question: "Do auto-play and loop work in the Studio?",
+        answer:
+          "Yes. A manuscript or passage that has auto-play turned on moves to its next slide by itself while it is on the Live screen, using the seconds per slide and the loop setting from its editor. Change them for one production with Open editor, and pause or resume them from the PiP window.",
+      },
+      {
+        question: "Which cameras can I use?",
+        answer: `Any webcam, laptop camera or HDMI capture card the computer can see, or a phone, tablet or laptop on the same WiFi. To add another device, press the camera icon at the top of the Studio, or open the Share camera page on that device and press Start sharing. Then in the Studio choose Another device in the camera window and pick it from the list. Faster still, scan the QR code that window shows with the phone's camera: it is made for this Studio, so the phone opens Share camera and connects by itself. With no internet, choose Pair with a code on both devices and scan each other's code. Each camera opens once and every scene shares it, so switching scenes never restarts it. ${APP_NAME} needs an https address to open cameras.`,
+      },
+      {
+        question: "How do I get a sharp picture from a phone camera?",
+        answer:
+          "Hold the phone sideways. The Studio screen is wide, so an upright phone picture gets cropped and stretched to fill it, which makes it look soft. The Share camera page shows a reminder while the phone is upright. Phones send a full HD picture and keep it sharp instead of blurring it when they get busy, and older phones send 720p HD so they keep up. A strong WiFi signal near the phone keeps the picture smooth too.",
+      },
+      {
+        question: "Why can't I hear a phone camera?",
+        answer:
+          "On the phone, press Include audio on the Share camera page so it shares its microphone. In the Studio, select the camera and check that Play its sound while it is live is on under Sound. The sound then plays from the computer running the Studio whenever that camera is on the Live screen. If your sound desk already carries that microphone, turn it off to avoid an echo.",
       },
       {
         question: "Can I put text or pictures over a live camera?",
         answer:
-          "Yes. While a camera is on the screen, you can add a banner across the bottom, a block of text, a scrolling announcement, a picture, a clip or a saved Bible passage on top of it. You can place and style each one, and show or hide it without stopping the camera. Save one you like and it is ready for next time.",
+          "Yes. Add the camera to a scene, then add text, a lower third, a scrolling announcement, a picture, a video, a manuscript or a passage on top of it. Place each one where you like, and hide or show it from Live controls without stopping the camera.",
       },
+      {
+        question: "Can I reuse a scene in another service?",
+        answer:
+          "Yes. Open the scene's menu and choose Save as a reusable layout. It then appears under Your saved layouts whenever you add a scene. You can also keep several productions, one per service or event, from the production menu at the top left.",
+      },
+      {
+        question: "How do I add a heading or a subtitle?",
+        answer:
+          "Add Text, then pick its type: Normal, Heading or Subtitle. A heading sits big and bold across the top, and a subtitle sits along the bottom on a dark band. You can still move, resize and restyle it afterwards.",
+      },
+      {
+        question: "Does it stream to YouTube or Facebook?",
+        answer:
+          "No. This version shows the Studio on screens in the room, such as a projector, TV or LED wall. Everything stays on your device.",
+      },
+    ],
+  },
+  {
+    title: "Sharing",
+    faqs: [
       {
         question: "How do I send songs and slides to another device?",
         answer:
-          "Open Quick Share from the menu on both devices, connected to the same WiFi. Pick the device you want to send to, then tick the songs, passages, pictures, videos, sounds or themes you want. Anything an item needs, like its background or sound, goes with it. The other device is asked to accept before anything arrives, and everything already on it is kept. With no internet, choose Pair with a code on the sending device and Receive with a code on the other one, then scan each other's code.",
+          "Open Share from the menu on both devices, connected to the same WiFi. Pick the device you want to send to, then tick the songs, passages, studio productions, pictures, videos, sounds or themes you want. Anything an item needs, like its background or sound, goes with it. The other device is asked to accept before anything arrives, and everything already on it is kept. With no internet, choose Pair with a code on the sending device and Receive with a code on the other one, then scan each other's code.",
+      },
+      {
+        question: "Can I share a whole studio production?",
+        answer:
+          "Yes. Open Share and choose the Productions tab. Sending a production also sends the manuscripts, passages, pictures and videos its scenes use, and its production-only changes travel with it. Cameras are not sent, so connect them again on the other device.",
       },
     ],
   },
@@ -215,11 +301,11 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "How do I back up my work or move it to a new device?",
         answer:
-          "Open Settings and press Export Data. This saves your whole library, including pictures, videos and sounds, into one .zip file. On the other device, press Import Data and choose that file. You can replace everything there, or merge the two and choose which copy wins when both have the same item. If both devices are on the same WiFi, Quick Share does the same thing with no file to carry.",
+          "Open Settings and press Export Data. This saves your whole library, including pictures, videos, sounds and studio productions, into one .zip file. On the other device, press Import Data and choose that file. You can replace everything there, or merge the two and choose which copy wins when both have the same item. If both devices are on the same WiFi, Share does the same thing with no file to carry.",
       },
       {
         question: "What happens when I reset the app?",
-        answer: `Reset App to Defaults, in Settings, deletes all your manuscripts, your own themes, backgrounds, sounds and settings, and puts the app back to how it was the first time you opened it. It cannot be undone, so you have to type ResetApp to confirm. To keep something safe, mark up to ${MAX_KEPT_ITEMS} manuscripts or themes as Keep on reset first, and they survive the reset.`,
+        answer: `Reset App to Defaults, in Settings, deletes all your manuscripts, studio productions, your own themes, backgrounds, sounds and settings, and puts the app back to how it was the first time you opened it. It cannot be undone, so you have to type ResetApp to confirm. To keep something safe, mark up to ${MAX_KEPT_ITEMS} manuscripts or themes as Keep on reset first, and they survive the reset.`,
       },
     ],
   },

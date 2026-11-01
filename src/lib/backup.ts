@@ -9,6 +9,7 @@ import {
 } from "fflate";
 import { getFileBlob, putFileBlob } from "./fileStore";
 import { APP_NAME } from "./appInfo";
+import { downloadBlob } from "./download";
 
 const DATA_ENTRY = "data.json";
 const FILES_PREFIX = "files/";
@@ -163,15 +164,10 @@ export const exportBackup = async (
   if (sink) {
     await sink.close();
   } else {
-    const blob = new Blob(fallbackChunks as BlobPart[], {
-      type: "application/zip",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = suggestedName;
-    anchor.click();
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    downloadBlob(
+      new Blob(fallbackChunks as BlobPart[], { type: "application/zip" }),
+      suggestedName,
+    );
   }
   return { ok: true };
 };

@@ -1,16 +1,16 @@
 import { useEffect, type RefObject } from "react";
 
 export const useResumePlaybackOnVisible = (
-  videoRef: RefObject<HTMLVideoElement | null>,
+  mediaRef: RefObject<HTMLMediaElement | null>,
 ): void => {
   useEffect(() => {
     const handleVisibilityChange = () => {
-      const video = videoRef.current;
-      if (document.visibilityState !== "visible" || !video) return;
-      if (video.srcObject && video.paused) void video.play().catch(() => {});
+      const media = mediaRef.current;
+      if (document.visibilityState !== "visible" || !media) return;
+      if (media.srcObject && media.paused) void media.play().catch(() => {});
     };
     document.addEventListener("visibilitychange", handleVisibilityChange);
     return () =>
       document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [videoRef]);
+  }, [mediaRef]);
 };

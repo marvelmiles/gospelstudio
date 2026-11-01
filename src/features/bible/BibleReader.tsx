@@ -8,7 +8,7 @@ import { useStore } from "../../store/useStore";
 import type { ScriptureSelection } from "../../store/useStore";
 import { useSpeech } from "../../hooks/useSpeech";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingArea } from "@/components/shared/LoadingArea";
 import { useBibleChapter } from "./useBibleChapter";
 import { usePresentScripture } from "./usePresentScripture";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
@@ -161,11 +161,7 @@ export const BibleReader = ({
           selection.selection ? "pb-19" : "pb-3",
         )}
       >
-        {loading && (
-          <div className="grid place-items-center p-10">
-            <Spinner size={26} />
-          </div>
-        )}
+        {loading && <LoadingArea size={44} />}
         {!loading && error && (
           <div className="glass p-7 text-center">
             <p className="mt-0 leading-[1.6] text-muted-foreground">{error}</p>

@@ -7,6 +7,7 @@ import { useBgMap } from "../../hooks/useBgMap";
 import { useBackgroundView } from "../../hooks/useBackgroundView";
 import { useDocumentTitle } from "../../hooks/useDocumentTitle";
 import { useValidation } from "../../hooks/useValidation";
+import { useAutoSave } from "../../hooks/useAutoSave";
 import {
   useUnsavedChanges,
   UNSAVED_CHANGES_MESSAGE,
@@ -30,6 +31,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import type { DeckEditor } from "./useDeckEditor";
+import type { SceneEditing } from "./sceneEditing";
 import { useFollowPresentation } from "./useFollowPresentation";
 import { useRefitOnTextSize } from "./useRefitOnTextSize";
 import { SlideListPanel } from "./SlideListPanel";
@@ -68,6 +70,7 @@ interface DeckWorkspaceProps {
   reflow?: ReflowOptions;
   refit?: (metrics: SlideTextMetrics) => boolean;
   unsavedMessage?: string;
+  scene?: Omit<SceneEditing<SlideDeckDoc>, "commit">;
   children?: ReactNode;
 }
 
@@ -83,6 +86,7 @@ export const DeckWorkspace = ({
   reflow,
   refit,
   unsavedMessage = UNSAVED_CHANGES_MESSAGE,
+  scene,
   children,
 }: DeckWorkspaceProps) => {
   const navigate = useNavigate();
@@ -148,11 +152,24 @@ export const DeckWorkspace = ({
   });
 
   const documentNoun = DOCUMENT_NOUN[kind] ?? "document";
-  const openAssetUsage = useOpenAssetUsageEditor({ kind, doc, editor });
+  const openAssetUsage = useOpenAssetUsageEditor({
+    kind,
+    doc,
+    editor,
+    sceneItemId: scene?.itemId,
+  });
 
-  const leaveGuard = useUnsavedChanges(editor.dirty);
+  const isAutoUpdating = Boolean(scene?.autoUpdate);
+  const leaveGuard = useUnsavedChanges(editor.dirty && !isAutoUpdating);
   const validation = useValidation({
     title: validateName(doc.title, TITLE_LABEL[kind] ?? "title"),
+  });
+  useAutoSave({
+    enabled: isAutoUpdating,
+    dirty: editor.dirty,
+    blocked: validation.invalid,
+    version: editor.doc,
+    save: editor.save,
   });
 
   const slide = editor.selectedSlide;
@@ -184,7 +201,7 @@ export const DeckWorkspace = ({
       refuseInvalid();
       return;
     }
-    if (editor.save()) pushToast("Changes saved.");
+    if (editor.save()) pushToast(scene ? "Scene updated." : "Changes saved.");
   };
 
   const handleUpdatePresentation = () => {
@@ -287,6 +304,12 @@ export const DeckWorkspace = ({
           editor.patchDoc({ title }, { coalesceKey: "title" })
         }
         onPresent={present}
+        scene={
+          scene && {
+            ...scene,
+            onPreview: () => present({ live: false }),
+          }
+        }
         actions={topBarActions(width < COMPACT_WIDTH)}
         dirty={editor.dirty}
         titleError={validation.messageFor("title")}
@@ -298,7 +321,7 @@ export const DeckWorkspace = ({
         onRedo={textSurface.formatting.redo}
         onSave={handleSave}
         onUpdatePresentation={
-          isPresentingThisDoc ? handleUpdatePresentation : undefined
+          isPresentingThisDoc && !scene ? handleUpdatePresentation : undefined
         }
       />
 

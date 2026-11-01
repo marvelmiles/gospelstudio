@@ -12,6 +12,7 @@ import { useAutoHideChrome } from "../../hooks/useAutoHideChrome";
 import { useMediaPlayback } from "../../hooks/useMediaPlayback";
 import { useSpacePlayPause } from "../../hooks/useSpacePlayPause";
 import { useValidation } from "../../hooks/useValidation";
+import { useAutoSave } from "../../hooks/useAutoSave";
 import { useConfirmedAction } from "../../hooks/useConfirmedAction";
 import { useUndoRedoShortcuts } from "../../hooks/useUndoRedoShortcuts";
 import {
@@ -35,8 +36,14 @@ import { ImageSettingsControls } from "../../components/media/ImageSettingsContr
 import { VideoSettingsControls } from "../../components/media/VideoSettingsControls";
 import { VideoSurface } from "../../components/media/VideoSurface";
 import { VideoTransportBar } from "../../components/media/VideoTransportBar";
-import { useMediaEditor } from "./useMediaEditor";
+import { useMediaEditor, type MediaDraft } from "./useMediaEditor";
 import { useEditorReturn } from "../assets/assetLibraryNavigation";
+import {
+  SCENE_BACK_TITLE,
+  SCENE_UNSAVED_MESSAGE,
+  sceneBackPath,
+  type SceneEditing,
+} from "../editor/sceneEditing";
 import routes from "../../routes";
 
 const resetTitle = (canReset: boolean): string =>
@@ -69,7 +76,13 @@ const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
   return <MediaWorkspace key={shown.id} item={shown} />;
 };
 
-const MediaWorkspace = ({ item }: { item: MediaItem }) => {
+interface MediaWorkspaceProps {
+  item: MediaItem;
+  scene?: SceneEditing<MediaDraft>;
+}
+
+export const MediaWorkspace = ({ item, scene }: MediaWorkspaceProps) => {
+  const navigate = useNavigate();
   const editorReturn = useEditorReturn(
     item.builtIn ? routes.dashboard() : routes.mediaLibrary(item.kind),
     item.id,
@@ -83,9 +96,10 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
   const stagePresenting = useStore(
     (s) => Boolean(s.presentation) && s.presentationMode === "stage",
   );
-  const editor = useMediaEditor(item);
+  const editor = useMediaEditor(item, scene?.commit);
   const src = useMediaUrl(item);
-  const leaveGuard = useUnsavedChanges(editor.dirty);
+  const isAutoUpdating = Boolean(scene?.autoUpdate);
+  const leaveGuard = useUnsavedChanges(editor.dirty && !isAutoUpdating);
   const resetAll = useConfirmedAction(editor.resetSettings);
   const isImage = item.kind === "image";
   const validation = useValidation({
@@ -96,6 +110,13 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
   });
 
   useDocumentTitle(editor.draft.name);
+  useAutoSave({
+    enabled: isAutoUpdating,
+    dirty: editor.dirty,
+    blocked: validation.invalid,
+    version: editor.draft,
+    save: editor.save,
+  });
 
   const videoSettings = editor.draft.video;
   const videoSurfaceRef = useRef<MediaSurfaceHandle>(null);
@@ -137,7 +158,9 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
       return;
     }
     if (!editor.save()) return;
-    pushToast(isImage ? "Image saved." : "Video saved.");
+    pushToast(
+      scene ? "Scene updated." : isImage ? "Image saved." : "Video saved.",
+    );
   };
 
   const handleUpdatePresentation = () => {
@@ -247,9 +270,16 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
         title={editor.draft.name}
         onTitle={editor.setName}
         compact={compact}
-        backTitle={editorReturn.backTitle}
-        onBack={editorReturn.back}
+        backTitle={scene ? SCENE_BACK_TITLE : editorReturn.backTitle}
+        onBack={scene ? () => navigate(sceneBackPath()) : editorReturn.back}
         onPresent={editor.present}
+        scene={
+          scene && {
+            autoUpdate: scene.autoUpdate,
+            onAutoUpdateChange: scene.onAutoUpdateChange,
+            onPreview: () => editor.present({ live: false }),
+          }
+        }
         actions={
           compact ? (
             <IconButton
@@ -281,10 +311,10 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
         onRedo={editor.redo}
         onSave={handleSave}
         onUpdatePresentation={
-          editor.isPresenting ? handleUpdatePresentation : undefined
+          editor.isPresenting && !scene ? handleUpdatePresentation : undefined
         }
         onSyncFromPresentation={
-          presentedVideo ? handleSyncFromPresentation : undefined
+          presentedVideo && !scene ? handleSyncFromPresentation : undefined
         }
       />
 
@@ -306,7 +336,7 @@ const MediaWorkspace = ({ item }: { item: MediaItem }) => {
       <ConfirmDialog
         open={leaveGuard.prompting}
         title="Unsaved changes"
-        message={UNSAVED_CHANGES_MESSAGE}
+        message={scene ? SCENE_UNSAVED_MESSAGE : UNSAVED_CHANGES_MESSAGE}
         confirmLabel="Leave without saving"
         onConfirm={leaveGuard.discard}
         onCancel={leaveGuard.cancel}

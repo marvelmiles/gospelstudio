@@ -2,7 +2,8 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useStore } from "./store/useStore";
 import { PresentWindow } from "./features/presentation/PresentWindow";
-import { StreamWindow } from "./features/stream/StreamWindow";
+import { StudioOutputWindow } from "./features/studio/output/StudioOutputWindow";
+import { StudioPreviewWindow } from "./features/studio/output/StudioPreviewWindow";
 import routes from "./routes";
 
 const ProjectionApp = () => {
@@ -13,11 +14,9 @@ const ProjectionApp = () => {
     void load();
   }, [load]);
 
-  return pathname === routes.streamWindow() ? (
-    <StreamWindow />
-  ) : (
-    <PresentWindow />
-  );
+  if (pathname === routes.studioWindow()) return <StudioOutputWindow />;
+  if (pathname === routes.studioPreview()) return <StudioPreviewWindow />;
+  return <PresentWindow />;
 };
 
 export default ProjectionApp;

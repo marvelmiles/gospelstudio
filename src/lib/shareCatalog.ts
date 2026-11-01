@@ -14,10 +14,6 @@ import {
   type BackupRecordRef,
   type BackupSelection,
 } from "./shareSelection";
-import {
-  contentIdsOf,
-  isSavedMarquee,
-} from "../features/stream/lib/overlayPresets";
 import { formatDuration } from "./media";
 import { formatBytes } from "./storageStats";
 
@@ -28,8 +24,8 @@ export type ShareTabId =
   | "videos"
   | "audio"
   | "colours"
+  | "productions"
   | "themes"
-  | "overlays"
   | "settings";
 
 export type SharePreview =
@@ -233,29 +229,23 @@ const colourItems = (source: BackupSource): ShareItem[] =>
       preview: { kind: "background", background },
     }));
 
-const overlayPreview = (
-  source: BackupSource,
-  preset: BackupSource["overlayPresets"][number],
-): SharePreview => {
-  if (isSavedMarquee(preset.overlay))
-    return { kind: "deck", text: excerpt(preset.overlay.text || preset.name) };
-
-  const [contentId] = contentIdsOf([preset.overlay]);
-  if (!contentId) return { kind: "deck", text: preset.name };
-
-  const clip = mediaById(source, contentId);
-  if (clip) return { kind: "media", item: clip };
-
-  const doc =
-    source.manuscripts.find((item) => item.id === contentId) ??
-    source.scriptures.find((item) => item.id === contentId);
-  if (doc) return deckPreview(source, doc);
-
-  const background = backgroundById(source, contentId);
-  return background
-    ? { kind: "background", background }
-    : { kind: "deck", text: preset.name };
-};
+const productionItems = (source: BackupSource): ShareItem[] =>
+  source.productions.map((production) => {
+    const sceneCount = production.scenes.length;
+    return {
+      key: production.id,
+      name: production.name,
+      detail: `${sceneCount} scene${sceneCount === 1 ? "" : "s"}`,
+      createdAt: stamp(production.createdAt),
+      updatedAt: stamp(production.updatedAt),
+      bytes: 0,
+      records: [{ collection: "productions", id: production.id }],
+      preview: {
+        kind: "deck",
+        text: excerpt(production.scenes.map((scene) => scene.name).join(" · ")),
+      },
+    };
+  });
 
 export const shareCatalog = (source: BackupSource): ShareTab[] => [
   {
@@ -318,20 +308,7 @@ export const shareCatalog = (source: BackupSource): ShareTab[] => [
       },
     })),
   },
-  {
-    id: "overlays",
-    label: "Saved overlays",
-    items: source.overlayPresets.map((preset) => ({
-      key: preset.id,
-      name: preset.name,
-      detail: "Broadcast overlay",
-      createdAt: preset.createdAt,
-      updatedAt: preset.updatedAt,
-      bytes: 0,
-      records: [{ collection: "overlayPresets", id: preset.id }],
-      preview: overlayPreview(source, preset),
-    })),
-  },
+  { id: "productions", label: "Productions", items: productionItems(source) },
   {
     id: "settings",
     label: "Settings",

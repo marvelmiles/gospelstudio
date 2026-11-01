@@ -1,7 +1,7 @@
-import { Spinner } from "@/components/ui/spinner";
+import { AppIconLoader } from "./AppIconLoader";
 
-export const LoadingArea = ({ size = 26 }: { size?: number }) => (
+export const LoadingArea = ({ size = 56 }: { size?: number }) => (
   <div className="grid size-full min-h-30 place-items-center">
-    <Spinner size={size} />
+    <AppIconLoader size={size} />
   </div>
 );

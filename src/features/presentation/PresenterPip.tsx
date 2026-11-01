@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -8,7 +8,6 @@ import {
   Pause,
   Play,
   RotateCcw,
-  StickyNote,
   Volume2,
   VolumeX,
   X,
@@ -16,6 +15,9 @@ import {
 import { useFloatingWindow } from "../../hooks/useFloatingWindow";
 import { FloatingWindowTab } from "@/components/shared/FloatingWindowTab";
 import { FloatingWindowHeader } from "@/components/shared/FloatingWindowHeader";
+import { floatingPanelClassName } from "@/components/shared/floatingPanel";
+import { LiveBadge } from "@/components/shared/LiveBadge";
+import { PresenterNotes } from "@/components/shared/PresenterNotes";
 import type { VideoProgress } from "../../lib/media";
 import { Slider } from "@/components/ui/slider";
 import { mediaSurfaceProps } from "../../lib/mediaKeys";
@@ -47,8 +49,6 @@ interface PresenterPipProps {
   onSeekVideo: (time: number) => void;
   onToggleVideoMuted: () => void;
   onRestartVideo: () => void;
-  secondaryLayer?: ReactNode;
-  secondaryMenu?: ReactNode;
   rootRef: RefObject<HTMLDivElement | null>;
   onPrev: () => void;
   onNext: () => void;
@@ -75,8 +75,6 @@ export const PresenterPip = ({
   onSeekVideo,
   onToggleVideoMuted,
   onRestartVideo,
-  secondaryLayer,
-  secondaryMenu,
   rootRef,
   onPrev,
   onNext,
@@ -165,20 +163,9 @@ export const PresenterPip = ({
               <VideoScrubber progress={videoProgress} onSeek={onSeekVideo} />
             </>
           )}
-          {secondaryLayer}
         </div>
 
-        {notes && (
-          <div className="flex items-start gap-1.75 border-t border-border bg-primary/9 px-2.5 py-2">
-            <StickyNote
-              size={13}
-              className="mt-px shrink-0 text-primary-soft"
-            />
-            <div className="max-h-16.5 min-w-0 flex-1 overflow-y-auto text-[11.5px] leading-[1.45] font-medium whitespace-pre-line text-foreground">
-              {notes}
-            </div>
-          </div>
-        )}
+        {notes && <PresenterNotes notes={notes} />}
 
         <div className="flex flex-wrap items-center gap-1.25 border-t border-border px-2.25 py-2">
           {navigable && (
@@ -229,7 +216,6 @@ export const PresenterPip = ({
             {navigable && currentLabel ? " · " : ""}
             {currentLabel}
           </span>
-          {secondaryMenu}
           {isLive ? (
             <MiniButton
               icon={MonitorOff}
@@ -297,21 +283,3 @@ const VideoScrubber = ({ progress, onSeek }: VideoScrubberProps) => {
     />
   );
 };
-
-const floatingPanelClassName = (focused: boolean): string =>
-  cn(
-    "fixed overflow-hidden rounded-[14px] border bg-card/96 backdrop-blur-[18px] backdrop-saturate-150 transition-[border-color,box-shadow] duration-150 outline-none",
-    focused
-      ? "border-primary/55 shadow-[0_20px_55px_rgb(0_0_0/0.6),0_0_0_3px_rgb(37_99_235/0.18)]"
-      : "border-border shadow-[0_18px_45px_rgb(0_0_0/0.5)]",
-  );
-
-const LiveBadge = ({ title }: { title: string }) => (
-  <span
-    title={title}
-    className="inline-flex items-center gap-1 rounded-full bg-destructive px-1.75 py-0.5 text-[9.5px] font-extrabold tracking-[0.5px] text-primary-foreground"
-  >
-    <span className="size-1.25 rounded-full bg-primary-foreground" />
-    LIVE
-  </span>
-);

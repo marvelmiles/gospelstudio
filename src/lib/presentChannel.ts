@@ -2,7 +2,6 @@ import type {
   Background,
   ContentKind,
   MediaItem,
-  PipPlacement,
   PresentationView,
   SlideDeckDoc,
   Theme,
@@ -18,17 +17,6 @@ export interface MediaPlayback {
   seekTime: number;
   seekToken: number;
 }
-
-export interface SecondaryPresentState {
-  kind: SecondaryModuleKind;
-  id: string;
-  item?: MediaItem;
-  placement: PipPlacement;
-  muted: boolean;
-  media?: MediaPlayback;
-}
-
-export type SecondaryModuleKind = "image" | "video" | "stream";
 
 export interface PresentAssets {
   theme?: Theme;
@@ -48,7 +36,6 @@ export interface PresentState {
   pan: { x: number; y: number };
   view: PresentationView;
   media?: MediaPlayback;
-  secondary?: SecondaryPresentState;
   assets?: PresentAssets;
 }
 
@@ -67,11 +54,9 @@ export const syncedPosition = (sync: MediaSync): number =>
   sync.time +
   (sync.playing ? ((Date.now() - sync.at) / 1000) * (sync.rate || 1) : 0);
 
-type MediaSyncTarget = "main" | "secondary";
-
 export type PresentMessage =
   | { type: "state"; state: PresentState }
-  | { type: "media-sync"; sync: MediaSync; target?: MediaSyncTarget }
+  | { type: "media-sync"; sync: MediaSync }
   | { type: "request-state" }
   | { type: "bye" };
 

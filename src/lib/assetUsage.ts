@@ -37,6 +37,7 @@ export interface AssetUsagePlace {
   slideId: string | null;
   docKind: AssetUsageDocKind;
   docId: string;
+  sceneItemId: string | null;
 }
 
 export type AssetUsageEdit = AssetUsageRequest & AssetUsagePlace;
@@ -48,6 +49,7 @@ const editShape = {
   slideId: z.string().nullable(),
   docKind: z.enum(["manuscript", "scripture"]),
   docId: z.string().min(1),
+  sceneItemId: z.string().min(1).nullable().catch(null),
 };
 
 export const assetUsageEditSchema = z.discriminatedUnion("kind", [
@@ -81,7 +83,9 @@ const DOCUMENT_ROUTE: Record<AssetUsageDocKind, (id: string) => string> = {
 };
 
 export const assetUsageReturnPath = (place: AssetUsagePlace): string =>
-  DOCUMENT_ROUTE[place.docKind](place.docId);
+  place.sceneItemId
+    ? routes.studioItem(place.sceneItemId)
+    : DOCUMENT_ROUTE[place.docKind](place.docId);
 
 export const assetUsagePath = (edit: AssetUsageEdit): string =>
   routes.assetUsage(

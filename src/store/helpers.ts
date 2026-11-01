@@ -1,5 +1,6 @@
 import type { AudioItem, Background, MediaItem, Theme } from "../types";
 import { THEMES } from "../data/themes";
+import { deepEqual } from "../lib/equality";
 import { BACKGROUNDS, BUILT_IN_MEDIA } from "../data/backgrounds";
 import type { Getter } from "./storeTypes";
 
@@ -105,6 +106,20 @@ export const mergeById = <T extends { id: string }>(
   for (const item of importedWins ? existing : incoming) map.set(item.id, item);
   for (const item of importedWins ? incoming : existing) map.set(item.id, item);
   return [...map.values()];
+};
+
+export const mergeChanged = <T extends { id: string }>(
+  existing: T[],
+  incoming: T[],
+): T[] => {
+  const changed = incoming.filter(
+    (item) =>
+      !deepEqual(
+        existing.find((entry) => entry.id === item.id),
+        item,
+      ),
+  );
+  return changed.length ? mergeById(existing, changed, true) : existing;
 };
 
 export const sortBuiltInFirst = (themes: Theme[]): Theme[] => {

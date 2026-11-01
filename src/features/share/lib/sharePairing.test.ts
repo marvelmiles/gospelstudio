@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodeSignal, encodeSignal } from "../../stream/lib/streamSignal";
+import { decodeSignal, encodeSignal } from "../../pairing/lib/pairingSignal";
 import { readPairingCode } from "./sharePairing";
 
 const DATA_CHANNEL_SDP = [

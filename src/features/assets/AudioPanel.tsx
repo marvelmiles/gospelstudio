@@ -14,8 +14,8 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { LibrarySection } from "@/components/shared/LibrarySection";
 import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
 import { MoreMenu } from "@/components/shared/MoreMenu";
-import { QuickShareModal } from "../share/QuickShareModal";
-import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
+import { ShareModal } from "../share/ShareModal";
+import { useShareTarget } from "../share/lib/useShareTarget";
 import { useOpenAssetEditor } from "./assetLibraryNavigation";
 import { LibraryAddList } from "./LibraryAddList";
 import { sortAssets } from "./assetSort";
@@ -65,7 +65,7 @@ const SoundsList = ({ attentionId, sort, onSort }: SoundsListProps) => {
   const beginUpload = useStore((s) => s.beginUpload);
   const removeAudio = useStore((s) => s.removeAudio);
   const openEditor = useOpenAssetEditor();
-  const quickShare = useQuickShareTarget();
+  const sharing = useShareTarget();
   const audioInput = useRef<HTMLInputElement>(null);
 
   return (
@@ -110,18 +110,18 @@ const SoundsList = ({ attentionId, sort, onSort }: SoundsListProps) => {
             item={item}
             attention={item.id === attentionId}
             onEdit={() => openEditor(routes.sound(item.id), "audio")}
-            onQuickShare={() =>
-              quickShare.open([{ collection: "audio", id: item.id }], item.name)
+            onShare={() =>
+              sharing.open([{ collection: "audio", id: item.id }], item.name)
             }
             onRemove={() => void removeAudio(item.id)}
           />
         ))
       )}
-      {quickShare.target && (
-        <QuickShareModal
-          records={quickShare.target.records}
-          title={quickShare.target.title}
-          onClose={quickShare.close}
+      {sharing.target && (
+        <ShareModal
+          records={sharing.target.records}
+          title={sharing.target.title}
+          onClose={sharing.close}
         />
       )}
     </LibrarySection>
@@ -132,7 +132,7 @@ interface AudioRowProps {
   item: AudioItem;
   attention: boolean;
   onEdit: () => void;
-  onQuickShare: () => void;
+  onShare: () => void;
   onRemove: () => void;
 }
 
@@ -140,7 +140,7 @@ const AudioRow = ({
   item,
   attention,
   onEdit,
-  onQuickShare,
+  onShare,
   onRemove,
 }: AudioRowProps) => {
   const url = useAssetUrl(item);
@@ -177,10 +177,10 @@ const AudioRow = ({
             size="sm"
             items={[
               {
-                label: "Quick share",
+                label: "Share",
                 icon: Share2,
                 title: "Send this sound to another device on your WiFi",
-                onClick: onQuickShare,
+                onClick: onShare,
               },
             ]}
           />

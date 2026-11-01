@@ -1,8 +1,10 @@
 import type { Slide, SlideDeckDoc } from "../types";
+import type { Layer } from "../features/studio/types/layer";
+import type { Production } from "../features/studio/types/production";
+import { isFilledLayer } from "../features/studio/lib/layerFill";
 import type { BackupSource } from "./backupPayload";
 import { placedMediaSource } from "./slideMedia";
 import { NO_AUDIO_ID } from "./media";
-import { contentIdsOf } from "../features/stream/lib/overlayPresets";
 
 type BackupCollection =
   | "manuscripts"
@@ -11,7 +13,7 @@ type BackupCollection =
   | "themes"
   | "backgrounds"
   | "audio"
-  | "overlayPresets"
+  | "productions"
   | "prefs";
 
 const BACKUP_COLLECTIONS: readonly BackupCollection[] = [
@@ -21,7 +23,7 @@ const BACKUP_COLLECTIONS: readonly BackupCollection[] = [
   "themes",
   "backgrounds",
   "audio",
-  "overlayPresets",
+  "productions",
   "prefs",
 ];
 
@@ -46,7 +48,7 @@ export const selectionFrom = (
     themes: new Set(),
     backgrounds: new Set(),
     audio: new Set(),
-    overlayPresets: new Set(),
+    productions: new Set(),
     prefs: new Set(),
   };
   for (const entry of refs) gathered[entry.collection].add(entry.id);
@@ -57,7 +59,7 @@ export const selectionFrom = (
     themes: [...gathered.themes],
     backgrounds: [...gathered.backgrounds],
     audio: [...gathered.audio],
-    overlayPresets: [...gathered.overlayPresets],
+    productions: [...gathered.productions],
     prefs: [...gathered.prefs],
   };
 };
@@ -90,7 +92,9 @@ export const wholeLibrarySelection = (source: BackupSource): BackupSelection =>
     ...source.audio
       .filter((item) => !item.builtIn)
       .map((item) => ref("audio", item.id)),
-    ...source.overlayPresets.map((preset) => ref("overlayPresets", preset.id)),
+    ...source.productions.map((production) =>
+      ref("productions", production.id),
+    ),
     ref("prefs", PREFS_RECORD_ID),
   ]);
 
@@ -177,32 +181,52 @@ const dependenciesOf = (
         ? [ref("media", mediaId)]
         : [];
     }
-    case "overlayPresets": {
-      const preset = source.overlayPresets.find((item) => item.id === entry.id);
-      if (!preset) return [];
-      return contentIdsOf([preset.overlay]).flatMap((contentId) =>
-        overlayContentRefs(source, contentId),
+    case "productions": {
+      const production = source.productions.find(
+        (item) => item.id === entry.id,
       );
+      return production ? productionAssetRefs(production) : [];
     }
     default:
       return [];
   }
 };
 
-const overlayContentRefs = (
-  source: BackupSource,
-  contentId: string,
-): BackupRecordRef[] => {
-  if (source.manuscripts.some((doc) => doc.id === contentId))
-    return [ref("manuscripts", contentId)];
-  if (source.scriptures.some((doc) => doc.id === contentId))
-    return [ref("scriptures", contentId)];
-  if (source.media.some((item) => item.id === contentId))
-    return [ref("media", contentId)];
-  if (source.backgrounds.some((item) => item.id === contentId))
-    return [ref("backgrounds", contentId)];
+const layerFillRefs = (layer: Layer): BackupRecordRef[] => {
+  if (!isFilledLayer(layer)) return [];
+  const { fill } = layer;
+  if (fill.kind === "image" && fill.imageId)
+    return [ref("media", fill.imageId)];
+  if (fill.kind === "video" && fill.videoId)
+    return [ref("media", fill.videoId)];
   return [];
 };
+
+const layerContentRefs = (layer: Layer): BackupRecordRef[] => {
+  switch (layer.type) {
+    case "manuscript":
+      if (layer.manuscript) return docAssetRefs(layer.manuscript);
+      return layer.manuscriptId ? [ref("manuscripts", layer.manuscriptId)] : [];
+    case "bible":
+      if (layer.passage) return docAssetRefs(layer.passage);
+      return layer.passageId ? [ref("scriptures", layer.passageId)] : [];
+    case "image":
+    case "video":
+      return layer.mediaId ? [ref("media", layer.mediaId)] : [];
+    case "background":
+      return layer.backgroundId ? [ref("backgrounds", layer.backgroundId)] : [];
+    default:
+      return [];
+  }
+};
+
+const productionAssetRefs = (production: Production): BackupRecordRef[] =>
+  production.scenes.flatMap((scene) =>
+    scene.layers.flatMap((layer) => [
+      ...layerFillRefs(layer),
+      ...layerContentRefs(layer),
+    ]),
+  );
 
 const holds = (source: BackupSource, entry: BackupRecordRef): boolean => {
   switch (entry.collection) {
@@ -223,8 +247,8 @@ const holds = (source: BackupSource, entry: BackupRecordRef): boolean => {
       );
     case "audio":
       return source.audio.some((item) => item.id === entry.id && !item.builtIn);
-    case "overlayPresets":
-      return source.overlayPresets.some((item) => item.id === entry.id);
+    case "productions":
+      return source.productions.some((item) => item.id === entry.id);
     case "prefs":
       return entry.id === PREFS_RECORD_ID;
   }

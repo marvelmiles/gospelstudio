@@ -13,18 +13,9 @@ import { useBlobUrl } from "../../lib/blobUrls";
 import { CONTENT_KIND_LABEL } from "../../lib/contentKinds";
 import type { VideoProgress } from "../../lib/media";
 import type { PresentState } from "../../lib/presentChannel";
-import {
-  primaryCamera,
-  secondaryCameras,
-  useStreamSession,
-} from "../stream/lib/streamSession";
-import { cameraPipWindow } from "../stream/lib/streamPipWindow";
-import { secondaryLabel } from "./lib/secondaryLabel";
-import { useStreamOverlays } from "../stream/lib/streamOverlayStore";
 import { usePresentation } from "./usePresentation";
 import { usePresentBroadcast } from "./lib/usePresentBroadcast";
 import { useScriptureReadAloud } from "./lib/useScriptureReadAloud";
-import { useSecondaryModule } from "./lib/useSecondaryModule";
 import { collectPresentAssets } from "./lib/presentAssets";
 import {
   DECK_END_LABELS,
@@ -35,9 +26,6 @@ import { Stage } from "./Stage";
 import { PresentationControls } from "./PresentationControls";
 import { PresenterBar } from "./PresenterBar";
 import { PresenterPip } from "./PresenterPip";
-import { PortalSlot } from "@/components/shared/PortalSlot";
-import { SecondaryPipContent, SecondaryPipFrame } from "./SecondaryPip";
-import { SecondaryModuleMenu } from "./SecondaryModuleMenu";
 import { VideoSurface } from "../../components/media/VideoSurface";
 import { AudioSurface } from "../../components/media/AudioSurface";
 import { VideoTransportBar } from "../../components/media/VideoTransportBar";
@@ -58,7 +46,6 @@ export const Presentation = () => {
 
   const pipRef = useRef<HTMLDivElement>(null);
   const videoHost = usePortalHost();
-  const secondaryHost = usePortalHost();
   const hasAnnouncedDisplay = useRef(false);
 
   const shortcutGate = useCallback(
@@ -70,7 +57,6 @@ export const Presentation = () => {
 
   const rootRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<MediaSurfaceHandle>(null);
-  const secondaryVideoRef = useRef<MediaSurfaceHandle>(null);
   const presentation = usePresentation({ rootRef, videoRef, shortcutGate });
   const togglePopOut = useCallback(() => {
     if (mode === "pip") {
@@ -81,19 +67,12 @@ export const Presentation = () => {
     setPresentationMode("pip");
   }, [mode, setPresentationMode]);
 
-  const streamSession = useStreamSession();
-
-  const isCoveredByStreamStage =
-    streamSession.active && streamSession.mode === "stage";
-
   useViewShortcuts({
     onTogglePopOut: togglePopOut,
     onToggleFullscreen:
       mode === "stage" ? presentation.toggleFullscreen : undefined,
-    isArmed: () => !isCoveredByStreamStage && shortcutGate(),
+    isArmed: shortcutGate,
   });
-  const streamOverlays = useStreamOverlays();
-  const secondary = useSecondaryModule(secondaryVideoRef);
   const chrome = useAutoHideChrome({ enabled: mode === "stage" });
   const { visible: isChromeVisible, onHoverChange } = chrome;
 
@@ -139,7 +118,6 @@ export const Presentation = () => {
             pan,
             view,
             media: isVideoSlide ? mediaPlayback : undefined,
-            secondary: secondary.state,
             assets: presentAssets,
           }
         : null,
@@ -152,27 +130,16 @@ export const Presentation = () => {
       view,
       isVideoSlide,
       mediaPlayback,
-      secondary.state,
       presentAssets,
     ],
   );
 
-  usePresentBroadcast(
-    isBroadcasting,
-    presentState,
-    {
-      isActive: isVideoSlide,
-      playing: mediaPlayback.playing,
-      rate: videoRate,
-      getTime: getVideoTime,
-    },
-    {
-      isActive: secondary.isClip,
-      playing: secondary.video.playback.playing,
-      rate: secondary.clipRate,
-      getTime: secondary.video.getTime,
-    },
-  );
+  usePresentBroadcast(isBroadcasting, presentState, {
+    isActive: isVideoSlide,
+    playing: mediaPlayback.playing,
+    rate: videoRate,
+    getTime: getVideoTime,
+  });
 
   useEffect(() => {
     if (isExtended && !hasAnnouncedDisplay.current) {
@@ -275,38 +242,10 @@ export const Presentation = () => {
       />
     ) : null;
 
-  const secondaryContent = secondary.state
-    ? createPortal(
-        <SecondaryPipContent
-          secondary={secondary.state}
-          stream={primaryCamera(streamSession)?.stream ?? null}
-          playback={secondary.video.playback}
-          videoRef={secondaryVideoRef}
-          onVideoTime={secondary.video.onTimeUpdate}
-          onVideoEnded={secondary.video.onEnded}
-          forceMuted={isLive}
-          overlays={streamOverlays}
-          overlayPreview
-          cameras={secondaryCameras(streamSession).map(cameraPipWindow)}
-        />,
-        secondaryHost,
-      )
-    : null;
-
-  const secondaryLayer = secondary.state ? (
-    <SecondaryPipFrame
-      placement={secondary.state.placement}
-      label={secondaryLabel(secondary.state)}
-    >
-      <PortalSlot host={secondaryHost} />
-    </SecondaryPipFrame>
-  ) : null;
-
   if (mode === "pip") {
     return (
       <>
         {videoLayer}
-        {secondaryContent}
         <PresenterPip
           title={deck.title}
           moduleName={CONTENT_KIND_LABEL[deck.kind]}
@@ -323,8 +262,6 @@ export const Presentation = () => {
           onSeekVideo={presentation.seekVideoTo}
           onToggleVideoMuted={presentation.toggleVideoMuted}
           onRestartVideo={presentation.restartVideo}
-          secondaryLayer={secondaryLayer}
-          secondaryMenu={<SecondaryModuleMenu variant="mini" />}
           rootRef={pipRef}
           onPrev={() => presentation.go(-1)}
           onNext={() => presentation.go(1)}
@@ -345,7 +282,6 @@ export const Presentation = () => {
   return (
     <>
       {videoLayer}
-      {secondaryContent}
       <div
         ref={rootRef}
         style={stageBackgroundStyle(
@@ -367,8 +303,6 @@ export const Presentation = () => {
           videoHost={videoHost}
         />
 
-        {secondaryLayer}
-
         <PresentationControls
           paused={presentation.playbackPaused}
           view={view}
@@ -384,7 +318,6 @@ export const Presentation = () => {
           onHoverChange={onHoverChange}
           onGoLive={handleGoLive}
           onShrinkToPip={togglePopOut}
-          secondaryMenu={<SecondaryModuleMenu variant="stage" />}
           onTogglePause={presentation.togglePlayback}
           onSetView={presentation.setViewMode}
           onZoomIn={presentation.zoomIn}

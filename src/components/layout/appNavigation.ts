@@ -2,6 +2,8 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   BookOpen,
+  Camera,
+  Clapperboard,
   FileText,
   Film,
   HelpCircle,
@@ -9,7 +11,6 @@ import {
   Keyboard,
   LayoutDashboard,
   Palette,
-  Radio,
   Settings,
   Share2,
 } from "lucide-react";
@@ -89,15 +90,22 @@ export const useAppNavigation = (): AppNavigation => {
           routes.videos(),
         ),
         destination(
-          "stream",
-          "Stream",
-          "Cameras and live projection",
-          Radio,
-          routes.stream(),
+          "studio",
+          "Studio",
+          "Cameras, scripture and lyrics on one screen",
+          Clapperboard,
+          routes.studio(),
+        ),
+        destination(
+          "camera",
+          "Share camera",
+          "Use this device as a Studio camera",
+          Camera,
+          routes.cameraShare(),
         ),
         destination(
           "share",
-          "Quick Share",
+          "Share",
           "Send your library to a nearby device",
           Share2,
           routes.share(),

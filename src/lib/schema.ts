@@ -290,99 +290,65 @@ const mediaSchema = z
   })
   .passthrough();
 
-const overlayImageRefSchema = z
-  .object({
-    id: z.string(),
-    source: z.enum(["media", "background"]),
-  })
-  .nullable()
-  .catch(null);
-
-const overlaySurfaceStyleShape = {
-  background: z.string(),
-  backgroundImage: overlayImageRefSchema,
-  textColor: z.string(),
-  fontFamily: z.string(),
-  fontWeight: z.number(),
-};
-
-const overlaySurfaceStyleSchema = z
-  .object(overlaySurfaceStyleShape)
+const studioLayerSchema = z
+  .object({ id: z.string().min(1), type: z.string().min(1) })
   .passthrough();
 
-const overlayBlockStyleSchema = z
-  .object({
-    ...overlaySurfaceStyleShape,
-    fontSize: z.number(),
-    align: alignSchema.catch("left"),
-    lineHeight: z.number(),
-    padding: z.number(),
-  })
-  .passthrough();
-
-const overlayBadgeStyleSchema = z
-  .object({
-    ...overlaySurfaceStyleShape,
-    show: z.boolean(),
-    fontSize: z.number(),
-  })
-  .passthrough();
-
-const overlayVideoPlaybackSchema = z
-  .object({
-    playing: z.boolean(),
-    muted: z.boolean(),
-    volume: z.number(),
-    rate: z.number(),
-    loop: z.boolean(),
-    seekTime: z.number(),
-    seekToken: z.number(),
-  })
-  .passthrough();
-
-const savedOverlayShape = {
-  frame: slideFrameSchema,
-  opacity: z.number(),
-  radius: z.number(),
-  hidden: z.boolean().catch(false),
-  label: z.string(),
-  autoSync: z.boolean().catch(false),
-};
-
-const savedContentOverlaySchema = z
-  .object({
-    ...savedOverlayShape,
-    kind: z.enum(["manuscript", "scripture", "image", "video"]),
-    contentId: z.string(),
-    source: z.enum(["media", "background"]).catch("media"),
-    slideIndex: z.number().catch(0),
-    opaque: z.boolean().catch(false),
-    layout: z.enum(["block", "slide"]).catch("block"),
-    block: overlayBlockStyleSchema,
-    badge: overlayBadgeStyleSchema,
-    animation: animationKindSchema.catch("fade"),
-    video: overlayVideoPlaybackSchema,
-  })
-  .passthrough();
-
-const savedMarqueeOverlaySchema = z
-  .object({
-    ...savedOverlayShape,
-    kind: z.literal("marquee"),
-    text: z.string(),
-    crossSeconds: z.number(),
-    style: overlaySurfaceStyleSchema,
-    fontScale: z.number(),
-  })
-  .passthrough();
-
-const overlayPresetSchema = z.object({
-  id: z.string().optional(),
-  name: z.string(),
-  overlay: z.union([savedMarqueeOverlaySchema, savedContentOverlaySchema]),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
+const sceneTransitionSchema = z.object({
+  kind: z.enum(["cut", "fade", "crossfade", "slide"]),
+  durationMs: z.number().min(0),
 });
+
+const studioSceneSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string(),
+    layers: z.array(studioLayerSchema),
+    transition: sceneTransitionSchema.optional().catch(undefined),
+    background: z.string().optional().catch(undefined),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .passthrough();
+
+const mediaSourceSchema = z.discriminatedUnion("type", [
+  z.object({
+    id: z.string().min(1),
+    name: z.string(),
+    type: z.literal("camera"),
+    deviceId: z.string().nullable(),
+    audioDeviceId: z.string().nullable(),
+    deviceLabel: z.string(),
+  }),
+  z.object({
+    id: z.string().min(1),
+    name: z.string(),
+    type: z.literal("remote"),
+    deviceLabel: z.string(),
+  }),
+]);
+
+const productionSettingsSchema = z
+  .object({
+    snapToGuides: z.boolean(),
+    defaultTransition: sceneTransitionSchema,
+    autoUpdateScene: z.boolean(),
+  })
+  .partial()
+  .catch({});
+
+const productionSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string().min(1),
+    scenes: z.array(studioSceneSchema).min(1),
+    sources: z.array(mediaSourceSchema).catch([]),
+    previewSceneId: z.string().optional(),
+    settings: productionSettingsSchema,
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .passthrough();
 
 const prefsSchema = z
   .object({
@@ -417,7 +383,7 @@ export const dataFileSchema = z.object({
   themes: z.array(themeSchema).optional(),
   backgrounds: z.array(backgroundSchema).optional(),
   audio: z.array(audioSchema).optional(),
-  overlayPresets: z.array(overlayPresetSchema).optional().catch(undefined),
+  productions: z.array(productionSchema).optional().catch(undefined),
   prefs: prefsSchema.optional().catch(undefined),
 });
 
@@ -426,5 +392,5 @@ export type ImportedManuscript = z.infer<typeof manuscriptSchema>;
 export type ImportedScripture = z.infer<typeof scriptureSchema>;
 export type ImportedMedia = z.infer<typeof mediaSchema>;
 export type ImportedBackground = z.infer<typeof backgroundSchema>;
-export type ImportedOverlayPreset = z.infer<typeof overlayPresetSchema>;
+export type ImportedProduction = z.infer<typeof productionSchema>;
 export type ImportedPrefs = z.infer<typeof prefsSchema>;

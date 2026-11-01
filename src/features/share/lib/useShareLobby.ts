@@ -138,5 +138,5 @@ const newestPerDevice = (devices: ShareDevice[]): ShareDevice[] => {
 
 export const deviceListHint = (status: LobbyStatus): string =>
   status === "ready"
-    ? "No other device is here yet. Open Quick Share on the other device and it appears in this list, or pair with a code."
-    : "No device paired yet. Choose Pair with a code, then on the other device open Quick Share and choose Receive with a code.";
+    ? "No other device is here yet. Open Share on the other device and it appears in this list, or pair with a code."
+    : "No device paired yet. Choose Pair with a code, then on the other device open Share and choose Receive with a code.";

@@ -1,5 +1,5 @@
 import type { PassageRange, ScripturePassage } from "../../../types";
-import type { SavePassageOptions } from "../../../store/slices/scripturesSlice";
+import type { SavePassageOptions } from "./scripturePassage";
 
 const isSameRange = (a: PassageRange, b: PassageRange): boolean =>
   a.bookId === b.bookId &&

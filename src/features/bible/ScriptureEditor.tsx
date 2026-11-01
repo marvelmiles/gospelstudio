@@ -2,11 +2,18 @@ import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useLastDefined } from "@/hooks/useLastDefined";
 import { useNavigate, useParams } from "react-router-dom";
 import { BookOpen, Settings2 } from "lucide-react";
+import type { ScripturePassage } from "../../types";
 import { useStore } from "../../store/useStore";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { MissingPage } from "@/components/shared/MissingPage";
 import { useDeckEditor } from "../editor/useDeckEditor";
+import {
+  SCENE_BACK_TITLE,
+  SCENE_UNSAVED_MESSAGE,
+  sceneBackPath,
+  type SceneEditing,
+} from "../editor/sceneEditing";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import { DeckWorkspace } from "../editor/DeckWorkspace";
 import { PassageSettingsModal } from "./PassageSettingsModal";
@@ -38,27 +45,40 @@ export const ScriptureEditor = () => {
       />
     );
 
-  return <ScriptureWorkspace key={passage.id} passageId={passage.id} />;
+  return <LibraryScriptureWorkspace key={passage.id} passageId={passage.id} />;
 };
 
-const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
+const LibraryScriptureWorkspace = ({ passageId }: { passageId: string }) => {
   const current = useStore((s) =>
     s.scriptures.find((item) => item.id === passageId),
   );
-  const upsertScripture = useStore((s) => s.upsertScripture);
   const passage = useLastDefined(current);
-  const editor = useDeckEditor(passage!, upsertScripture);
+  return passage ? <ScriptureWorkspace passage={passage} /> : null;
+};
+
+interface ScriptureWorkspaceProps {
+  passage: ScripturePassage;
+  scene?: SceneEditing<ScripturePassage>;
+}
+
+export const ScriptureWorkspace = ({
+  passage,
+  scene,
+}: ScriptureWorkspaceProps) => {
+  const upsertScripture = useStore((s) => s.upsertScripture);
+  const editor = useDeckEditor(passage, scene?.commit ?? upsertScripture);
   const openAssetUsage = useOpenAssetUsageEditor({
     kind: "scripture",
     doc: editor.doc,
     editor,
+    sceneItemId: scene?.itemId,
   });
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const startPresent = useStore((s) => s.startPresent);
   const ctrlNumBuffer = useRef("");
   const presentVerse = useEffectEvent((verse: number) => {
-    if (!passage || useStore.getState().presentation) return;
+    if (scene || useStore.getState().presentation) return;
     const index = slideIndexForVerse(passage, verse);
     if (index >= 0 && passage.slides?.[index])
       startPresent("scripture", passage.id, index);
@@ -83,7 +103,6 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
       window.removeEventListener("keyup", onKeyUp);
     };
   }, []);
-  if (!passage) return null;
 
   const draft = editor.doc;
 
@@ -115,8 +134,10 @@ const ScriptureWorkspace = ({ passageId }: { passageId: string }) => {
       doc={draft}
       kind="scripture"
       editor={editor}
-      backTo={routes.bible()}
-      backTitle="Back to Bible"
+      backTo={scene ? sceneBackPath() : routes.bible()}
+      backTitle={scene ? SCENE_BACK_TITLE : "Back to Bible"}
+      unsavedMessage={scene ? SCENE_UNSAVED_MESSAGE : undefined}
+      scene={scene}
       refit={refitFromVerses}
       topBarActions={(compact) =>
         compact ? (

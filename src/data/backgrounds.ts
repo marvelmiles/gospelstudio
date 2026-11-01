@@ -58,6 +58,8 @@ const videoBackgroundIdOf = (file: string): string => `bg-video-${file}`;
 export const BLACK_SAND_BACKGROUND_ID = imageBackgroundIdOf("black-sand");
 export const BIBLE_THORN_BACKGROUND_ID =
   imageBackgroundIdOf("bible-thorn-branch");
+export const PARTICLE_WAVE_BACKGROUND_ID =
+  videoBackgroundIdOf("particle-wave-blue");
 
 const BUILT_IN_ASSETS_DATE = "2026-10-29T00:00:00.000Z";
 const imageBackground = ({

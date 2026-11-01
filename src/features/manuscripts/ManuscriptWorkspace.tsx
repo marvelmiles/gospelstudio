@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { useDeckEditor } from "../editor/useDeckEditor";
+import {
+  SCENE_BACK_TITLE,
+  SCENE_UNSAVED_MESSAGE,
+  sceneBackPath,
+  type SceneEditing,
+} from "../editor/sceneEditing";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import { useManuscriptDefault } from "./useManuscriptDefault";
 import { DeckWorkspace } from "../editor/DeckWorkspace";
@@ -31,11 +37,13 @@ const DRAFT_LEAVE_MESSAGE =
 interface ManuscriptWorkspaceProps {
   manuscript: Manuscript;
   unsaved?: boolean;
+  scene?: SceneEditing<Manuscript>;
 }
 
 export const ManuscriptWorkspace = ({
   manuscript,
   unsaved,
+  scene,
 }: ManuscriptWorkspaceProps) => {
   const upsertManuscript = useStore((s) => s.upsertManuscript);
   const pushToast = useStore((s) => s.pushToast);
@@ -43,11 +51,12 @@ export const ManuscriptWorkspace = ({
   const backgrounds = useStore((s) => s.backgrounds);
   const audio = useStore((s) => s.audio);
 
-  const editor = useDeckEditor(manuscript, upsertManuscript);
+  const editor = useDeckEditor(manuscript, scene?.commit ?? upsertManuscript);
   const openAssetUsage = useOpenAssetUsageEditor({
     kind: "manuscript",
     doc: editor.doc,
     editor,
+    sceneItemId: scene?.itemId,
   });
   const [textOpen, setTextOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -94,7 +103,7 @@ export const ManuscriptWorkspace = ({
   };
 
   const resetAction = (compact: boolean) =>
-    draft.builtIn ? (
+    draft.builtIn && !scene ? (
       compact ? (
         <IconButton
           icon={RotateCcw}
@@ -121,11 +130,18 @@ export const ManuscriptWorkspace = ({
       doc={draft}
       kind="manuscript"
       editor={editor}
-      backTo={routes.manuscripts()}
-      backTitle="Back to manuscripts"
+      backTo={scene ? sceneBackPath() : routes.manuscripts()}
+      backTitle={scene ? SCENE_BACK_TITLE : "Back to manuscripts"}
       elements={manuscriptSlideElements(resolveManuscriptFormat(draft))}
       reflow={{ maxLines: draft.maxLines }}
-      unsavedMessage={unsaved ? DRAFT_LEAVE_MESSAGE : undefined}
+      unsavedMessage={
+        scene
+          ? SCENE_UNSAVED_MESSAGE
+          : unsaved
+            ? DRAFT_LEAVE_MESSAGE
+            : undefined
+      }
+      scene={scene}
       topBarActions={(compact) =>
         compact ? (
           <>

@@ -114,7 +114,7 @@ const checkCapabilities = (): Capability[] => {
     },
     {
       id: "webrtc",
-      label: "Camera streaming (WebRTC)",
+      label: "Cameras from other devices (WebRTC)",
       critical: false,
       ok: safe(() => typeof RTCPeerConnection !== "undefined"),
     },

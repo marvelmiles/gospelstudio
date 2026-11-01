@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   BookOpen,
+  Clapperboard,
   Cross,
   FileText,
   Film,
@@ -11,9 +12,11 @@ import {
   MessageSquareHeart,
   MonitorUp,
   Palette,
-  Radio,
   Save,
   Settings,
+  Share2,
+  SquarePen,
+  Video,
   WifiOff,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -55,9 +58,24 @@ const TIPS: { icon: LucideIcon; title: string; desc: string }[] = [
     desc: "A theme is a saved look: font, text color, size, background, animation and even background audio, bundled together. The Themes page works like an editor, with every theme in a scrolling sidebar and the one you picked open beside it. Pick a theme in a manuscript's settings and every slide follows it; built-in themes can be edited but not deleted, and Reset to default puts one back the way it shipped. Any slide can still override the look in its inspector.",
   },
   {
-    icon: Radio,
-    title: "Put a phone camera on the screen",
-    desc: "The Stream tab pairs another device over your WiFi by scanning a QR code or typing a short code. Project the camera full screen, keep a second one in a corner or waiting off screen, preview any of them in a floating window first, and lay text, announcements, pictures or clips over the broadcast. It needs an https address on both devices.",
+    icon: Clapperboard,
+    title: "Build a live screen in the Studio",
+    desc: "The Studio puts a webcam or a phone camera, Bible verses, manuscripts, images, subtitles and a speaker's name on the big screen together. Pick a ready-made layout, drag and resize anything, get the next scene ready in Preview while the room watches the Live screen, then press GO LIVE. Point at Present at the top: Go live opens the projector screen in its own clean window, and Preview shows the scene full screen in a new tab.",
+  },
+  {
+    icon: SquarePen,
+    title: "Change a scene's content for one service",
+    desc: "Press the three dots on anything in a scene and choose Open editor. The manuscript, Bible, image or video editor opens on that production's own copy, so your library stays untouched, and auto-play, loop, backgrounds and animations set there all apply in the scene. Auto update sends each change to the scene as you make it, or turn it off and press Update scene. Open PiP gives you a small floating remote to step through slides from any page.",
+  },
+  {
+    icon: Video,
+    title: "Turn any phone into a camera",
+    desc: "Open Share camera on a phone, tablet or laptop and press Start sharing, or press the camera icon at the top of the Studio to open it in a new tab. Then in the Studio choose Another device in the camera window and pick it, or scan the QR code shown there with the phone and it connects by itself. It pairs over WiFi in one tap, or with a QR code when there is no internet, and its microphone is heard while it is live. It needs an https address on both devices.",
+  },
+  {
+    icon: Share2,
+    title: "Share with a nearby device",
+    desc: "Share sends manuscripts, passages, studio productions, pictures, videos, sounds and themes straight to another device on the same WiFi, with everything each item needs. Nothing is uploaded.",
   },
   {
     icon: WifiOff,

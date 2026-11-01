@@ -16,26 +16,47 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Kbd } from "@/components/ui/kbd";
 
-interface PresentMenuProps {
-  onPresent: (options: PresentOptions) => void;
+interface PresentChoice {
+  title: string;
+  description: string;
+  hint?: string;
+}
+
+interface PresentMenuButtonProps {
+  onGoLive: () => void;
+  onPreview: () => void;
+  goLive?: PresentChoice;
+  preview?: PresentChoice;
   label?: string;
   disabled?: boolean;
   title?: string;
   fill?: boolean;
-  hints?: boolean;
+  align?: "start" | "end";
   children?: ReactNode;
 }
 
-export const PresentMenu = ({
-  onPresent,
+const GO_LIVE_CHOICE: PresentChoice = {
+  title: "Go live",
+  description: "Project to the audience display",
+};
+
+const PREVIEW_CHOICE: PresentChoice = {
+  title: "Preview here",
+  description: "Show on this screen only",
+};
+
+export const PresentMenuButton = ({
+  onGoLive,
+  onPreview,
+  goLive = GO_LIVE_CHOICE,
+  preview = PREVIEW_CHOICE,
   label = "Present",
   disabled,
   title,
   fill,
-  hints,
+  align = "start",
   children,
-}: PresentMenuProps) => {
-  const present = usePresentActions(onPresent);
+}: PresentMenuButtonProps) => {
   const { open, setOpen, hoverHandlers } = useHoverOpen(!disabled);
 
   return (
@@ -52,7 +73,7 @@ export const PresentMenu = ({
           <Button
             size="sm"
             disabled={disabled}
-            title={title ?? "Present"}
+            title={title ?? label}
             className={cn(fill && "min-w-0 flex-1")}
           >
             <Play />
@@ -60,41 +81,69 @@ export const PresentMenu = ({
           </Button>
         )}
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-67" {...hoverHandlers}>
+      <DropdownMenuContent align={align} className="w-67" {...hoverHandlers}>
         <PresentOption
           icon={MonitorUp}
-          title="Go live"
-          description="Project to the audience display"
-          hint={hints ? EDITOR_COMMANDS.goLive.hint : undefined}
+          choice={goLive}
           highlighted
-          onSelect={present.startLive}
+          onSelect={onGoLive}
         />
         <PresentOption
           icon={MonitorPlay}
-          title="Preview here"
-          description="Show on this screen only"
-          hint={hints ? EDITOR_COMMANDS.preview.hint : undefined}
-          onSelect={present.startPreview}
+          choice={preview}
+          onSelect={onPreview}
         />
       </DropdownMenuContent>
     </DropdownMenu>
   );
 };
 
+interface PresentMenuProps {
+  onPresent: (options: PresentOptions) => void;
+  label?: string;
+  disabled?: boolean;
+  title?: string;
+  fill?: boolean;
+  hints?: boolean;
+  children?: ReactNode;
+}
+
+export const PresentMenu = ({
+  onPresent,
+  hints,
+  ...button
+}: PresentMenuProps) => {
+  const present = usePresentActions(onPresent);
+
+  return (
+    <PresentMenuButton
+      {...button}
+      onGoLive={present.startLive}
+      onPreview={present.startPreview}
+      goLive={
+        hints
+          ? { ...GO_LIVE_CHOICE, hint: EDITOR_COMMANDS.goLive.hint }
+          : GO_LIVE_CHOICE
+      }
+      preview={
+        hints
+          ? { ...PREVIEW_CHOICE, hint: EDITOR_COMMANDS.preview.hint }
+          : PREVIEW_CHOICE
+      }
+    />
+  );
+};
+
 interface PresentOptionProps {
   icon: LucideIcon;
-  title: string;
-  description: string;
-  hint?: string;
+  choice: PresentChoice;
   highlighted?: boolean;
   onSelect: () => void;
 }
 
 const PresentOption = ({
   icon: Icon,
-  title,
-  description,
-  hint,
+  choice,
   highlighted,
   onSelect,
 }: PresentOptionProps) => (
@@ -115,11 +164,11 @@ const PresentOption = ({
           highlighted ? "text-primary-soft" : "text-foreground",
         )}
       >
-        {title}
-        {hint && <Kbd>{hint}</Kbd>}
+        {choice.title}
+        {choice.hint && <Kbd>{choice.hint}</Kbd>}
       </span>
       <span className="block truncate text-[11.5px] leading-[1.45] text-muted-foreground">
-        {description}
+        {choice.description}
       </span>
     </span>
   </DropdownMenuItem>

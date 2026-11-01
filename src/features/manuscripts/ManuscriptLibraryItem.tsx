@@ -90,15 +90,15 @@ const ManuscriptCoverContent = ({
 
 const manuscriptMenuItems = (
   onOpen: () => void,
-  onQuickShare: () => void,
+  onShare: () => void,
   keepAction: MenuItem | null,
 ): MenuItem[] => [
   { label: "Open in editor", icon: PenLine, onClick: onOpen },
   {
-    label: "Quick share",
+    label: "Share",
     icon: Share2,
     title: "Send this to another device on your WiFi",
-    onClick: onQuickShare,
+    onClick: onShare,
   },
   ...(keepAction ? [keepAction] : []),
 ];

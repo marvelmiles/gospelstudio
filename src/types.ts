@@ -14,14 +14,6 @@ export type EasingKind = "ease" | "ease-in-out" | "ease-out" | "linear";
 
 export type PresentationView = "normal" | "cover" | "fill";
 
-export type PipCorner =
-  "top-left" | "top-right" | "bottom-left" | "bottom-right";
-
-export interface PipPlacement {
-  corner: PipCorner;
-  size: number;
-}
-
 type BgType = "gradient" | "solid" | "image" | "video";
 
 export type ContentKind = "manuscript" | "scripture" | "image" | "video";

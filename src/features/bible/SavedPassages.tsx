@@ -16,8 +16,8 @@ import { SearchInput } from "@/components/shared/SearchInput";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadMoreFooter } from "@/components/shared/LoadMoreFooter";
 import { MoreMenu } from "@/components/shared/MoreMenu";
-import { QuickShareModal } from "../share/QuickShareModal";
-import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
+import { ShareModal } from "../share/ShareModal";
+import { useShareTarget } from "../share/lib/useShareTarget";
 import { PinButton } from "@/components/shared/PinControl";
 import {
   CardActions,
@@ -48,7 +48,7 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
 
   const [query, setQuery] = useState("");
   const [sort, setSort] = useLibrarySort("scriptures");
-  const quickShare = useQuickShareTarget();
+  const sharing = useShareTarget();
 
   const saved = useMemo(
     () => scriptures.filter((passage) => !passage.quick),
@@ -120,8 +120,8 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
               onPresent={(live) =>
                 startPresent("scripture", passage.id, 0, { live })
               }
-              onQuickShare={() =>
-                quickShare.open(
+              onShare={() =>
+                sharing.open(
                   [{ collection: "scriptures", id: passage.id }],
                   passage.title,
                 )
@@ -135,11 +135,11 @@ export const SavedPassages = ({ trashView }: { trashView: boolean }) => {
       )}
       <LoadMoreFooter list={shown} noun="passages" />
 
-      {quickShare.target && (
-        <QuickShareModal
-          records={quickShare.target.records}
-          title={quickShare.target.title}
-          onClose={quickShare.close}
+      {sharing.target && (
+        <ShareModal
+          records={sharing.target.records}
+          title={sharing.target.title}
+          onClose={sharing.close}
         />
       )}
     </>
@@ -154,7 +154,7 @@ interface PassageCardProps {
   trashView: boolean;
   onOpen: () => void;
   onPresent: (live: boolean) => void;
-  onQuickShare: () => void;
+  onShare: () => void;
   onTrash: () => void;
   onRestore: () => void;
   onDelete: () => void;
@@ -168,7 +168,7 @@ const PassageCard = ({
   trashView,
   onOpen,
   onPresent,
-  onQuickShare,
+  onShare,
   onTrash,
   onRestore,
   onDelete,
@@ -236,10 +236,10 @@ const PassageCard = ({
                 items={[
                   { label: "Open in editor", icon: PenLine, onClick: onOpen },
                   {
-                    label: "Quick share",
+                    label: "Share",
                     icon: Share2,
                     title: "Send this to another device on your WiFi",
-                    onClick: onQuickShare,
+                    onClick: onShare,
                   },
                 ]}
               />

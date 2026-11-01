@@ -1,8 +1,7 @@
 import type { Background } from "../../../types";
 import type { PresentAssets } from "../../../lib/presentChannel";
-import { deepEqual } from "../../../lib/equality";
 import { resolveBackgroundId } from "../../../lib/resolve";
-import { customMedia, mergeById } from "../../../store/helpers";
+import { customMedia, mergeChanged } from "../../../store/helpers";
 import type { MediaLibrary } from "../../../lib/media";
 import { useStore } from "../../../store/useStore";
 import type { Deck } from "../useDeck";
@@ -37,20 +36,6 @@ export const collectPresentAssets = (
     backgrounds,
     media: [...media, ...builtInMedia].filter((item) => mediaIds.has(item.id)),
   };
-};
-
-const mergeChanged = <T extends { id: string }>(
-  existing: T[],
-  incoming: T[],
-): T[] => {
-  const changed = incoming.filter(
-    (item) =>
-      !deepEqual(
-        existing.find((entry) => entry.id === item.id),
-        item,
-      ),
-  );
-  return changed.length ? mergeById(existing, changed, true) : existing;
 };
 
 export const applyPresentAssets = (assets: PresentAssets): void =>

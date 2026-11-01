@@ -17,6 +17,7 @@ import {
 import { now } from "../../lib/id";
 import { useStore } from "../../store/useStore";
 import type { DeckEditor } from "../editor/useDeckEditor";
+import { applySceneDocAssetUsage } from "../studio/store/itemActions";
 
 const editStateSchema = z.object({ assetUsageEdit: assetUsageEditSchema });
 
@@ -26,12 +27,14 @@ interface AssetUsageEditorOptions {
   kind: ContentKind;
   doc: SlideDeckDoc;
   editor: DeckEditor;
+  sceneItemId?: string;
 }
 
 export const useOpenAssetUsageEditor = ({
   kind,
   doc,
   editor,
+  sceneItemId,
 }: AssetUsageEditorOptions) => {
   const navigate = useNavigate();
   const pushToast = useStore((s) => s.pushToast);
@@ -53,10 +56,11 @@ export const useOpenAssetUsageEditor = ({
         ...place,
         docKind: kind,
         docId: doc.id,
+        sceneItemId: sceneItemId ?? null,
       };
       navigate(assetUsagePath(edit), { state: { assetUsageEdit: edit } });
     },
-    [dirty, doc.id, kind, navigate, pushToast, save],
+    [dirty, doc.id, kind, navigate, pushToast, save, sceneItemId],
   );
 };
 
@@ -68,6 +72,7 @@ export interface AssetUsageEditorSession {
 }
 
 const saveAssetUsage = (edit: AssetUsageEdit): boolean => {
+  if (edit.sceneItemId) return applySceneDocAssetUsage(edit.sceneItemId, edit);
   const state = useStore.getState();
   if (edit.docKind === "manuscript") {
     const manuscript = state.manuscripts.find((item) => item.id === edit.docId);

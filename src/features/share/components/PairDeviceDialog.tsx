@@ -8,9 +8,9 @@ import {
   CodeExchangePanes,
   ReadCode,
   ShowCode,
-} from "../../stream/CodeExchange";
-import { StreamStatusLine } from "../../stream/components/StreamStatusLine";
-import { PairingStep } from "../../stream/receiver/PairingStep";
+} from "../../pairing/CodeExchange";
+import { PairingStatusLine } from "../../pairing/PairingStatusLine";
+import { PairingStep } from "../../pairing/PairingStep";
 import { addPairedDevice } from "../lib/pairedShareDevices";
 import {
   createPairingInvite,
@@ -89,7 +89,7 @@ const PairingSteps = ({
     const replySdp = readPairingCode(text, "reply");
     if (!replySdp) {
       pushToast(
-        "That is not a Quick Share reply. Scan the code the other device shows after it reads yours.",
+        "That is not a Share reply. Scan the code the other device shows after it reads yours.",
         "error",
       );
       return false;
@@ -129,7 +129,7 @@ const PairingSteps = ({
   if (phase === "failed") {
     return (
       <div className="grid justify-items-center gap-3.5">
-        <StreamStatusLine tone="danger">{failure}</StreamStatusLine>
+        <PairingStatusLine tone="danger">{failure}</PairingStatusLine>
         <Button onClick={startAgain}>
           <RotateCcw size={14} />
           Start again
@@ -148,7 +148,7 @@ const PairingSteps = ({
           {invite ? (
             <ShowCode
               value={invite.code}
-              caption="On the other device, open Quick Share, choose Receive with a code, then scan or paste this."
+              caption="On the other device, open Share, choose Receive with a code, then scan or paste this."
             />
           ) : (
             <div className="grid place-items-center p-7.5">
@@ -160,9 +160,9 @@ const PairingSteps = ({
       read={
         <PairingStep stepNumber={2} title="Then read its reply">
           {phase === "connecting" ? (
-            <StreamStatusLine isBusy>
+            <PairingStatusLine isBusy>
               Connecting to the other device
-            </StreamStatusLine>
+            </PairingStatusLine>
           ) : (
             <ReadCode
               scanLabel="Point this camera at the reply on the other device."

@@ -1,5 +1,6 @@
 import { useStore } from "../../store/useStore";
 import { APP_NAME } from "../../lib/appInfo";
+import { AppIconLoader } from "./AppIconLoader";
 
 export const ResetOverlay = () => {
   const resetting = useStore((s) => s.resetting);
@@ -8,7 +9,11 @@ export const ResetOverlay = () => {
   return (
     <div className="fixed inset-0 z-500 grid place-items-center bg-scrim-strong p-6 backdrop-blur-sm">
       <div className="max-w-90 text-center">
-        <div className="mx-auto mb-5 size-11.5 animate-spin rounded-full border-3 border-border border-t-primary animation-duration-[0.9s]" />
+        <AppIconLoader
+          size={56}
+          label={`Resetting ${APP_NAME}`}
+          className="mx-auto mb-5"
+        />
         <div className="text-[22px] font-semibold text-foreground">
           Resetting {APP_NAME}
         </div>

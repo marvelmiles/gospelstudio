@@ -139,6 +139,27 @@
 
   --animate-scan-sweep: scan-sweep 2.2s ease-in-out infinite alternate;
   --animate-attention: attention 1.15s ease-in-out 2;
+  --animate-app-icon-fan: app-icon-fan 1.2s linear infinite;
+  --animate-app-icon-orbit: app-icon-orbit 1.8s linear infinite;
+  --animate-app-icon-pulse: app-icon-pulse 1.2s ease-in-out infinite;
+
+  @keyframes app-icon-fan {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes app-icon-orbit {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+
+  @keyframes app-icon-pulse {
+    50% {
+      transform: scale(0.86);
+    }
+  }
 
   @keyframes scan-sweep {
     to {

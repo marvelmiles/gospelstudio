@@ -50,15 +50,20 @@ export const PAGE_META = {
     "Themes",
     "Save a look once, with fonts, colors, backgrounds and slide animations, and use it on every song and Bible passage.",
   ),
-  stream: modulePage(
-    routes.stream(),
-    "Stream",
-    "Run a live broadcast with phone cameras. Show them on the big screen and add text, announcements and pictures on top.",
+  studio: modulePage(
+    routes.studio(),
+    "Studio",
+    "Put a live camera, Bible verses, song lyrics, pictures and captions on the big screen together, and switch layouts with one click.",
+  ),
+  camera: modulePage(
+    routes.cameraShare(),
+    "Camera",
+    "Turn a phone or laptop into a live camera for the Studio. Pair it over WiFi in one tap, or with a code when there is no internet.",
   ),
   share: modulePage(
     routes.share(),
-    "Quick Share",
-    "Send songs, Bible passages, pictures and videos straight to another device on the same WiFi, with no cables or uploads.",
+    "Share",
+    "Send songs, Bible passages, studio productions, pictures and videos straight to another device on the same WiFi, with no cables or uploads.",
   ),
 } satisfies Record<string, PageMeta>;
 

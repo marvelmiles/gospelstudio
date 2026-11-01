@@ -91,10 +91,49 @@ const tagShortcuts: Shortcut[] = FIXED_TAG_SHORTCUTS.map((tag) => ({
   description: `Jump to first ${tag.label} slide`,
 }));
 
+export const STUDIO_SHORTCUT_GROUP: ShortcutGroup = {
+  title: "Studio",
+  note: "Available on the Studio page. The keys that change something act on the item selected on the preview or in the list called In this scene.",
+  shortcuts: [
+    { keys: ["Ctrl", "+", "Z"], description: "Undo" },
+    { keys: ["Ctrl", "+", "Y"], description: "Redo" },
+    { keys: ["Ctrl", "+", "S"], description: "Save now" },
+    { keys: ["Ctrl", "+", "D"], description: "Duplicate the selected item" },
+    { keys: ["Delete"], description: "Delete the selected item" },
+    { keys: ["arrows"], description: "Nudge the selected item" },
+    { keys: ["Shift", "+", "arrows"], description: "Nudge it further" },
+    {
+      keys: ["Alt"],
+      description: "Hold while dragging to move freely, without snapping",
+    },
+    { keys: ["Esc"], description: "Clear the selection" },
+  ],
+};
+
+export const STUDIO_PIP_SHORTCUT_GROUP: ShortcutGroup = {
+  title: "Studio PiP",
+  note: "The small floating window for one manuscript, passage or video in a scene, with the slide's presenter notes. Each item has its own window, and keys only go to the one you clicked. Open PiP opens it, and it opens by itself when you open the editor of an item that is in the Preview or on the Live screen. It only answers once you click it, and stepping a live item changes the Live screen.",
+  shortcuts: [
+    { keys: ["right", "Page Dn"], description: "Next slide" },
+    { keys: ["left", "Page Up"], description: "Previous slide" },
+    { keys: ["Home"], description: "First slide, or restart a video" },
+    { keys: ["End"], description: "Last slide" },
+    {
+      keys: ["Ctrl", "hold", "3", "then release Ctrl"],
+      description: "Jump to slide 3",
+    },
+    {
+      keys: ["Space"],
+      description: "Pause or resume auto-play, or play and pause a video",
+    },
+    { keys: ["Esc"], description: "Close that window" },
+  ],
+};
+
 export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   {
     title: "Editors",
-    note: "Available in the manuscript, scripture, image, video, sound and theme editors. Undo, redo and the present commands only appear where they apply, and Update presentation only acts while that document is the one being presented.",
+    note: "Available in the manuscript, scripture, image, video, sound and theme editors. Undo, redo and the present commands only appear where they apply, and Update presentation only acts while that document is the one being presented. In an editor opened from the Studio, Ctrl+S updates the scene and Ctrl+Enter previews the edited version.",
     shortcuts: [
       editorCommandShortcut("save"),
       editorCommandShortcut("updatePresentation"),
@@ -109,7 +148,7 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
   },
   {
     title: "Pop-out and Fullscreen",
-    note: "The same two keys everywhere a module has both views: the presentation, the camera stage and the projected live window. A floating window only answers them once you click it, so it never steals keys while you work elsewhere. The live window has no floating view, so only fullscreen applies there.",
+    note: "The same two keys everywhere a module has both views: the presentation and the projected live window. A floating window only answers them once you click it, so it never steals keys while you work elsewhere. The live window has no floating view, so only fullscreen applies there.",
     shortcuts: [
       viewCommandShortcut("popOut"),
       viewCommandShortcut("fullscreen"),
@@ -240,6 +279,8 @@ export const SHORTCUT_GROUPS: ShortcutGroup[] = [
       },
     ],
   },
+  STUDIO_SHORTCUT_GROUP,
+  STUDIO_PIP_SHORTCUT_GROUP,
   {
     title: "View",
     note: "Available while presenting.",

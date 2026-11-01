@@ -2,7 +2,7 @@ import { BookOpen, RotateCcw } from "lucide-react";
 import type { BibleVersionId } from "../../types";
 import type { BibleBook } from "../../data/bibleBooks";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
+import { LoadingArea } from "@/components/shared/LoadingArea";
 import { useBibleChapter } from "./useBibleChapter";
 import { tileClassName } from "./tileStyle";
 import { stepNumberGridClassName, stepScrollClassName } from "./ChaptersStep";
@@ -41,11 +41,7 @@ export const VersesStep = ({
       <p className="mt-0 mb-4 text-[13px] text-muted-foreground">
         Jump straight to a verse, or read the whole chapter.
       </p>
-      {loading && (
-        <div className="grid place-items-center p-9">
-          <Spinner size={26} />
-        </div>
-      )}
+      {loading && <LoadingArea size={44} />}
       {!loading && error && (
         <div className="p-6.5 text-center">
           <p className="mt-0 leading-[1.6] text-muted-foreground">{error}</p>

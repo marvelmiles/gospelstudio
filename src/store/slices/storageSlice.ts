@@ -16,6 +16,7 @@ import { THEMES } from "../../data/themes";
 import { DEFAULT_AUDIO } from "../../data/sounds";
 import { seedManuscripts } from "../../data/seed";
 import type { SliceCreator } from "../storeTypes";
+import { resetStudio } from "../../features/studio/store/productionActions";
 
 export interface StorageSlice {
   storage: StorageInfo | null;
@@ -60,6 +61,7 @@ export const createStorageSlice: SliceCreator<StorageSlice> = (set, get) => ({
 
   freeUpStorage: async () => {
     await wipeAllStores();
+    resetStudio();
     const manuscripts = await seedManuscripts();
     await saveRecords("manuscripts", manuscripts);
     for (const theme of THEMES) await saveRecord("themes", theme);

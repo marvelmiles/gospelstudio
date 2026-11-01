@@ -13,14 +13,10 @@ import {
   type PresentState,
 } from "../../lib/presentChannel";
 import type { VideoSurfaceHandle } from "../../components/media/VideoSurface";
-import { useOpenerLiveComposition } from "../stream/lib/useOpenerComposition";
-import { useMirroredStreamOverlays } from "../stream/lib/streamOverlayStore";
-import { useOverlayContentSync } from "../stream/lib/useOverlayContentSync";
 import { useDeck } from "./useDeck";
 import { applyPresentAssets } from "./lib/presentAssets";
 import { usePreloadNeighborSlides } from "./lib/usePreloadNeighborSlides";
 import { buildStageFrame } from "./stageContent";
-import { SecondaryPip } from "./SecondaryPip";
 import { Stage } from "./Stage";
 import { documentTitle } from "../../lib/appInfo";
 
@@ -33,19 +29,12 @@ export const PresentWindow = () => {
   const [state, setState] = useState<PresentState | null>(null);
   const { isFullscreen, toggle: toggleFullscreen } = useProjectionFullscreen();
   useViewShortcuts({ onToggleFullscreen: toggleFullscreen });
-  /* The fullscreen button stays visible until the window fills the screen, since it is how you get back onto the projector. */
   const { visible: isChromeVisible } = useAutoHideChrome({
     enabled: isFullscreen,
     delayMs: HINT_DELAY_MS,
   });
   const lastReloadKey = useRef<string>("");
   const videoRef = useRef<VideoSurfaceHandle>(null);
-  const secondaryVideoRef = useRef<VideoSurfaceHandle>(null);
-
-  const secondary = state?.secondary;
-  const composition = useOpenerLiveComposition(secondary?.kind === "stream");
-  const streamOverlays = useMirroredStreamOverlays();
-  useOverlayContentSync(streamOverlays);
 
   useEffect(() => {
     const channel = openPresentChannel((msg) => {
@@ -55,10 +44,7 @@ export const PresentWindow = () => {
         return;
       }
       if (msg.type !== "media-sync") return;
-      const surface =
-        msg.target === "secondary"
-          ? secondaryVideoRef.current
-          : videoRef.current;
+      const surface = videoRef.current;
       if (!surface) return;
       const expected = syncedPosition(msg.sync);
       if (
@@ -147,16 +133,6 @@ export const PresentWindow = () => {
         playback={state.media}
         videoRef={videoRef}
       />
-      {secondary && (
-        <SecondaryPip
-          secondary={secondary}
-          stream={composition.primary}
-          playback={secondary.media}
-          videoRef={secondaryVideoRef}
-          overlays={streamOverlays}
-          cameras={composition.secondaries}
-        />
-      )}
       {fullscreenButton}
     </div>
   );

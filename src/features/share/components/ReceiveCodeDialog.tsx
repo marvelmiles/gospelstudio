@@ -3,9 +3,9 @@ import { RotateCcw } from "lucide-react";
 import { useStore } from "../../../store/useStore";
 import { Modal } from "@/components/shared/Modal";
 import { Button } from "@/components/ui/button";
-import { ReadCode, ShowCode } from "../../stream/CodeExchange";
-import { StreamStatusLine } from "../../stream/components/StreamStatusLine";
-import { PairingStep } from "../../stream/receiver/PairingStep";
+import { ReadCode, ShowCode } from "../../pairing/CodeExchange";
+import { PairingStatusLine } from "../../pairing/PairingStatusLine";
+import { PairingStep } from "../../pairing/PairingStep";
 import {
   answerPairingInvite,
   readPairingCode,
@@ -74,7 +74,7 @@ const ReceiveSteps = ({
     const inviteSdp = readPairingCode(text, "invite");
     if (!inviteSdp) {
       pushToast(
-        "That is not a Quick Share code. On the sending device, choose Pair with a code.",
+        "That is not a Share code. On the sending device, choose Pair with a code.",
         "error",
       );
       return false;
@@ -130,7 +130,7 @@ const ReceiveSteps = ({
   if (phase === "failed") {
     return (
       <div className="grid justify-items-center gap-3.5">
-        <StreamStatusLine tone="danger">{failure}</StreamStatusLine>
+        <PairingStatusLine tone="danger">{failure}</PairingStatusLine>
         <Button onClick={startAgain}>
           <RotateCcw size={14} />
           Start again
@@ -146,9 +146,9 @@ const ReceiveSteps = ({
           value={reply.code}
           caption="On the sending device, scan or paste this to finish pairing."
         />
-        <StreamStatusLine isBusy>
+        <PairingStatusLine isBusy>
           Waiting for the sending device to read this
-        </StreamStatusLine>
+        </PairingStatusLine>
       </PairingStep>
     );
   }
@@ -156,7 +156,7 @@ const ReceiveSteps = ({
   return (
     <PairingStep stepNumber={1} title="Read the sending device's code">
       {phase === "preparing" ? (
-        <StreamStatusLine isBusy>Making a reply</StreamStatusLine>
+        <PairingStatusLine isBusy>Making a reply</PairingStatusLine>
       ) : (
         <ReadCode
           scanLabel="Point this camera at the code on the sending device."

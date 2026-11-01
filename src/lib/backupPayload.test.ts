@@ -12,6 +12,11 @@ import {
 } from "./shareSelection";
 import { recordsForMedia, shareCatalog } from "./shareCatalog";
 import { DEFAULT_PREFS } from "../store/slices/prefsSlice";
+import { createLayer } from "../features/studio/lib/layerDefaults";
+import {
+  createProduction,
+  createScene,
+} from "../features/studio/lib/productionFactory";
 import type {
   Background,
   Manuscript,
@@ -119,7 +124,7 @@ const source: BackupSource = {
     }),
     manuscript("sermon"),
   ],
-  scriptures: [passage("john-3"), passage("overlay-passage-1", true)],
+  scriptures: [passage("john-3"), passage("quick-passage", true)],
   media: [media("photo", "image", 1_000), media("clip", "video", 2_000_000)],
   themes: [theme("classic", true), theme("mine")],
   backgrounds: [
@@ -131,7 +136,7 @@ const source: BackupSource = {
     { id: "sound", name: "Pad", blobId: "sound", size: 500, createdAt: STAMP },
     { id: "built-in-sound", name: "Chime", builtIn: true },
   ],
-  overlayPresets: [],
+  productions: [],
   prefs: DEFAULT_PREFS,
 };
 
@@ -256,5 +261,62 @@ describe("shareCatalog", () => {
       { collection: "media", id: "photo" },
       { collection: "backgrounds", id: "bg-photo" },
     ]);
+  });
+});
+
+describe("studio productions", () => {
+  const liveScene = createScene("Worship", [
+    createLayer("manuscript", { manuscriptId: "sermon" }),
+    createLayer("manuscript", {
+      manuscriptId: "hymn",
+      manuscript: manuscript("hymn", { defaultThemeId: "mine" }),
+    }),
+    createLayer("video", { mediaId: "clip" }),
+    createLayer("background", { backgroundId: "bg-solid" }),
+  ]);
+  const production = {
+    ...createProduction("Sunday", [liveScene]),
+    program: {
+      sceneId: liveScene.id,
+      sceneName: liveScene.name,
+      layers: liveScene.layers,
+      background: liveScene.background,
+      transition: liveScene.transition,
+      takenAt: STAMP,
+    },
+  };
+  const withProduction: BackupSource = { ...source, productions: [production] };
+  const productionOnly = selectionFrom([
+    { collection: "productions", id: production.id },
+  ]);
+
+  it("sends what its scenes use from the library", () => {
+    const resolved = resolveSelection(withProduction, productionOnly);
+
+    expect(resolved.manuscripts).toEqual(["sermon"]);
+    expect(resolved.media).toEqual(["clip"]);
+    expect(resolved.backgrounds).toEqual(["bg-solid"]);
+  });
+
+  it("sends the assets of a production-only copy instead of the library one", () => {
+    const resolved = resolveSelection(withProduction, productionOnly);
+
+    expect(resolved.manuscripts).not.toContain("hymn");
+    expect(resolved.themes).toEqual(["mine"]);
+  });
+
+  it("leaves the live screen behind", () => {
+    const { payload } = buildBackup(withProduction, productionOnly);
+
+    expect(payload.productions?.map((entry) => entry.program)).toEqual([null]);
+  });
+
+  it("lists productions in their own share tab", () => {
+    const tab = shareCatalog(withProduction).find(
+      (entry) => entry.id === "productions",
+    );
+
+    expect(tab?.items.map((item) => item.name)).toEqual(["Sunday"]);
+    expect(tab?.items[0].detail).toBe("1 scene");
   });
 });

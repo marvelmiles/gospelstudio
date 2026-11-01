@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useStore } from "../../../store/useStore";
 import type { BackupSource } from "../../../lib/backupPayload";
+import { useProductionLibrary } from "../../studio/hooks/useProductionLibrary";
 
 export const useBackupSource = (): BackupSource => {
   const manuscripts = useStore((state) => state.manuscripts);
@@ -9,7 +10,7 @@ export const useBackupSource = (): BackupSource => {
   const themes = useStore((state) => state.themes);
   const backgrounds = useStore((state) => state.backgrounds);
   const audio = useStore((state) => state.audio);
-  const overlayPresets = useStore((state) => state.overlayPresets);
+  const productions = useProductionLibrary();
   const prefs = useStore((state) => state.prefs);
 
   return useMemo(
@@ -20,7 +21,7 @@ export const useBackupSource = (): BackupSource => {
       themes,
       backgrounds,
       audio,
-      overlayPresets,
+      productions,
       prefs,
     }),
     [
@@ -28,7 +29,7 @@ export const useBackupSource = (): BackupSource => {
       backgrounds,
       manuscripts,
       media,
-      overlayPresets,
+      productions,
       prefs,
       scriptures,
       themes,

@@ -21,9 +21,12 @@ import {
   ImageEditorPage,
   VideoEditorPage,
 } from "./features/media/MediaEditorPage";
-import { StreamPage } from "./features/stream/StreamPage";
-import { QuickSharePage } from "./features/share/QuickSharePage";
-import { StreamProjectionRoot } from "./features/stream/StreamProjectionRoot";
+import { SharePage } from "./features/share/SharePage";
+import { CameraSharePage } from "./features/cameraShare/CameraSharePage";
+import { StudioPage } from "./features/studio/StudioPage";
+import { StudioItemPage } from "./features/studio/itemEditor/StudioItemPage";
+import { StudioRuntime } from "./features/studio/StudioRuntime";
+import { StudioPip } from "./features/studio/pip/StudioPip";
 import { Presentation } from "./features/presentation/Presentation";
 import { AssetsModal } from "./features/assets/AssetsModal";
 import { AudioEditorPage } from "./features/assets/AudioEditorPage";
@@ -58,7 +61,7 @@ const App = () => {
         )}
       >
         {loading ? (
-          <LoadingArea size={30} />
+          <LoadingArea />
         ) : (
           <Routes>
             <Route path={routes.dashboard()} element={<Dashboard />} />
@@ -80,8 +83,10 @@ const App = () => {
             />
             <Route path={routes.themes()} element={<ThemesPage />} />
             <Route path={routes.theme()} element={<ThemesPage />} />
-            <Route path={routes.stream()} element={<StreamPage />} />
-            <Route path={routes.share()} element={<QuickSharePage />} />
+            <Route path={routes.studio()} element={<StudioPage />} />
+            <Route path={routes.studioItem()} element={<StudioItemPage />} />
+            <Route path={routes.cameraShare()} element={<CameraSharePage />} />
+            <Route path={routes.share()} element={<SharePage />} />
             <Route
               path={routes.notFound()}
               element={<Navigate to={routes.dashboard()} replace />}
@@ -93,7 +98,8 @@ const App = () => {
       {presentation && (
         <Presentation key={`${presentation.kind}:${presentation.id}`} />
       )}
-      <StreamProjectionRoot />
+      <StudioRuntime />
+      <StudioPip />
       <AssetsModal />
       <SettingsModal />
       <ShortcutsModal />

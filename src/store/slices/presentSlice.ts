@@ -1,20 +1,11 @@
 import type {
   ContentKind,
   MediaItem,
-  PipPlacement,
   PresentTarget,
   SlideDeckDoc,
 } from "../../types";
 import { presentLiveWindow } from "../../lib/liveWindow";
-import type {
-  MediaPlayback,
-  MediaSync,
-  SecondaryModuleKind,
-} from "../../lib/presentChannel";
-import {
-  DEFAULT_PIP_PLACEMENT,
-  normalisePipPlacement,
-} from "../../lib/pipPlacement";
+import type { MediaPlayback, MediaSync } from "../../lib/presentChannel";
 import type { SliceCreator } from "../storeTypes";
 
 type PresentationMode = "stage" | "pip";
@@ -38,16 +29,6 @@ export interface PresentedMedia {
   sync: MediaSync;
 }
 
-interface SecondaryPresentation {
-  kind: SecondaryModuleKind;
-  id: string;
-  item?: MediaItem;
-  placement: PipPlacement;
-  muted: boolean;
-}
-
-const LIVE_CAMERA_ID = "live-camera";
-
 export interface PresentStartOptions {
   live?: boolean;
   doc?: SlideDeckDoc;
@@ -59,7 +40,6 @@ interface HeldLivePresentation {
   index: number;
   mode: PresentationMode;
   deck: PresentedDeck | null;
-  secondary: SecondaryPresentation | null;
 }
 
 let presentationSessions = 0;
@@ -71,7 +51,6 @@ export interface PresentSlice {
   presentationIndex: number;
   presentedDeck: PresentedDeck | null;
   presentedMedia: PresentedMedia | null;
-  secondaryPresentation: SecondaryPresentation | null;
   heldLivePresentation: HeldLivePresentation | null;
 
   startPresent: (
@@ -88,11 +67,6 @@ export interface PresentSlice {
   updateMediaPresentation: (item: MediaItem) => boolean;
   publishPresentedMedia: (state: PresentedMedia | null) => void;
 
-  presentSecondary: (kind: SecondaryModuleKind, id?: string) => boolean;
-  patchSecondaryPlacement: (patch: Partial<PipPlacement>) => void;
-  setSecondaryMuted: (muted: boolean) => void;
-  stopSecondary: () => void;
-
   stopPresent: () => void;
 }
 
@@ -105,7 +79,6 @@ const holdLivePresentation = (
         index: state.presentationIndex,
         mode: state.presentationMode,
         deck: state.presentedDeck,
-        secondary: state.secondaryPresentation,
       }
     : null;
 
@@ -115,7 +88,6 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
   presentationIndex: 0,
   presentedDeck: null,
   presentedMedia: null,
-  secondaryPresentation: null,
   heldLivePresentation: null,
 
   startPresent: (kind, id, startIndex = 0, options = {}) => {
@@ -144,7 +116,6 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
       presentationIndex: startIndex,
       presentedDeck: pinnedContent(kind, deckDoc, mediaItem),
       presentedMedia: null,
-      secondaryPresentation: null,
       heldLivePresentation: live
         ? null
         : (state.heldLivePresentation ?? holdLivePresentation(state)),
@@ -176,7 +147,6 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
       presentationIndex: held.index,
       presentedDeck: held.deck,
       presentedMedia: null,
-      secondaryPresentation: held.secondary,
       heldLivePresentation: null,
     });
   },
@@ -193,73 +163,14 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
   },
 
   updateMediaPresentation: (item) => {
-    const { presentation, secondaryPresentation } = get();
-    const onSecondary =
-      secondaryPresentation?.kind === item.kind &&
-      secondaryPresentation.id === item.id;
-    const onMain =
-      presentation?.kind === item.kind && presentation.id === item.id;
-    if (!onMain && !onSecondary) return false;
-    set({
-      ...(onMain
-        ? { presentedDeck: { kind: item.kind, id: item.id, item } }
-        : {}),
-      ...(onSecondary && secondaryPresentation
-        ? { secondaryPresentation: { ...secondaryPresentation, item } }
-        : {}),
-    });
+    const { presentation } = get();
+    if (presentation?.kind !== item.kind || presentation.id !== item.id)
+      return false;
+    set({ presentedDeck: { kind: item.kind, id: item.id, item } });
     return true;
   },
 
   publishPresentedMedia: (state) => set({ presentedMedia: state }),
-
-  presentSecondary: (kind, id = LIVE_CAMERA_ID) => {
-    const state = get();
-    const placement =
-      state.secondaryPresentation?.placement ?? DEFAULT_PIP_PLACEMENT;
-    if (kind === "stream") {
-      set({
-        secondaryPresentation: {
-          kind,
-          id: LIVE_CAMERA_ID,
-          placement,
-          muted: true,
-        },
-      });
-      return true;
-    }
-    const item = state.media.find((m) => m.id === id && m.kind === kind);
-    if (!item) return false;
-    set({
-      secondaryPresentation: {
-        kind,
-        id,
-        item,
-        placement,
-        muted: true,
-      },
-    });
-    return true;
-  },
-
-  patchSecondaryPlacement: (patch) => {
-    const current = get().secondaryPresentation;
-    if (!current) return;
-    set({
-      secondaryPresentation: {
-        ...current,
-        placement: normalisePipPlacement({ ...current.placement, ...patch }),
-      },
-    });
-  },
-
-  setSecondaryMuted: (muted) => {
-    const current = get().secondaryPresentation;
-    if (!current) return;
-    set({ secondaryPresentation: { ...current, muted } });
-  },
-
-  stopSecondary: () => set({ secondaryPresentation: null }),
 
   stopPresent: () => {
     presentLiveWindow.endLive();
@@ -269,7 +180,6 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
       presentationIndex: 0,
       presentedDeck: null,
       presentedMedia: null,
-      secondaryPresentation: null,
       heldLivePresentation: null,
     });
   },

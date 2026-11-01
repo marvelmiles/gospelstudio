@@ -37,7 +37,11 @@ const sound = (audioId = ":audioId") => `${sounds()}/${segment(audioId)}`;
 const themes = () => `${home()}themes`;
 const theme = (themeId = ":themeId") => `${themes()}/${segment(themeId)}`;
 
-const stream = () => `${home()}stream`;
+const studio = () => `${home()}studio`;
+const studioItem = (layerId = ":layerId") =>
+  `${studio()}/items/${segment(layerId)}`;
+
+const cameraShare = () => `${home()}camera`;
 
 const share = () => `${home()}share`;
 
@@ -48,7 +52,8 @@ const assetUsage = (
 ) => `${assetUsages()}/${asset}/${segment(assetId)}`;
 
 const presentWindow = () => `${home()}present`;
-const streamWindow = () => `${home()}stream-live`;
+const studioWindow = () => `${home()}studio-live`;
+const studioPreview = () => `${home()}studio-preview`;
 
 const notFound = () => "*";
 
@@ -71,11 +76,14 @@ const routes = {
   sound,
   themes,
   theme,
-  stream,
+  studio,
+  studioItem,
+  cameraShare,
   share,
   assetUsage,
   presentWindow,
-  streamWindow,
+  studioWindow,
+  studioPreview,
   notFound,
 };
 
@@ -89,7 +97,7 @@ export const isRouteActive = (route: string, pathname: string): boolean =>
     ? pathname === route
     : pathname === route || pathname.startsWith(`${route}/`);
 
-const SELF_SCROLLING_PAGES = [bible(), themes()];
+const SELF_SCROLLING_PAGES = [bible(), themes(), studio()];
 
 const SELF_SCROLLING_EDITORS = [
   passages(),

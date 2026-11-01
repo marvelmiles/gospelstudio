@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import {
   Expand,
   Maximize,
@@ -64,7 +63,6 @@ interface PresentationControlsProps {
   onHoverChange: (hovering: boolean) => void;
   onGoLive: () => void;
   onShrinkToPip: () => void;
-  secondaryMenu?: ReactNode;
   onTogglePause: () => void;
   onSetView: (view: PresentationView) => void;
   onZoomIn: () => void;
@@ -90,7 +88,6 @@ export const PresentationControls = ({
   onHoverChange,
   onGoLive,
   onShrinkToPip,
-  secondaryMenu,
   onTogglePause,
   onSetView,
   onZoomIn,
@@ -133,7 +130,6 @@ export const PresentationControls = ({
         )}
         onClick={onShrinkToPip}
       />
-      {secondaryMenu}
       <StageButton
         icon={paused ? Play : Pause}
         title={paused ? "Resume (Space)" : "Pause (Space)"}

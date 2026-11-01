@@ -14,7 +14,7 @@ import {
 import { settingsGrouping } from "../../lib/settingsHistory";
 import { imageDeckIndex } from "../presentation/useDeck";
 
-interface MediaDraft {
+export interface MediaDraft {
   name: string;
   image: ImageSettings;
   video: VideoSettings;
@@ -47,7 +47,10 @@ export interface MediaEditor {
   adoptPresentation: () => boolean;
 }
 
-export const useMediaEditor = (item: MediaItem): MediaEditor => {
+export const useMediaEditor = (
+  item: MediaItem,
+  commit?: (draft: MediaDraft) => boolean,
+): MediaEditor => {
   const media = useStore((s) => s.media);
   const updateMedia = useStore((s) => s.updateMedia);
   const startPresent = useStore((s) => s.startPresent);
@@ -55,7 +58,6 @@ export const useMediaEditor = (item: MediaItem): MediaEditor => {
   const presentation = useStore((s) => s.presentation);
   const presentedDeck = useStore((s) => s.presentedDeck);
   const presentedMedia = useStore((s) => s.presentedMedia);
-  const secondaryPresentation = useStore((s) => s.secondaryPresentation);
 
   const history = useDraftHistory<MediaDraft>(draftOf(item));
   const { draft, apply, patch } = history;
@@ -112,17 +114,9 @@ export const useMediaEditor = (item: MediaItem): MediaEditor => {
       ? !shallowEqual(draft.image, defaultImage)
       : !shallowEqual(draft.video, defaultVideo);
 
-  const onMainStage =
+  const isPresenting =
     presentation?.kind === item.kind && presentation.id === item.id;
-  const onSecondary =
-    secondaryPresentation?.kind === item.kind &&
-    secondaryPresentation.id === item.id;
-  const isPresenting = onMainStage || onSecondary;
-  const presentedItem = onMainStage
-    ? presentedDeck?.item
-    : onSecondary
-      ? secondaryPresentation?.item
-      : undefined;
+  const presentedItem = isPresenting ? presentedDeck?.item : undefined;
 
   const adoptPresentation = useCallback((): boolean => {
     if (!presentedItem) return false;
@@ -150,15 +144,22 @@ export const useMediaEditor = (item: MediaItem): MediaEditor => {
       draft.video.trimEnd !== null && draft.video.trimEnd > trimStart
         ? draft.video.trimEnd
         : null;
-    const written = updateMedia(item.id, {
+    const settled: MediaDraft = {
       name: draft.name.trim(),
-      ...(item.kind === "image"
-        ? { image: draft.image }
-        : { video: { ...draft.video, trimStart, trimEnd } }),
-    });
+      image: draft.image,
+      video: { ...draft.video, trimStart, trimEnd },
+    };
+    const written = commit
+      ? commit(settled)
+      : updateMedia(item.id, {
+          name: settled.name,
+          ...(item.kind === "image"
+            ? { image: settled.image }
+            : { video: settled.video }),
+        });
     if (written) markSaved();
     return written;
-  }, [draft, item, updateMedia, markSaved]);
+  }, [commit, draft, item, updateMedia, markSaved]);
 
   const present = useCallback(
     ({ live }: PresentOptions) => {
@@ -187,7 +188,7 @@ export const useMediaEditor = (item: MediaItem): MediaEditor => {
     isPresenting,
     updatePresentation: () => updateMediaPresentation(preview),
     presentedVideo:
-      onMainStage && item.kind === "video" ? presentedMedia : null,
+      isPresenting && item.kind === "video" ? presentedMedia : null,
     adoptPresentation,
   };
 };

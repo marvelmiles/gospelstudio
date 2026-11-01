@@ -3,11 +3,10 @@ import { useStore } from "../../../store/useStore";
 import { useBackgroundKeepAlive } from "../../../hooks/useBackgroundKeepAlive";
 import { useScreenWakeLock } from "../../../hooks/useScreenWakeLock";
 import { packBackupZip } from "../../../lib/backup";
-import {
-  buildBackup,
-  describeSelection,
-  type BackupSource,
-} from "../../../lib/backupPayload";
+import { buildBackup, describeSelection } from "../../../lib/backupPayload";
+import { backupSourceOf } from "../../../store/backupSource";
+import { allProductions } from "../../studio/store/productionActions";
+import { flushSave } from "../../studio/store/productionStore";
 import {
   isSelectionEmpty,
   selectionCount,
@@ -69,19 +68,6 @@ export const transferPercent = (transfer: OutgoingShare): number => {
     Math.round((transfer.sentBytes / transfer.totalBytes) * 100),
   );
 };
-
-const sourceFrom = (
-  state: ReturnType<typeof useStore.getState>,
-): BackupSource => ({
-  manuscripts: state.manuscripts,
-  scriptures: state.scriptures,
-  media: state.media,
-  themes: state.themes,
-  backgrounds: state.backgrounds,
-  audio: state.audio,
-  overlayPresets: state.overlayPresets,
-  prefs: state.prefs,
-});
 
 const overallProgress = (transfers: OutgoingShareMap): number | null => {
   const rows = Object.values(transfers).filter(
@@ -166,7 +152,8 @@ export const useOutgoingShares = ({
         ),
       );
 
-      const source = sourceFrom(useStore.getState());
+      await flushSave();
+      const source = backupSourceOf(useStore.getState(), allProductions());
       const summary = describeSelection(source, selection);
 
       let archive: Blob;

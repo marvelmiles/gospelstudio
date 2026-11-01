@@ -12,6 +12,7 @@ interface ImageLayerProps {
   src: string | null;
   alt: string;
   settings: ImageSettings;
+  objectPosition?: string;
   className?: string;
 }
 
@@ -19,6 +20,7 @@ interface PictureProps {
   src: string;
   alt: string;
   settings: ImageSettings;
+  objectPosition?: string;
 }
 
 const isQuarterTurn = (rotate: number): boolean =>
@@ -28,27 +30,34 @@ const pictureStyle = (
   settings: ImageSettings,
   width: number | string,
   height: number | string,
+  objectPosition?: string,
 ): CSSProperties => ({
   width,
   height,
   objectFit: settings.fit,
+  objectPosition,
   filter: buildFilter(settings),
   transform: ["translate(-50%, -50%)", ...imageTransformParts(settings)].join(
     " ",
   ),
 });
 
-const Picture = ({ src, alt, settings }: PictureProps) => (
+const Picture = ({ src, alt, settings, objectPosition }: PictureProps) => (
   <img
     src={src}
     alt={alt}
     draggable={false}
-    style={pictureStyle(settings, "100%", "100%")}
+    style={pictureStyle(settings, "100%", "100%", objectPosition)}
     className={imageClassName}
   />
 );
 
-const QuarterTurnPicture = ({ src, alt, settings }: PictureProps) => {
+const QuarterTurnPicture = ({
+  src,
+  alt,
+  settings,
+  objectPosition,
+}: PictureProps) => {
   const frameRef = useRef<HTMLDivElement>(null);
   const { width = 0, height = 0 } = useResizeObserver({
     ref: frameRef as RefObject<HTMLDivElement>,
@@ -65,6 +74,7 @@ const QuarterTurnPicture = ({ src, alt, settings }: PictureProps) => {
           settings,
           measured ? height : "100%",
           measured ? width : "100%",
+          objectPosition,
         )}
         className={imageClassName}
       />
@@ -76,6 +86,7 @@ export const ImageLayer = ({
   src,
   alt,
   settings,
+  objectPosition,
   className,
 }: ImageLayerProps) => {
   const PictureView = isQuarterTurn(settings.rotate)
@@ -84,7 +95,14 @@ export const ImageLayer = ({
 
   return (
     <div className={cn("absolute inset-0 overflow-hidden bg-black", className)}>
-      {src && <PictureView src={src} alt={alt} settings={settings} />}
+      {src && (
+        <PictureView
+          src={src}
+          alt={alt}
+          settings={settings}
+          objectPosition={objectPosition}
+        />
+      )}
       {settings.scrim && (
         <div className={cn("absolute inset-0", scrimClassName)} />
       )}

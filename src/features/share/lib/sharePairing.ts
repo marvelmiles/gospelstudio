@@ -2,7 +2,7 @@ import {
   decodeSignal,
   encodeSignal,
   type SignalKind,
-} from "../../stream/lib/streamSignal";
+} from "../../pairing/lib/pairingSignal";
 import {
   acceptShareLink,
   completeShareLink,

@@ -17,7 +17,6 @@ type ChannelRef = RefObject<BroadcastChannel | null>;
 const useMediaSync = (
   channelRef: ChannelRef,
   isLive: boolean,
-  target: "main" | "secondary",
   { isActive, playing, rate, getTime }: MediaSyncSource,
 ) => {
   useEffect(() => {
@@ -25,20 +24,18 @@ const useMediaSync = (
     const publish = () =>
       channelRef.current?.postMessage({
         type: "media-sync",
-        target,
         sync: { time: getTime(), at: Date.now(), playing, rate },
       });
     publish();
     const timer = window.setInterval(publish, MEDIA_SYNC_INTERVAL_MS);
     return () => window.clearInterval(timer);
-  }, [channelRef, isLive, isActive, playing, rate, getTime, target]);
+  }, [channelRef, isLive, isActive, playing, rate, getTime]);
 };
 
 export const usePresentBroadcast = (
   isLive: boolean,
   state: PresentState | null,
-  mainMedia: MediaSyncSource,
-  secondaryMedia: MediaSyncSource,
+  media: MediaSyncSource,
 ) => {
   const channelRef = useRef<BroadcastChannel | null>(null);
   const sendState = useEffectEvent((channel: BroadcastChannel) => {
@@ -62,6 +59,5 @@ export const usePresentBroadcast = (
     };
   }, [isLive]);
 
-  useMediaSync(channelRef, isLive, "main", mainMedia);
-  useMediaSync(channelRef, isLive, "secondary", secondaryMedia);
+  useMediaSync(channelRef, isLive, media);
 };

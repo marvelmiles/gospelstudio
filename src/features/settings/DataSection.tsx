@@ -100,10 +100,10 @@ export const DataSection = () => {
         info={
           <InfoTip title="Backup and restore">
             Export everything (manuscripts, scripture passages, images, videos,
-            themes, custom backgrounds, audio and settings) to a single backup
-            file (.zip), then bring it back here on any device. Quick Share
-            sends the same data straight to a device on the same WiFi, with no
-            file to carry.
+            themes, custom backgrounds, audio, studio productions and settings)
+            to a single backup file (.zip), then bring it back here on any
+            device. Share sends the same data straight to a device on the same
+            WiFi, with no file to carry.
           </InfoTip>
         }
       >
@@ -147,7 +147,7 @@ export const DataSection = () => {
           title="Send this library straight to another device on the same WiFi"
         >
           <Share2 size={15} />
-          Quick Share
+          Share
         </Button>
         <input
           ref={fileInputRef}

@@ -10,7 +10,8 @@ import routes from "./routes";
 
 const PROJECTION_PATHS = new Set([
   routes.presentWindow(),
-  routes.streamWindow(),
+  routes.studioWindow(),
+  routes.studioPreview(),
 ]);
 
 const loadRoot = () =>

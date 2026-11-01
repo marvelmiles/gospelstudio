@@ -29,8 +29,11 @@ interface FloatingWindowOptions {
   margin?: number;
   estimatedHeight?: number;
   offsetIndex?: number;
+  startAt?: FloatingWindowStart;
   elementRef?: RefObject<HTMLDivElement | null>;
 }
+
+type FloatingWindowStart = "top-right" | "bottom-right";
 
 export interface FloatingWindowHandleProps {
   onPointerDown: (event: ReactPointerEvent) => void;
@@ -111,6 +114,7 @@ export const useFloatingWindow = ({
   margin = 16,
   estimatedHeight = 240,
   offsetIndex = 0,
+  startAt = "top-right",
   elementRef,
 }: FloatingWindowOptions): FloatingWindow => {
   const ownRef = useRef<HTMLDivElement>(null);
@@ -120,7 +124,16 @@ export const useFloatingWindow = ({
       margin,
       window.innerWidth - width - margin - offsetIndex * CASCADE,
     ),
-    y: margin + offsetIndex * CASCADE,
+    y:
+      startAt === "top-right"
+        ? margin + offsetIndex * CASCADE
+        : Math.max(
+            margin,
+            window.innerHeight -
+              estimatedHeight -
+              margin -
+              offsetIndex * CASCADE,
+          ),
   }));
   const [dragging, setDragging] = useState(false);
   const [edge, setEdge] = useState<FloatingWindowEdge | null>(null);

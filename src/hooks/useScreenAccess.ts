@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import {
   isExtendedDisplay,
   pickProjectorScreen,
+  readPreferredDisplay,
   readScreenDetails,
+  savePreferredDisplay,
   screenAccess,
   screenLabel,
   type ScreenAccess,
@@ -22,7 +24,9 @@ export interface ScreenAccessState {
   isExtended: boolean;
   displays: DisplayInfo[];
   isAsking: boolean;
+  preferredDisplay: string | null;
   allowDisplays: () => void;
+  chooseDisplay: (label: string | null) => void;
 }
 
 const describeDisplays = (details: ScreenDetails): DisplayInfo[] => {
@@ -66,6 +70,8 @@ export const useScreenAccess = (enabled = true): ScreenAccessState => {
   const [isExtended, setIsExtended] = useState(isExtendedDisplay);
   const [displays, setDisplays] = useState<DisplayInfo[]>([]);
   const [isAsking, setIsAsking] = useState(false);
+  const [preferredDisplay, setPreferredDisplay] =
+    useState(readPreferredDisplay);
 
   const applySnapshot = useCallback((snapshot: ScreenSnapshot) => {
     setAccess(snapshot.access);
@@ -100,5 +106,22 @@ export const useScreenAccess = (enabled = true): ScreenAccessState => {
       .finally(() => setIsAsking(false));
   }, [refresh]);
 
-  return { access, isExtended, displays, isAsking, allowDisplays };
+  const chooseDisplay = useCallback(
+    (label: string | null) => {
+      savePreferredDisplay(label);
+      setPreferredDisplay(label);
+      void refresh();
+    },
+    [refresh],
+  );
+
+  return {
+    access,
+    isExtended,
+    displays,
+    isAsking,
+    preferredDisplay,
+    allowDisplays,
+    chooseDisplay,
+  };
 };

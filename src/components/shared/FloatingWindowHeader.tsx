@@ -24,6 +24,3 @@ export const FloatingWindowHeader = ({
     {children}
   </div>
 );
-
-export const floatingWindowClassName =
-  "fixed overflow-hidden rounded-[14px] border bg-card shadow-overlay outline-none";

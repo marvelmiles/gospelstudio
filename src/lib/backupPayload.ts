@@ -7,7 +7,7 @@ import type {
   ScripturePassage,
   Theme,
 } from "../types";
-import type { StreamOverlayPreset } from "../features/stream/lib/overlayPresets";
+import type { Production } from "../features/studio/types/production";
 import { thumbId } from "./fileStore";
 import { now } from "./id";
 import { formatCountLabel } from "./formatNumber";
@@ -26,7 +26,7 @@ export interface BackupSource {
   themes: Theme[];
   backgrounds: Background[];
   audio: AudioItem[];
-  overlayPresets: StreamOverlayPreset[];
+  productions: Production[];
   prefs: Prefs;
 }
 
@@ -39,7 +39,7 @@ interface BackupPayload {
   themes?: Theme[];
   backgrounds?: Background[];
   audio?: AudioItem[];
-  overlayPresets?: StreamOverlayPreset[];
+  productions?: Production[];
   prefs?: Prefs;
 }
 
@@ -59,6 +59,11 @@ const pick = <T extends { id: string }>(
 
 const entry = <T>(key: string, values: T[]): Record<string, T[]> =>
   values.length > 0 ? { [key]: values } : {};
+
+const withoutLiveState = (production: Production): Production => ({
+  ...production,
+  program: null,
+});
 
 const fileIdsFor = (
   media: MediaItem[],
@@ -103,8 +108,8 @@ export const buildBackup = (
     ...entry("backgrounds", backgrounds),
     ...entry("audio", audio),
     ...entry(
-      "overlayPresets",
-      pick(source.overlayPresets, resolved.overlayPresets),
+      "productions",
+      pick(source.productions, resolved.productions).map(withoutLiveState),
     ),
     ...(resolved.prefs.includes(PREFS_RECORD_ID)
       ? { prefs: source.prefs }
@@ -148,7 +153,7 @@ export const describeSelection = (
     label(resolved.backgrounds.length, "background"),
     label(resolved.audio.length, "sound"),
     label(resolved.themes.length, "theme"),
-    label(resolved.overlayPresets.length, "saved overlay"),
+    label(resolved.productions.length, "studio production"),
     ...(resolved.prefs.length > 0 ? ["settings"] : []),
   ].filter((part): part is string => Boolean(part));
 

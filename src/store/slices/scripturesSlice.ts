@@ -1,35 +1,24 @@
-import type {
-  BibleVerse,
-  BibleVersionId,
-  PassageRange,
-  ScripturePassage,
-  TextStyle,
-} from "../../types";
+import type { ScripturePassage } from "../../types";
 import { now, uid } from "../../lib/id";
-import { SCRIPTURE_PASSAGE_FONT_SIZE } from "../../data/themes";
 import { deleteRecord, saveRecord } from "../../lib/storage";
 import { buildScriptureSlides } from "../../features/bible/lib/scriptureSlides";
-import { formatReference } from "../../features/bible/lib/reference";
+import {
+  PASSAGE_STYLE,
+  buildScripturePassage,
+  type SavePassageOptions,
+  type ScriptureSelection,
+} from "../../features/bible/lib/scripturePassage";
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
 import { DEFAULT_SCRIPTURE_THEME_ID } from "../../data/themes";
 import type { PresentStartOptions } from "./presentSlice";
 import type { SliceCreator } from "../storeTypes";
 
+export type {
+  SavePassageOptions,
+  ScriptureSelection,
+} from "../../features/bible/lib/scripturePassage";
+
 const QUICK_PASSAGE_ID = "scripture-quick-present";
-
-export interface ScriptureSelection {
-  version: BibleVersionId;
-  range: PassageRange;
-  verses: BibleVerse[];
-}
-
-export interface SavePassageOptions extends ScriptureSelection {
-  versesPerSlide?: number;
-  showVerseNumbers?: boolean;
-  showReference?: boolean;
-  title?: string;
-  splitLongVerses?: boolean;
-}
 
 interface StageSelectionOptions {
   id?: string;
@@ -47,10 +36,6 @@ export interface ScripturesSlice {
     id: string,
     options: SavePassageOptions,
   ) => ScripturePassage | null;
-  rebuildScriptureSlides: (
-    id: string,
-    changes?: Partial<ScripturePassage>,
-  ) => void;
   trashScripture: (id: string) => void;
   restoreScripture: (id: string) => void;
   deleteScripture: (id: string) => void;
@@ -63,48 +48,6 @@ export interface ScripturesSlice {
     options?: StageSelectionOptions,
   ) => ScripturePassage | null;
 }
-
-const PASSAGE_STYLE: TextStyle = { fontSize: SCRIPTURE_PASSAGE_FONT_SIZE };
-
-const buildPassage = (
-  options: SavePassageOptions,
-  id: string,
-  quick: boolean,
-  themeId: string = DEFAULT_SCRIPTURE_THEME_ID,
-): ScripturePassage => {
-  const versesPerSlide = options.versesPerSlide ?? 1;
-  const showVerseNumbers = options.showVerseNumbers ?? true;
-  const showReference = options.showReference ?? true;
-  return {
-    id,
-    title: options.title ?? formatReference(options.range, options.version),
-    version: options.version,
-    range: options.range,
-    verses: options.verses,
-    versesPerSlide,
-    showVerseNumbers,
-    showReference,
-    quick: quick || undefined,
-    slides: buildScriptureSlides({
-      version: options.version,
-      range: options.range,
-      verses: options.verses,
-      versesPerSlide,
-      showVerseNumbers,
-      showReference,
-      splitLongVerses: options.splitLongVerses ?? quick,
-      style: PASSAGE_STYLE,
-    }),
-    defaultThemeId: themeId,
-    defaultBackgroundId: "",
-    defaultAudioId: null,
-    style: PASSAGE_STYLE,
-    createdAt: now(),
-    updatedAt: now(),
-    deleted: false,
-    builtIn: false,
-  };
-};
 
 export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
   set,
@@ -128,7 +71,12 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
 
   saveScripturePassage: (options) => {
     if (blockWrite(get)) return null;
-    const passage = buildPassage(options, uid(), false, scriptureThemeId(get));
+    const passage = buildScripturePassage(
+      options,
+      uid(),
+      false,
+      scriptureThemeId(get),
+    );
     get().upsertScripture(passage);
     return passage;
   },
@@ -164,25 +112,6 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
     return next;
   },
 
-  rebuildScriptureSlides: (id, changes = {}) => {
-    const current = get().scriptures.find((s) => s.id === id);
-    if (!current) return;
-    const next: ScripturePassage = { ...current, ...changes, updatedAt: now() };
-    next.style = { ...PASSAGE_STYLE, ...next.style };
-    next.slides = buildScriptureSlides({
-      version: next.version,
-      range: next.range,
-      verses: next.verses,
-      versesPerSlide: next.versesPerSlide,
-      showVerseNumbers: next.showVerseNumbers,
-      showReference: next.showReference,
-      splitLongVerses: Boolean(next.quick),
-      style: next.style,
-    });
-    next.title = formatReference(next.range, next.version);
-    get().upsertScripture(next);
-  },
-
   trashScripture: (id) => {
     const passage = get().scriptures.find((s) => s.id === id);
     if (passage)
@@ -208,7 +137,7 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
 
   presentScriptureSelection: (selection, options = {}) => {
     if (blockWrite(get)) return;
-    const passage = buildPassage(
+    const passage = buildScripturePassage(
       { ...selection, showVerseNumbers: false },
       QUICK_PASSAGE_ID,
       true,
@@ -220,7 +149,7 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
 
   stageScriptureSelection: (selection, options = {}) => {
     if (blockWrite(get)) return null;
-    const passage = buildPassage(
+    const passage = buildScripturePassage(
       {
         ...selection,
         showVerseNumbers: false,

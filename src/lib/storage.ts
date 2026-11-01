@@ -1,33 +1,47 @@
 /* Saves to the browser database when it can, then to this tab only, then to memory as a last resort. */
-export type StoreName =
+type LibraryStoreName =
   | "manuscripts"
   | "scriptures"
   | "media"
   | "backgrounds"
   | "themes"
   | "audio"
-  | "overlayPresets"
   | "prefs"
   | "files";
+type StudioStoreName = "productions" | "sceneLayouts";
+export type StoreName = LibraryStoreName | StudioStoreName;
 export type Backend = "indexeddb" | "session" | "memory";
 
 interface HasId {
   id: string;
 }
 
-const DB_NAME = "gospelstudio";
+interface DatabaseSchema {
+  name: string;
+  stores: StoreName[];
+}
+
 const DB_VERSION = 1;
-const STORES: StoreName[] = [
-  "manuscripts",
-  "scriptures",
-  "media",
-  "backgrounds",
-  "themes",
-  "audio",
-  "overlayPresets",
-  "prefs",
-  "files",
-];
+const LIBRARY_DATABASE: DatabaseSchema = {
+  name: "gospelstudio",
+  stores: [
+    "manuscripts",
+    "scriptures",
+    "media",
+    "backgrounds",
+    "themes",
+    "audio",
+    "prefs",
+    "files",
+  ],
+};
+/* The studio keeps its own database so its stores exist on devices whose library database was created before the studio. */
+const STUDIO_DATABASE: DatabaseSchema = {
+  name: "gospelstudio-studio",
+  stores: ["productions", "sceneLayouts"],
+};
+const DATABASES: DatabaseSchema[] = [LIBRARY_DATABASE, STUDIO_DATABASE];
+const STORES: StoreName[] = DATABASES.flatMap((database) => database.stores);
 
 const SESSION_SKIP: ReadonlySet<StoreName> = new Set(["files"]);
 const SESSION_PREFIX = "gospelstudio:";
@@ -38,28 +52,23 @@ export const storageState: { backend: Backend | null; memFallback: boolean } = {
   memFallback: false,
 };
 
-const mem: Record<StoreName, Map<string, unknown>> = {
-  manuscripts: new Map(),
-  scriptures: new Map(),
-  media: new Map(),
-  backgrounds: new Map(),
-  themes: new Map(),
-  audio: new Map(),
-  overlayPresets: new Map(),
-  prefs: new Map(),
-  files: new Map(),
-};
+const mem = Object.fromEntries(
+  STORES.map((store) => [store, new Map<string, unknown>()]),
+) as Record<StoreName, Map<string, unknown>>;
 
-let idb: IDBDatabase | null = null;
+const connections = new Map<StoreName, IDBDatabase>();
 let initPromise: Promise<Backend> | null = null;
 
-const openIDB = (): Promise<IDBDatabase | null> => {
+const connectionOf = (store: StoreName): IDBDatabase | null =>
+  connections.get(store) ?? null;
+
+const openIDB = (schema: DatabaseSchema): Promise<IDBDatabase | null> => {
   return new Promise((resolve) => {
     try {
       if (typeof indexedDB === "undefined") return resolve(null);
-      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      const req = indexedDB.open(schema.name, DB_VERSION);
       req.onupgradeneeded = () => {
-        for (const store of STORES)
+        for (const store of schema.stores)
           req.result.createObjectStore(store, { keyPath: "id" });
       };
       req.onsuccess = () => {
@@ -81,9 +90,10 @@ const openIDB = (): Promise<IDBDatabase | null> => {
 export const hasIncompatibleDatabase = async (): Promise<boolean> => {
   try {
     const databases = await indexedDB.databases();
+    const names = new Set(DATABASES.map((schema) => schema.name));
     return databases.some(
       (database) =>
-        database.name === DB_NAME && (database.version ?? 0) > DB_VERSION,
+        names.has(database.name ?? "") && (database.version ?? 0) > DB_VERSION,
     );
   } catch {
     return false;
@@ -128,9 +138,13 @@ const persistSession = (store: StoreName) => {
 const init = (): Promise<Backend> => {
   if (initPromise) return initPromise;
   initPromise = (async () => {
-    const db = await openIDB();
-    if (db) {
-      idb = db;
+    const opened = await Promise.all(DATABASES.map(openIDB));
+    if (opened.every(Boolean)) {
+      DATABASES.forEach((schema, index) => {
+        const database = opened[index];
+        if (!database) return;
+        for (const store of schema.stores) connections.set(store, database);
+      });
       storageState.backend = "indexeddb";
       storageState.memFallback = false;
       try {
@@ -138,6 +152,7 @@ const init = (): Promise<Backend> => {
       } catch {}
       return "indexeddb";
     }
+    for (const database of opened) database?.close();
     if (sessionAvailable()) {
       storageState.backend = "session";
       storageState.memFallback = false;
@@ -155,10 +170,11 @@ export const readAllRecords = async <T extends HasId>(
   store: StoreName,
 ): Promise<T[]> => {
   const backend = await init();
+  const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve) => {
       try {
-        const tx = idb!.transaction(store, "readonly");
+        const tx = idb.transaction(store, "readonly");
         const r = tx.objectStore(store).getAll();
         r.onsuccess = () => resolve((r.result || []) as T[]);
         r.onerror = () => resolve([]);
@@ -175,10 +191,11 @@ export const readRecord = async <T extends HasId>(
   id: string,
 ): Promise<T | undefined> => {
   const backend = await init();
+  const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve) => {
       try {
-        const tx = idb!.transaction(store, "readonly");
+        const tx = idb.transaction(store, "readonly");
         const r = tx.objectStore(store).get(id);
         r.onsuccess = () => resolve((r.result as T) || undefined);
         r.onerror = () => resolve(undefined);
@@ -204,10 +221,11 @@ export const saveRecordStrict = async <T extends HasId>(
   val: T,
 ): Promise<void> => {
   const backend = await init();
+  const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve, reject) => {
       try {
-        const tx = idb!.transaction(store, "readwrite");
+        const tx = idb.transaction(store, "readwrite");
         tx.objectStore(store).put(val);
         tx.oncomplete = () => resolve();
         tx.onerror = () =>
@@ -229,10 +247,11 @@ export const saveRecords = async <T extends HasId>(
 ): Promise<void> => {
   if (!values.length) return;
   const backend = await init();
+  const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve) => {
       try {
-        const tx = idb!.transaction(store, "readwrite");
+        const tx = idb.transaction(store, "readwrite");
         const target = tx.objectStore(store);
         for (const value of values) target.put(value);
         tx.oncomplete = () => resolve();
@@ -253,10 +272,11 @@ export const deleteRecord = async (
 ): Promise<void> => {
   const backend = await init();
   mem[store].delete(id);
+  const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve) => {
       try {
-        const tx = idb!.transaction(store, "readwrite");
+        const tx = idb.transaction(store, "readwrite");
         tx.objectStore(store).delete(id);
         tx.oncomplete = () => resolve();
         tx.onerror = () => resolve();
@@ -271,10 +291,11 @@ export const deleteRecord = async (
 export const clearStore = async (store: StoreName): Promise<void> => {
   mem[store].clear();
   const backend = await init();
+  const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve) => {
       try {
-        const tx = idb!.transaction(store, "readwrite");
+        const tx = idb.transaction(store, "readwrite");
         tx.objectStore(store).clear();
         tx.oncomplete = () => resolve();
         tx.onerror = () => resolve();

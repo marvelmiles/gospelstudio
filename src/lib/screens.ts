@@ -110,6 +110,23 @@ export const screenOfWindow = (
   }
 };
 
+const PREFERRED_DISPLAY_KEY = "gospelstudio:projector-display";
+
+export const readPreferredDisplay = (): string | null => {
+  try {
+    return localStorage.getItem(PREFERRED_DISPLAY_KEY);
+  } catch {
+    return null;
+  }
+};
+
+export const savePreferredDisplay = (label: string | null): void => {
+  try {
+    if (label) localStorage.setItem(PREFERRED_DISPLAY_KEY, label);
+    else localStorage.removeItem(PREFERRED_DISPLAY_KEY);
+  } catch {}
+};
+
 export const pickProjectorScreen = (
   details: ScreenDetails,
   operatorScreen: ScreenDetailed = details.currentScreen,
@@ -117,7 +134,15 @@ export const pickProjectorScreen = (
   const elsewhere = details.screens.filter(
     (screen) => screen !== operatorScreen,
   );
+  const preferred = readPreferredDisplay();
+  const chosen = preferred
+    ? elsewhere.find(
+        (screen) =>
+          screenLabel(screen, details.screens.indexOf(screen)) === preferred,
+      )
+    : undefined;
   return (
+    chosen ??
     elsewhere.find(
       (screen) => screen.isInternal === false && screen.isPrimary === false,
     ) ??

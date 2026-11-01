@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import {
   ArrowLeft,
+  Clapperboard,
   MonitorDown,
   MonitorUp,
   Play,
@@ -16,10 +17,18 @@ import {
 } from "../../hooks/usePresentActions";
 import { EDITOR_COMMANDS } from "../../lib/shortcuts";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { IconButton } from "@/components/shared/IconButton";
 import { PresentMenu } from "@/components/shared/PresentMenu";
 
 const ignorePresent = () => {};
+
+export interface SceneUpdateControls {
+  autoUpdate: boolean;
+  onAutoUpdateChange: (autoUpdate: boolean) => void;
+  onPreview: () => void;
+}
 
 interface EditorTopBarProps {
   title: string;
@@ -44,6 +53,7 @@ interface EditorTopBarProps {
   savedLabel?: string;
   onUpdatePresentation?: () => void;
   onSyncFromPresentation?: () => void;
+  scene?: SceneUpdateControls;
 }
 
 export const EditorTopBar = ({
@@ -69,20 +79,31 @@ export const EditorTopBar = ({
   savedLabel = "Saved",
   onUpdatePresentation,
   onSyncFromPresentation,
+  scene,
 }: EditorTopBarProps) => {
   const blocked = Boolean(invalid);
   const present = usePresentActions(onPresent ?? ignorePresent);
   const saveTitle = blocked
     ? (invalidReason ?? "Fix the highlighted fields to save")
     : dirty
-      ? `Save changes (${EDITOR_COMMANDS.save.hint})`
-      : "No changes to save";
+      ? `${scene ? "Update the scene" : "Save changes"} (${EDITOR_COMMANDS.save.hint})`
+      : scene
+        ? "The scene already has these changes"
+        : "No changes to save";
+  const SaveIcon = scene ? Clapperboard : Save;
+  const saveText = scene
+    ? dirty
+      ? "Update scene"
+      : "Scene up to date"
+    : dirty
+      ? saveLabel
+      : savedLabel;
 
   useEditorShortcuts({
     save: dirty || blocked ? onSave : undefined,
     updatePresentation: onUpdatePresentation,
-    goLive: onPresent ? present.startLive : undefined,
-    preview: onPresent ? present.startPreview : undefined,
+    goLive: onPresent && !scene ? present.startLive : undefined,
+    preview: scene?.onPreview ?? (onPresent ? present.startPreview : undefined),
   });
 
   return (
@@ -179,9 +200,16 @@ export const EditorTopBar = ({
             Update presentation
           </Button>
         ))}
+      {scene && (
+        <AutoUpdateSwitch
+          checked={scene.autoUpdate}
+          onChange={scene.onAutoUpdateChange}
+          compact={compact}
+        />
+      )}
       {compact ? (
         <IconButton
-          icon={Save}
+          icon={SaveIcon}
           title={saveTitle}
           disabled={!dirty || blocked}
           active={dirty && !blocked}
@@ -195,11 +223,29 @@ export const EditorTopBar = ({
           disabled={!dirty || blocked}
           onClick={onSave}
         >
-          <Save size={14} />
-          {dirty ? saveLabel : savedLabel}
+          <SaveIcon size={14} />
+          {saveText}
         </Button>
       )}
-      {onPresent && (
+      {scene &&
+        (compact ? (
+          <IconButton
+            icon={Play}
+            title={`Preview here (${EDITOR_COMMANDS.preview.hint})`}
+            active
+            onClick={scene.onPreview}
+          />
+        ) : (
+          <Button
+            size="sm"
+            title={`Preview here (${EDITOR_COMMANDS.preview.hint})`}
+            onClick={scene.onPreview}
+          >
+            <Play size={14} />
+            Preview
+          </Button>
+        ))}
+      {onPresent && !scene && (
         <PresentMenu onPresent={onPresent} title="Present" hints>
           {compact ? (
             <IconButton icon={Play} title="Present" active />
@@ -211,6 +257,37 @@ export const EditorTopBar = ({
           )}
         </PresentMenu>
       )}
+    </div>
+  );
+};
+
+interface AutoUpdateSwitchProps {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+  compact: boolean;
+}
+
+const AutoUpdateSwitch = ({
+  checked,
+  onChange,
+  compact,
+}: AutoUpdateSwitchProps) => {
+  const id = useId();
+  return (
+    <div
+      className="flex items-center gap-2"
+      title="Send every change to the scene as you make it"
+    >
+      <Label
+        htmlFor={id}
+        className={cn(
+          "cursor-pointer text-[12.5px] font-semibold text-muted-foreground",
+          compact && "sr-only",
+        )}
+      >
+        Auto update
+      </Label>
+      <Switch id={id} checked={checked} onCheckedChange={onChange} />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import type { BibleVerse, BibleVersionId, PassageRange } from "../../../types";
-import type { ScriptureSelection } from "../../../store/useStore";
+import type { ScriptureSelection } from "./scripturePassage";
 import { bookById } from "../../../data/bibleBooks";
 
 export const buildScriptureSelection = ({

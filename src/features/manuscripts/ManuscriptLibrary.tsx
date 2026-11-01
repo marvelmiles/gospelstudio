@@ -15,8 +15,8 @@ import { buildSearchIndex, matchesSearch } from "../../lib/search";
 import { SearchInput } from "@/components/shared/SearchInput";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { LoadMoreFooter } from "@/components/shared/LoadMoreFooter";
-import { QuickShareModal } from "../share/QuickShareModal";
-import { useQuickShareTarget } from "../share/lib/useQuickShareTarget";
+import { ShareModal } from "../share/ShareModal";
+import { useShareTarget } from "../share/lib/useShareTarget";
 import { cardGridClassName } from "@/components/shared/InteractiveCard";
 import { LibrarySortSelect } from "@/components/shared/LibrarySortSelect";
 import { LayoutToggle } from "@/components/shared/LayoutToggle";
@@ -63,8 +63,8 @@ export const ManuscriptLibrary = () => {
   const [collection, setCollection] = useState("All");
   const [sort, setSort] = useLibrarySort("manuscripts");
   const [deleting, setDeleting] = useState<Manuscript | null>(null);
-  const quickShare = useQuickShareTarget();
-  const openQuickShare = quickShare.open;
+  const sharing = useShareTarget();
+  const openShare = sharing.open;
   const { layout, setLayout } = useLibraryLayout("manuscripts");
 
   const onNew = () => navigate(routes.newManuscript());
@@ -90,13 +90,13 @@ export const ManuscriptLibrary = () => {
       present: (manuscript, live) =>
         startPresent("manuscript", manuscript.id, 0, { live }),
       share: (manuscript) =>
-        openQuickShare(
+        openShare(
           [{ collection: "manuscripts", id: manuscript.id }],
           manuscript.title,
         ),
       remove: setDeleting,
     }),
-    [navigate, startPresent, openQuickShare],
+    [navigate, startPresent, openShare],
   );
 
   const confirmDelete = () => {
@@ -182,11 +182,11 @@ export const ManuscriptLibrary = () => {
       </div>
       <LoadMoreFooter list={shown} noun="manuscripts" />
 
-      {quickShare.target && (
-        <QuickShareModal
-          records={quickShare.target.records}
-          title={quickShare.target.title}
-          onClose={quickShare.close}
+      {sharing.target && (
+        <ShareModal
+          records={sharing.target.records}
+          title={sharing.target.title}
+          onClose={sharing.close}
         />
       )}
 
