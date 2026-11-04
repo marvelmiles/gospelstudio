@@ -108,7 +108,7 @@ export const OverviewGrid = ({ counts }: OverviewGridProps) => {
   ];
 
   return (
-    <div className="mb-6.5 grid grid-cols-2 gap-3.5 min-[780px]:grid-cols-3 min-[1024px]:grid-cols-4 min-[1260px]:grid-cols-5">
+    <div className="mb-6.5 grid grid-cols-1 gap-3.5 min-[300px]:grid-cols-2 min-[780px]:grid-cols-3 min-[1024px]:grid-cols-4 min-[1260px]:grid-cols-5">
       {tiles.map((tile) => (
         <DashboardTile key={tile.label} {...tile} />
       ))}

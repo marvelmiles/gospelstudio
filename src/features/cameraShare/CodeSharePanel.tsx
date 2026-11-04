@@ -139,7 +139,7 @@ export const CodeSharePanel = ({
   }
 
   return (
-    <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] items-start gap-5.5">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(260px,100%),1fr))] items-start gap-5.5">
       <Panel>
         <PanelTitle title="Show this reply to the Studio" />
         {reply ? (

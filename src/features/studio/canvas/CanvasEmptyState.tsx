@@ -38,7 +38,7 @@ export const CanvasEmptyState = ({ sceneId }: { sceneId: string }) => {
           </p>
         </div>
 
-        <div className="grid w-full grid-cols-4 gap-1.5 @md:gap-2">
+        <div className="hidden w-full grid-cols-4 gap-1.5 @2xs:grid @md:gap-2">
           {QUICK_TEMPLATES.map((template) => (
             <button
               key={template.id}

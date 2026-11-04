@@ -128,7 +128,7 @@ const GallerySection = ({
       {Icon && <Icon size={13} />}
       {title}
     </h3>
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-2.5">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(170px,100%),1fr))] gap-2.5">
       {children}
     </div>
   </section>

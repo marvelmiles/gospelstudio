@@ -9,8 +9,6 @@ interface AppIconLoaderProps {
 
 const SPIN_AROUND_CENTRE = "origin-center [transform-box:view-box]";
 const RING_RADIUS = 236;
-const RING_ARC = 380;
-const RING_GAP = Math.round(2 * Math.PI * RING_RADIUS) - RING_ARC;
 
 const BLADE_PATHS = {
   a: "M350 256 L209 337.41 Q150.54 371.16 74.11 329.02 A196 196 0 0 0 410.19 377.01 Q408.46 289.75 350 256 Z",
@@ -20,8 +18,6 @@ const BLADE_PATHS = {
 
 const BLADE_SEAMS =
   "M209 337.41 Q150.54 371.16 74.11 329.02 M209 174.59 Q209 107.09 283.7 61.97 M350 256 Q408.46 289.75 410.19 377.01";
-
-const PLAY_PATH = "M226.86 205.53 L314.28 256 L226.86 306.47 Z";
 
 const useSvgIdPrefix = (): string => `app-icon-${useId().replace(/\W/g, "")}`;
 
@@ -51,7 +47,7 @@ export const AppIconLoader = ({
         width={size}
         height={size}
         aria-hidden
-        className="overflow-visible drop-shadow-[0_0_14px_rgb(59_130_246/0.35)]"
+        className="overflow-visible"
       >
         <defs>
           <linearGradient
@@ -125,21 +121,6 @@ export const AppIconLoader = ({
           fill="none"
           stroke={`url(#${ids.ring})`}
           strokeWidth="16"
-          opacity="0.3"
-        />
-        <circle
-          cx="256"
-          cy="256"
-          r={RING_RADIUS}
-          fill="none"
-          stroke={`url(#${ids.ring})`}
-          strokeWidth="16"
-          strokeLinecap="round"
-          strokeDasharray={`${RING_ARC} ${RING_GAP}`}
-          className={cn(
-            SPIN_AROUND_CENTRE,
-            "animate-app-icon-orbit motion-reduce:animate-none",
-          )}
         />
         <g
           mask={`url(#${ids.seams})`}
@@ -152,17 +133,6 @@ export const AppIconLoader = ({
           <path d={BLADE_PATHS.b} fill={`url(#${ids.bladeB})`} />
           <path d={BLADE_PATHS.c} fill={`url(#${ids.bladeC})`} />
         </g>
-        <path
-          d={PLAY_PATH}
-          fill="#f8fafc"
-          stroke="#f8fafc"
-          strokeWidth="24"
-          strokeLinejoin="round"
-          className={cn(
-            SPIN_AROUND_CENTRE,
-            "animate-app-icon-pulse motion-reduce:animate-none",
-          )}
-        />
       </svg>
     </div>
   );

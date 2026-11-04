@@ -13,7 +13,7 @@ const ICON_SLOT = 38;
 const LOGO_SLOT = 34;
 const MENU_SLOT = 38;
 const WORDMARK_SLOT = 132;
-const LABELLED_FROM = 1120;
+const LABELLED_FROM = 1360;
 const WORDMARK_FROM = 780;
 const WIDE_PADDING_FROM = 700;
 

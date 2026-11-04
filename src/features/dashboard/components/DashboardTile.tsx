@@ -50,7 +50,7 @@ export const DashboardTile = ({
     title={title}
     className={cn(
       "flex min-h-21 w-full items-center gap-2.5 glass px-3.5 py-4 text-left transition-[translate,border-color] duration-150 hover:-translate-y-0.5 sm:gap-3.25 sm:px-4.25",
-      sub && "max-[780px]:col-span-2",
+      sub && "min-[300px]:max-[780px]:col-span-2",
       primary
         ? "border-primary-soft/45 bg-primary shadow-[0_4px_12px_rgb(37_99_235/0.25),inset_0_1px_0_rgb(255_255_255/0.12)]"
         : "bg-card/85 hover:border-input",

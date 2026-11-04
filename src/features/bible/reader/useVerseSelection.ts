@@ -118,10 +118,10 @@ export const useVerseSelection = ({
 
   const selectVerse = useCallback((verse: number, extend: boolean) => {
     setSelection((previous) => {
-      if (previous && extend) return { ...previous, focus: verse };
       if (previous && previous.anchor === verse && previous.focus === verse) {
         return null;
       }
+      if (previous && extend) return { ...previous, focus: verse };
       return { anchor: verse, focus: verse };
     });
   }, []);

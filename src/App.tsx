@@ -48,7 +48,7 @@ const App = () => {
   }, [load]);
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-foreground">
+    <div className="flex h-dvh flex-col overflow-hidden bg-background bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-foreground">
       <AlertBar />
       <AppHeader />
 

@@ -8,7 +8,7 @@ interface RecentActivitiesProps {
 }
 
 export const RecentActivities = ({ activities }: RecentActivitiesProps) => (
-  <div className="glass p-5.5">
+  <div className="min-w-0 glass p-4 sm:p-5.5">
     <h3 className="mt-0 mb-3.5 flex items-center gap-2 text-lg text-foreground">
       <Clock size={16} className="text-primary" /> Recent Activities
     </h3>

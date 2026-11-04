@@ -1,12 +1,13 @@
 import { useValueChange } from "@/hooks/useValueChange";
-import { useEffect, useState } from "react";
-import { RotateCcw } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { ListChecks, RotateCcw, Search, Square, Volume2 } from "lucide-react";
 import type { BibleVerse, BibleVersionId } from "../../types";
 import { bookById } from "../../data/bibleBooks";
 import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import type { ScriptureSelection } from "../../store/useStore";
 import { useSpeech } from "../../hooks/useSpeech";
+import { useCompactScreen } from "../../hooks/useCompactScreen";
 import { Button } from "@/components/ui/button";
 import { LoadingArea } from "@/components/shared/LoadingArea";
 import { useBibleChapter } from "./useBibleChapter";
@@ -14,6 +15,8 @@ import { usePresentScripture } from "./usePresentScripture";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
 import { parseReference, referenceSpan, type VerseSpan } from "./lib/reference";
 import { ChapterToolbar } from "./reader/ChapterToolbar";
+import { CompactReaderBar } from "./reader/CompactReaderBar";
+import { ReferenceField } from "./reader/ReferenceField";
 import { SelectionActionBar } from "./reader/SelectionActionBar";
 import { useSavePassageFlow } from "./reader/useSavePassageFlow";
 import { useVerseSelection } from "./reader/useVerseSelection";
@@ -31,6 +34,8 @@ interface BibleReaderProps {
   focusRange?: VerseSpan | null;
   onNavigate: (bookId: number, chapter: number) => void;
   onCurrentVerseChange?: (verse: number | null) => void;
+  onBack?: () => void;
+  versionPicker?: ReactNode;
 }
 
 export const BibleReader = ({
@@ -40,7 +45,11 @@ export const BibleReader = ({
   focusRange,
   onNavigate,
   onCurrentVerseChange,
+  onBack,
+  versionPicker,
 }: BibleReaderProps) => {
+  const compact = useCompactScreen();
+  const [isReferenceOpen, setIsReferenceOpen] = useState(false);
   const pushToast = useStore((s) => s.pushToast);
   const { present, edit } = usePresentScripture();
   const { verses, loading, error, retry } = useBibleChapter(
@@ -106,6 +115,7 @@ export const BibleReader = ({
       onNavigate(parsed.book.id, parsed.chapter);
     }
     setReference("");
+    setIsReferenceOpen(false);
   };
 
   const goChapter = (delta: number) => {
@@ -139,25 +149,73 @@ export const BibleReader = ({
   const toggleReadAloud = (list: BibleVerse[]) => () =>
     speech.speaking ? speech.stop() : readAloud(list);
 
+  const chapterLabel = `${book?.name ?? ""} ${chapter}`;
+
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <ChapterToolbar
-        reference={reference}
-        onReferenceChange={setReference}
-        onJumpToReference={jumpToReference}
-        isAllSelected={selection.isAllSelected}
-        onToggleSelectAll={selection.toggleSelectAll}
-        isSpeechSupported={speech.supported}
-        isSpeaking={speech.speaking}
-        onToggleReadAloud={toggleReadAloud(verses)}
-        chapterLabel={`${book?.name ?? ""} ${chapter}`}
-        onPreviousChapter={() => goChapter(-1)}
-        onNextChapter={() => goChapter(1)}
-      />
+    <div className="flex flex-col roomy:h-full roomy:min-h-0">
+      {compact ? (
+        <CompactReaderBar
+          chapterLabel={chapterLabel}
+          onBack={onBack}
+          onPreviousChapter={() => goChapter(-1)}
+          onNextChapter={() => goChapter(1)}
+          versionPicker={versionPicker}
+          menuItems={[
+            {
+              label: "Go to reference",
+              icon: Search,
+              onClick: () => setIsReferenceOpen(true),
+            },
+            {
+              label: selection.isAllSelected
+                ? "Deselect all verses"
+                : "Select all verses",
+              icon: ListChecks,
+              active: selection.isAllSelected,
+              onClick: selection.toggleSelectAll,
+            },
+            ...(speech.supported
+              ? [
+                  {
+                    label: speech.speaking ? "Stop reading" : "Read aloud",
+                    icon: speech.speaking ? Square : Volume2,
+                    active: speech.speaking,
+                    onClick: toggleReadAloud(verses),
+                  },
+                ]
+              : []),
+          ]}
+        >
+          {isReferenceOpen && (
+            <ReferenceField
+              value={reference}
+              onChange={setReference}
+              onJump={jumpToReference}
+              onEscape={() => setIsReferenceOpen(false)}
+              autoFocus
+              className="mt-2"
+            />
+          )}
+        </CompactReaderBar>
+      ) : (
+        <ChapterToolbar
+          reference={reference}
+          onReferenceChange={setReference}
+          onJumpToReference={jumpToReference}
+          isAllSelected={selection.isAllSelected}
+          onToggleSelectAll={selection.toggleSelectAll}
+          isSpeechSupported={speech.supported}
+          isSpeaking={speech.speaking}
+          onToggleReadAloud={toggleReadAloud(verses)}
+          chapterLabel={chapterLabel}
+          onPreviousChapter={() => goChapter(-1)}
+          onNextChapter={() => goChapter(1)}
+        />
+      )}
 
       <div
         className={cn(
-          "min-h-0 flex-1 overflow-y-auto pr-1.5",
+          "roomy:min-h-0 roomy:flex-1 roomy:overflow-y-auto roomy:pr-1.5",
           selection.selection ? "pb-19" : "pb-3",
         )}
       >

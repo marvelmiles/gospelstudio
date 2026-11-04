@@ -87,7 +87,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "Can I play background music during worship?",
         answer:
-          "Yes. Add a sound to a whole manuscript, a theme or a single slide, and it plays softly while you present. Some gentle worship pads come with the app, you can upload your own, and you can use the sound from any of your videos. You can set the volume in Settings.",
+          "Yes. Add a sound to a whole manuscript, a theme or a single slide, and it plays softly while you present. Five instrumental tracks come with the app, you can upload your own, and you can use the sound from any of your videos. You can set the volume in Settings.",
       },
     ],
   },
@@ -121,7 +121,7 @@ export const FAQ_GROUPS: FaqGroup[] = [
     faqs: [
       {
         question: "How do I show my slides on a projector or TV?",
-        answer: `Connect the projector or TV to your computer with an HDMI cable. In your computer's display settings, choose Extend, not Duplicate. Then open a song, Bible passage, picture or video, press Present and choose Go live. The first time, your browser asks if the site can manage windows. Choose Allow. ${APP_NAME} then shows the slides on the projector, while the controls and your notes stay on your laptop. You can also give this permission ahead of time in Settings, under Projector. If your browser cannot place the window for you, it opens on your laptop screen, and you can drag it onto the projector.`,
+        answer: `Connect the projector or TV to your computer with an HDMI cable. In your computer's display settings, choose Extend, not Duplicate. Then open a song, Bible passage, picture or video, press Present and choose Go live. The first time, your browser asks if the site can manage windows. Choose Allow. ${APP_NAME} then shows the slides on the projector, while the controls and your notes stay on your laptop. If your browser cannot place the window for you, it opens on your laptop screen, and you can drag it onto the projector.`,
       },
       {
         question: "What is the difference between Go live and Preview here?",

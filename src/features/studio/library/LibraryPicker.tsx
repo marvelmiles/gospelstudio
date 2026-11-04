@@ -202,7 +202,7 @@ export const LibraryPicker = ({
           <div
             className={cn(
               isVisual
-                ? "grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2.5"
+                ? "grid grid-cols-[repeat(auto-fill,minmax(min(150px,100%),1fr))] gap-2.5"
                 : "flex flex-col gap-1.5",
             )}
           >

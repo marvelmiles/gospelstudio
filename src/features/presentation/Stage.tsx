@@ -37,9 +37,9 @@ interface StageProps {
 }
 
 const VIEW_SIZE: Record<PresentationView, string> = {
-  fill: "h-screen w-screen",
-  cover: "h-[max(100vh,56.25vw)] w-[max(100vw,177.78vh)]",
-  normal: "h-[min(100vh,56.25vw)] w-[min(100vw,177.78vh)]",
+  fill: "h-dvh w-screen",
+  cover: "h-[max(100dvh,56.25vw)] w-[max(100vw,177.78dvh)]",
+  normal: "h-[min(100dvh,56.25vw)] w-[min(100vw,177.78dvh)]",
 };
 
 export const Stage = ({

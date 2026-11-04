@@ -102,7 +102,7 @@ export const SlideMediaPicker = ({
   return (
     <Modal open onClose={onClose} title={COPY[kind].title} width={720}>
       <div className="mb-4 flex flex-wrap gap-2.5">
-        <div className="min-w-45 flex-1">
+        <div className="min-w-[min(11.25rem,100%)] flex-1">
           <SearchInput
             value={query}
             onChange={setQuery}
@@ -189,7 +189,7 @@ export const SlideMediaPicker = ({
 };
 
 const PickerGrid = ({ children }: { children: ReactNode }) => (
-  <div className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
+  <div className="grid grid-cols-[repeat(auto-fill,minmax(min(140px,100%),1fr))] gap-3">
     {children}
   </div>
 );

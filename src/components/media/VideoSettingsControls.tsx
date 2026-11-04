@@ -91,14 +91,14 @@ export const VideoSettingsControls = ({
         </Field>
       </div>
       <div className="mb-1 flex flex-wrap gap-6">
-        <div className="min-w-45 flex-1">
+        <div className="min-w-[min(11.25rem,100%)] flex-1">
           <SwitchField
             label="Muted"
             checked={settings.muted}
             onChange={(muted) => onChange({ muted })}
           />
         </div>
-        <div className="min-w-45 flex-1">
+        <div className="min-w-[min(11.25rem,100%)] flex-1">
           <SwitchField
             label="Loop"
             checked={settings.loop}

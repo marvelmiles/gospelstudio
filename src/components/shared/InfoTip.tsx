@@ -31,7 +31,7 @@ interface InfoTriggerProps extends ComponentProps<"span"> {
   title: string;
   size: number;
   open: boolean;
-  onActivate: (fromKeyboard: boolean) => void;
+  onActivate: () => void;
 }
 
 const InfoTrigger = ({
@@ -56,13 +56,13 @@ const InfoTrigger = ({
     onClick={(event: MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
-      onActivate(false);
+      onActivate();
     }}
     onKeyDown={(event: KeyboardEvent) => {
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       event.stopPropagation();
-      onActivate(true);
+      onActivate();
     }}
   >
     <Info size={size} aria-hidden />
@@ -106,15 +106,22 @@ const InfoPopover = ({
   size,
   children,
 }: Omit<InfoTipProps, "variant" | "size"> & { size: number }) => {
-  const { open, setOpen, hoverHandlers } = useHoverOpen();
+  const [pinned, setPinned] = useState(false);
+  const { open, setOpen, hoverHandlers } = useHoverOpen(!pinned);
+
+  const changeOpen = (next: boolean) => {
+    setPinned(next);
+    setOpen(next);
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={changeOpen}>
       <PopoverTrigger asChild {...hoverHandlers}>
         <InfoTrigger
           title={title}
           size={size}
           open={open}
-          onActivate={(fromKeyboard) => setOpen(fromKeyboard ? !open : true)}
+          onActivate={() => changeOpen(!pinned)}
         />
       </PopoverTrigger>
       <PopoverContent
@@ -122,7 +129,7 @@ const InfoPopover = ({
         align={align}
         role="tooltip"
         onOpenAutoFocus={(event) => event.preventDefault()}
-        className="w-auto max-w-75 px-3.25 py-2.75 tracking-normal normal-case"
+        className="w-auto max-w-[min(18.75rem,calc(100vw-1rem))] px-3.25 py-2.75 tracking-normal normal-case"
         {...hoverHandlers}
       >
         <div className="mb-1 text-[12.5px] font-semibold text-foreground">

@@ -13,6 +13,7 @@ import { BIBLE_VERSIONS, bookById } from "../../data/bibleBooks";
 import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useCompactScreen } from "../../hooks/useCompactScreen";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { PillTabs } from "@/components/shared/PillTabs";
 import { Button } from "@/components/ui/button";
@@ -93,6 +94,8 @@ export const BiblePage = () => {
       navigate(location.pathname, { replace: true, state: null });
   }, [arrivalState, navigate, location.pathname]);
 
+  const compact = useCompactScreen();
+  const isReadingChapter = tab === "read" && step === "read";
   const book = bookById(readingPosition.bookId);
   const savedCount = scriptures.filter((s) => !s.quick && !s.deleted).length;
 
@@ -160,66 +163,73 @@ export const BiblePage = () => {
     <ChevronRight size={13} className="shrink-0 text-subtle-foreground" />
   );
 
+  const versionPicker = (
+    <OptionSelect
+      aria-label="Bible version"
+      value={prefs.bibleVersion}
+      options={versionOptions}
+      onValueChange={(next) => setBibleVersion(next as BibleVersionId)}
+      valueLabel={compact ? prefs.bibleVersion : undefined}
+      className={cn(compact && "h-7.5 w-auto gap-1.5 px-2.5")}
+    />
+  );
+
   const readView = (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="mb-3.5 flex flex-wrap items-center gap-2 border-b border-border pb-3">
-        {step !== "books" && (
-          <IconButton icon={ArrowLeft} title="Back" onClick={goBack} />
-        )}
-        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-          <button
-            className={crumbClassName(step === "books")}
-            onClick={() => setStep("books")}
-          >
-            Books
-          </button>
-          {step !== "books" && book && (
-            <>
-              {crumbSep}
-              <button
-                className={crumbClassName(step === "chapters")}
-                onClick={() => setStep("chapters")}
-              >
-                {book.name}
-              </button>
-            </>
+    <div className="flex flex-col roomy:min-h-0 roomy:flex-1">
+      {!(compact && step === "read") && (
+        <div className="mb-3.5 flex flex-wrap items-center gap-2 border-b border-border pb-3">
+          {step !== "books" && (
+            <IconButton icon={ArrowLeft} title="Back" onClick={goBack} />
           )}
-          {(step === "verses" || step === "read") && (
-            <>
-              {crumbSep}
-              <button
-                className={crumbClassName(step === "verses")}
-                onClick={() => {
-                  setFocusVerse(null);
-                  setStep("verses");
-                }}
-              >
-                Chapter {readingPosition.chapter}
-              </button>
-            </>
-          )}
-          {step === "read" && (
-            <>
-              {crumbSep}
-              <span className={crumbClassName(true)}>
-                {!focusRange
-                  ? "Reading"
-                  : focusRange.start === focusRange.end
-                    ? `Verse ${focusRange.start}`
-                    : `Verses ${focusRange.start}-${focusRange.end}`}
-              </span>
-            </>
-          )}
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <button
+              className={crumbClassName(step === "books")}
+              onClick={() => setStep("books")}
+            >
+              Books
+            </button>
+            {step !== "books" && book && (
+              <>
+                {crumbSep}
+                <button
+                  className={crumbClassName(step === "chapters")}
+                  onClick={() => setStep("chapters")}
+                >
+                  {book.name}
+                </button>
+              </>
+            )}
+            {(step === "verses" || step === "read") && (
+              <>
+                {crumbSep}
+                <button
+                  className={crumbClassName(step === "verses")}
+                  onClick={() => {
+                    setFocusVerse(null);
+                    setStep("verses");
+                  }}
+                >
+                  Chapter {readingPosition.chapter}
+                </button>
+              </>
+            )}
+            {step === "read" && (
+              <>
+                {crumbSep}
+                <span className={crumbClassName(true)}>
+                  {!focusRange
+                    ? "Reading"
+                    : focusRange.start === focusRange.end
+                      ? `Verse ${focusRange.start}`
+                      : `Verses ${focusRange.start}-${focusRange.end}`}
+                </span>
+              </>
+            )}
+          </div>
+          <span className="flex-1" />
+          <div className="w-57.5 max-w-full">{versionPicker}</div>
         </div>
-        <span className="flex-1" />
-        <div className="w-57.5 max-w-full">
-          <OptionSelect
-            value={prefs.bibleVersion}
-            options={versionOptions}
-            onValueChange={(next) => setBibleVersion(next as BibleVersionId)}
-          />
-        </div>
-      </div>
+      )}
 
       {step === "books" && (
         <BooksStep
@@ -252,7 +262,7 @@ export const BiblePage = () => {
         />
       )}
       {step === "read" && (
-        <div className="min-h-0 flex-1">
+        <div className="roomy:min-h-0 roomy:flex-1">
           <BibleReader
             version={prefs.bibleVersion}
             bookId={readingPosition.bookId}
@@ -260,6 +270,8 @@ export const BiblePage = () => {
             focusRange={focusRange}
             onNavigate={navigateReader}
             onCurrentVerseChange={rememberCurrentVerse}
+            onBack={compact ? goBack : undefined}
+            versionPicker={compact ? versionPicker : undefined}
           />
         </div>
       )}
@@ -267,40 +279,52 @@ export const BiblePage = () => {
   );
 
   return (
-    <div className={cn(pageClassName, "flex h-full max-h-full flex-col")}>
-      <PageHeader
-        title="Bible"
-        subtitle="Read and project scripture offline."
-        actions={
-          <>
-            <PillTabs<BibleTab>
-              tabs={[
-                { id: "read", label: "Read", icon: BookOpen },
-                { id: "saved", label: `Saved (${savedCount})`, icon: Bookmark },
-              ]}
-              value={tab}
-              onChange={(next) => {
-                setTab(next);
-                if (next === "read") setTrashView(false);
-              }}
-            />
-            {tab === "saved" && (
-              <Button
-                variant={trashView ? "default" : "secondary"}
-                onClick={() => setTrashView((v) => !v)}
-              >
-                <Trash2 size={15} />
-                {trashView ? "Passages" : "Trash"}
-              </Button>
-            )}
-          </>
-        }
-      />
+    <div
+      className={cn(
+        pageClassName,
+        "flex h-full flex-col overflow-y-auto roomy:max-h-full roomy:overflow-hidden",
+        isReadingChapter && "max-sm:pt-0",
+      )}
+    >
+      {!(compact && isReadingChapter) && (
+        <PageHeader
+          title="Bible"
+          subtitle="Read and project scripture offline."
+          actions={
+            <>
+              <PillTabs<BibleTab>
+                tabs={[
+                  { id: "read", label: "Read", icon: BookOpen },
+                  {
+                    id: "saved",
+                    label: `Saved (${savedCount})`,
+                    icon: Bookmark,
+                  },
+                ]}
+                value={tab}
+                onChange={(next) => {
+                  setTab(next);
+                  if (next === "read") setTrashView(false);
+                }}
+              />
+              {tab === "saved" && (
+                <Button
+                  variant={trashView ? "default" : "secondary"}
+                  onClick={() => setTrashView((v) => !v)}
+                >
+                  <Trash2 size={15} />
+                  {trashView ? "Passages" : "Trash"}
+                </Button>
+              )}
+            </>
+          }
+        />
+      )}
 
       {tab === "read" ? (
         readView
       ) : (
-        <div className="min-h-0 flex-1 overflow-y-auto">
+        <div className="roomy:min-h-0 roomy:flex-1 roomy:overflow-y-auto">
           <SavedPassages trashView={trashView} />
         </div>
       )}

@@ -51,7 +51,7 @@ interface ManuscriptSettingsModalProps {
 }
 
 const gridClassName =
-  "grid grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-3";
+  "grid grid-cols-[repeat(auto-fit,minmax(min(180px,100%),1fr))] gap-3";
 
 const TuneDetails = ({ music }: { music: HymnMusic }) => {
   const rows: [string, string][] = [

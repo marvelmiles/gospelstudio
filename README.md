@@ -59,7 +59,6 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 - **Auto-play.** Slides move forward by themselves after the number of seconds you choose, and can loop back to the start for announcement slideshows.
 - **Go live or preview.** Go live sends the slides to the audience screen. Preview here shows them only on your own screen.
 - **Go live fills the projector.** With a screen connected over HDMI, the audience window opens already full screen on it, using the browser's Window Management API.
-- **Allow the projector ahead of time.** The Projector section in Settings lets you give the display permission before the service starts, so your first Go live goes straight to the projector.
 - **Keyboard control.** Hold `Ctrl` and type a number to jump to a verse, or press `Ctrl+C` for the chorus. The slide list shows each shortcut before you start.
 
 **Studio**
@@ -211,6 +210,8 @@ Then open the address Vite prints. By default that is http://localhost:5173.
 | `pnpm generate:bible-layout`   | Rebuild the list of Bible books and chapters            |
 
 Run `pnpm generate:thumbnails` after adding a picture to `public/assets/images`. Lists and editors show the small copy from `public/assets/images/thumbs`, and only the projector loads the full picture.
+
+The built-in sounds live in `public/assets/sounds` as AAC (`.m4a`, 160 kbps stereo), about half the size of the original MP3s with no audible loss. Add a new one to that folder and list it in `src/data/sounds.ts` with its length in seconds. The tracks come from freetouse.com.
 
 ## Environment variables
 

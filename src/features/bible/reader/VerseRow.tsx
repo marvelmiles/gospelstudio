@@ -22,12 +22,17 @@ export const VerseRow = ({
   <div
     ref={onRef}
     onClick={(event: MouseEvent) =>
-      onSelect(event.ctrlKey || event.metaKey || event.shiftKey)
+      onSelect(
+        event.ctrlKey ||
+          event.metaKey ||
+          event.shiftKey ||
+          (event.nativeEvent as PointerEvent).pointerType === "touch",
+      )
     }
     onDoubleClick={onPresent}
     title="Click to select, Ctrl-click to extend, Shift+Up/Down to grow, double-click to present this verse"
     className={cn(
-      "mb-0.5 flex cursor-pointer gap-3 rounded-[10px] border px-3 py-2.25 select-none",
+      "mb-0.5 flex cursor-pointer gap-2.5 rounded-[10px] border px-2 py-2 select-none sm:gap-3 sm:px-3 sm:py-2.25",
       isSelected
         ? "border-primary/35 bg-primary/13"
         : isBeingRead
@@ -37,7 +42,7 @@ export const VerseRow = ({
   >
     <span
       className={cn(
-        "min-w-5.5 pt-0.75 text-right text-xs font-bold tabular-nums",
+        "min-w-5.5 shrink-0 pt-1 text-right text-xs font-bold tabular-nums sm:pt-0.75",
         isSelected ? "text-primary" : "text-subtle-foreground",
       )}
     >
@@ -45,8 +50,10 @@ export const VerseRow = ({
     </span>
     <span
       className={cn(
-        "text-[15px] leading-[1.65] whitespace-pre-line",
-        isSelected || isBeingRead ? "text-foreground" : "text-muted-foreground",
+        "min-w-0 text-[17px] leading-[1.75] whitespace-pre-line sm:text-[15px] sm:leading-[1.65]",
+        isSelected || isBeingRead
+          ? "text-foreground"
+          : "text-foreground/85 sm:text-muted-foreground",
       )}
     >
       {verse.t}

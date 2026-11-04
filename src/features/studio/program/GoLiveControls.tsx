@@ -53,7 +53,7 @@ export const GoLiveControls = ({ className }: { className?: string }) => {
         )}
       </Button>
 
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(7.5rem,100%),1fr))] gap-2">
         <Button
           size="sm"
           variant="secondary"

@@ -60,6 +60,9 @@ export const BIBLE_THORN_BACKGROUND_ID =
   imageBackgroundIdOf("bible-thorn-branch");
 export const PARTICLE_WAVE_BACKGROUND_ID =
   videoBackgroundIdOf("particle-wave-blue");
+export const RAISED_HANDS_IMAGE_ID = imageIdOf("raised-hands");
+export const BIBLE_ON_GRASS_IMAGE_ID = imageIdOf("bible-on-grass");
+export const HAND_ON_BIBLE_IMAGE_ID = imageIdOf("hand-on-bible");
 
 const BUILT_IN_ASSETS_DATE = "2026-10-29T00:00:00.000Z";
 const imageBackground = ({

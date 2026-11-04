@@ -163,7 +163,7 @@ export const DataSection = () => {
       </div>
 
       {isChoosingMode && !busyWith && (
-        <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-2.5">
+        <div className="mt-3 grid grid-cols-[repeat(auto-fit,minmax(min(200px,100%),1fr))] gap-2.5">
           {IMPORT_OPTIONS.map((option) => (
             <button
               key={option.mode}

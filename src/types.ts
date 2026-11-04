@@ -272,7 +272,7 @@ export interface AudioSettings {
 export interface AudioItem {
   id: string;
   name: string;
-  dataUrl?: string;
+  src?: string;
   blobId?: string;
   size?: number;
   duration?: number;

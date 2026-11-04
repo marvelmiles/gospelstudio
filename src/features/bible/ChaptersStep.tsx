@@ -1,7 +1,8 @@
 import type { BibleBook } from "../../data/bibleBooks";
 import { tileClassName } from "./tileStyle";
 
-export const stepScrollClassName = "min-h-0 flex-1 overflow-y-auto pr-1.5 pb-3";
+export const stepScrollClassName =
+  "pb-3 roomy:min-h-0 roomy:flex-1 roomy:overflow-y-auto roomy:pr-1.5";
 
 export const stepNumberGridClassName =
   "grid grid-cols-[repeat(auto-fill,minmax(56px,1fr))] gap-2";

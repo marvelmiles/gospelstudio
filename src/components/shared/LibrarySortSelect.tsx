@@ -22,7 +22,7 @@ export const LibrarySortSelect = ({
 }: LibrarySortSelectProps) => {
   const options = useMemo(() => librarySortChoices(nameLabel), [nameLabel]);
   return (
-    <div className={cn("relative min-w-47.5", className)}>
+    <div className={cn("relative min-w-[min(11.875rem,100%)]", className)}>
       <ArrowUpDown
         size={15}
         className="pointer-events-none absolute top-1/2 left-3 z-1 -translate-y-1/2 text-subtle-foreground"

@@ -11,6 +11,7 @@ import { useBibleChapter } from "./useBibleChapter";
 import { PresentButton } from "./PresentButton";
 import { VerseSnippet } from "./VerseSnippet";
 import { tileClassName } from "./tileStyle";
+import { stepScrollClassName } from "./ChaptersStep";
 import {
   formatParsedReference,
   parseReference,
@@ -67,7 +68,7 @@ export const BooksStep = ({
   ];
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex flex-col roomy:min-h-0 roomy:flex-1">
       <div className="mb-4 flex flex-wrap items-center gap-2.5">
         <SearchInput
           value={query}
@@ -85,7 +86,7 @@ export const BooksStep = ({
           </Button>
         )}
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1.5 pb-3">
+      <div className={stepScrollClassName}>
         {reference && (
           <PassageJump
             reference={reference}
@@ -112,7 +113,7 @@ export const BooksStep = ({
               <div className="mt-1.5 mb-2.5 section-label">
                 {query.trim() ? `${label}: matching books` : label}
               </div>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
+              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(150px,100%),1fr))] gap-2">
                 {books.map((b) => {
                   const active = b.id === position.bookId;
                   return (

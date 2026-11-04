@@ -26,7 +26,7 @@ export const SearchInput = ({
   };
 
   return (
-    <div className={cn("relative min-w-50 flex-1", className)}>
+    <div className={cn("relative min-w-[min(12.5rem,100%)] flex-1", className)}>
       <Search
         size={16}
         className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-subtle-foreground"

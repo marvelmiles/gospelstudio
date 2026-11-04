@@ -154,7 +154,8 @@ export default defineConfig({
           {
             urlPattern: ({ url }) =>
               url.pathname.startsWith("/assets/images/") ||
-              url.pathname.startsWith("/assets/videos/"),
+              url.pathname.startsWith("/assets/videos/") ||
+              url.pathname.startsWith("/assets/sounds/"),
             handler: "CacheFirst",
             options: {
               cacheName: "background-assets",

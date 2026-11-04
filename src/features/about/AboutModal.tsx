@@ -87,10 +87,10 @@ export const AboutModal = () => {
       </p>
       <a
         href={`mailto:${CONTACT_EMAIL}`}
-        className="inline-flex items-center gap-2.25 rounded-[11px] bg-linear-140 from-primary-soft to-primary px-4 py-2.75 text-sm font-semibold text-white no-underline"
+        className="inline-flex max-w-full items-center gap-2.25 rounded-[11px] bg-linear-140 from-primary-soft to-primary px-4 py-2.75 text-sm font-semibold text-white no-underline"
       >
-        <Mail size={16} />
-        {CONTACT_EMAIL}
+        <Mail size={16} className="shrink-0" />
+        <span className="min-w-0 break-all">{CONTACT_EMAIL}</span>
       </a>
     </Modal>
   );

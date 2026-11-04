@@ -35,10 +35,10 @@ export const Dashboard = () => {
 
       {showStorage && <StorageCard storage={storage} />}
 
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(280px,100%),1fr))] gap-4">
         <RecentActivities activities={activities} />
 
-        <div className="grid gap-4">
+        <div className="grid min-w-0 gap-4">
           <ManuscriptsByCategory
             data={manuscriptsByCollection}
             largest={largestCollectionCount}

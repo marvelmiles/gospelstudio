@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import {
   Select,
   SelectContent,
@@ -15,6 +16,7 @@ interface OptionSelectProps {
   options: SelectOption[];
   className?: string;
   disabled?: boolean;
+  valueLabel?: ReactNode;
   "aria-label"?: string;
 }
 
@@ -35,6 +37,7 @@ export const OptionSelect = ({
   options,
   className,
   disabled,
+  valueLabel,
   "aria-label": ariaLabel,
 }: OptionSelectProps) => (
   <Select
@@ -43,7 +46,7 @@ export const OptionSelect = ({
     disabled={disabled}
   >
     <SelectTrigger aria-label={ariaLabel} className={cn("w-full", className)}>
-      <SelectValue />
+      <SelectValue>{valueLabel}</SelectValue>
     </SelectTrigger>
     <SelectContent
       position="popper"

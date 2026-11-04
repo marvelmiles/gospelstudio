@@ -87,7 +87,7 @@ export const ShareItemPicker = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-2.5">
-        <div className="relative min-w-42.5 flex-[1_1_190px]">
+        <div className="relative min-w-[min(10.625rem,100%)] flex-[1_1_190px]">
           <LayoutGrid
             size={15}
             className="pointer-events-none absolute top-3.25 left-3.25 text-subtle-foreground"
@@ -109,13 +109,13 @@ export const ShareItemPicker = ({
               value={query}
               onChange={setQuery}
               placeholder={`Search ${tab.label.toLowerCase()}…`}
-              className="min-w-40"
+              className="min-w-[min(10rem,100%)]"
             />
             <LibrarySortSelect
               value={sort}
               onChange={setSort}
               nameLabel="Name"
-              className="min-w-42"
+              className="min-w-[min(10.5rem,100%)]"
             />
           </>
         )}
@@ -148,7 +148,7 @@ export const ShareItemPicker = ({
           bare
         />
       ) : (
-        <div className="grid grid-cols-[repeat(auto-fill,minmax(146px,1fr))] gap-2.5">
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(min(146px,100%),1fr))] gap-2.5">
           {shown.map((item) => (
             <ShareItemTile
               key={item.key}

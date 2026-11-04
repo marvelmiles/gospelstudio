@@ -24,9 +24,9 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
   const highestUseCount = Math.max(1, ...mostUsedList.map((m) => m.count));
 
   return (
-    <div className="glass p-5.5">
+    <div className="min-w-0 glass p-4 sm:p-5.5">
       <h3 className="mt-0 mb-3 text-lg text-foreground">Most Used Artifacts</h3>
-      <div className="mb-3 flex gap-1.5">
+      <div className="mb-3 flex flex-wrap gap-1.5">
         {USAGE_TABS.map((tab) => {
           const activeTab = usageTab === tab.id;
           return (
@@ -34,7 +34,7 @@ export const MostUsedArtifacts = ({ mostUsed }: MostUsedArtifactsProps) => {
               key={tab.id}
               onClick={() => setUsageTab(tab.id)}
               className={cn(
-                "flex-1 rounded-[9px] border py-1.75 text-[12.5px] font-semibold",
+                "flex-[1_1_auto] rounded-[9px] border px-2 py-1.75 text-[12.5px] font-semibold",
                 activeTab
                   ? "border-primary/40 bg-primary/16 text-primary-soft"
                   : "border-border bg-transparent text-muted-foreground",

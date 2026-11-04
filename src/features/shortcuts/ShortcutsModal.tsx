@@ -40,11 +40,11 @@ export const ShortcutsModal = () => {
             <div
               key={index}
               className={cn(
-                "flex items-center justify-between gap-3 py-2",
+                "flex flex-wrap items-center justify-between gap-x-3 gap-y-1.5 py-2",
                 index < group.shortcuts.length - 1 && "border-b border-border",
               )}
             >
-              <span className="text-[13.5px] text-foreground">
+              <span className="min-w-[min(10rem,100%)] flex-1 text-[13.5px] text-foreground">
                 {shortcut.description}
               </span>
               <ShortcutKeys keys={shortcut.keys} />

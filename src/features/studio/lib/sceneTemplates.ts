@@ -1,6 +1,5 @@
-import type { CameraLayer, Layer, LayerFrame } from "../types/layer";
+import type { Layer, LayerFrame } from "../types/layer";
 import { FULL_FRAME, percentFrame } from "./canvasCoordinates";
-import { IMAGE_SIZE_PRESETS } from "./imagePresets";
 import {
   DEFAULT_TEXT_APPEARANCE,
   createLayer,
@@ -9,13 +8,21 @@ import {
 } from "./layerDefaults";
 import { colorFill, fillOf } from "./layerFill";
 import { textPresetPatch } from "./textPresets";
+import { BROADCAST_TEMPLATES } from "./broadcastTemplates";
+import {
+  BLACK_BACKGROUND,
+  DARK_BACKGROUND,
+  background,
+  camera,
+  churchLogo,
+} from "./templateLayers";
 
 export interface TemplateContext {
   cameraSourceId: string | null;
   backgroundId: string | null;
 }
 
-export type TemplateGroup = "camera" | "content" | "worship";
+export type TemplateGroup = "broadcast" | "camera" | "content" | "worship";
 
 export interface SceneTemplate {
   id: string;
@@ -27,27 +34,11 @@ export interface SceneTemplate {
 }
 
 export const TEMPLATE_GROUP_LABELS: Record<TemplateGroup, string> = {
+  broadcast: "Broadcast looks",
   camera: "Camera layouts",
   content: "Full-screen content",
   worship: "Worship and announcements",
 };
-
-const DARK_BACKGROUND = "#0b0f19";
-const BLACK_BACKGROUND = "#000000";
-
-const camera = (
-  context: TemplateContext,
-  frame = FULL_FRAME,
-  overrides: Partial<Omit<CameraLayer, "id" | "type">> = {},
-) =>
-  createLayer("camera", {
-    sourceId: context.cameraSourceId,
-    ...placement(frame),
-    ...overrides,
-  });
-
-const background = (context: TemplateContext) =>
-  createLayer("background", { backgroundId: context.backgroundId });
 
 const subtitle = (frame?: LayerFrame) => {
   const look = textPresetPatch("subtitle", DEFAULT_TEXT_APPEARANCE);
@@ -66,6 +57,7 @@ const pictureInPicture = (context: TemplateContext) =>
   });
 
 export const SCENE_TEMPLATES: SceneTemplate[] = [
+  ...BROADCAST_TEMPLATES,
   {
     id: "full-camera",
     name: "Full-screen camera",
@@ -170,10 +162,7 @@ export const SCENE_TEMPLATES: SceneTemplate[] = [
         radius: 24,
         ...placement(percentFrame(63, 6, 34, 34)),
       }),
-      createLayer("image", {
-        name: "Church logo",
-        ...placement(IMAGE_SIZE_PRESETS.logo.frame),
-      }),
+      churchLogo(),
       createLayer("lowerThird", {
         ...placement({ x: 60, y: 760, width: 860, height: 140 }),
       }),

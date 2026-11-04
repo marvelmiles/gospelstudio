@@ -5,7 +5,7 @@ export const cardClassName =
   "glass flex flex-col overflow-hidden transition-colors duration-150 hover:border-input focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary [[role=button]]:cursor-pointer";
 
 export const cardGridClassName =
-  "grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4";
+  "grid grid-cols-[repeat(auto-fill,minmax(min(230px,100%),1fr))] gap-4";
 
 export const cardThumbClassName =
   "relative aspect-video overflow-hidden bg-thumbnail";

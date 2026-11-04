@@ -12,7 +12,7 @@ interface PanelProps {
 export const Panel = ({ children, className }: PanelProps) => (
   <Card
     className={cn(
-      "block gap-0 rounded-2xl bg-secondary p-4.5 shadow-none",
+      "block gap-0 rounded-2xl bg-secondary p-3.5 shadow-none sm:p-4.5",
       className,
     )}
   >
@@ -37,7 +37,7 @@ export const PanelTitle = ({
 }: PanelTitleProps) => (
   <div
     className={cn(
-      "mb-3.5 flex items-center gap-2",
+      "mb-3.5 flex flex-wrap items-center gap-2",
       centered
         ? "justify-center"
         : trailing
@@ -45,7 +45,7 @@ export const PanelTitle = ({
           : "justify-start",
     )}
   >
-    <span className="inline-flex items-center gap-2 text-base font-semibold text-foreground">
+    <span className="inline-flex min-w-0 items-center gap-2 text-base font-semibold text-foreground">
       {Icon && <Icon size={17} className="text-primary-soft" />}
       {title}
       {info && (

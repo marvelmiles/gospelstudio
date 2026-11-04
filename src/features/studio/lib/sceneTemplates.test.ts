@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BUILT_IN_MEDIA } from "../../../data/backgrounds";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "./canvasCoordinates";
 import { SCENE_TEMPLATES, findTemplate } from "./sceneTemplates";
 
@@ -56,6 +57,45 @@ describe("scene templates", () => {
       "full-service",
     ];
     for (const id of needed) expect(findTemplate(id), id).toBeDefined();
+  });
+
+  it("offers broadcast looks modelled on real service productions", () => {
+    const broadcast = SCENE_TEMPLATES.filter(
+      (template) => template.group === "broadcast",
+    ).map((template) => template.id);
+
+    expect(broadcast).toEqual(
+      expect.arrayContaining([
+        "broadcast-scripture",
+        "broadcast-camera",
+        "broadcast-lyrics",
+        "broadcast-caption",
+        "broadcast-response",
+        "broadcast-notice",
+        "broadcast-welcome",
+        "broadcast-ministry",
+        "broadcast-event",
+      ]),
+    );
+  });
+
+  it("only points template photos at images the app ships with", () => {
+    const shipped = new Set(BUILT_IN_MEDIA.map((item) => item.id));
+    for (const template of SCENE_TEMPLATES)
+      for (const layer of template.build(context))
+        if (layer.type === "image" && layer.mediaId)
+          expect(shipped.has(layer.mediaId), template.id).toBe(true);
+  });
+
+  it("frames the preacher and the passage in matching gold borders", () => {
+    const layers = findTemplate("broadcast-scripture")?.build(context) ?? [];
+    const camera = layers.find((layer) => layer.type === "camera");
+    const passage = layers.find((layer) => layer.type === "bible");
+
+    expect(camera?.border.width).toBeGreaterThan(0);
+    expect(camera?.border).toEqual(passage?.border);
+    expect(camera?.position.y).toBe(passage?.position.y);
+    expect(camera?.dimensions.height).toBe(passage?.dimensions.height);
   });
 
   it("puts the preacher and the passage side by side as two 16:9 boxes", () => {

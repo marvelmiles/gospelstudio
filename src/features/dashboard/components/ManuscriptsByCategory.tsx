@@ -13,7 +13,7 @@ export const ManuscriptsByCategory = ({
   data,
   largest,
 }: ManuscriptsByCategoryProps) => (
-  <div className="glass p-5.5">
+  <div className="min-w-0 glass p-4 sm:p-5.5">
     <h3 className="mt-0 mb-3.5 text-lg text-foreground">
       Manuscripts by Collection
     </h3>

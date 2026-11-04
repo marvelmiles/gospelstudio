@@ -2,7 +2,7 @@ import { useBlobUrl } from "../lib/blobUrls";
 
 interface BinaryAsset {
   blobId?: string;
-  dataUrl?: string;
+  src?: string;
 }
 
 export const useAssetUrl = (
@@ -11,5 +11,5 @@ export const useAssetUrl = (
   const blobUrl = useBlobUrl(asset?.blobId);
   if (!asset) return null;
   if (asset.blobId) return blobUrl;
-  return asset.dataUrl || null;
+  return asset.src || null;
 };

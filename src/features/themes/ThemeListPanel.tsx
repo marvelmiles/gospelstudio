@@ -28,7 +28,7 @@ export const ThemeListPanel = ({
       title="Themes"
       action={<IconButton icon={Plus} title="New theme" onClick={onAdd} />}
     />
-    <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2 px-3.5 pt-3">
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(min(150px,100%),1fr))] gap-2 px-3.5 pt-3">
       {themes.map((theme) => (
         <ThemeCard
           key={theme.id}

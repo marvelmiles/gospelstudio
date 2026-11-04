@@ -15,7 +15,7 @@ const ARROW_KEYS: Partial<
 };
 
 export const ShortcutKeys = ({ keys }: { keys: string[] }) => (
-  <span className="flex max-w-65 shrink-0 flex-wrap justify-end gap-1.25">
+  <span className="ml-auto flex max-w-full flex-wrap justify-end gap-1.25 sm:max-w-65">
     {keys.map((key, index) => (
       <Kbd
         key={`${key}-${index}`}
