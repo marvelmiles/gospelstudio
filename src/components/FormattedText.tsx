@@ -31,6 +31,8 @@ const decorationOf = (segment: FormattedSegment): string | undefined => {
   return lines.length ? lines.join(" ") : undefined;
 };
 
+const RAISED_SIZE = "0.6em";
+
 const boldWeight = (baseWeight: number): number => {
   return Math.min(900, Math.max(700, Math.round(baseWeight) + 200));
 };
@@ -43,7 +45,14 @@ const styleOf = (
   const weight = inline.fontWeight ?? baseWeight;
   return {
     fontFamily: inline.fontFamily ? `'${inline.fontFamily}', serif` : undefined,
-    fontSize: inline.fontSize != null ? `${inline.fontSize}cqw` : undefined,
+    fontSize:
+      inline.fontSize != null
+        ? `${inline.fontSize}cqw`
+        : inline.raised
+          ? RAISED_SIZE
+          : undefined,
+    verticalAlign: inline.raised ? "super" : undefined,
+    lineHeight: inline.raised ? 0 : undefined,
     fontWeight: segment.bold ? boldWeight(weight) : inline.fontWeight,
     color: inline.color,
     letterSpacing:

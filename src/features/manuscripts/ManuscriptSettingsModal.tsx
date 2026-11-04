@@ -176,7 +176,11 @@ export const ManuscriptSettingsModal = ({
       {manuscript.music && <TuneDetails music={manuscript.music} />}
 
       <SectionTitle>Text</SectionTitle>
-      <StyleControls style={manuscriptStyle} onChange={onStyleChange} />
+      <StyleControls
+        style={manuscriptStyle}
+        onChange={onStyleChange}
+        showPosition
+      />
 
       <SectionTitle>Background</SectionTitle>
       <BackgroundPicker

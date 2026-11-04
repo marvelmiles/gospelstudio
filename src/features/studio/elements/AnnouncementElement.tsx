@@ -1,7 +1,7 @@
 import { MarqueeTrack } from "@/components/shared/MarqueeTrack";
 import type { AnnouncementLayer } from "../types/layer";
 import { LayerBackdrop } from "./LayerBackdrop";
-import { fontStack } from "./textAppearanceStyle";
+import { fontStack, textPaint } from "./textAppearanceStyle";
 import { TextPanel } from "./TextPanel";
 
 const ACCENT_BAR_HEIGHT = 14;
@@ -69,7 +69,7 @@ const AnnouncementTicker = ({ layer }: { layer: AnnouncementLayer }) => {
         text={message}
         crossSeconds={tickerSeconds}
         style={{
-          color: text.color,
+          ...textPaint(text.color, false),
           fontFamily: fontStack(text.fontFamily),
           fontSize: text.fontSize,
           fontWeight: text.fontWeight,

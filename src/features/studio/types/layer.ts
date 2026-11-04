@@ -47,12 +47,14 @@ export interface LayerAnimation {
   durationMs: number;
 }
 
+export type TextAlign = Align | "justify";
+
 export interface TextAppearance {
   fontFamily: string;
   fontSize: number;
   fontWeight: number;
   color: string;
-  align: Align;
+  align: TextAlign;
   verticalAlign: VerticalAlign;
   lineHeight: number;
   uppercase: boolean;
@@ -60,14 +62,40 @@ export interface TextAppearance {
   padding: number;
 }
 
+export interface Gradient {
+  to: string;
+  angle: number;
+}
+
 export type FillKind = "source" | "none" | "color" | "image" | "video";
 
 export interface LayerFill {
   kind: FillKind;
   color: string;
+  gradient: Gradient | null;
   opacity: number;
   imageId: string | null;
   videoId: string | null;
+}
+
+export interface LayerBorder {
+  width: number;
+  color: string;
+  gradient: Gradient | null;
+}
+
+export interface CornerRadii {
+  topLeft: number;
+  topRight: number;
+  bottomRight: number;
+  bottomLeft: number;
+}
+
+export interface LayerShadow {
+  blur: number;
+  distance: number;
+  color: string;
+  opacity: number;
 }
 
 interface LayerBase {
@@ -80,6 +108,9 @@ interface LayerBase {
   opacity: number;
   rotation: number;
   radius: number;
+  corners: CornerRadii | null;
+  border: LayerBorder;
+  shadow: LayerShadow;
   animation: LayerAnimation;
 }
 
@@ -186,15 +217,15 @@ export type ShapeKind =
   | "hexagon"
   | "star"
   | "arrow"
-  | "cross";
+  | "cross"
+  | "slant";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape";
   shape: ShapeKind;
   fill: string;
+  gradient: Gradient | null;
   fillOpacity: number;
-  borderColor: string;
-  borderWidth: number;
 }
 
 export interface BackgroundLayer extends LayerBase {

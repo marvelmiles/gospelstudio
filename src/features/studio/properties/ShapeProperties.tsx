@@ -1,7 +1,8 @@
 import type { ShapeKind, ShapeLayer } from "../types/layer";
 import { SHAPES } from "../lib/shapeCatalog";
 import { ShapeGrid } from "../shapes/ShapeGrid";
-import { ColorField, PropertySection, SliderField } from "./fields";
+import { PropertySection, SliderField } from "./fields";
+import { PaintFields } from "./PaintFields";
 import { useLayerEditor } from "./useLayerEditor";
 
 export const ShapeProperties = ({ layer }: { layer: ShapeLayer }) => {
@@ -19,10 +20,13 @@ export const ShapeProperties = ({ layer }: { layer: ShapeLayer }) => {
   return (
     <PropertySection title="Shape">
       <ShapeGrid value={layer.shape} onChoose={changeShape} />
-      <ColorField
+      <PaintFields
         label="Fill colour"
-        value={layer.fill}
-        onChange={(fill) => edit({ fill }, "fill")}
+        color={layer.fill}
+        gradient={layer.gradient}
+        onChange={(fill, gradient, field) =>
+          edit({ fill, gradient }, `fill.${field}`)
+        }
       />
       <SliderField
         label="Fill strength"
@@ -32,21 +36,6 @@ export const ShapeProperties = ({ layer }: { layer: ShapeLayer }) => {
         suffix="%"
         onChange={(fillOpacity) => edit({ fillOpacity }, "fillOpacity")}
       />
-      <SliderField
-        label="Border thickness"
-        value={layer.borderWidth}
-        min={0}
-        max={40}
-        suffix="px"
-        onChange={(borderWidth) => edit({ borderWidth }, "borderWidth")}
-      />
-      {layer.borderWidth > 0 && (
-        <ColorField
-          label="Border colour"
-          value={layer.borderColor}
-          onChange={(borderColor) => edit({ borderColor }, "borderColor")}
-        />
-      )}
     </PropertySection>
   );
 };

@@ -12,7 +12,7 @@ import { BackgroundVideoLayer } from "../../../components/media/BackgroundVideoL
 import { ImageSurface } from "../../../components/media/ImageSurface";
 import { backgroundCssOf } from "../../presentation/lib/stageBackground";
 import type { LayerFill } from "../types/layer";
-import { withOpacity } from "../lib/colors";
+import { paintStyle } from "../lib/paint";
 
 interface LayerBackdropProps {
   fill: LayerFill;
@@ -27,7 +27,7 @@ export const LayerBackdrop = ({ fill, source = null }: LayerBackdropProps) => {
       return (
         <div
           aria-hidden
-          style={{ background: withOpacity(fill.color, fill.opacity) }}
+          style={paintStyle(fill.color, fill.gradient, fill.opacity)}
           className="absolute inset-0"
         />
       );

@@ -32,6 +32,7 @@ const TEXT_KEYS = [
   "fontSize",
   "uppercase",
   "textShadow",
+  "verticalAlign",
 ] as const;
 
 const applyTextStyle = (

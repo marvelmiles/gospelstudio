@@ -5,12 +5,8 @@ import { findMediaItem } from "../../../lib/media";
 import type { FillKind, LayerFill } from "../types/layer";
 import { LibraryPicker, type LibraryKind } from "../library/LibraryPicker";
 import { ContentPickerRow } from "./ContentPickerRow";
-import {
-  ColorField,
-  PropertySection,
-  SelectField,
-  SliderField,
-} from "./fields";
+import { PropertySection, SelectField, SliderField } from "./fields";
+import { PaintFields } from "./PaintFields";
 
 type MediaFillKind = Extract<FillKind, "image" | "video">;
 
@@ -71,10 +67,13 @@ export const BackgroundFields = ({
         onChange={(kind) => chooseKind(kind as FillKind)}
       />
       {fill.kind === "color" && (
-        <ColorField
+        <PaintFields
           label="Colour"
-          value={fill.color}
-          onChange={(color) => onChange({ ...fill, color }, "fill.color")}
+          color={fill.color}
+          gradient={fill.gradient}
+          onChange={(color, gradient, field) =>
+            onChange({ ...fill, color, gradient }, `fill.${field}`)
+          }
         />
       )}
       {mediaKind && (

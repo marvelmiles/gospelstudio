@@ -123,6 +123,7 @@ export const SlideCanvas = ({
             selectedLine={bodyActive ? selectedLine : null}
             editing={bodyActive ? editing : undefined}
             marked={editable}
+            verticalAlign={style.verticalAlign}
             padding={SLIDE_BODY_PADDING}
             onPointerDown={
               onActivateText ? (event) => activate(null, event) : undefined

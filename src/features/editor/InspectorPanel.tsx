@@ -292,6 +292,7 @@ export const InspectorPanel = ({
       <StyleControls
         style={style}
         onChange={(key, value) => setTextOverride(key, value)}
+        showPosition={!selectionMode && !lineMode && !textBox}
       />
 
       <SectionTitle

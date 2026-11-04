@@ -33,6 +33,7 @@ export const SceneProperties = ({ scene }: { scene: Scene }) => (
       />
       <ColorField
         label="Colour behind everything"
+        allowGradient
         value={scene.background}
         onChange={(background) => setSceneBackground(scene.id, background)}
       />

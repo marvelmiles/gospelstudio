@@ -41,9 +41,9 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 - **Paste and it becomes slides.** Tags like `[verse]` and `[chorus]` are recognised and numbered, and long parts are split across slides so the text stays big enough to read.
 - **Manuscript library.** Lyrics, hymns, sermons and other decks, sorted into collections. Search by title, author or words.
 - **Pin your favourites.** Keep up to five items at the top of each library.
-- **Offline Bible.** The King James Version and the American Standard Version are built in. Read, search, save and present any passage with no internet, or have it read aloud.
+- **Offline Bible.** The King James Version and the American Standard Version are built in. Read, search, save and present any passage with no internet, or have it read aloud. Verse numbers can be written inline or as small raised numbers.
 - **Type on the slide itself.** The slide in the editor is where you type, so there is no separate text box to keep in sync.
-- **Slide styling.** Font, size, weight, color, alignment, spacing and shadow, for one slide or the whole manuscript.
+- **Slide styling.** Font, size, weight, color, alignment, spacing and shadow (soft glow, sharp drop or outline), for one slide or the whole manuscript. Text position puts the words at the top, middle or bottom of the slide, so lyrics can sit along the bottom of a camera shot.
 - **Pictures, clips and text boxes.** Drop them anywhere on a slide, then drag, resize and stack them. A selected clip shows its own player controls.
 - **Text formatting.** Bold, italic, underline, strikethrough and highlight. The formatting is stored as plain text, so it survives copy and paste.
 - **Backgrounds and sounds.** Pick one for a single slide or for the whole manuscript. Choosing None means silence, not the theme's sound.
@@ -65,7 +65,9 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 **Studio**
 
 - **One screen built from layers.** Put a camera, a Bible passage, a manuscript, text, images, videos, announcements, a speaker's name, a QR code, shapes and backgrounds on the projector together. Drag and resize anything, snap it to the edges and centre, and change it from the panel on the left.
-- **Text presets and size presets.** Text can be normal, a heading across the top or a subtitle along the bottom. Images can fill the screen, sit large or medium in the middle, or shrink to a logo in the corner. Nine shapes, from rectangles and circles to stars, arrows and a cross, sit under Shapes.
+- **Text presets and size presets.** Text can be normal, a heading across the top or a subtitle along the bottom. Images can fill the screen, sit large or medium in the middle, or shrink to a logo in the corner. Ten shapes, from rectangles and circles to stars, arrows, a cross and a slanted tag, sit under Shapes.
+- **Borders, shadows and gradients.** Any item can have a border in one colour or blended between two, and a soft shadow or a glow. Shapes and the background behind text can blend between two colours too, and text can be justified across its box.
+- **Corners and exact values.** Round all four corners together or each corner on its own, for tags and badges. Colour boxes take any CSS colour (hex, rgb, hsl or a name), and backgrounds, borders and Studio text also take a CSS gradient. Every slider has a box beside it to type an exact value, and some, such as text size and border thickness, accept values past the end of the slider.
 - **Content keeps its own look.** A manuscript, Bible passage, image or video arrives with the background, animations, auto-play and loop settings from its own page, and every slide enters and leaves with its own animation.
 - **Edit content for one production.** The three-dot menu on anything in a scene has Open editor, which opens the manuscript, Bible, image or video editor on that production's own copy. The library stays as it was. Auto update (on by default) sends each change to the scene as you make it, or turn it off and press Update scene. Preview shows the edited version on your own screen first.
 - **A PiP remote for each item.** Open PiP shows a small floating window for a manuscript, passage or video in a scene, with the slide's presenter notes, so you can step through slides with the keyboard from any page. Every item gets its own window, so a hymn, a sermon and a passage can be open together. It opens by itself when you open the editor of an item that is in the Preview or live, and it pauses and resumes auto-play.

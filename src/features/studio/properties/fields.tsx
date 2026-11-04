@@ -15,7 +15,7 @@ import {
 } from "@/components/shared/OptionSelect";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { RangeSlider } from "@/components/shared/RangeSlider";
-import { isHexColor } from "../lib/colors";
+import { ColorInput } from "@/components/shared/ColorInput";
 
 export const PropertySection = ({
   title,
@@ -123,6 +123,13 @@ export const NumberField = ({
   );
 };
 
+interface SliderFieldProps extends NumberFieldProps {
+  min: number;
+  max: number;
+  suffix?: string;
+  typedMax?: number;
+}
+
 export const SliderField = ({
   label,
   value,
@@ -131,7 +138,8 @@ export const SliderField = ({
   max,
   step = 1,
   suffix,
-}: NumberFieldProps & { min: number; max: number; suffix?: string }) => (
+  typedMax,
+}: SliderFieldProps) => (
   <div>
     <FieldLabel>{label}</FieldLabel>
     <RangeSlider
@@ -142,6 +150,7 @@ export const SliderField = ({
       max={max}
       step={step}
       suffix={suffix}
+      inputMax={typedMax}
     />
   </div>
 );
@@ -150,37 +159,25 @@ export const ColorField = ({
   label,
   value,
   onChange,
+  allowGradient = false,
 }: {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  allowGradient?: boolean;
 }) => {
   const id = useId();
-  const [draft, setDraft] = useState<string | null>(null);
-  const shown = draft ?? value;
   return (
     <div>
       <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <div className="flex items-center gap-1.5">
-        <input
-          type="color"
-          aria-label={`${label} picker`}
-          value={isHexColor(value) && value.length === 7 ? value : "#000000"}
-          onChange={(event) => onChange(event.target.value)}
-          className="h-8 w-9 shrink-0 cursor-pointer rounded-md border border-input bg-transparent p-0.5"
-        />
-        <Input
-          id={id}
-          value={shown}
-          spellCheck={false}
-          onChange={(event) => {
-            setDraft(event.target.value);
-            if (isHexColor(event.target.value)) onChange(event.target.value);
-          }}
-          onBlur={() => setDraft(null)}
-          className="h-8 px-2 font-mono text-[12.5px] uppercase"
-        />
-      </div>
+      <ColorInput
+        id={id}
+        aria-label={label}
+        value={value}
+        onChange={onChange}
+        allowGradient={allowGradient}
+        compact
+      />
     </div>
   );
 };

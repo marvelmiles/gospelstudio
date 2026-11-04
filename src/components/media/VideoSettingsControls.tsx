@@ -63,8 +63,9 @@ export const VideoSettingsControls = ({
 
       <SectionTitle>Playback</SectionTitle>
       <div className={cn("grid gap-x-4", columns)}>
-        <Field label={`Volume (${settings.volume}%)`}>
+        <Field label="Volume">
           <RangeSlider
+            aria-label="Volume"
             value={settings.volume}
             min={0}
             max={100}

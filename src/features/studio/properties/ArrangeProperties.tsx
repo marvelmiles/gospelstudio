@@ -17,6 +17,9 @@ import {
 } from "../lib/canvasCoordinates";
 import { LAYER_ENTRANCE_OPTIONS } from "../lib/sceneTransitions";
 import { setLayerFrame } from "../store/layerActions";
+import { BorderProperties } from "./BorderProperties";
+import { CornerFields } from "./CornerFields";
+import { ShadowProperties } from "./ShadowProperties";
 import {
   FieldRow,
   NumberField,
@@ -152,14 +155,7 @@ export const ArrangeProperties = ({
           suffix="%"
           onChange={(opacity) => edit({ opacity }, "opacity")}
         />
-        <SliderField
-          label="Rounded corners"
-          value={layer.radius}
-          min={0}
-          max={200}
-          suffix="px"
-          onChange={(radius) => edit({ radius }, "radius")}
-        />
+        <CornerFields layer={layer} edit={edit} />
         <SliderField
           label="Rotation"
           value={layer.rotation}
@@ -169,6 +165,9 @@ export const ArrangeProperties = ({
           onChange={(rotation) => edit({ rotation }, "rotation")}
         />
       </PropertySection>
+
+      <BorderProperties layer={layer} edit={edit} />
+      <ShadowProperties layer={layer} edit={edit} />
 
       <PropertySection title="Animation" defaultOpen={false}>
         <SelectField

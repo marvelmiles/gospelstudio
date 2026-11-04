@@ -6,7 +6,7 @@ export const SPAN_OPEN = "[[";
 export const SPAN_OPEN_END = "]]";
 export const SPAN_CLOSE = "[[/]]";
 
-export type InlineStyleKey =
+type TextStyleInlineKey =
   | "fontFamily"
   | "fontSize"
   | "fontWeight"
@@ -15,7 +15,11 @@ export type InlineStyleKey =
   | "uppercase"
   | "textShadow";
 
-export type InlineTextStyle = Pick<TextStyle, InlineStyleKey>;
+export type InlineStyleKey = TextStyleInlineKey | "raised";
+
+export type InlineTextStyle = Pick<TextStyle, TextStyleInlineKey> & {
+  raised?: boolean;
+};
 
 interface Attribute {
   token: string;
@@ -60,6 +64,11 @@ const ATTRIBUTES: Record<InlineStyleKey, Attribute> = {
     token: "shadow",
     encode: (value) => (!value || value === "none" ? "0" : "1"),
     decode: (raw) => (raw === "1" ? TEXT_SHADOW_PRESET : "none"),
+  },
+  raised: {
+    token: "raise",
+    encode: (value) => (value ? "1" : null),
+    decode: (raw) => (raw === "1" ? true : undefined),
   },
 };
 

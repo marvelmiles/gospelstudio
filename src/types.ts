@@ -28,6 +28,7 @@ export interface TextStyle {
   letterSpacing?: number;
   uppercase?: boolean;
   textShadow?: string;
+  verticalAlign?: VerticalAlign;
 }
 
 export interface SlideOverrides extends TextStyle {
@@ -161,6 +162,7 @@ export interface ScripturePassage extends SlideDeckDoc {
   verses: BibleVerse[];
   versesPerSlide: number;
   showVerseNumbers: boolean;
+  raisedVerseNumbers?: boolean;
   showReference: boolean;
   quick?: boolean;
 }
@@ -310,6 +312,7 @@ export interface ResolvedStyle {
   fontSize: number;
   uppercase: boolean;
   textShadow: string;
+  verticalAlign?: VerticalAlign;
 }
 
 export interface PresentTarget {

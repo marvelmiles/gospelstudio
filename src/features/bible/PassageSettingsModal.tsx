@@ -73,6 +73,9 @@ export const PassageSettingsModal = ({
   const [showVerseNumbers, setShowVerseNumbers] = useState(
     passage.showVerseNumbers,
   );
+  const [raisedVerseNumbers, setRaisedVerseNumbers] = useState(
+    Boolean(passage.raisedVerseNumbers),
+  );
   const [showReference, setShowReference] = useState(passage.showReference);
   const [rebuilding, setRebuilding] = useState(false);
 
@@ -85,6 +88,7 @@ export const PassageSettingsModal = ({
     setVerseEnd(editing.range.verseEnd);
     setVersesPerSlide(editing.versesPerSlide);
     setShowVerseNumbers(editing.showVerseNumbers);
+    setRaisedVerseNumbers(Boolean(editing.raisedVerseNumbers));
     setShowReference(editing.showReference);
   });
 
@@ -154,6 +158,7 @@ export const PassageSettingsModal = ({
         verses,
         versesPerSlide,
         showVerseNumbers,
+        raisedVerseNumbers,
         showReference,
       });
       editor.replaceDoc(rebuilt);
@@ -227,8 +232,9 @@ export const PassageSettingsModal = ({
       </div>
 
       <SectionTitle>Slide Format</SectionTitle>
-      <Field label={`Verses per slide (${versesPerSlide})`}>
+      <Field label="Verses per slide">
         <RangeSlider
+          aria-label="Verses per slide"
           value={versesPerSlide}
           min={1}
           max={6}
@@ -241,6 +247,13 @@ export const PassageSettingsModal = ({
           checked={showVerseNumbers}
           onChange={setShowVerseNumbers}
         />
+        {showVerseNumbers && (
+          <SwitchField
+            label="Small raised numbers"
+            checked={raisedVerseNumbers}
+            onChange={setRaisedVerseNumbers}
+          />
+        )}
       </div>
       <div className="mb-3">
         <SwitchField
@@ -275,6 +288,7 @@ export const PassageSettingsModal = ({
       <StyleControls
         style={resolveStyle(undefined, passage, theme)}
         onChange={(key, value) => editor.updateDocStyle(key, value)}
+        showPosition
       />
 
       <SectionTitle>Background</SectionTitle>

@@ -35,6 +35,7 @@ export type PassageLayoutChanges = Partial<
     | "verses"
     | "versesPerSlide"
     | "showVerseNumbers"
+    | "raisedVerseNumbers"
     | "showReference"
   >
 >;
@@ -99,6 +100,7 @@ export const rebuildPassage = (
       verses: next.verses,
       versesPerSlide: next.versesPerSlide,
       showVerseNumbers: next.showVerseNumbers,
+      raisedVerseNumbers: next.raisedVerseNumbers,
       showReference: next.showReference,
       splitLongVerses: Boolean(next.quick),
       style,

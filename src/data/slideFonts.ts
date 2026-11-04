@@ -13,6 +13,8 @@ export const FONTS = [
   "Outfit",
   "Sora",
   "Montserrat",
+  "Poppins",
+  "Nunito",
   "Oswald",
   "Georgia",
 ];

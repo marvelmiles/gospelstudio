@@ -20,6 +20,18 @@ describe("stored productions", () => {
     expect(layer.id).toBe(olderText.id);
   });
 
+  it("completes settings inside an item that older saves do not have", () => {
+    const { border: _border, ...olderText } = createLayer("text");
+    const { gradient: _gradient, ...olderFill } = olderText.fill;
+    const [layer] = normalizeLayers([
+      storedAs({ ...olderText, fill: { ...olderFill, kind: "color" } }),
+    ]);
+
+    expect(layer.border.width).toBe(0);
+    expect(layer.type === "text" && layer.fill.kind).toBe("color");
+    expect(layer.type === "text" && layer.fill.gradient).toBeNull();
+  });
+
   it("keeps what was saved over the defaults", () => {
     const saved = createLayer("text", { content: "Welcome home" });
     const [layer] = normalizeLayers([saved]);

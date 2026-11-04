@@ -6,6 +6,7 @@ import type {
   TextStyle,
 } from "../../../types";
 import { uid } from "../../../lib/id";
+import { SPAN_CLOSE, openingToken } from "../../../lib/inlineStyle";
 import { splitTextIntoParts } from "../../../lib/textBlocks";
 import {
   slideCharacterBudget,
@@ -22,6 +23,7 @@ export interface ScriptureSlideOptions {
   verses: BibleVerse[];
   versesPerSlide: number;
   showVerseNumbers: boolean;
+  raisedVerseNumbers?: boolean;
   showReference: boolean;
   splitLongVerses?: boolean;
   style?: Pick<TextStyle, "fontSize" | "lineHeight"> | null;
@@ -37,20 +39,25 @@ const slideCharacters = (
   showReference: boolean,
 ): number => slideCharacterBudget(metrics, showReference ? 1 : 0);
 
-const chunkLines = (
-  chunk: BibleVerse[],
-  showVerseNumbers: boolean,
-): string[] => {
-  return chunk.flatMap((verse) => {
+type VerseNumbering = Pick<
+  ScriptureSlideOptions,
+  "showVerseNumbers" | "raisedVerseNumbers"
+>;
+
+const RAISED_OPEN = openingToken({ raised: true }) ?? "";
+
+const verseNumber = (verse: number, raised: boolean): string =>
+  raised ? `${RAISED_OPEN}${verse}${SPAN_CLOSE} ` : `${verse}. `;
+
+const chunkLines = (chunk: BibleVerse[], numbering: VerseNumbering): string[] =>
+  chunk.flatMap((verse) => {
     const verseLines = verse.t.split("\n");
-    if (showVerseNumbers) {
-      return verseLines.map((line, i) =>
-        i === 0 ? `${verse.v}. ${line}` : line,
-      );
-    }
-    return verseLines;
+    if (!numbering.showVerseNumbers) return verseLines;
+    const number = verseNumber(verse.v, Boolean(numbering.raisedVerseNumbers));
+    return verseLines.map((line, index) =>
+      index === 0 ? `${number}${line}` : line,
+    );
   });
-};
 
 const chunkParts = (
   lines: string[],
@@ -66,13 +73,18 @@ const chunkParts = (
 export const slideIndexForVerse = (
   passage: Pick<
     ScriptureSlideOptions,
-    "verses" | "versesPerSlide" | "showVerseNumbers" | "showReference" | "style"
+    | "verses"
+    | "versesPerSlide"
+    | "showVerseNumbers"
+    | "raisedVerseNumbers"
+    | "showReference"
+    | "style"
   > & {
     quick?: boolean;
   },
   verse: number,
 ): number => {
-  const { verses, showVerseNumbers } = passage;
+  const { verses } = passage;
   const perSlide = Math.max(1, passage.versesPerSlide);
   const split = Boolean(passage.quick);
   const budget = slideCharacters(
@@ -83,11 +95,7 @@ export const slideIndexForVerse = (
   for (let start = 0; start < verses.length; start += perSlide) {
     const chunk = verses.slice(start, start + perSlide);
     if (chunk.some((v) => v.v === verse)) return index;
-    index += chunkParts(
-      chunkLines(chunk, showVerseNumbers),
-      split,
-      budget,
-    ).length;
+    index += chunkParts(chunkLines(chunk, passage), split, budget).length;
   }
   return -1;
 };
@@ -95,14 +103,7 @@ export const slideIndexForVerse = (
 export const buildScriptureSlides = (
   options: ScriptureSlideOptions,
 ): Slide[] => {
-  const {
-    version,
-    range,
-    verses,
-    versesPerSlide,
-    showVerseNumbers,
-    showReference,
-  } = options;
+  const { version, range, verses, versesPerSlide, showReference } = options;
   const perSlide = Math.max(1, versesPerSlide);
   const budget = slideCharacters(
     slideTextMetrics(options.style),
@@ -118,7 +119,7 @@ export const buildScriptureSlides = (
       verseEnd: chunk[chunk.length - 1].v,
     };
     const parts = chunkParts(
-      chunkLines(chunk, showVerseNumbers),
+      chunkLines(chunk, options),
       Boolean(options.splitLongVerses),
       budget,
     );

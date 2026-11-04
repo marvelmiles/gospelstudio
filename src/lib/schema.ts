@@ -2,6 +2,8 @@ import { z } from "zod";
 
 const alignSchema = z.enum(["left", "center", "right"]);
 
+const verticalAlignSchema = z.enum(["top", "middle", "bottom"]);
+
 const animationKindSchema = z.enum([
   "fade",
   "crossfade",
@@ -34,6 +36,7 @@ const textStyleShape = {
   letterSpacing: z.number().optional(),
   uppercase: z.boolean().optional(),
   textShadow: z.string().optional(),
+  verticalAlign: verticalAlignSchema.optional().catch(undefined),
 };
 
 const textStyleSchema = z.object(textStyleShape).passthrough();
@@ -117,10 +120,7 @@ const slideTextBoxSchema = z
     id: z.string().optional(),
     frame: slideFrameSchema.optional(),
     lines: z.array(z.string()).optional(),
-    verticalAlign: z
-      .enum(["top", "middle", "bottom"])
-      .optional()
-      .catch(undefined),
+    verticalAlign: verticalAlignSchema.optional().catch(undefined),
     style: textStyleSchema.optional(),
     lineOverrides: lineOverridesSchema.optional().catch(undefined),
   })
@@ -249,6 +249,7 @@ const scriptureSchema = z
     verses: z.array(z.object({ v: z.number(), t: z.string() })),
     versesPerSlide: z.number().optional(),
     showVerseNumbers: z.boolean().optional(),
+    raisedVerseNumbers: z.boolean().optional().catch(undefined),
     showReference: z.boolean().optional(),
     slides: z.array(slideSchema).optional(),
     defaultThemeId: z.string().optional().default("scripture"),

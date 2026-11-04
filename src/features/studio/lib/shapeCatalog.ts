@@ -2,11 +2,13 @@ import type { Dimensions, ShapeKind } from "../types/layer";
 
 type Point = readonly [number, number];
 
+export type ShapeOutline = readonly Point[];
+
 interface ShapeDefinition {
   label: string;
   size: Dimensions;
   radius: number;
-  outline: readonly Point[] | null;
+  outline: ShapeOutline | null;
 }
 
 const regularPolygon = (sides: number, rotationDegrees = -90): Point[] =>
@@ -111,6 +113,17 @@ export const SHAPES: Record<ShapeKind, ShapeDefinition> = {
       [0.35, 0.25],
     ],
   },
+  slant: {
+    label: "Slanted tag",
+    size: { width: 600, height: 160 },
+    radius: 0,
+    outline: [
+      [0, 0],
+      [0.86, 0],
+      [1, 1],
+      [0, 1],
+    ],
+  },
 };
 
 export const SHAPE_ORDER: ShapeKind[] = [
@@ -123,10 +136,11 @@ export const SHAPE_ORDER: ShapeKind[] = [
   "star",
   "arrow",
   "cross",
+  "slant",
 ];
 
 export const outlinePoints = (
-  outline: readonly Point[],
+  outline: ShapeOutline,
   box: Dimensions,
   inset: number,
 ): string => {

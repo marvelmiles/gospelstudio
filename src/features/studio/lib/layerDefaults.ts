@@ -14,6 +14,7 @@ import {
   percentFrame,
 } from "./canvasCoordinates";
 import { colorFill, fillOf } from "./layerFill";
+import { NO_BORDER, NO_SHADOW } from "./paint";
 import { textPresetPatch } from "./textPresets";
 
 const DEFAULT_ENTRANCE_MS = 450;
@@ -72,6 +73,9 @@ const base = (type: LayerType, frame: LayerFrame, entrance: LayerEntrance) => ({
   opacity: 100,
   rotation: 0,
   radius: 0,
+  corners: null,
+  border: { ...NO_BORDER },
+  shadow: { ...NO_SHADOW },
   animation: animation(entrance),
 });
 
@@ -181,9 +185,8 @@ const BUILDERS: LayerBuilders = {
     radius: 0,
     shape: "rectangle",
     fill: "#2563eb",
+    gradient: null,
     fillOpacity: 100,
-    borderColor: "#ffffff",
-    borderWidth: 0,
   }),
   background: () => ({
     ...base("background", FULL_FRAME, "fade"),

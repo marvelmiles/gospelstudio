@@ -114,6 +114,7 @@ export const ScriptureWorkspace = ({
       verses: draft.verses,
       versesPerSlide: draft.versesPerSlide,
       showVerseNumbers: draft.showVerseNumbers,
+      raisedVerseNumbers: draft.raisedVerseNumbers,
       showReference: draft.showReference,
       splitLongVerses: Boolean(draft.quick),
       style: metrics,

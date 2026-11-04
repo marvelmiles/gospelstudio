@@ -4,6 +4,7 @@ import { LayerBackdrop } from "./LayerBackdrop";
 import { fontStack, typeStyle } from "./textAppearanceStyle";
 
 const ACCENT_WIDTH = 14;
+const SUBTITLE_STRENGTH = 78;
 
 export const LowerThirdElement = ({ layer }: { layer: LowerThirdLayer }) => {
   const { title, subtitle, accent, text, variant } = layer;
@@ -34,10 +35,14 @@ export const LowerThirdElement = ({ layer }: { layer: LowerThirdLayer }) => {
       {subtitle && (
         <div
           style={{
-            ...typeStyle(text),
+            ...typeStyle({
+              ...text,
+              color: isBar
+                ? withOpacity(text.color, SUBTITLE_STRENGTH)
+                : accent,
+            }),
             fontSize: text.fontSize * 0.58,
             fontWeight: 500,
-            color: isBar ? withOpacity(text.color, 78) : accent,
           }}
           className="relative mt-[0.3em] truncate leading-[1.2]"
         >

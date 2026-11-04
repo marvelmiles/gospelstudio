@@ -132,11 +132,12 @@ export const ManuscriptTextModal = ({
         <Field
           label={
             isSermon
-              ? `Lines of text per slide, roughly (${maxLines})`
-              : `Max lines per slide (${maxLines})`
+              ? "Lines of text per slide, roughly"
+              : "Max lines per slide"
           }
         >
           <RangeSlider
+            aria-label={isSermon ? "Lines per slide" : "Max lines per slide"}
             value={maxLines}
             min={LINE_RANGE[format].min}
             max={LINE_RANGE[format].max}

@@ -102,6 +102,7 @@ export const createScripturesSlice: SliceCreator<ScripturesSlice> = (
         verses: options.verses,
         versesPerSlide,
         showVerseNumbers,
+        raisedVerseNumbers: current.raisedVerseNumbers,
         showReference,
         splitLongVerses: Boolean(current.quick),
         style: current.style ?? PASSAGE_STYLE,

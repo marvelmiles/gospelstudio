@@ -1,15 +1,16 @@
 import {
   AlignCenter,
+  AlignJustify,
   AlignLeft,
   AlignRight,
   AlignVerticalJustifyCenter,
   AlignVerticalJustifyEnd,
   AlignVerticalJustifyStart,
 } from "lucide-react";
-import type { Align, VerticalAlign } from "../../../types";
+import type { VerticalAlign } from "../../../types";
 import { FONTS, FONT_WEIGHT_OPTIONS } from "../../../data/slideFonts";
 import { SwitchField } from "@/components/shared/SwitchField";
-import type { TextAppearance } from "../types/layer";
+import type { TextAlign, TextAppearance } from "../types/layer";
 import {
   ChoiceField,
   ColorField,
@@ -20,10 +21,11 @@ import {
   type Choice,
 } from "./fields";
 
-const ALIGN_CHOICES: Choice<Align>[] = [
+const ALIGN_CHOICES: Choice<TextAlign>[] = [
   { value: "left", label: "Align left", icon: AlignLeft },
   { value: "center", label: "Align centre", icon: AlignCenter },
   { value: "right", label: "Align right", icon: AlignRight },
+  { value: "justify", label: "Justify", icon: AlignJustify },
 ];
 
 const VERTICAL_CHOICES: Choice<VerticalAlign>[] = [
@@ -33,6 +35,10 @@ const VERTICAL_CHOICES: Choice<VerticalAlign>[] = [
 ];
 
 const FONT_OPTIONS = FONTS.map((font) => ({ value: font, label: font }));
+
+const MAX_TEXT_SIZE = 600;
+const MAX_LINE_SPACING = 4;
+const MAX_TEXT_PADDING = 400;
 
 interface TextAppearanceFieldsProps {
   text: TextAppearance;
@@ -74,12 +80,14 @@ export const TextAppearanceFields = ({
           value={text.fontSize}
           min={16}
           max={220}
+          typedMax={MAX_TEXT_SIZE}
           suffix="px"
           onChange={(fontSize) => change("fontSize", fontSize)}
         />
         <ColorField
           label="Text colour"
           value={text.color}
+          allowGradient
           onChange={(color) => change("color", color)}
         />
         <FieldRow>
@@ -104,6 +112,7 @@ export const TextAppearanceFields = ({
           value={text.lineHeight}
           min={0.9}
           max={2.2}
+          typedMax={MAX_LINE_SPACING}
           step={0.05}
           onChange={(lineHeight) => change("lineHeight", lineHeight)}
         />
@@ -122,6 +131,7 @@ export const TextAppearanceFields = ({
           value={text.padding}
           min={0}
           max={160}
+          typedMax={MAX_TEXT_PADDING}
           suffix="px"
           onChange={(padding) => change("padding", padding)}
         />

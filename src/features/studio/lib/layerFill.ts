@@ -4,6 +4,7 @@ import type { FillKind, FilledLayer, Layer, LayerFill } from "../types/layer";
 const BLANK_FILL: LayerFill = {
   kind: "none",
   color: "#000000",
+  gradient: null,
   opacity: 60,
   imageId: null,
   videoId: null,

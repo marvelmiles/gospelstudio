@@ -32,6 +32,7 @@ export const AdjustmentControls = ({
     {SLIDERS.map(({ key, label, min, max, suffix }) => (
       <Field key={key} label={label}>
         <RangeSlider
+          aria-label={label}
           value={value[key]}
           min={min}
           max={max}

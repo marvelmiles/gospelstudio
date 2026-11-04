@@ -117,8 +117,9 @@ export const TransitionsSection = ({
         onChange({ transition: value as Prefs["transition"] })
       }
     />
-    <Field label={`Duration (${prefs.transitionDuration}ms)`}>
+    <Field label="Duration">
       <RangeSlider
+        aria-label="Transition duration"
         value={prefs.transitionDuration}
         min={150}
         max={1500}
@@ -140,8 +141,9 @@ export const TransitionsSection = ({
 export const AudioSection = ({ prefs, onChange }: PreferenceSectionProps) => (
   <>
     <SectionTitle>Audio</SectionTitle>
-    <Field label={`Background audio volume (${prefs.backgroundVolume}%)`}>
+    <Field label="Background audio volume">
       <RangeSlider
+        aria-label="Background audio volume"
         value={prefs.backgroundVolume}
         min={0}
         max={100}

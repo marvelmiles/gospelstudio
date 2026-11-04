@@ -1,7 +1,10 @@
 import { memo } from "react";
 import type { Layer } from "../types/layer";
+import { cornerRadiusCss } from "../lib/corners";
+import { shadowFilter } from "../lib/paint";
 import { AnnouncementElement } from "./AnnouncementElement";
 import { BackgroundElement } from "./BackgroundElement";
+import { BorderRing } from "./BorderRing";
 import { CameraElement } from "./CameraElement";
 import { DeckElement } from "./DeckElement";
 import { ImageElement } from "./ImageElement";
@@ -41,12 +44,18 @@ export const LayerSurface = memo(({ layer }: { layer: Layer }) => (
   <div
     style={{
       opacity: layer.opacity / 100,
-      borderRadius: layer.radius,
       transform: layer.rotation ? `rotate(${layer.rotation}deg)` : undefined,
+      filter: shadowFilter(layer.shadow),
     }}
-    className="relative size-full overflow-hidden"
+    className="relative size-full"
   >
-    <ElementOf layer={layer} />
+    <div
+      style={{ borderRadius: cornerRadiusCss(layer) }}
+      className="relative size-full overflow-hidden"
+    >
+      <ElementOf layer={layer} />
+      {layer.type !== "shape" && <BorderRing border={layer.border} />}
+    </div>
   </div>
 ));
 

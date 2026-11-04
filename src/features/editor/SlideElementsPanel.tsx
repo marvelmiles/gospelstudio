@@ -219,10 +219,9 @@ export const SlideElementsPanel = ({
               }}
             />
           </Field>
-          <Field
-            label={`Opacity (${media.opacity ?? DEFAULT_SLIDE_MEDIA_OPACITY}%)`}
-          >
+          <Field label="Opacity">
             <RangeSlider
+              aria-label="Opacity"
               value={media.opacity ?? DEFAULT_SLIDE_MEDIA_OPACITY}
               min={10}
               max={100}
@@ -232,6 +231,7 @@ export const SlideElementsPanel = ({
           </Field>
           <Field label="Corner rounding">
             <RangeSlider
+              aria-label="Corner rounding"
               value={media.radius ?? DEFAULT_SLIDE_MEDIA_RADIUS}
               min={0}
               max={MAX_RADIUS}
@@ -360,8 +360,9 @@ const VideoPlacementControls = ({
           onValueChange={(next) => onChange({ playbackRate: Number(next) })}
         />
       </Field>
-      <Field label={`Volume (${settings.volume}%)`}>
+      <Field label="Volume">
         <RangeSlider
+          aria-label="Volume"
           value={settings.volume}
           min={0}
           max={100}

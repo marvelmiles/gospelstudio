@@ -56,8 +56,9 @@ export const PlaybackSettings = ({
       )}
     </div>
     {autoPlay && (
-      <Field label={`Seconds per slide (${seconds}s)`}>
+      <Field label="Seconds per slide">
         <RangeSlider
+          aria-label="Seconds per slide"
           value={seconds}
           min={MIN_SLIDE_SECONDS}
           max={MAX_SLIDE_SECONDS}

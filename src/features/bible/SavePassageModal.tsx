@@ -70,9 +70,10 @@ export const SavePassageModal = ({
       }
     >
       <Field
-        label={`Verses per slide (${versesPerSlide}), makes ${slideCount} slide${slideCount === 1 ? "" : "s"}`}
+        label={`Verses per slide, makes ${slideCount} slide${slideCount === 1 ? "" : "s"}`}
       >
         <RangeSlider
+          aria-label="Verses per slide"
           value={versesPerSlide}
           min={1}
           max={6}
