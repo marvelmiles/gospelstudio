@@ -208,11 +208,8 @@ Then open the address Vite prints. By default that is http://localhost:5173.
 | `pnpm generate:icons`          | Create the PNG icons from `public/icon.svg`             |
 | `pnpm generate:thumbnails`     | Create small previews of the built-in background images |
 | `pnpm generate:bible-layout`   | Rebuild the list of Bible books and chapters            |
-| `pnpm generate:link-preview`   | Screenshot the home page as the shared link picture     |
 
 Run `pnpm generate:thumbnails` after adding a picture to `public/assets/images`. Lists and editors show the small copy from `public/assets/images/thumbs`, and only the projector loads the full picture.
-
-Run `pnpm generate:link-preview` after changing the home page. It starts the dev server, opens the home page in headless Edge or Chrome on a fresh profile and saves a 1200x630 screenshot to `public/link-preview.jpg`, the picture WhatsApp, Facebook and X show when someone shares a link. Set `BROWSER_PATH` if your browser is installed somewhere unusual.
 
 The built-in sounds live in `public/assets/sounds` as AAC (`.m4a`, 160 kbps stereo), about half the size of the original MP3s with no audible loss. Add a new one to that folder and list it in `src/data/sounds.ts` with its length in seconds. The tracks come from freetouse.com.
 

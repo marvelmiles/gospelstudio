@@ -1,5 +1,5 @@
 import { useValueChange } from "@/hooks/useValueChange";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { ListChecks, RotateCcw, Search, Square, Volume2 } from "lucide-react";
 import type { BibleVerse, BibleVersionId } from "../../types";
 import { bookById } from "../../data/bibleBooks";
@@ -14,10 +14,12 @@ import { useBibleChapter } from "./useBibleChapter";
 import { usePresentScripture } from "./usePresentScripture";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
 import { parseReference, referenceSpan, type VerseSpan } from "./lib/reference";
+import { spokenVerse } from "./lib/spokenScripture";
 import { ChapterToolbar } from "./reader/ChapterToolbar";
 import { CompactReaderBar } from "./reader/CompactReaderBar";
 import { ReferenceField } from "./reader/ReferenceField";
 import { SelectionActionBar } from "./reader/SelectionActionBar";
+import { useReadAlongScroll } from "./reader/useReadAlongScroll";
 import { useSavePassageFlow } from "./reader/useSavePassageFlow";
 import { useVerseSelection } from "./reader/useVerseSelection";
 import { VerseRow } from "./reader/VerseRow";
@@ -51,6 +53,7 @@ export const BibleReader = ({
   const compact = useCompactScreen();
   const [isReferenceOpen, setIsReferenceOpen] = useState(false);
   const pushToast = useStore((s) => s.pushToast);
+  const readVerseNumbers = useStore((s) => s.prefs.readVerseNumbers);
   const { present, edit } = usePresentScripture();
   const { verses, loading, error, retry } = useBibleChapter(
     version,
@@ -60,6 +63,7 @@ export const BibleReader = ({
   const [reference, setReference] = useState("");
   const [readingVerse, setReadingVerse] = useState<number | null>(null);
   const speech = useSpeech();
+  const verseListRef = useRef<HTMLDivElement>(null);
   const book = bookById(bookId);
 
   const selection = useVerseSelection({
@@ -78,6 +82,12 @@ export const BibleReader = ({
 
   useValueChange(speech.speaking, (speaking) => {
     if (!speaking) setReadingVerse(null);
+  });
+
+  useReadAlongScroll({
+    verse: readingVerse,
+    listRef: verseListRef,
+    scrollToVerse: selection.scrollToVerse,
   });
 
   useEffect(() => {
@@ -136,12 +146,10 @@ export const BibleReader = ({
   const readAloud = (list: BibleVerse[]) => {
     if (!list.length) return;
     speech.speak(
-      list.map((verse) => verse.t),
+      list.map((verse) => spokenVerse(verse, readVerseNumbers)),
       (index) => {
         const verse = list[index]?.v;
-        if (verse === undefined) return;
-        setReadingVerse(verse);
-        selection.scrollToVerse(verse, "nearest");
+        if (verse !== undefined) setReadingVerse(verse);
       },
     );
   };
@@ -214,6 +222,7 @@ export const BibleReader = ({
       )}
 
       <div
+        ref={verseListRef}
         className={cn(
           "roomy:min-h-0 roomy:flex-1 roomy:overflow-y-auto roomy:pr-1.5",
           selection.selection ? "pb-19" : "pb-3",

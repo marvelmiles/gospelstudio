@@ -5,6 +5,7 @@ import { cn } from "../lib/utils";
 import { lineContentOffsets } from "../lib/inlineDocument";
 import { analyzeLines, listMarkerLabel } from "../lib/lists";
 import type { ListKind, ListLine } from "../lib/lists";
+import type { TextSyntax } from "../lib/textSyntax";
 import type { SlideTextEditing } from "../hooks/useSlideTextEditor";
 import { FormattedText } from "./FormattedText";
 
@@ -62,6 +63,7 @@ const ListItemLine = ({
 
 interface SlideTextBlockProps {
   lines: string[];
+  syntax?: TextSyntax;
   style: ResolvedStyle;
   lineStyles?: ResolvedStyle[];
   selectedLine?: number | null;
@@ -74,6 +76,7 @@ interface SlideTextBlockProps {
 
 export const SlideTextBlock = ({
   lines,
+  syntax = "lists",
   style,
   lineStyles,
   selectedLine,
@@ -85,10 +88,10 @@ export const SlideTextBlock = ({
 }: SlideTextBlockProps) => {
   const editable = Boolean(editing);
   const content = useMemo(() => (lines.length ? lines : [""]), [lines]);
-  const items = useMemo(() => analyzeLines(content), [content]);
+  const items = useMemo(() => analyzeLines(content, syntax), [content, syntax]);
   const sourceOffsets = useMemo(
-    () => (editable ? lineContentOffsets(content) : null),
-    [editable, content],
+    () => (editable ? lineContentOffsets(content, syntax) : null),
+    [editable, content, syntax],
   );
   const outlined = Boolean(marked) || selectedLine != null;
 

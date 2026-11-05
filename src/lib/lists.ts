@@ -1,3 +1,5 @@
+import type { TextSyntax } from "./textSyntax";
+
 export type ListKind =
   | "bullet"
   | "decimal"
@@ -164,7 +166,11 @@ const splitIndent = (line: string): { level: number; rest: string } => {
   };
 };
 
-export const prefixLength = (line: string): number => {
+export const prefixLength = (
+  line: string,
+  syntax: TextSyntax = "lists",
+): number => {
+  if (syntax === "plain") return 0;
   const { rest } = splitIndent(line);
   const marker = matchMarker(rest);
   return line.length - (marker ? marker.content.length : rest.length);
@@ -174,19 +180,15 @@ export const remapColumn = (
   before: string,
   after: string,
   column: number,
+  syntax: TextSyntax = "lists",
 ): number => {
-  const oldPrefix = prefixLength(before);
-  const newPrefix = prefixLength(after);
+  const oldPrefix = prefixLength(before, syntax);
+  const newPrefix = prefixLength(after, syntax);
   if (column <= oldPrefix) return newPrefix;
   return Math.min(
     Math.max(column - oldPrefix + newPrefix, newPrefix),
     after.length,
   );
-};
-
-export const stripListMarker = (line: string): string => {
-  const { rest } = splitIndent(line);
-  return matchMarker(rest)?.content ?? rest;
 };
 
 export const renumber = (items: ListLine[]): ListLine[] => {
@@ -209,7 +211,18 @@ export const renumber = (items: ListLine[]): ListLine[] => {
   });
 };
 
-export const analyzeLines = (lines: string[]): ListLine[] => {
+const plainLine = (line: string): ListLine => ({
+  level: 0,
+  kind: null,
+  index: 0,
+  content: line,
+});
+
+export const analyzeLines = (
+  lines: string[],
+  syntax: TextSyntax = "lists",
+): ListLine[] => {
+  if (syntax === "plain") return lines.map(plainLine);
   const kindByLevel = new Map<number, ListKind>();
   const parsed = lines.map((line) => {
     const { level, rest } = splitIndent(line);

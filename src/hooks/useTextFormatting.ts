@@ -20,6 +20,7 @@ import type { ListState } from "../lib/listCommands";
 import type { ListKind } from "../lib/lists";
 import { selectedLines } from "../lib/textRange";
 import type { LineSelection, TextRange } from "../lib/textRange";
+import type { TextSyntax } from "../lib/textSyntax";
 
 export interface FormattingHost {
   getValue: () => string;
@@ -48,6 +49,7 @@ export interface EditHistory {
 
 export interface TextFormattingController {
   bind: (target: HTMLTextAreaElement | FormattingHost | null) => void;
+  syntax: TextSyntax;
   ready: boolean;
   hasSelection: boolean;
   lines: LineSelection;
@@ -77,6 +79,7 @@ interface Options {
   value: string;
   onChange: (next: string, meta: TextChangeMeta) => void;
   history?: EditHistory;
+  syntax?: TextSyntax;
 }
 
 interface Snapshot {
@@ -86,6 +89,7 @@ interface Snapshot {
 
 const HISTORY_LIMIT = 200;
 const COALESCE_MS = 600;
+const NO_LIST: ListState = { kind: null, level: 0 };
 
 const textAreaHost = (element: HTMLTextAreaElement): FormattingHost => ({
   getValue: () => element.value,
@@ -109,7 +113,9 @@ export const useTextFormatting = ({
   value,
   onChange,
   history,
+  syntax = "lists",
 }: Options): TextFormattingController => {
+  const hasLists = syntax === "lists";
   const hostRef = useRef<FormattingHost | null>(null);
   const pendingRef = useRef<(TextRange & { focus: boolean }) | null>(null);
   const pastRef = useRef<Snapshot[]>([]);
@@ -260,38 +266,45 @@ export const useTextFormatting = ({
   const toggle = useCallback(
     (name: InlineFormatName) =>
       void run((text, start, end) =>
-        toggleInlineFormat(text, start, end, name),
+        toggleInlineFormat(text, start, end, name, syntax),
       ),
-    [run],
+    [run, syntax],
   );
 
-  const clear = useCallback(() => void run(clearInlineFormatting), [run]);
+  const clear = useCallback(
+    () =>
+      void run((text, start, end) =>
+        clearInlineFormatting(text, start, end, syntax),
+      ),
+    [run, syntax],
+  );
 
   const applyStyle = useCallback(
     (key: InlineStyleKey, value_: unknown) =>
       void run(
-        (text, start, end) => applyInlineStyle(text, start, end, key, value_),
+        (text, start, end) =>
+          applyInlineStyle(text, start, end, key, value_, syntax),
         false,
         `style:${key}`,
       ),
-    [run],
+    [run, syntax],
   );
 
   const applyList = useCallback(
-    (kind: ListKind) =>
-      void run((text, start, end) => toggleList(text, start, end, kind)),
-    [run],
+    (kind: ListKind) => {
+      if (hasLists)
+        run((text, start, end) => toggleList(text, start, end, kind));
+    },
+    [run, hasLists],
   );
 
-  const indent = useCallback(
-    () => void run((text, start, end) => tabInList(text, start, end, false)),
-    [run],
-  );
+  const indent = useCallback(() => {
+    if (hasLists) run((text, start, end) => tabInList(text, start, end, false));
+  }, [run, hasLists]);
 
-  const outdent = useCallback(
-    () => void run((text, start, end) => tabInList(text, start, end, true)),
-    [run],
-  );
+  const outdent = useCallback(() => {
+    if (hasLists) run((text, start, end) => tabInList(text, start, end, true));
+  }, [run, hasLists]);
 
   const isActive = useCallback(
     (name: InlineFormatName) =>
@@ -305,8 +318,9 @@ export const useTextFormatting = ({
   );
 
   const list = useMemo(
-    () => listStateAt(value, selection.start, selection.end),
-    [value, selection],
+    () =>
+      hasLists ? listStateAt(value, selection.start, selection.end) : NO_LIST,
+    [value, selection, hasLists],
   );
 
   const lines = useMemo(
@@ -317,6 +331,7 @@ export const useTextFormatting = ({
   const handleKeyDown = useCallback(
     (event: ReactKeyboardEvent<HTMLElement>) => {
       if (event.key === "Tab") {
+        if (!hasLists) return;
         event.preventDefault();
         run((text, start, end) => tabInList(text, start, end, event.shiftKey));
         return;
@@ -327,7 +342,10 @@ export const useTextFormatting = ({
         !event.ctrlKey &&
         !event.metaKey
       ) {
-        if (run((text, start, end) => newLineInList(text, start, end)))
+        if (
+          hasLists &&
+          run((text, start, end) => newLineInList(text, start, end))
+        )
           event.preventDefault();
         return;
       }
@@ -348,11 +366,12 @@ export const useTextFormatting = ({
       event.preventDefault();
       toggle(name);
     },
-    [run, toggle, undo, redo, canUndo, canRedo],
+    [run, toggle, undo, redo, canUndo, canRedo, hasLists],
   );
 
   return {
     bind,
+    syntax,
     ready,
     hasSelection: selection.end > selection.start,
     lines,

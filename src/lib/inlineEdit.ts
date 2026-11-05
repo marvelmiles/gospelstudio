@@ -18,6 +18,7 @@ import type { InlineStyleKey, InlineTextStyle } from "./inlineStyle";
 import { prefixLength } from "./lists";
 import { lineBounds, resolveRange } from "./textRange";
 import type { TextRange } from "./textRange";
+import type { TextSyntax } from "./textSyntax";
 
 export interface EditResult {
   text: string;
@@ -234,6 +235,7 @@ const applyToSelection = (
   selectionStart: number,
   selectionEnd: number,
   patch: SegmentPatch,
+  syntax: TextSyntax,
 ): EditResult => {
   const unchanged = { text, selectionStart, selectionEnd };
   const range = resolveRange(text, selectionStart, selectionEnd);
@@ -248,7 +250,7 @@ const applyToSelection = (
   const rewritten = lines.map((line, index) => {
     const bound = bounds[index];
     const from = Math.max(
-      prefixLength(line),
+      prefixLength(line, syntax),
       Math.min(line.length, range.start - bound.start),
     );
     const to = Math.max(0, Math.min(line.length, range.end - bound.start));
@@ -297,11 +299,18 @@ export const applyInlineStyle = (
   selectionEnd: number,
   key: InlineStyleKey,
   value: unknown,
+  syntax: TextSyntax = "lists",
 ): EditResult => {
-  return applyToSelection(text, selectionStart, selectionEnd, (segment) => ({
-    ...segment,
-    style: patchStyle(segment.style, key, value),
-  }));
+  return applyToSelection(
+    text,
+    selectionStart,
+    selectionEnd,
+    (segment) => ({
+      ...segment,
+      style: patchStyle(segment.style, key, value),
+    }),
+    syntax,
+  );
 };
 
 export const applyInlineMark = (
@@ -310,23 +319,35 @@ export const applyInlineMark = (
   selectionEnd: number,
   mark: InlineMarkName,
   on: boolean,
+  syntax: TextSyntax = "lists",
 ): EditResult => {
-  return applyToSelection(text, selectionStart, selectionEnd, (segment) => {
-    const next: FormattedSegment = { ...segment };
-    if (on) next[mark] = true;
-    else delete next[mark];
-    return next;
-  });
+  return applyToSelection(
+    text,
+    selectionStart,
+    selectionEnd,
+    (segment) => {
+      const next: FormattedSegment = { ...segment };
+      if (on) next[mark] = true;
+      else delete next[mark];
+      return next;
+    },
+    syntax,
+  );
 };
 
 export const clearInlineFormatting = (
   text: string,
   selectionStart: number,
   selectionEnd: number,
+  syntax: TextSyntax = "lists",
 ): EditResult => {
-  return applyToSelection(text, selectionStart, selectionEnd, (segment) => ({
-    text: segment.text,
-  }));
+  return applyToSelection(
+    text,
+    selectionStart,
+    selectionEnd,
+    (segment) => ({ text: segment.text }),
+    syntax,
+  );
 };
 
 export const isInlineMarkActive = (

@@ -396,7 +396,7 @@ export const InspectorPanel = ({
           )
         }
         placeholder="Notes for the presenter (cues, transitions…)"
-        className="min-h-17.5 resize-y text-[13px]"
+        className="max-h-50 min-h-17.5 resize-y overflow-y-auto text-[13px]"
       />
 
       <div className="mt-3.5 flex flex-wrap gap-1.5">

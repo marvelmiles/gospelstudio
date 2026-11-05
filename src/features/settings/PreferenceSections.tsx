@@ -138,6 +138,29 @@ export const TransitionsSection = ({
   </>
 );
 
+export const BibleSection = ({ prefs, onChange }: PreferenceSectionProps) => (
+  <>
+    <SectionTitle
+      info={
+        <InfoTip title="Reading aloud">
+          Applies everywhere the Bible is read aloud, in the Bible reader and
+          while presenting a passage. Each verse starts with its number, for
+          example "Verse 2", before its words are read.
+        </InfoTip>
+      }
+    >
+      Bible
+    </SectionTitle>
+    <div className="mb-1.5">
+      <SwitchField
+        label="Say verse numbers when reading aloud"
+        checked={prefs.readVerseNumbers}
+        onChange={(checked) => onChange({ readVerseNumbers: checked })}
+      />
+    </div>
+  </>
+);
+
 export const AudioSection = ({ prefs, onChange }: PreferenceSectionProps) => (
   <>
     <SectionTitle>Audio</SectionTitle>

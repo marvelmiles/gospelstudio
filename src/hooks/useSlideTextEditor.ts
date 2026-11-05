@@ -46,7 +46,7 @@ export const useSlideTextEditor = ({
   text,
   formatting,
 }: Options): SlideTextEditing => {
-  const { bind, runCommand, undo, redo, syncSelection, handleKeyDown } =
+  const { bind, syntax, runCommand, undo, redo, syncSelection, handleKeyDown } =
     formatting;
   const elementRef = useRef<HTMLDivElement | null>(null);
   const [element, setElement] = useState<HTMLDivElement | null>(null);
@@ -184,7 +184,7 @@ export const useSlideTextEditor = ({
     const insert = (value: string) => {
       if (!value) return;
       runCommand((current, start, end) =>
-        replaceRange(current, start, end, value),
+        replaceRange(current, start, end, value, syntax),
       );
     };
 
@@ -218,18 +218,22 @@ export const useSlideTextEditor = ({
           insert(clipboardText(event.dataTransfer));
           return;
         case "deleteContentBackward":
-          runCommand(deleteBackward);
+          runCommand((current, start, end) =>
+            deleteBackward(current, start, end, syntax),
+          );
           return;
         case "deleteContentForward":
-          runCommand(deleteForward);
+          runCommand((current, start, end) =>
+            deleteForward(current, start, end, syntax),
+          );
           return;
         default: {
           if (!inputType.startsWith("delete")) return;
           const range = targetRange(event);
           runCommand((current, start, end) =>
             range
-              ? replaceRange(current, range.start, range.end, "")
-              : replaceRange(current, start, end, ""),
+              ? replaceRange(current, range.start, range.end, "", syntax)
+              : replaceRange(current, start, end, "", syntax),
           );
         }
       }
@@ -250,7 +254,7 @@ export const useSlideTextEditor = ({
       if (!range) return;
       const composed = event.data ?? "";
       runCommand((current) =>
-        replaceRange(current, range.start, range.end, composed),
+        replaceRange(current, range.start, range.end, composed, syntax),
       );
     };
 
@@ -264,7 +268,7 @@ export const useSlideTextEditor = ({
       element.removeEventListener("compositionstart", onCompositionStart);
       element.removeEventListener("compositionend", onCompositionEnd);
     };
-  }, [element, runCommand, readSelection, undo, redo]);
+  }, [element, syntax, runCommand, readSelection, undo, redo]);
 
   return { ref, onKeyDown: handleKeyDown, selectionRect, focusAt };
 };

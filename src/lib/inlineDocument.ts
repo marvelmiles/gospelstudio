@@ -12,6 +12,7 @@ import {
 import { changeIndent, toggleList } from "./listCommands";
 import { clamp, lineBounds, lineIndexAt } from "./textRange";
 import type { TextRange } from "./textRange";
+import type { TextSyntax } from "./textSyntax";
 
 type Marks = Omit<SourceSegment, "text" | "sourceStart" | "sourceEnd">;
 
@@ -24,10 +25,10 @@ interface DocumentLine {
   end: number;
 }
 
-const documentLines = (text: string): DocumentLine[] => {
+const documentLines = (text: string, syntax: TextSyntax): DocumentLine[] => {
   return lineBounds(text).map((bound) => {
     const raw = text.slice(bound.start, bound.end);
-    const prefix = raw.slice(0, prefixLength(raw));
+    const prefix = raw.slice(0, prefixLength(raw, syntax));
     return {
       raw,
       prefix,
@@ -39,10 +40,13 @@ const documentLines = (text: string): DocumentLine[] => {
   });
 };
 
-export const lineContentOffsets = (lines: string[]): number[] => {
+export const lineContentOffsets = (
+  lines: string[],
+  syntax: TextSyntax = "lists",
+): number[] => {
   let offset = 0;
   return lines.map((line) => {
-    const start = offset + prefixLength(line);
+    const start = offset + prefixLength(line, syntax);
     offset += line.length + 1;
     return start;
   });
@@ -144,8 +148,9 @@ export const replaceRange = (
   selectionStart: number,
   selectionEnd: number,
   insert: string,
+  syntax: TextSyntax = "lists",
 ): EditResult => {
-  const lines = documentLines(text);
+  const lines = documentLines(text, syntax);
   const from = Math.min(selectionStart, selectionEnd);
   const to = Math.max(selectionStart, selectionEnd);
   const firstIndex = lineIndexAt(lines, from);
@@ -183,7 +188,7 @@ export const replaceRange = (
 
   const structural = composed.length > 1 || lastIndex > firstIndex;
   const next = structural
-    ? composeLines(renumber(analyzeLines(rewritten)))
+    ? composeLines(renumber(analyzeLines(rewritten, syntax)))
     : rewritten;
 
   const caretLine = firstIndex + composed.length - 1;
@@ -191,6 +196,7 @@ export const replaceRange = (
     rewritten[caretLine],
     next[caretLine],
     first.prefix.length + composed[composed.length - 1].caret,
+    syntax,
   );
   const caret = lineStarts(next)[caretLine] + column;
 
@@ -233,11 +239,12 @@ export const deleteBackward = (
   text: string,
   selectionStart: number,
   selectionEnd: number,
+  syntax: TextSyntax = "lists",
 ): EditResult | null => {
   if (selectionStart !== selectionEnd)
-    return replaceRange(text, selectionStart, selectionEnd, "");
+    return replaceRange(text, selectionStart, selectionEnd, "", syntax);
 
-  const lines = documentLines(text);
+  const lines = documentLines(text, syntax);
   const index = lineIndexAt(lines, selectionStart);
   const line = lines[index];
 
@@ -249,7 +256,13 @@ export const deleteBackward = (
         : changeIndent(text, selectionStart, selectionStart, -1);
     }
     if (index === 0) return null;
-    return replaceRange(text, lines[index - 1].end, line.contentStart, "");
+    return replaceRange(
+      text,
+      lines[index - 1].end,
+      line.contentStart,
+      "",
+      syntax,
+    );
   }
 
   const range = previousVisibleRange(
@@ -262,6 +275,7 @@ export const deleteBackward = (
     line.contentStart + range.start,
     line.contentStart + range.end,
     "",
+    syntax,
   );
 };
 
@@ -269,11 +283,12 @@ export const deleteForward = (
   text: string,
   selectionStart: number,
   selectionEnd: number,
+  syntax: TextSyntax = "lists",
 ): EditResult | null => {
   if (selectionStart !== selectionEnd)
-    return replaceRange(text, selectionStart, selectionEnd, "");
+    return replaceRange(text, selectionStart, selectionEnd, "", syntax);
 
-  const lines = documentLines(text);
+  const lines = documentLines(text, syntax);
   const index = lineIndexAt(lines, selectionStart);
   const line = lines[index];
 
@@ -287,8 +302,15 @@ export const deleteForward = (
       line.contentStart + range.start,
       line.contentStart + range.end,
       "",
+      syntax,
     );
 
   if (index >= lines.length - 1) return null;
-  return replaceRange(text, line.end, lines[index + 1].contentStart, "");
+  return replaceRange(
+    text,
+    line.end,
+    lines[index + 1].contentStart,
+    "",
+    syntax,
+  );
 };

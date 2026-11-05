@@ -80,7 +80,6 @@ export const Presentation = () => {
   const readAloud = useScriptureReadAloud({
     isScripture: deck?.kind === "scripture",
     doc: presentation.doc,
-    slides: presentation.slides,
     slideIndex: presentation.slideIndex,
     goTo: presentation.goTo,
   });

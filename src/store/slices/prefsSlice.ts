@@ -19,6 +19,7 @@ export const DEFAULT_PREFS: Prefs = {
   autoHideControls: true,
   autoHidePresenterBar: true,
   bibleVersion: DEFAULT_BIBLE_VERSION,
+  readVerseNumbers: true,
   defaultManuscriptThemeId: DEFAULT_MANUSCRIPT_THEME_ID,
   defaultScriptureThemeId: DEFAULT_SCRIPTURE_THEME_ID,
   onboarded: false,

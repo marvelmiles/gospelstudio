@@ -1,6 +1,7 @@
 import { applyInlineMark, isInlineMarkActive } from "./inlineEdit";
 import type { EditResult } from "./inlineEdit";
 import type { InlineMarkName } from "./inlineFormat";
+import type { TextSyntax } from "./textSyntax";
 
 export type InlineFormatName = InlineMarkName;
 
@@ -53,6 +54,7 @@ export const toggleInlineFormat = (
   selectionStart: number,
   selectionEnd: number,
   name: InlineFormatName,
+  syntax: TextSyntax = "lists",
 ): FormattingResult => {
   return applyInlineMark(
     text,
@@ -60,6 +62,7 @@ export const toggleInlineFormat = (
     selectionEnd,
     name,
     !isInlineMarkActive(text, selectionStart, selectionEnd, name),
+    syntax,
   );
 };
 

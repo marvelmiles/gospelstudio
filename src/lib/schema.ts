@@ -369,6 +369,7 @@ const prefsSchema = z
     autoHideControls: z.boolean().optional().catch(undefined),
     autoHidePresenterBar: z.boolean().optional().catch(undefined),
     bibleVersion: z.string().optional().catch(undefined),
+    readVerseNumbers: z.boolean().optional().catch(undefined),
     defaultManuscriptThemeId: z.string().optional().catch(undefined),
     defaultScriptureThemeId: z.string().optional().catch(undefined),
     goLiveTipDismissed: z.boolean().optional().catch(undefined),

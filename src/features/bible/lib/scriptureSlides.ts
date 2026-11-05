@@ -8,6 +8,7 @@ import type {
 import { uid } from "../../../lib/id";
 import { SPAN_CLOSE, openingToken } from "../../../lib/inlineStyle";
 import { splitTextIntoParts } from "../../../lib/textBlocks";
+import { SCRIPTURE_SLIDE_TYPE } from "../../../lib/textSyntax";
 import {
   slideCharacterBudget,
   slideChunkLabel,
@@ -70,35 +71,62 @@ const chunkParts = (
   return splitTextIntoParts(text, budget).map((part) => [part]);
 };
 
-export const slideIndexForVerse = (
-  passage: Pick<
-    ScriptureSlideOptions,
-    | "verses"
-    | "versesPerSlide"
-    | "showVerseNumbers"
-    | "raisedVerseNumbers"
-    | "showReference"
-    | "style"
-  > & {
-    quick?: boolean;
-  },
-  verse: number,
-): number => {
-  const { verses } = passage;
+export type PassageLayout = Pick<
+  ScriptureSlideOptions,
+  | "verses"
+  | "versesPerSlide"
+  | "showVerseNumbers"
+  | "raisedVerseNumbers"
+  | "showReference"
+  | "style"
+> & {
+  quick?: boolean;
+};
+
+interface ChunkPlacement {
+  verses: number[];
+  firstSlide: number;
+  slideCount: number;
+}
+
+const placeChunks = (passage: PassageLayout): ChunkPlacement[] => {
   const perSlide = Math.max(1, passage.versesPerSlide);
   const split = Boolean(passage.quick);
   const budget = slideCharacters(
     slideTextMetrics(passage.style),
     passage.showReference !== false,
   );
-  let index = 0;
-  for (let start = 0; start < verses.length; start += perSlide) {
-    const chunk = verses.slice(start, start + perSlide);
-    if (chunk.some((v) => v.v === verse)) return index;
-    index += chunkParts(chunkLines(chunk, passage), split, budget).length;
+  const placements: ChunkPlacement[] = [];
+  let firstSlide = 0;
+  for (let start = 0; start < passage.verses.length; start += perSlide) {
+    const chunk = passage.verses.slice(start, start + perSlide);
+    const slideCount = chunkParts(
+      chunkLines(chunk, passage),
+      split,
+      budget,
+    ).length;
+    placements.push({
+      verses: chunk.map((verse) => verse.v),
+      firstSlide,
+      slideCount,
+    });
+    firstSlide += slideCount;
   }
-  return -1;
+  return placements;
 };
+
+export const slideIndexForVerse = (
+  passage: PassageLayout,
+  verse: number,
+): number =>
+  placeChunks(passage).find((placement) => placement.verses.includes(verse))
+    ?.firstSlide ?? -1;
+
+export const verseStartsBySlide = (passage: PassageLayout): number[][] =>
+  placeChunks(passage).flatMap((placement) => [
+    placement.verses,
+    ...Array.from({ length: placement.slideCount - 1 }, (): number[] => []),
+  ]);
 
 export const buildScriptureSlides = (
   options: ScriptureSlideOptions,
@@ -134,7 +162,7 @@ export const buildScriptureSlides = (
       const label = slideChunkLabel(formatRange(chunkRange), p, parts.length);
       slides.push({
         id: uid(),
-        type: "scripture",
+        type: SCRIPTURE_SLIDE_TYPE,
         flowId,
         label,
         lines,
@@ -148,7 +176,7 @@ export const buildScriptureSlides = (
   if (!slides.length) {
     slides.push({
       id: uid(),
-      type: "scripture",
+      type: SCRIPTURE_SLIDE_TYPE,
       label: formatRange(range),
       lines: ["(no verses)"],
       overrides: {},

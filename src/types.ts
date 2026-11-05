@@ -295,6 +295,7 @@ export interface Prefs {
   autoHideControls: boolean;
   autoHidePresenterBar: boolean;
   bibleVersion: BibleVersionId;
+  readVerseNumbers: boolean;
   defaultManuscriptThemeId: string;
   defaultScriptureThemeId: string;
   onboarded: boolean;

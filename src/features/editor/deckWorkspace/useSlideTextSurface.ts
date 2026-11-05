@@ -3,6 +3,7 @@ import type { Slide } from "../../../types";
 import { useTextFormatting } from "../../../hooks/useTextFormatting";
 import type { TextChangeMeta } from "../../../hooks/useTextFormatting";
 import { useUndoRedoShortcuts } from "../../../hooks/useUndoRedoShortcuts";
+import { slideBodySyntax } from "../../../lib/textSyntax";
 import type { DeckEditor } from "../useDeckEditor";
 
 export const useSlideTextSurface = (
@@ -49,6 +50,7 @@ export const useSlideTextSurface = (
     value: text,
     onChange: onTextChange,
     history: editor.history,
+    syntax: slide && !activeTextBox ? slideBodySyntax(slide) : "lists",
   });
 
   useUndoRedoShortcuts({

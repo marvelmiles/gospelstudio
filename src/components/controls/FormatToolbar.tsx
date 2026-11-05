@@ -64,34 +64,56 @@ export const FormatToolbar = ({
   controller,
   block,
   className,
-}: FormatToolbarProps) => {
+}: FormatToolbarProps) => (
+  <div
+    role="toolbar"
+    aria-label="Text formatting"
+    className={cn(
+      "flex flex-wrap items-center gap-1",
+      block && "rounded-[10px] border border-border bg-secondary p-1.5",
+      !controller.ready && "opacity-50",
+      className,
+    )}
+  >
+    {ORDER.map((name) => (
+      <FormatButton
+        key={name}
+        icon={ICONS[name]}
+        label={`${INLINE_FORMATS[name].label} (${INLINE_FORMATS[name].shortcutHint})`}
+        active={controller.isActive(name)}
+        disabled={!controller.ready}
+        onToggle={() => controller.toggle(name)}
+      />
+    ))}
+
+    <Divider />
+
+    {controller.syntax === "lists" && (
+      <>
+        <ListButtons controller={controller} />
+        <Divider />
+      </>
+    )}
+
+    <FormatButton
+      icon={RemoveFormatting}
+      label="Clear formatting"
+      disabled={!controller.ready}
+      onToggle={controller.clear}
+    />
+  </div>
+);
+
+const ListButtons = ({
+  controller,
+}: {
+  controller: TextFormattingController;
+}) => {
   const [listMenu, setListMenu] = useState(false);
   const { list } = controller;
 
   return (
-    <div
-      role="toolbar"
-      aria-label="Text formatting"
-      className={cn(
-        "flex flex-wrap items-center gap-1",
-        block && "rounded-[10px] border border-border bg-secondary p-1.5",
-        !controller.ready && "opacity-50",
-        className,
-      )}
-    >
-      {ORDER.map((name) => (
-        <FormatButton
-          key={name}
-          icon={ICONS[name]}
-          label={`${INLINE_FORMATS[name].label} (${INLINE_FORMATS[name].shortcutHint})`}
-          active={controller.isActive(name)}
-          disabled={!controller.ready}
-          onToggle={() => controller.toggle(name)}
-        />
-      ))}
-
-      <Divider />
-
+    <>
       <FormatButton
         icon={List}
         label={LIST_KIND_LABELS.bullet}
@@ -149,16 +171,7 @@ export const FormatToolbar = ({
         disabled={!controller.ready}
         onToggle={controller.indent}
       />
-
-      <Divider />
-
-      <FormatButton
-        icon={RemoveFormatting}
-        label="Clear formatting"
-        disabled={!controller.ready}
-        onToggle={controller.clear}
-      />
-    </div>
+    </>
   );
 };
 

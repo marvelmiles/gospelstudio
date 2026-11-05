@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useValueChange } from "@/hooks/useValueChange";
 import type { BibleVerse } from "../../../types";
+import { isTextEntryTarget } from "../../../lib/textEntry";
 import type { VerseSpan } from "../lib/reference";
 
 export interface VerseSelection {
@@ -18,16 +19,6 @@ interface UseVerseSelectionOptions {
 interface ScrollRequest {
   verse: number;
 }
-
-const isTextEntry = (target: EventTarget | null): boolean => {
-  const element = target as HTMLElement | null;
-  return Boolean(
-    element &&
-    (element.tagName === "INPUT" ||
-      element.tagName === "TEXTAREA" ||
-      element.isContentEditable),
-  );
-};
 
 export const useVerseSelection = ({
   verses,
@@ -128,7 +119,7 @@ export const useVerseSelection = ({
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (isTextEntry(event.target)) return;
+      if (isTextEntryTarget(event.target)) return;
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "a") {
         event.preventDefault();
         toggleSelectAll();

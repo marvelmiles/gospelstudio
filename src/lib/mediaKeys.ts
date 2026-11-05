@@ -1,20 +1,10 @@
+import { isTextEntryTarget } from "./textEntry";
+
 const MEDIA_SURFACE_ATTR = "data-media-surface";
 
 export const mediaSurfaceProps = { [MEDIA_SURFACE_ATTR]: "" } as const;
 
 const MEDIA_SURFACE_SELECTOR = `[${MEDIA_SURFACE_ATTR}]`;
-
-const NON_TEXT_INPUT_TYPES = new Set([
-  "button",
-  "checkbox",
-  "color",
-  "file",
-  "image",
-  "radio",
-  "range",
-  "reset",
-  "submit",
-]);
 
 const SPACE_ACTIVATED_SELECTOR = [
   "button",
@@ -35,16 +25,6 @@ const isSpaceKey = (key: string): boolean => key === " " || key === "Spacebar";
 
 const asElement = (target: EventTarget | null): HTMLElement | null =>
   target instanceof HTMLElement ? target : null;
-
-const isTextEntryTarget = (target: EventTarget | null): boolean => {
-  const element = asElement(target);
-  if (!element) return false;
-  if (element.isContentEditable) return true;
-  const tag = element.tagName;
-  if (tag === "TEXTAREA" || tag === "SELECT") return true;
-  if (tag !== "INPUT") return false;
-  return !NON_TEXT_INPUT_TYPES.has((element as HTMLInputElement).type);
-};
 
 const isInsideMediaSurface = (target: EventTarget | null): boolean => {
   return Boolean(asElement(target)?.closest(MEDIA_SURFACE_SELECTOR));

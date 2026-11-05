@@ -5,6 +5,7 @@ import { keptManuscripts, keptThemes } from "../../lib/keepOnReset";
 import { Modal } from "@/components/shared/Modal";
 import {
   AudioSection,
+  BibleSection,
   DefaultThemesSection,
   PresentationSection,
   TransitionsSection,
@@ -53,6 +54,7 @@ export const SettingsModal = () => {
       />
       <TransitionsSection prefs={prefs} onChange={updatePrefs} />
       <AudioSection prefs={prefs} onChange={updatePrefs} />
+      <BibleSection prefs={prefs} onChange={updatePrefs} />
       {storage && <StorageSection storage={storage} />}
       <DataSection />
       <ResetSection keptItems={keptItems} onBeforeReset={close} />

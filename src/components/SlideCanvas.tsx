@@ -18,6 +18,7 @@ import type { SlideTextEditing } from "../hooks/useSlideTextEditor";
 import { SlideTextBlock } from "./SlideTextBlock";
 import { SlideTextBoxLayers } from "./SlideTextBoxLayers";
 import { SLIDE_BODY_PADDING } from "../lib/slideLayout";
+import { slideBodySyntax } from "../lib/textSyntax";
 
 export interface ClickPoint {
   x: number;
@@ -118,6 +119,7 @@ export const SlideCanvas = ({
         {showBody && (
           <SlideTextBlock
             lines={bodyLines}
+            syntax={slideBodySyntax(slide)}
             style={style}
             lineStyles={lineStyles}
             selectedLine={bodyActive ? selectedLine : null}

@@ -29,7 +29,10 @@ import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { MissingPage } from "@/components/shared/MissingPage";
-import { EditorSplitLayout } from "../../components/layout/EditorSplitLayout";
+import {
+  EditorSplitLayout,
+  type StackedTabLabels,
+} from "../../components/layout/EditorSplitLayout";
 import { EditorTopBar } from "../../components/layout/EditorTopBar";
 import { ImageLayer } from "../../components/media/ImageLayer";
 import { ImageSettingsControls } from "../../components/media/ImageSettingsControls";
@@ -55,6 +58,8 @@ const BACK_TITLE: Record<MediaKind, string> = {
   image: "Back to images",
   video: "Back to videos",
 };
+
+const STACKED_TABS: StackedTabLabels = { preview: "Edit", sidebar: "Style" };
 
 const MediaEditorPage = ({ kind }: { kind: MediaKind }) => {
   const { mediaId } = useParams();
@@ -322,6 +327,7 @@ export const MediaWorkspace = ({ item, scene }: MediaWorkspaceProps) => {
         stacked={stacked}
         preview={preview}
         sidebar={sidebar}
+        stackedTabs={STACKED_TABS}
       />
 
       <ConfirmDialog
