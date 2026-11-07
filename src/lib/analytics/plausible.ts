@@ -35,8 +35,6 @@ export const startPlausible = (): boolean => {
   if (isStarted) return true;
   const config = getAnalyticsConfig();
 
-  console.log(config, "plausible config");
-
   if (!config) return false;
   try {
     init({

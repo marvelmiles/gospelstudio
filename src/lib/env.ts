@@ -25,17 +25,22 @@ const currentSiteHostname = (): string | undefined => {
   return window.location.hostname.replace(/^www\./i, "") || undefined;
 };
 
-const withDefaults = (parsed: ParsedEnv): Env => ({
-  ...parsed,
-  VITE_PLAUSIBLE_DOMAIN: parsed.VITE_PLAUSIBLE_DOMAIN ?? currentSiteHostname(),
-  VITE_PLAUSIBLE_API_BASE_URL:
-    parsed.VITE_PLAUSIBLE_API_BASE_URL ?? DEFAULT_PLAUSIBLE_API_BASE_URL,
-});
+const withDefaults = (parsed: ParsedEnv): Env => {
+  const t = {
+    ...parsed,
+    VITE_PLAUSIBLE_DOMAIN:
+      parsed.VITE_PLAUSIBLE_DOMAIN ?? currentSiteHostname(),
+    VITE_PLAUSIBLE_API_BASE_URL:
+      parsed.VITE_PLAUSIBLE_API_BASE_URL ?? DEFAULT_PLAUSIBLE_API_BASE_URL,
+  };
+
+  console.log(t, currentSiteHostname(), " with defaults");
+
+  return t;
+};
 
 const parseEnv = (): Env => {
   const result = envSchema.safeParse(import.meta.env);
-
-  console.log(result, import.meta.env, "parsed result");
 
   if (result.success) return withDefaults(result.data);
 
