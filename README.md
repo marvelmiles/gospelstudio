@@ -163,14 +163,14 @@ When a clip is on screen, the playback keys control the clip: Space and `P` play
 
 Click the floating window first. Stepping an item that is live changes the live screen.
 
-| Key                                 | Action                                          |
-| ----------------------------------- | ----------------------------------------------- |
-| Right arrow / Page Down             | Next slide                                      |
-| Left arrow / Page Up                | Previous slide                                  |
-| Home / End                          | First or last slide (Home restarts a video)     |
-| Hold `Ctrl` + `1`, `2`… then let go | Jump to slide N                                 |
-| Space                               | Pause or resume auto-play, or play a video      |
-| Esc                                 | Close the window                                |
+| Key                                 | Action                                      |
+| ----------------------------------- | ------------------------------------------- |
+| Right arrow / Page Down             | Next slide                                  |
+| Left arrow / Page Up                | Previous slide                              |
+| Home / End                          | First or last slide (Home restarts a video) |
+| Hold `Ctrl` + `1`, `2`… then let go | Jump to slide N                             |
+| Space                               | Pause or resume auto-play, or play a video  |
+| Esc                                 | Close the window                            |
 
 In an editor opened from the Studio, `Ctrl` + `S` updates the scene and `Ctrl` + `Enter` previews the edited version.
 
@@ -231,12 +231,12 @@ Cameras also need a secure page. Open the app over `https://` or `localhost` on 
 
 Analytics is optional too. These are built into the public JavaScript, so they hold no secrets:
 
-| Variable                      | What it is                                                                   |
-| ----------------------------- | ---------------------------------------------------------------------------- |
-| `VITE_PLAUSIBLE_DOMAIN`       | The site as added in Plausible, `gospelstudio.app`. Empty turns tracking off |
-| `VITE_PLAUSIBLE_API_BASE_URL` | Plausible's address, `https://plausible.io` unless self-hosted               |
+| Variable                      | What it is                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------------ |
+| `VITE_PLAUSIBLE_DOMAIN`       | The site as added in Plausible, `gospelstudio.app`. Defaults to the address the app is opened on |
+| `VITE_PLAUSIBLE_API_BASE_URL` | Plausible's address. Defaults to `https://plausible.io`, change it only when self-hosting        |
 
-Tracking only runs in a production build opened on that domain or its `www.` address, so `pnpm dev`, `pnpm preview`, localhost and deploy previews are never counted.
+Tracking only runs in a production build opened on that domain or its `www.` address, so `pnpm dev`, `pnpm preview` and localhost are never counted. Without `VITE_PLAUSIBLE_DOMAIN`, every production deploy reports under its own address, deploy previews included. Plausible drops visits for addresses that are not added as sites, so set the variable when only one address should count.
 
 The admin analytics dashboard needs these server-only variables. Never give them a `VITE_` prefix:
 

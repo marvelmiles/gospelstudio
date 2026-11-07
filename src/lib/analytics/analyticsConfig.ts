@@ -1,7 +1,5 @@
 import { env } from "../env";
 
-const DEFAULT_API_BASE_URL = "https://plausible.io";
-
 interface AnalyticsConfig {
   domain: string;
   endpoint: string;
@@ -30,9 +28,7 @@ const resolveAnalyticsConfig = (): AnalyticsConfig | null => {
   if (!isTrackedHost(window.location.hostname, domain)) return null;
   return {
     domain,
-    endpoint: eventEndpoint(
-      env.VITE_PLAUSIBLE_API_BASE_URL ?? DEFAULT_API_BASE_URL,
-    ),
+    endpoint: eventEndpoint(env.VITE_PLAUSIBLE_API_BASE_URL),
   };
 };
 

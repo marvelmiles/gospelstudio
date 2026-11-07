@@ -4,16 +4,16 @@ GospelStudio uses [Plausible Analytics](https://plausible.io/docs) to answer two
 
 ## The numbers and what they mean
 
-| Number                              | Meaning                                                                                                    | Comes from                                         |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------- |
-| Unique visitors                     | Plausible's estimate of distinct visitors in the period                                                    | `visitors` for the whole period                    |
-| Total visits                        | Sessions. A visit ends after 30 minutes with no activity                                                   | `visits`                                           |
-| Page views                          | Every page opened, including moves inside the app                                                          | `pageviews`                                        |
-| Occurrences (total actions)         | How many times an event happened. One person creating five manuscripts is five                             | `events` per goal, which can be added together     |
-| Unique visitors who did an event    | How many visitors did it at least once. One person creating five manuscripts is one                        | `visitors` per goal                                |
-| Feature unique visitors             | Visitors who did any of a feature's actions, each counted once                                             | one `visitors` query filtered by all those goals   |
-| Active feature users                | Visitors who did any tracked action, each counted once                                                     | one `visitors` query filtered by all usage goals   |
-| Returning visitors                  | Visitors whose browser had already used GospelStudio on an earlier day                                     | `visitors` broken down by the `visitor_type` property |
+| Number                           | Meaning                                                                             | Comes from                                            |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Unique visitors                  | Plausible's estimate of distinct visitors in the period                             | `visitors` for the whole period                       |
+| Total visits                     | Sessions. A visit ends after 30 minutes with no activity                            | `visits`                                              |
+| Page views                       | Every page opened, including moves inside the app                                   | `pageviews`                                           |
+| Occurrences (total actions)      | How many times an event happened. One person creating five manuscripts is five      | `events` per goal, which can be added together        |
+| Unique visitors who did an event | How many visitors did it at least once. One person creating five manuscripts is one | `visitors` per goal                                   |
+| Feature unique visitors          | Visitors who did any of a feature's actions, each counted once                      | one `visitors` query filtered by all those goals      |
+| Active feature users             | Visitors who did any tracked action, each counted once                              | one `visitors` query filtered by all usage goals      |
+| Returning visitors               | Visitors whose browser had already used GospelStudio on an earlier day              | `visitors` broken down by the `visitor_type` property |
 
 Unique visitors are never added up. A feature's unique visitors and the period totals are asked from Plausible as one question each, because the same person can appear in several goals, on several days or in several chart points. Occurrences are plain counts, so those are safe to add.
 
@@ -35,7 +35,7 @@ feature code ─ trackEvent() ── trackEvent.ts            │  caches answer
 ```
 
 - `src/lib/analytics/analyticsEvents.ts` is the single list of events, the feature each belongs to, whether it counts as usage, whether it is interactive and which properties it may carry. The server reads the same file to build the feature report.
-- `src/lib/analytics/plausible.ts` wraps the official `@plausible-analytics/tracker` package. It starts once, only in production builds served from `VITE_PLAUSIBLE_DOMAIN` or its `www.` address, and never in the projector or preview windows. The tracker follows History API navigation on its own, so there is no route listener in React. It counts a page view only when the path changes, never for re-renders or query string changes.
+- `src/lib/analytics/plausible.ts` wraps the official `@plausible-analytics/tracker` package. It starts once, only in production builds served from `VITE_PLAUSIBLE_DOMAIN` or its `www.` address (the domain defaults to the address the app is opened on), and never in the projector or preview windows. The tracker follows History API navigation on its own, so there is no route listener in React. It counts a page view only when the path changes, never for re-renders or query string changes.
 - `src/lib/analytics/trackEvent.ts` is the only way the app sends an event. It does nothing when analytics is off or the visitor opted out, drops repeats that share a dedupe key inside 30 minutes, and never throws.
 - `src/lib/analytics/analyticsSessions.ts` pairs Started and Ended events so a session starts once and ends once, and ends open sessions when the tab closes.
 - `src/main.tsx` loads analytics in parallel with the app and ignores any failure, so it never delays or breaks the app.
@@ -45,29 +45,29 @@ feature code ─ trackEvent() ── trackEvent.ts            │  caches answer
 
 Every event also carries `visitor_type` (`new` or `returning`). Events marked non-interactive do not affect bounce rate, and events marked not usage are left out of feature totals and Active feature users.
 
-| Event                      | Feature           | Sent when                                                                                           | Properties                        | Notes                                                                 |
-| -------------------------- | ----------------- | --------------------------------------------------------------------------------------------------- | --------------------------------- | --------------------------------------------------------------------- |
-| Studio Opened              | Studio            | The Studio page finishes loading a production                                                       |                                   | Once per visit to the page. Non-interactive                           |
-| Studio Session Started     | Studio            | The Studio's projector screen opens                                                                 |                                   | A blocked popup does not count                                        |
-| Studio Session Ended       | Studio            | The projector screen closes, or the tab closes while it is open                                     |                                   | Non-interactive. Not usage                                            |
-| Manuscript Created         | Manuscripts       | A new manuscript is saved to the library for the first time                                         |                                   | A failed save (storage full) sends nothing                            |
-| Manuscript Edited          | Manuscripts       | An existing manuscript is saved                                                                     |                                   | At most once per manuscript per 30 minutes, and not in the 30 minutes after it was created |
-| Manuscript Deleted         | Manuscripts       | A manuscript is deleted after the confirm dialog                                                    |                                   |                                                                       |
-| Production Scene Created   | Production Scenes | A scene is added and appears in the production                                                      | `source`: blank, template, layout, duplicate |                                                            |
-| Production Scene Edited    | Production Scenes | A scene's content or settings change, or an item editor updates it                                  |                                   | At most once per scene per 30 minutes. Undo, redo, stepping slides and playing videos do not count |
-| Production Scene Deleted   | Production Scenes | A scene is removed                                                                                  |                                   |                                                                       |
-| Production Scene Activated | Production Scenes | GO LIVE or Cut sends the preview scene to the live screen                                           |                                   |                                                                       |
-| Bible Opened               | Bible             | The Bible page opens                                                                                |                                   | Non-interactive                                                       |
-| Bible Chapter Opened       | Bible             | A chapter opens in the verse list or the reader                                                     |                                   | Once per chapter per visit to the Bible page                          |
-| Bible Verse Displayed      | Bible             | A Bible passage is presented                                                                        |                                   |                                                                       |
-| Presentation Started       | Presentations     | Presentation mode opens                                                                             | `content`: manuscript, scripture, image, video | Moving to another item while presenting does not start a new one |
-| Presentation Ended         | Presentations     | Presentation mode closes, or the tab closes while presenting                                        |                                   | Non-interactive. Not usage                                            |
-| Camera Broadcast Started   | Camera Broadcast  | The Share camera page connects to a Studio for the first time in a sharing session                  | `method`: one_tap, code           | Reconnecting after a sleep is the same broadcast                      |
-| Camera Broadcast Ended     | Camera Broadcast  | Sharing stops, the page is left or the tab closes                                                   |                                   | Non-interactive. Not usage                                            |
-| Camera Broadcast Failed    | Camera Broadcast  | The camera could not open, or the connection failed before it was ever live                         | `method`, `reason`: camera_unavailable, connection_failed | Diagnostics. Not usage                        |
-| Media Uploaded             | Media             | An upload finishes with at least one image, video or sound saved                                    | `kind`: image, video, audio       | One per upload, however many files                                    |
-| Image Presented            | Media             | An image is presented                                                                               |                                   |                                                                       |
-| Video Presented            | Media             | A presented video actually starts playing                                                           |                                   | Once per video per presentation                                       |
+| Event                      | Feature           | Sent when                                                                          | Properties                                                | Notes                                                                                              |
+| -------------------------- | ----------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Studio Opened              | Studio            | The Studio page finishes loading a production                                      |                                                           | Once per visit to the page. Non-interactive                                                        |
+| Studio Session Started     | Studio            | The Studio's projector screen opens                                                |                                                           | A blocked popup does not count                                                                     |
+| Studio Session Ended       | Studio            | The projector screen closes, or the tab closes while it is open                    |                                                           | Non-interactive. Not usage                                                                         |
+| Manuscript Created         | Manuscripts       | A new manuscript is saved to the library for the first time                        |                                                           | A failed save (storage full) sends nothing                                                         |
+| Manuscript Edited          | Manuscripts       | An existing manuscript is saved                                                    |                                                           | At most once per manuscript per 30 minutes, and not in the 30 minutes after it was created         |
+| Manuscript Deleted         | Manuscripts       | A manuscript is deleted after the confirm dialog                                   |                                                           |                                                                                                    |
+| Production Scene Created   | Production Scenes | A scene is added and appears in the production                                     | `source`: blank, template, layout, duplicate              |                                                                                                    |
+| Production Scene Edited    | Production Scenes | A scene's content or settings change, or an item editor updates it                 |                                                           | At most once per scene per 30 minutes. Undo, redo, stepping slides and playing videos do not count |
+| Production Scene Deleted   | Production Scenes | A scene is removed                                                                 |                                                           |                                                                                                    |
+| Production Scene Activated | Production Scenes | GO LIVE or Cut sends the preview scene to the live screen                          |                                                           |                                                                                                    |
+| Bible Opened               | Bible             | The Bible page opens                                                               |                                                           | Non-interactive                                                                                    |
+| Bible Chapter Opened       | Bible             | A chapter opens in the verse list or the reader                                    |                                                           | Once per chapter per visit to the Bible page                                                       |
+| Bible Verse Displayed      | Bible             | A Bible passage is presented                                                       |                                                           |                                                                                                    |
+| Presentation Started       | Presentations     | Presentation mode opens                                                            | `content`: manuscript, scripture, image, video            | Moving to another item while presenting does not start a new one                                   |
+| Presentation Ended         | Presentations     | Presentation mode closes, or the tab closes while presenting                       |                                                           | Non-interactive. Not usage                                                                         |
+| Camera Broadcast Started   | Camera Broadcast  | The Share camera page connects to a Studio for the first time in a sharing session | `method`: one_tap, code                                   | Reconnecting after a sleep is the same broadcast                                                   |
+| Camera Broadcast Ended     | Camera Broadcast  | Sharing stops, the page is left or the tab closes                                  |                                                           | Non-interactive. Not usage                                                                         |
+| Camera Broadcast Failed    | Camera Broadcast  | The camera could not open, or the connection failed before it was ever live        | `method`, `reason`: camera_unavailable, connection_failed | Diagnostics. Not usage                                                                             |
+| Media Uploaded             | Media             | An upload finishes with at least one image, video or sound saved                   | `kind`: image, video, audio                               | One per upload, however many files                                                                 |
+| Image Presented            | Media             | An image is presented                                                              |                                                           |                                                                                                    |
+| Video Presented            | Media             | A presented video actually starts playing                                          |                                                           | Once per video per presentation                                                                    |
 
 The brief also listed Presentation Media Displayed. It would fire at exactly the same moment as Image Presented and Video Presented, so it is left out rather than counting one action twice. Camera broadcasts are the app's own phone-to-Studio cameras shown on projectors and TVs. Nothing is sent to YouTube or any streaming service.
 
@@ -104,15 +104,15 @@ Plausible filters bots, crawlers, referrer spam and data centre traffic on its o
 
 In Netlify, under Site configuration, Environment variables:
 
-| Variable                      | Scope     | Value                                              |
-| ----------------------------- | --------- | -------------------------------------------------- |
-| `VITE_PLAUSIBLE_DOMAIN`       | Builds    | `gospelstudio.app`                                 |
-| `VITE_PLAUSIBLE_API_BASE_URL` | Builds    | `https://plausible.io` (optional)                  |
-| `PLAUSIBLE_API_KEY`           | Functions | the Stats API key                                  |
-| `PLAUSIBLE_SITE_ID`           | Functions | `gospelstudio.app`                                 |
-| `ANALYTICS_ADMIN_TOKEN`       | Functions | a random secret of at least 32 characters          |
-| `PLAUSIBLE_API_BASE_URL`      | Functions | `https://plausible.io` (optional)                  |
-| `ANALYTICS_TIMEZONE`          | Functions | `Africa/Lagos` (optional)                          |
+| Variable                      | Scope     | Value                                                                                       |
+| ----------------------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `VITE_PLAUSIBLE_DOMAIN`       | Builds    | `gospelstudio.app` (optional, defaults to the address the app is opened on, without `www.`) |
+| `VITE_PLAUSIBLE_API_BASE_URL` | Builds    | `https://plausible.io` (optional, the default)                                              |
+| `PLAUSIBLE_API_KEY`           | Functions | the Stats API key                                                                           |
+| `PLAUSIBLE_SITE_ID`           | Functions | `gospelstudio.app`                                                                          |
+| `ANALYTICS_ADMIN_TOKEN`       | Functions | a random secret of at least 32 characters                                                   |
+| `PLAUSIBLE_API_BASE_URL`      | Functions | `https://plausible.io` (optional)                                                           |
+| `ANALYTICS_TIMEZONE`          | Functions | `Africa/Lagos` (optional)                                                                   |
 
 Make an admin token with:
 
