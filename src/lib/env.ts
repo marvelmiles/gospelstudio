@@ -16,6 +16,9 @@ export type Env = z.infer<typeof envSchema>;
 
 const parseEnv = (): Env => {
   const result = envSchema.safeParse(import.meta.env);
+
+  console.log(result, import.meta.env, "parsed result");
+
   if (result.success) return result.data;
 
   if (import.meta.env.DEV) {
