@@ -18,6 +18,14 @@ const eventEndpoint = (apiBaseUrl: string): string =>
 
 const resolveAnalyticsConfig = (): AnalyticsConfig | null => {
   const domain = env.VITE_PLAUSIBLE_DOMAIN;
+  console.log(
+    env,
+    import.meta.env.PROD,
+    domain,
+    isTrackedHost(window.location.hostname, domain || ""),
+    " env",
+  );
+
   if (!import.meta.env.PROD || !domain) return null;
   if (!isTrackedHost(window.location.hostname, domain)) return null;
   return {
