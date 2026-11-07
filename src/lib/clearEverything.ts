@@ -1,4 +1,8 @@
 import { APP_NAME } from "./appInfo";
+import {
+  isAnalyticsOptedOut,
+  setAnalyticsOptedOut,
+} from "./analytics/analyticsConsent";
 import { showStorageClearedNotice } from "./storageClearedNotice";
 
 const CLEARING_MESSAGE = `Clearing everything ${APP_NAME} saved on this device. The page will reload in a moment.`;
@@ -49,8 +53,10 @@ const attempt = async (
 
 const clearEverything = async (message = CLEARING_MESSAGE): Promise<void> => {
   const noticeShown = showStorageClearedNotice(message);
+  const isOptedOutOfAnalytics = isAnalyticsOptedOut();
 
   await attempt("Local Storage", () => localStorage.clear());
+  if (isOptedOutOfAnalytics) setAnalyticsOptedOut(true);
   await attempt("Session Storage", () => sessionStorage.clear());
   await attempt("Cookies", clearCookies);
   await attempt("IndexedDB", deleteAllDatabases);

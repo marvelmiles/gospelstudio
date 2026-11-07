@@ -1,4 +1,5 @@
 import { uid } from "../../lib/id";
+import { trackEvent } from "../../lib/analytics/trackEvent";
 import { afterWrite, blockWrite } from "../helpers";
 import type { SliceCreator, StoreState } from "../storeTypes";
 
@@ -108,6 +109,7 @@ export const createUploadsSlice: SliceCreator<UploadsSlice> = (set, get) => ({
     pending.onComplete?.(savedIds);
     set({ pendingUpload: null });
     afterWrite(get);
+    if (savedIds.length) trackEvent("Media Uploaded", { props: { kind } });
     const noun = UPLOAD_NOUNS[kind];
     get().pushToast(
       savedIds.length > 1

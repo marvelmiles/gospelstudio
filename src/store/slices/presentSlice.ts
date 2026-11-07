@@ -5,6 +5,7 @@ import type {
   SlideDeckDoc,
 } from "../../types";
 import { presentLiveWindow } from "../../lib/liveWindow";
+import { trackPresentedContent } from "../../lib/analytics/presentedContent";
 import type { MediaPlayback, MediaSync } from "../../lib/presentChannel";
 import type { SliceCreator } from "../storeTypes";
 
@@ -120,6 +121,7 @@ export const createPresentSlice: SliceCreator<PresentSlice> = (set, get) => ({
         ? null
         : (state.heldLivePresentation ?? holdLivePresentation(state)),
     });
+    trackPresentedContent(kind);
   },
 
   markPresentationLive: () => {

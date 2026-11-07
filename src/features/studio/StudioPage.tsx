@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useMediaQuery } from "usehooks-ts";
 import { usePageMeta } from "../../hooks/usePageMeta";
+import { useTrackEventWhen } from "../../hooks/useTrackEventOnce";
 import { cn } from "../../lib/utils";
 import { LoadingArea } from "@/components/shared/LoadingArea";
 import { ProductionHeader } from "./header/ProductionHeader";
@@ -32,6 +33,7 @@ export const StudioPage = () => {
   const isReady = useProductionStore(
     (state) => state.status === "ready" && state.production !== null,
   );
+  useTrackEventWhen("Studio Opened", isReady);
   const streams = useOperatorStreams();
   const isWide = useMediaQuery(WIDE_LAYOUT_QUERY);
 

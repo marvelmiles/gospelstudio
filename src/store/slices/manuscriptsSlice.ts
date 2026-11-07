@@ -12,7 +12,7 @@ export interface ManuscriptsSlice {
 
   upsertManuscript: (manuscript: Manuscript) => boolean;
   defaultManuscriptFor: (id: string) => Promise<Manuscript | null>;
-  deleteManuscript: (id: string) => void;
+  deleteManuscript: (id: string) => boolean;
 }
 
 export const createManuscriptsSlice: SliceCreator<ManuscriptsSlice> = (
@@ -55,11 +55,12 @@ export const createManuscriptsSlice: SliceCreator<ManuscriptsSlice> = (
 
   deleteManuscript: (id) => {
     const manuscript = get().manuscripts.find((m) => m.id === id);
-    if (manuscript?.builtIn) return;
+    if (manuscript?.builtIn) return false;
     set((state) => ({
       manuscripts: state.manuscripts.filter((m) => m.id !== id),
     }));
     void deleteRecord("manuscripts", id);
     afterDelete(get);
+    return manuscript !== undefined;
   },
 });

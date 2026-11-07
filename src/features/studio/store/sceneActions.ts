@@ -1,4 +1,5 @@
 import { PARTICLE_WAVE_BACKGROUND_ID } from "../../../data/backgrounds";
+import type { SceneCreationSource } from "../../../lib/analytics/analyticsEvents";
 import type { Scene, SceneTransition } from "../types/scene";
 import { withFreshIds } from "../lib/layerDefaults";
 import {
@@ -12,6 +13,7 @@ import {
 } from "../lib/productionFactory";
 import { findTemplate, type TemplateContext } from "../lib/sceneTemplates";
 import { removeLayout, writeLayout } from "../lib/productionStorage";
+import { trackSceneCreated, trackSceneDeleted } from "../lib/studioAnalytics";
 import { selectLayer } from "./editorStore";
 import {
   editProduction,
@@ -27,7 +29,17 @@ const templateContext = (): TemplateContext => {
   };
 };
 
-const insertAfterPreview = (created: Scene): void => {
+const hasScene = (sceneId: string): boolean =>
+  Boolean(
+    useProductionStore
+      .getState()
+      .production?.scenes.some((scene) => scene.id === sceneId),
+  );
+
+const insertAfterPreview = (
+  created: Scene,
+  source: SceneCreationSource,
+): void => {
   editProduction((production) => {
     const scene: Scene = {
       ...created,
@@ -41,16 +53,20 @@ const insertAfterPreview = (created: Scene): void => {
     return { ...production, scenes, previewSceneId: scene.id };
   });
   selectLayer(null);
+  if (hasScene(created.id)) trackSceneCreated(created.id, source);
 };
 
 export const addBlankScene = (): void => {
   const { production } = useProductionStore.getState();
   if (!production) return;
-  insertAfterPreview(createScene(nextSceneName(production.scenes)));
+  insertAfterPreview(createScene(nextSceneName(production.scenes)), "blank");
 };
 
 export const addSceneFromTemplate = (templateId: string): void =>
-  insertAfterPreview(sceneFromTemplate(templateId, templateContext()));
+  insertAfterPreview(
+    sceneFromTemplate(templateId, templateContext()),
+    "template",
+  );
 
 export const applyTemplate = (sceneId: string, templateId: string): void => {
   const template = findTemplate(templateId);
@@ -68,7 +84,7 @@ export const addSceneFromLayout = (layoutId: string): void => {
   const layout = useProductionStore
     .getState()
     .layouts.find((entry) => entry.id === layoutId);
-  if (layout) insertAfterPreview(sceneFromLayout(layout));
+  if (layout) insertAfterPreview(sceneFromLayout(layout), "layout");
 };
 
 export const applyLayout = (sceneId: string, layoutId: string): void => {
@@ -88,14 +104,15 @@ export const duplicateScene = (sceneId: string): void => {
   const { production } = useProductionStore.getState();
   const scene = production && findScene(production, sceneId);
   if (!scene) return;
+  const copy = copyScene(scene, `${scene.name} copy`);
   editProduction((current) => {
     const index = current.scenes.findIndex((entry) => entry.id === sceneId);
-    const copy = copyScene(scene, `${scene.name} copy`);
     const scenes = [...current.scenes];
     scenes.splice(index + 1, 0, copy);
     return { ...current, scenes, previewSceneId: copy.id };
   });
   selectLayer(null);
+  if (hasScene(copy.id)) trackSceneCreated(copy.id, "duplicate");
 };
 
 export const renameScene = (sceneId: string, name: string): void => {
@@ -109,6 +126,7 @@ export const renameScene = (sceneId: string, name: string): void => {
 };
 
 export const removeScene = (sceneId: string): void => {
+  const existed = hasScene(sceneId);
   editProduction((production) => {
     const index = production.scenes.findIndex((scene) => scene.id === sceneId);
     if (index < 0) return production;
@@ -121,6 +139,7 @@ export const removeScene = (sceneId: string): void => {
     return { ...production, scenes, previewSceneId };
   });
   selectLayer(null);
+  if (existed && !hasScene(sceneId)) trackSceneDeleted();
 };
 
 export const moveScene = (sceneId: string, targetIndex: number): void =>

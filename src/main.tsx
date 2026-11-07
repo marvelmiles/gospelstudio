@@ -14,10 +14,18 @@ const PROJECTION_PATHS = new Set([
   routes.studioPreview(),
 ]);
 
+const isProjectionWindow = PROJECTION_PATHS.has(window.location.pathname);
+
 const loadRoot = () =>
-  PROJECTION_PATHS.has(window.location.pathname)
-    ? import("./ProjectionApp")
-    : import("./App");
+  isProjectionWindow ? import("./ProjectionApp") : import("./App");
+
+const startAnalyticsSafely = async (): Promise<void> => {
+  if (isProjectionWindow) return;
+  try {
+    const { startAnalytics } = await import("./lib/analytics/analytics");
+    startAnalytics();
+  } catch {}
+};
 
 const bootstrap = async () => {
   const params = new URLSearchParams(window.location.search);
@@ -28,7 +36,10 @@ const bootstrap = async () => {
     await clearEverything(FRESH_START_MESSAGE);
   }
 
-  const { default: Root } = await loadRoot();
+  const [{ default: Root }] = await Promise.all([
+    loadRoot(),
+    startAnalyticsSafely(),
+  ]);
   const router = createBrowserRouter([{ path: "*", element: <Root /> }]);
 
   ReactDOM.createRoot(document.getElementById("root")!).render(

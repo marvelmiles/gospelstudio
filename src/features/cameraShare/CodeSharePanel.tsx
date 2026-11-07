@@ -26,6 +26,8 @@ import {
 import { connectionPhaseBadge } from "./lib/shareBadge";
 import { SharingCameraCard } from "./SharingCameraCard";
 import { useSharingCamera } from "./hooks/useSharingCamera";
+import { useBroadcastAnalytics } from "./hooks/useBroadcastAnalytics";
+import { trackBroadcastFailure } from "./lib/broadcastAnalytics";
 
 interface CodeSharePanelProps {
   initialOffer?: string | null;
@@ -49,6 +51,11 @@ export const CodeSharePanel = ({
   const getSender = useCallback(() => senderRef.current, []);
   const camera = useSharingCamera(getSender);
   const { stopCapture } = camera;
+  useBroadcastAnalytics({
+    isLive: status === "live",
+    hasFailed: status === "failed",
+    method: "code",
+  });
 
   const connectionPhase = useConnectionLifecycle(status, () => {
     pushToast("The Studio disconnected.");
@@ -78,6 +85,7 @@ export const CodeSharePanel = ({
       setReply(encodeSignal("answer", sender.reply));
     } catch {
       stopCapture();
+      trackBroadcastFailure("code", "camera_unavailable");
       pushToast(
         "Couldn't open the camera. Allow camera access and try again.",
         "error",

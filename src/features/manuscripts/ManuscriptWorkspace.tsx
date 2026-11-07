@@ -16,6 +16,7 @@ import {
 } from "../editor/sceneEditing";
 import { useOpenAssetUsageEditor } from "../assets/assetUsageEdit";
 import { useManuscriptDefault } from "./useManuscriptDefault";
+import { useManuscriptLibrarySave } from "./useManuscriptLibrarySave";
 import { DeckWorkspace } from "../editor/DeckWorkspace";
 import { ManuscriptTextModal } from "./ManuscriptTextModal";
 import { ManuscriptSettingsModal } from "./ManuscriptSettingsModal";
@@ -45,13 +46,13 @@ export const ManuscriptWorkspace = ({
   unsaved,
   scene,
 }: ManuscriptWorkspaceProps) => {
-  const upsertManuscript = useStore((s) => s.upsertManuscript);
+  const saveToLibrary = useManuscriptLibrarySave();
   const pushToast = useStore((s) => s.pushToast);
   const themes = useStore((s) => s.themes);
   const backgrounds = useStore((s) => s.backgrounds);
   const audio = useStore((s) => s.audio);
 
-  const editor = useDeckEditor(manuscript, scene?.commit ?? upsertManuscript);
+  const editor = useDeckEditor(manuscript, scene?.commit ?? saveToLibrary);
   const openAssetUsage = useOpenAssetUsageEditor({
     kind: "manuscript",
     doc: editor.doc,

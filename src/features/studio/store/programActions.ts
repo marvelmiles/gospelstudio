@@ -2,6 +2,7 @@ import { now } from "../../../lib/id";
 import type { Layer, LayerPatch } from "../types/layer";
 import type { ProgramSnapshot } from "../types/production";
 import { previewSceneOf, takeProgramSnapshot } from "../lib/productionFactory";
+import { trackSceneActivated } from "../lib/studioAnalytics";
 import { editProduction, useProductionStore } from "./productionStore";
 
 export type TakeMode = "transition" | "cut";
@@ -19,6 +20,7 @@ export const goLive = (mode: TakeMode): void => {
       ? { ...snapshot, transition: { kind: "cut", durationMs: 0 } }
       : snapshot;
   editProduction((current) => ({ ...current, program }), { record: false });
+  trackSceneActivated();
 };
 
 export const showBlackScreen = (): void =>

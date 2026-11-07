@@ -14,6 +14,7 @@ import { cn } from "../../lib/utils";
 import { useStore } from "../../store/useStore";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import { useCompactScreen } from "../../hooks/useCompactScreen";
+import { useTrackEventWhen } from "../../hooks/useTrackEventOnce";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { PillTabs } from "@/components/shared/PillTabs";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,14 @@ export const BiblePage = () => {
 
   const compact = useCompactScreen();
   const isReadingChapter = tab === "read" && step === "read";
+  const isChapterOpen =
+    tab === "read" && (step === "verses" || step === "read");
+  useTrackEventWhen("Bible Opened", true);
+  useTrackEventWhen(
+    "Bible Chapter Opened",
+    isChapterOpen,
+    `${readingPosition.bookId}:${readingPosition.chapter}`,
+  );
   const book = bookById(readingPosition.bookId);
   const savedCount = scriptures.filter((s) => !s.quick && !s.deleted).length;
 

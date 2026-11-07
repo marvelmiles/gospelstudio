@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from "react";
+import { useTrackedSession } from "../../hooks/useTrackedSession";
 import { useProductionStore } from "./store/productionStore";
 import { useEditorStore } from "./store/editorStore";
 import { retainSources } from "./lib/cameraService";
@@ -83,6 +84,7 @@ export const StudioRuntime = () => {
   }, [streams]);
 
   useDeckAutoPlay(program);
+  useTrackedSession("studio", isOutputActive ? [] : null);
 
   return <ProgramAudio program={program} streams={streams} />;
 };

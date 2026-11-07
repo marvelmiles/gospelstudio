@@ -11,6 +11,7 @@ import type {
 } from "../types/layer";
 import { libraryManuscriptOf, libraryPassageOf } from "../lib/deckContent";
 import { findItemLayer, holdsLayer } from "../lib/sceneItems";
+import { trackSceneEdited } from "../lib/studioAnalytics";
 import { editProduction, useProductionStore } from "./productionStore";
 import { updateLiveLayer } from "./programActions";
 
@@ -28,18 +29,19 @@ const isLiveItem = (layerId: string): boolean =>
 export const updateSceneItem = <T extends Layer>(
   layerId: string,
   patch: LayerPatch<T>,
-): void =>
+): void => {
+  const editedSceneIds: string[] = [];
   editProduction(
     (production) => {
-      const scenes = production.scenes.map((scene) =>
-        holdsLayer(scene.layers, layerId)
-          ? {
-              ...scene,
-              layers: patchLayer(scene.layers, layerId, patch),
-              updatedAt: now(),
-            }
-          : scene,
-      );
+      const scenes = production.scenes.map((scene) => {
+        if (!holdsLayer(scene.layers, layerId)) return scene;
+        editedSceneIds.push(scene.id);
+        return {
+          ...scene,
+          layers: patchLayer(scene.layers, layerId, patch),
+          updatedAt: now(),
+        };
+      });
       const { program } = production;
       return {
         ...production,
@@ -52,6 +54,8 @@ export const updateSceneItem = <T extends Layer>(
     },
     { coalesceKey: `item:${layerId}` },
   );
+  editedSceneIds.forEach(trackSceneEdited);
+};
 
 const updateQuietly = <T extends Layer>(
   layerId: string,

@@ -25,6 +25,8 @@ import type { StudioLink } from "../pairing/lib/cameraLink";
 import { broadcastPhaseBadge, type BroadcastPhase } from "./lib/shareBadge";
 import { SharingCameraCard } from "./SharingCameraCard";
 import { useSharingCamera } from "./hooks/useSharingCamera";
+import { useBroadcastAnalytics } from "./hooks/useBroadcastAnalytics";
+import { trackBroadcastFailure } from "./lib/broadcastAnalytics";
 
 const RECONNECT_GRACE_MS = 3 * 60 * 1000;
 
@@ -49,6 +51,11 @@ export const NearbySharePanel = ({
   const getSender = useCallback(() => senderRef.current, []);
   const camera = useSharingCamera(getSender);
   const { attachStream, stopCapture, streamRef } = camera;
+  useBroadcastAnalytics({
+    isLive: phase === "live",
+    hasFailed: phase === "failed",
+    method: "one_tap",
+  });
 
   const switchToCode = useEffectEvent((message?: string) => {
     if (message) pushToast(message, "error");
@@ -111,6 +118,7 @@ export const NearbySharePanel = ({
         stream = await openCamera();
       } catch {
         if (isCancelled) return;
+        trackBroadcastFailure("one_tap", "camera_unavailable");
         leaveWithError(
           "Couldn't open the camera. Allow camera access and try again.",
         );

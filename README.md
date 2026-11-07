@@ -95,6 +95,7 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 - **Watch your sends.** Each device shows its own progress and a stop button, and a transfer keeps going if the phone goes to sleep.
 - **Backup.** Export your whole library, pictures, videos and studio productions included, into one `.zip` file and bring it back later. The file is checked before anything is imported.
 - **Install it and use it offline.** The app is saved on your device, so it opens with no internet and tells you when a new version is ready.
+- **Privacy-friendly usage statistics.** The live site counts visits and which features are used with Plausible Analytics: no cookies, no personal data, and never any of your songs, notes, pictures, videos or camera. Anyone can turn it off in Settings under Privacy. See [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md).
 
 ### Keyboard shortcuts (presentation)
 
@@ -175,7 +176,7 @@ In an editor opened from the Studio, `Ctrl` + `S` updates the scene and `Ctrl` +
 
 ## Setup
 
-You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. There is no server, database or account to set up, because the app keeps everything in the browser.
+You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. The app itself needs no server, database or account, because it keeps everything in the browser. The only server code is an optional Netlify Function that feeds the admin analytics dashboard (see Deployment).
 
 ## Installation
 
@@ -200,7 +201,7 @@ Then open the address Vite prints. By default that is http://localhost:5173.
 | `pnpm dev`                     | Start the Vite dev server with hot reload               |
 | `pnpm build`                   | Check types with `tsc`, then build into `dist/`         |
 | `pnpm preview`                 | Preview the production build, service worker included   |
-| `pnpm typecheck`               | Check types without building                            |
+| `pnpm typecheck`               | Check the app and server types without building         |
 | `pnpm lint` / `lint:fix`       | Run ESLint over the repo                                |
 | `pnpm format` / `format:check` | Run Prettier over `src/`                                |
 | `pnpm test` / `test:watch`     | Run the Vitest tests                                    |
@@ -228,16 +229,38 @@ To add one-tap pairing over WiFi, copy `.env.example` to `.env` and fill in your
 
 Cameras also need a secure page. Open the app over `https://` or `localhost` on both devices, or the browser will not turn the camera on.
 
+Analytics is optional too. These are built into the public JavaScript, so they hold no secrets:
+
+| Variable                      | What it is                                                                   |
+| ----------------------------- | ---------------------------------------------------------------------------- |
+| `VITE_PLAUSIBLE_DOMAIN`       | The site as added in Plausible, `gospelstudio.app`. Empty turns tracking off |
+| `VITE_PLAUSIBLE_API_BASE_URL` | Plausible's address, `https://plausible.io` unless self-hosted               |
+
+Tracking only runs in a production build opened on that domain or its `www.` address, so `pnpm dev`, `pnpm preview`, localhost and deploy previews are never counted.
+
+The admin analytics dashboard needs these server-only variables. Never give them a `VITE_` prefix:
+
+| Variable                 | What it is                                                                                   |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| `PLAUSIBLE_API_KEY`      | A Plausible Stats API key                                                                    |
+| `PLAUSIBLE_SITE_ID`      | The site in Plausible, `gospelstudio.app`                                                    |
+| `ANALYTICS_ADMIN_TOKEN`  | A random secret of at least 32 characters that admins type to open the dashboard             |
+| `PLAUSIBLE_API_BASE_URL` | Optional, defaults to `https://plausible.io`                                                 |
+| `ANALYTICS_TIMEZONE`     | Optional, defaults to `Africa/Lagos`. Must match the site's reporting time zone in Plausible |
+
 ## Deployment
 
 `pnpm build` creates a static `dist/` folder that any static host can serve. The repo includes a `netlify.toml` for Netlify. On other hosts, publish `dist/` and send any unknown path to `index.html` so links inside the app keep working.
 
 The build also writes one HTML file for each main page, such as `manuscripts.html` and `bible.html`, with that page's own title and description. Hosts serve them at `/manuscripts` and `/bible`, so a link shared on WhatsApp or another app shows the right preview. The titles and descriptions live in `src/lib/pageMeta.ts`.
 
+On Netlify, `netlify/functions/analytics-report.ts` is deployed with the site and answers `/api/analytics/report` for the admin dashboard at `/admin/analytics`. Set `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_API_BASE_URL` if needed) with the Builds scope, and the server-only analytics variables with the Functions scope, then redeploy. On other static hosts the tracking still works, but the dashboard needs that function ported to the host's own server functions. To try the dashboard locally, run `netlify dev` with the server variables in `.env`. Plausible setup, goals and the full event list are in [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md).
+
 ## Tech stack
 
 - **App:** Vite, React 19, TypeScript, React Router and Zustand.
 - **Styling:** Tailwind CSS 4 and shadcn/ui (Radix UI primitives and tw-animate-css), with clsx, tailwind-merge and class-variance-authority for combining classes.
+- **Analytics:** Plausible through its official `@plausible-analytics/tracker` package, and a Netlify Function that reads the Plausible Stats API for the admin dashboard.
 - **Interface helpers:** Sonner for toasts, usehooks-ts for window size, media queries, element size and local storage, @dnd-kit for dragging slides, scenes and layers, react-rnd for moving and resizing layers in the Studio, and lucide-react for icons.
 - **Slide and scene transitions:** the browser's Web Animations API.
 - **Storage:** IndexedDB for documents and files, Zod to check backups, and fflate for the `.zip` format.
@@ -250,6 +273,8 @@ The build also writes one HTML file for each main page, such as `manuscripts.htm
 src/
   index.css        Tailwind entry: the shadcn theme variables, shadows, animations and custom utilities
   lib/             parser, slide animations, style and background resolution, storage, zod schema, cn() in utils.ts
+    analytics/     Plausible tracking, the event catalog, URL cleaning, sessions, opt-out and the
+                   report periods and types shared with the server
   data/            built-in backgrounds, themes, collections, fonts and seed manuscripts
                    (hymns.json holds the bundled hymnal, generated, not edited by hand)
   store/           Zustand store (state, actions and saving)
@@ -278,12 +303,17 @@ src/
     share/         Share: handing a library and studio productions to a nearby device
     settings/      Settings modal, split into one file per section
     about/         About & Help modal and its FAQ list
+    analytics/     Admin analytics dashboard (/admin/analytics), its charts and report hooks
     onboarding/    First-run welcome guide
     shortcuts/     Keyboard shortcuts modal
   routes.ts        every path in the app, one function per route
   App.tsx          layout shell, routes and global overlays
   ProjectionApp.tsx  the live windows shown on the projector (present and studio)
-  main.tsx         entry point (Router)
+  main.tsx         entry point (Router, starts analytics outside projector windows)
+server/
+  analytics/       Stats API client, caching, request checks, admin key check and the report builder
+netlify/
+  functions/       analytics-report.ts, the serverless entry for /api/analytics/report
 ```
 
 Components are written as `const` functions, each file does one job, and anything shared lives in a hook, a component or a `lib/` module.

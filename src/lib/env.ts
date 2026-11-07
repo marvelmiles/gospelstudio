@@ -5,6 +5,11 @@ const envSchema = z.object({
   VITE_FIREBASE_PROJECT_ID: z.string().min(1).optional(),
   VITE_FIREBASE_APP_ID: z.string().min(1).optional(),
   VITE_FIREBASE_DATABASE_URL: z.string().url().optional(),
+  VITE_PLAUSIBLE_DOMAIN: z
+    .string()
+    .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/i)
+    .optional(),
+  VITE_PLAUSIBLE_API_BASE_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

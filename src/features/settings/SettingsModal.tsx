@@ -11,6 +11,7 @@ import {
   TransitionsSection,
 } from "./PreferenceSections";
 import { DataSection } from "./DataSection";
+import { PrivacySection } from "./PrivacySection";
 import { ResetSection } from "./ResetSection";
 import { StorageSection } from "./StorageSection";
 
@@ -55,6 +56,7 @@ export const SettingsModal = () => {
       <TransitionsSection prefs={prefs} onChange={updatePrefs} />
       <AudioSection prefs={prefs} onChange={updatePrefs} />
       <BibleSection prefs={prefs} onChange={updatePrefs} />
+      <PrivacySection />
       {storage && <StorageSection storage={storage} />}
       <DataSection />
       <ResetSection keptItems={keptItems} onBeforeReset={close} />

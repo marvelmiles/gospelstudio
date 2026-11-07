@@ -51,6 +51,9 @@ const assetUsage = (
   assetId = ":assetId",
 ) => `${assetUsages()}/${asset}/${segment(assetId)}`;
 
+const admin = () => `${home()}admin`;
+const analytics = () => `${admin()}/analytics`;
+
 const presentWindow = () => `${home()}present`;
 const studioWindow = () => `${home()}studio-live`;
 const studioPreview = () => `${home()}studio-preview`;
@@ -81,6 +84,8 @@ const routes = {
   cameraShare,
   share,
   assetUsage,
+  admin,
+  analytics,
   presentWindow,
   studioWindow,
   studioPreview,

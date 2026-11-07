@@ -9,6 +9,7 @@ import { presentLiveWindow } from "../../lib/liveWindow";
 import { useWindowSize } from "usehooks-ts";
 import { usePortalHost } from "../../hooks/usePortalHost";
 import { useViewShortcuts } from "../../hooks/useViewShortcuts";
+import { useTrackEventOnce } from "../../hooks/useTrackEventOnce";
 import { useBlobUrl } from "../../lib/blobUrls";
 import { CONTENT_KIND_LABEL } from "../../lib/contentKinds";
 import type { VideoProgress } from "../../lib/media";
@@ -47,6 +48,7 @@ export const Presentation = () => {
   const pipRef = useRef<HTMLDivElement>(null);
   const videoHost = usePortalHost();
   const hasAnnouncedDisplay = useRef(false);
+  const trackVideoPlayback = useTrackEventOnce("Video Presented");
 
   const shortcutGate = useCallback(
     () =>
@@ -215,21 +217,26 @@ export const Presentation = () => {
       ? presentation.currentSlide.slide.notes
       : "";
 
-  const videoLayer =
+  const presentedVideo =
     presentation.frame.content.kind === "video"
-      ? createPortal(
-          <VideoSurface
-            ref={videoRef}
-            item={presentation.frame.content.item}
-            playback={mediaPlayback}
-            forceMuted={isLive}
-            onTimeUpdate={presentation.onVideoTime}
-            onEnded={presentation.onVideoEnded}
-            className="pointer-events-auto"
-          />,
-          videoHost,
-        )
+      ? presentation.frame.content.item
       : null;
+
+  const videoLayer = presentedVideo
+    ? createPortal(
+        <VideoSurface
+          ref={videoRef}
+          item={presentedVideo}
+          playback={mediaPlayback}
+          forceMuted={isLive}
+          onTimeUpdate={presentation.onVideoTime}
+          onEnded={presentation.onVideoEnded}
+          onPlaying={() => trackVideoPlayback(presentedVideo.id)}
+          className="pointer-events-auto"
+        />,
+        videoHost,
+      )
+    : null;
 
   const audioLayer =
     presentation.audioItem && presentation.audioPlayback ? (

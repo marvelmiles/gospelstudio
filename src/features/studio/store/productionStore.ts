@@ -6,6 +6,7 @@ import type { Production, ProductionSummary } from "../types/production";
 import type { Scene, SceneLayout } from "../types/scene";
 import { previewSceneOf, summariseProduction } from "../lib/productionFactory";
 import { writeProduction } from "../lib/productionStorage";
+import { trackSceneEdited } from "../lib/studioAnalytics";
 
 const HISTORY_LIMIT = 100;
 const COALESCE_MS = 700;
@@ -140,9 +141,9 @@ export const editScene = (
   sceneId: string,
   recipe: (scene: Scene) => Scene,
   options?: EditOptions,
-): void =>
+): void => {
+  let changed = false;
   editProduction((production) => {
-    let changed = false;
     const scenes = production.scenes.map((scene) => {
       if (scene.id !== sceneId) return scene;
       const next = recipe(scene);
@@ -152,6 +153,8 @@ export const editScene = (
     });
     return changed ? { ...production, scenes } : production;
   }, options);
+  if (changed) trackSceneEdited(sceneId);
+};
 
 export const editPreviewLayers = (
   recipe: (layers: Layer[]) => Layer[],

@@ -4,6 +4,7 @@ import { FileText, Plus } from "lucide-react";
 import type { Manuscript } from "../../types";
 import { COLLECTIONS } from "../../data/collections";
 import { useStore } from "../../store/useStore";
+import { trackEvent } from "../../lib/analytics/trackEvent";
 import { useBgMap } from "../../hooks/useBgMap";
 import { pinnedCount, sortPinnedFirst } from "../../lib/pinning";
 import { sortLibrary } from "../../lib/librarySort";
@@ -101,7 +102,7 @@ export const ManuscriptLibrary = () => {
 
   const confirmDelete = () => {
     if (deleting) {
-      deleteManuscript(deleting.id);
+      if (deleteManuscript(deleting.id)) trackEvent("Manuscript Deleted");
       pushToast(`Deleted "${deleting.title}".`);
     }
     setDeleting(null);

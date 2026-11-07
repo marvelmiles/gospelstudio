@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useStore } from "./store/useStore";
 import { cn } from "./lib/utils";
+import { useTrackedSession } from "./hooks/useTrackedSession";
 import { AppHeader } from "./components/layout/AppHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { AlertBar } from "@/components/shared/AlertBar";
@@ -37,13 +38,23 @@ import { ShortcutsModal } from "./features/shortcuts/ShortcutsModal";
 import { AboutModal } from "./features/about/AboutModal";
 import routes, { isSelfScrollingRoute } from "./routes";
 
+const AnalyticsDashboardPage = lazy(() =>
+  import("./features/analytics/AnalyticsDashboardPage").then((module) => ({
+    default: module.AnalyticsDashboardPage,
+  })),
+);
+
 const App = () => {
   const load = useStore((s) => s.load);
   const loading = useStore((s) => s.loading);
   const presentation = useStore((s) => s.presentation);
   const location = useLocation();
+  const presentedContent = presentation?.kind;
 
-  /// testing
+  useTrackedSession(
+    "presentation",
+    presentedContent ? [{ props: { content: presentedContent } }] : null,
+  );
 
   useEffect(() => {
     void load();
@@ -89,6 +100,14 @@ const App = () => {
             <Route path={routes.studioItem()} element={<StudioItemPage />} />
             <Route path={routes.cameraShare()} element={<CameraSharePage />} />
             <Route path={routes.share()} element={<SharePage />} />
+            <Route
+              path={routes.analytics()}
+              element={
+                <Suspense fallback={<LoadingArea />}>
+                  <AnalyticsDashboardPage />
+                </Suspense>
+              }
+            />
             <Route
               path={routes.notFound()}
               element={<Navigate to={routes.dashboard()} replace />}

@@ -18,6 +18,7 @@ interface VideoSurfaceProps {
   forceMuted?: boolean;
   onTimeUpdate?: (time: number, duration: number) => void;
   onEnded?: () => void;
+  onPlaying?: () => void;
   className?: string;
 }
 
@@ -28,6 +29,7 @@ export const VideoSurface = ({
   forceMuted,
   onTimeUpdate,
   onEnded,
+  onPlaying,
   className,
   ref,
 }: VideoSurfaceProps & { ref?: Ref<VideoSurfaceHandle> }) => {
@@ -60,6 +62,7 @@ export const VideoSurface = ({
           src={src}
           playsInline
           {...mediaEvents}
+          onPlaying={onPlaying}
           onLoadedData={() => setReadySrc(src)}
           style={{ objectFit: applied.fit, filter: buildFilter(applied) }}
           className={cn(
