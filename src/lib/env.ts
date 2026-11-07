@@ -34,7 +34,7 @@ const withDefaults = (parsed: ParsedEnv): Env => {
       parsed.VITE_PLAUSIBLE_API_BASE_URL ?? DEFAULT_PLAUSIBLE_API_BASE_URL,
   };
 
-  console.log(t, currentSiteHostname(), " with defaults");
+  console.log(t, parsed, currentSiteHostname(), " with defaults");
 
   return t;
 };
