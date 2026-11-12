@@ -1,5 +1,6 @@
 import type {
   CameraLayer,
+  IconLayer,
   LayerBorder,
   LayerFrame,
   LayerShadow,
@@ -7,7 +8,8 @@ import type {
   TextAppearance,
 } from "../types/layer";
 import type { TemplateContext } from "./sceneTemplates";
-import { FULL_FRAME } from "./canvasCoordinates";
+import { FULL_FRAME, MIN_LAYER_SIZE } from "./canvasCoordinates";
+import type { IconName } from "./iconCatalog";
 import { IMAGE_SIZE_PRESETS } from "./imagePresets";
 import { createLayer, placement, textAppearance } from "./layerDefaults";
 import { colorFill, fillOf } from "./layerFill";
@@ -55,6 +57,42 @@ export const panel = (
 
 export const wash = (name: string, paint: string, frame = FULL_FRAME) =>
   panel(name, frame, paint, { locked: true });
+
+export const icon = (
+  name: string,
+  glyph: IconName,
+  frame: LayerFrame,
+  overrides: Partial<Omit<IconLayer, "id" | "type" | "icon">> = {},
+) =>
+  createLayer("icon", { name, icon: glyph, ...placement(frame), ...overrides });
+
+export const glow = (
+  color: string,
+  blur: number,
+  opacity: number,
+): LayerShadow => ({ blur, distance: 0, color, opacity });
+
+const share = (part: number, whole: number) =>
+  `${Math.round((part / whole) * 10000) / 100}%`;
+
+/* Layers are at least 40px, so thin lines are painted inside a taller box, in proportions so the line keeps its look at any size. */
+export const fadingLine = (
+  from: string,
+  to: string,
+  thickness: number,
+  boxHeight = MIN_LAYER_SIZE,
+) =>
+  `linear-gradient(90deg, ${from}, ${to}) center / 100% ${share(thickness, boxHeight)} no-repeat`;
+
+export const stripe = (
+  color: string,
+  width: number,
+  boxWidth = MIN_LAYER_SIZE,
+) => {
+  const start = share((boxWidth - width) / 2, boxWidth);
+  const end = share((boxWidth + width) / 2, boxWidth);
+  return `linear-gradient(90deg, transparent ${start}, ${color} ${start} ${end}, transparent ${end})`;
+};
 
 interface WordsOptions {
   frame: LayerFrame;

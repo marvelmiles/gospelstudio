@@ -13,6 +13,7 @@ import {
   offsetFrame,
   percentFrame,
 } from "./canvasCoordinates";
+import { DEFAULT_ICON } from "./iconCatalog";
 import { colorFill, fillOf } from "./layerFill";
 import { NO_BORDER, NO_SHADOW } from "./paint";
 import { textPresetPatch } from "./textPresets";
@@ -44,6 +45,7 @@ export const LAYER_NAMES: Record<LayerType, string> = {
   lowerThird: "Lower third",
   qr: "QR code",
   shape: "Shape",
+  icon: "Icon",
   background: "Background",
 };
 
@@ -66,6 +68,7 @@ export const placement = (frame: LayerFrame) => ({
 
 const base = (type: LayerType, frame: LayerFrame, entrance: LayerEntrance) => ({
   id: uid(),
+  linkId: null,
   name: LAYER_NAMES[type],
   visible: true,
   locked: false,
@@ -187,6 +190,15 @@ const BUILDERS: LayerBuilders = {
     fill: "#2563eb",
     gradient: null,
     fillOpacity: 100,
+  }),
+  icon: () => ({
+    ...base("icon", centeredFrame({ width: 200, height: 200 }), "fade"),
+    type: "icon",
+    icon: DEFAULT_ICON,
+    color: "#ffffff",
+    strokeWidth: 2,
+    filled: false,
+    fill: "#ffffff",
   }),
   background: () => ({
     ...base("background", FULL_FRAME, "fade"),

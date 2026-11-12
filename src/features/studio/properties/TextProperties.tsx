@@ -5,12 +5,8 @@ import {
   textPresetPatch,
 } from "../lib/textPresets";
 import { BackgroundFields } from "./BackgroundFields";
-import {
-  ChoiceField,
-  PropertySection,
-  TextAreaField,
-  type Choice,
-} from "./fields";
+import { ChoiceField, PropertySection, type Choice } from "./fields";
+import { FormattedTextField } from "./FormattedTextField";
 import { TextAppearanceFields } from "./TextAppearanceFields";
 import { useLayerEditor } from "./useLayerEditor";
 
@@ -33,7 +29,7 @@ export const TextProperties = ({ layer }: { layer: TextLayer }) => {
           choices={PRESET_CHOICES}
           onChange={(preset) => edit(textPresetPatch(preset, layer.text))}
         />
-        <TextAreaField
+        <FormattedTextField
           label="Text"
           value={layer.content}
           onChange={(content) => edit({ content }, "content")}

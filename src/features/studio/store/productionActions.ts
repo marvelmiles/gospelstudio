@@ -302,14 +302,31 @@ export const saveRemoteCamera = (
   sourceId: string,
   deviceName: string,
 ): void => {
-  const source: RemoteCameraSource = {
-    id: sourceId,
-    name: deviceName,
-    type: "remote",
-    deviceLabel: deviceName,
-  };
-  editProduction((current) => withSource(current, source));
+  editProduction((current) => {
+    const previous = current.sources.find((entry) => entry.id === sourceId);
+    const source: RemoteCameraSource = {
+      id: sourceId,
+      name: deviceName,
+      type: "remote",
+      deviceLabel: deviceName,
+      muted: previous?.type === "remote" && previous.muted,
+    };
+    return withSource(current, source);
+  });
 };
+
+export const setDeviceSoundMuted = (sourceId: string, muted: boolean): void =>
+  editProduction(
+    (production) => ({
+      ...production,
+      sources: production.sources.map((source) =>
+        source.id === sourceId && source.type === "remote"
+          ? { ...source, muted }
+          : source,
+      ),
+    }),
+    { record: false },
+  );
 
 export const updateLocalCamera = (
   sourceId: string,

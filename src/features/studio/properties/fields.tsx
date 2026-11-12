@@ -59,7 +59,7 @@ export const PropertySection = ({
   );
 };
 
-const FieldLabel = ({
+export const FieldLabel = ({
   htmlFor,
   children,
 }: {

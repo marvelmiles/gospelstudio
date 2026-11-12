@@ -23,12 +23,15 @@ import {
   toggleLayerVisible,
 } from "../store/layerActions";
 import { NameDialog } from "../scenes/NameDialog";
+import { cloneMenuItems, deleteItemLabel } from "../layers/cloneMenuItems";
+import { CloneNote } from "./CloneNote";
 import { SidebarPane } from "../sidebar/SidebarPane";
 import { AnnouncementProperties } from "./AnnouncementProperties";
 import { ArrangeProperties } from "./ArrangeProperties";
 import { BackgroundProperties } from "./BackgroundProperties";
 import { CameraProperties } from "./CameraProperties";
 import { DeckProperties } from "./DeckProperties";
+import { IconProperties } from "./IconProperties";
 import { ImageProperties } from "./ImageProperties";
 import { LiveSceneNote } from "./LiveSceneNote";
 import { LowerThirdProperties } from "./LowerThirdProperties";
@@ -61,12 +64,13 @@ export const LayerProperties = ({ layer }: { layer: Layer }) => {
     {
       label: "Duplicate",
       icon: Copy,
-      title: "Ctrl+D",
+      title: "A separate copy you can change on its own (Ctrl+D)",
       onClick: () => duplicateLayer(layer.id),
     },
+    ...cloneMenuItems(layer),
     { divider: true },
     {
-      label: "Delete",
+      label: deleteItemLabel(layer),
       icon: Trash2,
       title: "Delete key",
       danger: true,
@@ -88,6 +92,7 @@ export const LayerProperties = ({ layer }: { layer: Layer }) => {
       }
     >
       <LiveSceneNote />
+      {layer.linkId && <CloneNote />}
       <ContentProperties layer={layer} />
       <ArrangeProperties layer={layer} edit={edit} />
 
@@ -125,6 +130,8 @@ const ContentProperties = ({ layer }: { layer: Layer }) => {
       return <QrProperties layer={layer} />;
     case "shape":
       return <ShapeProperties layer={layer} />;
+    case "icon":
+      return <IconProperties layer={layer} />;
     case "background":
       return <BackgroundProperties layer={layer} />;
   }

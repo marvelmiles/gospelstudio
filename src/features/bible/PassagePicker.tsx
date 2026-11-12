@@ -4,7 +4,6 @@ import { ArrowRight, BookOpen } from "lucide-react";
 import type { BibleVersionId, ScripturePassage } from "../../types";
 import { bookById } from "../../data/bibleBooks";
 import { useStore, type ScriptureSelection } from "../../store/useStore";
-import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/shared/Modal";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { SearchInput } from "@/components/shared/SearchInput";
@@ -13,11 +12,19 @@ import { VerseSnippet } from "./VerseSnippet";
 import { useBibleChapter } from "./useBibleChapter";
 import { useBibleSearch } from "./useBibleSearch";
 import {
+  BookGroup,
+  ChapterGroup,
+  SearchGroup,
+  SearchNote,
+  VerseNumberGroup,
+  WordMatchGroup,
+} from "./SearchGroups";
+import {
   formatParsedReference,
-  parseReference,
   referenceSpan,
   type ParsedReference,
 } from "./lib/reference";
+import { referenceGroups } from "./lib/searchGroups";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
 import { cn } from "../../lib/utils";
 
@@ -42,9 +49,8 @@ export const PassagePicker = ({
   const scriptures = useStore((s) => s.scriptures);
   const [query, setQuery] = useState("");
 
-  const reference = useMemo(() => parseReference(query), [query]);
-
-  const search = useBibleSearch(version, reference?.hasChapter ? "" : query);
+  const groups = useMemo(() => referenceGroups(query), [query]);
+  const search = useBibleSearch(version, groups.passage ? "" : query);
 
   const saved = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -70,8 +76,15 @@ export const PassagePicker = ({
 
   if (!open) return null;
 
-  const nothingAtAll =
-    saved.length === 0 && !reference && !search.enabled && !query.trim();
+  const term = query.trim();
+  const { passage } = groups;
+  const nothingSaved = saved.length === 0 && !term;
+  const nothingFound =
+    Boolean(term) &&
+    !passage &&
+    saved.length === 0 &&
+    groups.books.length === 0 &&
+    !search.enabled;
 
   return (
     <Modal open onClose={onClose} title="Add a passage" width={520}>
@@ -79,119 +92,91 @@ export const PassagePicker = ({
         <SearchInput
           value={query}
           onChange={setQuery}
-          placeholder="A saved passage, a reference like Jn 3:16-22, or words"
+          placeholder="A saved passage, a book, a reference like Jn 3:16-22, or words"
         />
       </div>
 
       <div className="max-h-[56vh] overflow-y-auto pr-0.5">
-        {nothingAtAll ? (
+        {nothingSaved ? (
           <EmptyState
             icon={BookOpen}
             title="Nothing saved yet"
-            message="Search a reference or words, or save one from the Bible."
+            message="Search a book, a reference or words, or save one from the Bible."
             compact
             bare
           />
         ) : (
           <>
-            {reference && (
-              <Section title="Go to passage">
-                <ReferenceResult
-                  reference={reference}
-                  version={version}
-                  destination={destination}
-                  onInsert={insertSelection}
-                />
-              </Section>
+            {passage && (
+              <PassageGroups
+                passage={passage}
+                verseNumbers={groups.verses}
+                version={version}
+                destination={destination}
+                onInsert={insertSelection}
+              />
             )}
 
             {saved.length > 0 && (
-              <Section title="Saved passages">
+              <SearchGroup title="Saved passages">
                 <div className="flex flex-col gap-1.5">
-                  {saved.map((passage) => (
+                  {saved.map((entry) => (
                     <ResultRow
-                      key={passage.id}
-                      heading={passage.title}
+                      key={entry.id}
+                      heading={entry.title}
                       destination={destination}
-                      onInsert={() => insertPassage(passage)}
+                      onInsert={() => insertPassage(entry)}
                     >
                       <span className="text-[12.5px] text-subtle-foreground">
-                        {passage.verses.length} verse
-                        {passage.verses.length === 1 ? "" : "s"}
+                        {entry.verses.length} verse
+                        {entry.verses.length === 1 ? "" : "s"}
                       </span>
                     </ResultRow>
                   ))}
                 </div>
-              </Section>
+              </SearchGroup>
             )}
 
-            {!reference?.hasChapter && query.trim() && saved.length === 0 && (
-              <Note>No saved passage matches "{query.trim()}".</Note>
-            )}
-
-            {search.enabled && (
-              <Section
-                title={`Verses matching "${search.term}"${
-                  search.total > 0 ? ` (${search.total.toLocaleString()})` : ""
-                }`}
-              >
-                {search.loading && search.results.length === 0 && (
-                  <div className="px-0.5 py-3">
-                    <Spinner size={18} />
-                  </div>
-                )}
-                {search.error && <Note danger>{search.error}</Note>}
-                {!search.loading &&
-                  !search.error &&
-                  search.results.length === 0 && (
-                    <Note>
-                      No verses in {version} contain "{search.term}".
-                    </Note>
-                  )}
-                <div className="flex flex-col gap-1.5">
-                  {search.results.map((result) => {
-                    const book = bookById(result.bookId);
-                    if (!book) return null;
-                    const heading = `${book.name} ${result.chapter}:${result.verse}`;
-                    return (
-                      <ResultRow
-                        key={heading}
-                        heading={heading}
-                        destination={destination}
-                        onInsert={() =>
-                          insertSelection(
-                            buildScriptureSelection({
-                              version,
-                              bookId: result.bookId,
-                              chapter: result.chapter,
-                              verseStart: result.verse,
-                              verses: [{ v: result.verse, t: result.text }],
-                            }),
-                          )
-                        }
-                      >
-                        <span className="text-[13px] leading-[1.55] text-muted-foreground">
-                          <VerseSnippet text={result.text} term={search.term} />
-                        </span>
-                      </ResultRow>
-                    );
-                  })}
-                </div>
-                {search.hasMore && (
-                  <div className="mt-2.5 text-center">
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={search.loadMore}
-                      busy={search.loading}
-                    >
-                      Load more ({search.results.length} of{" "}
-                      {search.total.toLocaleString()})
-                    </Button>
-                  </div>
-                )}
-              </Section>
-            )}
+            <BookGroup
+              books={groups.books}
+              onPick={(bookId) => setQuery(bookById(bookId)?.name ?? query)}
+            />
+            <ChapterGroup
+              chapters={groups.chapters}
+              onPick={({ book, chapter }) =>
+                setQuery(`${book.name} ${chapter}`)
+              }
+            />
+            <WordMatchGroup
+              search={search}
+              version={version}
+              renderResult={(result, book) => {
+                const heading = `${book.name} ${result.chapter}:${result.verse}`;
+                return (
+                  <ResultRow
+                    key={heading}
+                    heading={heading}
+                    destination={destination}
+                    onInsert={() =>
+                      insertSelection(
+                        buildScriptureSelection({
+                          version,
+                          bookId: result.bookId,
+                          chapter: result.chapter,
+                          verseStart: result.verse,
+                          verses: [{ v: result.verse, t: result.text }],
+                        }),
+                      )
+                    }
+                  >
+                    <span className="text-[13px] leading-[1.55] text-muted-foreground">
+                      <VerseSnippet text={result.text} term={search.term} />
+                    </span>
+                  </ResultRow>
+                );
+              }}
+            />
+            {nothingFound && <SearchNote>Nothing matches "{term}".</SearchNote>}
           </>
         )}
       </div>
@@ -199,91 +184,72 @@ export const PassagePicker = ({
   );
 };
 
-const ReferenceResult = ({
-  reference,
+const PassageGroups = ({
+  passage,
+  verseNumbers,
   version,
   destination,
   onInsert,
 }: {
-  reference: ParsedReference;
+  passage: ParsedReference;
+  verseNumbers: number[];
   version: BibleVersionId;
   destination: string;
   onInsert: (selection: ScriptureSelection | null) => void;
 }) => {
-  const { verses, loading, error } = useBibleChapter(
-    version,
-    reference.book.id,
-    reference.chapter,
-  );
-  const span = referenceSpan(reference);
+  const { book, chapter } = passage;
+  const { verses, loading, error } = useBibleChapter(version, book.id, chapter);
+  const span = referenceSpan(passage);
   const chosen = verses.filter((v) => v.v >= span.start && v.v <= span.end);
+  const isUnavailable = loading || Boolean(error);
+
+  const insertRange = (verseStart: number, verseEnd: number) =>
+    onInsert(
+      buildScriptureSelection({
+        version,
+        bookId: book.id,
+        chapter,
+        verseStart,
+        verseEnd,
+        verses,
+      }),
+    );
 
   return (
-    <ResultRow
-      heading={formatParsedReference(reference)}
-      destination={destination}
-      emphasis
-      disabled={loading || Boolean(error) || chosen.length === 0}
-      meta={`${version}${chosen.length > 1 ? ` · ${chosen.length} verses` : ""}`}
-      onInsert={() =>
-        onInsert(
-          buildScriptureSelection({
-            version,
-            bookId: reference.book.id,
-            chapter: reference.chapter,
-            verseStart: span.start,
-            verseEnd: span.end,
-            verses,
-          }),
-        )
-      }
-    >
-      {loading && <Spinner size={16} />}
-      {error && <span className="text-[12.5px] text-destructive">{error}</span>}
-      {!loading && !error && (
-        <span className="text-[13px] leading-[1.55] text-muted-foreground">
-          {chosen
-            .slice(0, 2)
-            .map((verse) => verse.t)
-            .join(" ")}
-          {chosen.length > 2 ? " …" : ""}
-        </span>
-      )}
-    </ResultRow>
+    <>
+      <SearchGroup title="Passage">
+        <ResultRow
+          heading={formatParsedReference(passage)}
+          destination={destination}
+          emphasis
+          disabled={isUnavailable || chosen.length === 0}
+          meta={`${version}${chosen.length > 1 ? ` · ${chosen.length} verses` : ""}`}
+          onInsert={() => insertRange(span.start, span.end)}
+        >
+          {loading && <Spinner size={16} />}
+          {error && (
+            <span className="text-[12.5px] text-destructive">{error}</span>
+          )}
+          {!isUnavailable && (
+            <span className="text-[13px] leading-[1.55] text-muted-foreground">
+              {chosen
+                .slice(0, 2)
+                .map((verse) => verse.t)
+                .join(" ")}
+              {chosen.length > 2 ? " …" : ""}
+            </span>
+          )}
+        </ResultRow>
+      </SearchGroup>
+      <VerseNumberGroup
+        passage={passage}
+        verses={verseNumbers}
+        disabled={isUnavailable}
+        onPick={(verse) => insertRange(verse, verse)}
+      />
+    </>
   );
 };
-
-const Section = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: ReactNode;
-}) => (
-  <div className="mb-4.5">
-    <div className="mb-2 text-[11px] font-bold tracking-[0.4px] text-subtle-foreground uppercase">
-      {title}
-    </div>
-    {children}
-  </div>
-);
-
-const Note = ({
-  children,
-  danger,
-}: {
-  children: ReactNode;
-  danger?: boolean;
-}) => (
-  <p
-    className={cn(
-      "mt-0 mb-3.5 text-[12.5px]",
-      danger ? "text-destructive" : "text-subtle-foreground",
-    )}
-  >
-    {children}
-  </p>
-);
 
 const ResultRow = ({
   heading,

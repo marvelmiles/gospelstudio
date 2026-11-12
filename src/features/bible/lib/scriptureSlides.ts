@@ -15,7 +15,10 @@ import {
   slideTextMetrics,
   type SlideTextMetrics,
 } from "../../../lib/slideLayout";
-import { SCRIPTURE_REFERENCE_FONT_SIZE } from "../../../data/themes";
+import {
+  SCRIPTURE_PASSAGE_FONT_SIZE,
+  SCRIPTURE_REFERENCE_FONT_SIZE,
+} from "../../../data/themes";
 import { formatRange, formatReference } from "./reference";
 
 export interface ScriptureSlideOptions {
@@ -30,10 +33,13 @@ export interface ScriptureSlideOptions {
   style?: Pick<TextStyle, "fontSize" | "lineHeight"> | null;
 }
 
-const REFERENCE_LINE_STYLE: TextStyle = {
-  fontSize: SCRIPTURE_REFERENCE_FONT_SIZE,
+const REFERENCE_SCALE =
+  SCRIPTURE_REFERENCE_FONT_SIZE / SCRIPTURE_PASSAGE_FONT_SIZE;
+
+const referenceLineStyle = (metrics: SlideTextMetrics): TextStyle => ({
+  fontSize: Math.round(metrics.fontSize * REFERENCE_SCALE * 100) / 100,
   uppercase: false,
-};
+});
 
 const slideCharacters = (
   metrics: SlideTextMetrics,
@@ -133,10 +139,9 @@ export const buildScriptureSlides = (
 ): Slide[] => {
   const { version, range, verses, versesPerSlide, showReference } = options;
   const perSlide = Math.max(1, versesPerSlide);
-  const budget = slideCharacters(
-    slideTextMetrics(options.style),
-    showReference,
-  );
+  const metrics = slideTextMetrics(options.style);
+  const budget = slideCharacters(metrics, showReference);
+  const referenceStyle = referenceLineStyle(metrics);
   const slides: Slide[] = [];
 
   for (let start = 0; start < verses.length; start += perSlide) {
@@ -157,7 +162,7 @@ export const buildScriptureSlides = (
       const lineOverrides: Record<number, TextStyle> = {};
       if (showReference) {
         lines.push(formatReference(chunkRange, version));
-        lineOverrides[lines.length - 1] = { ...REFERENCE_LINE_STYLE };
+        lineOverrides[lines.length - 1] = { ...referenceStyle };
       }
       const label = slideChunkLabel(formatRange(chunkRange), p, parts.length);
       slides.push({

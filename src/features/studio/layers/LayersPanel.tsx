@@ -24,6 +24,7 @@ import {
   EyeOff,
   GripVertical,
   Layers,
+  Link2,
   Lock,
   LockOpen,
   Pencil,
@@ -62,6 +63,7 @@ import { usePreviewScene } from "../store/productionStore";
 import { useItemOpeners } from "../hooks/useItemOpeners";
 import { NameDialog } from "../scenes/NameDialog";
 import { SidebarPane } from "../sidebar/SidebarPane";
+import { cloneMenuItems, deleteItemLabel } from "./cloneMenuItems";
 
 export const LayersPanel = () => {
   const scene = usePreviewScene();
@@ -93,8 +95,10 @@ export const LayersPanel = () => {
         {
           label: "Duplicate",
           icon: Copy,
+          title: "A separate copy you can change on its own",
           onClick: () => duplicateLayer(layer.id),
         },
+        ...cloneMenuItems(layer),
         { divider: true },
         {
           label: "Bring to front",
@@ -122,7 +126,7 @@ export const LayersPanel = () => {
         },
         { divider: true },
         {
-          label: "Delete",
+          label: deleteItemLabel(layer),
           icon: Trash2,
           danger: true,
           onClick: () => deleteLayer(layer.id),
@@ -255,8 +259,17 @@ const LayerRow = memo(({ layer, isSelected, menuItems }: LayerRowProps) => {
           )}
         />
         <span className="min-w-0">
-          <span className="block truncate text-[12.5px] font-semibold text-foreground">
-            {layer.name}
+          <span className="flex items-center gap-1 text-[12.5px] font-semibold text-foreground">
+            <span className="truncate">{layer.name}</span>
+            {layer.linkId && (
+              <span
+                title="Clone: changes to one change the others"
+                className="shrink-0 text-primary-soft"
+              >
+                <Link2 size={12} aria-hidden />
+                <span className="sr-only">Clone</span>
+              </span>
+            )}
           </span>
           {layer.name !== LAYER_NAMES[layer.type] && (
             <span className="block truncate text-[10.5px] text-subtle-foreground">

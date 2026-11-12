@@ -18,6 +18,7 @@ import {
   useProductionStore,
   type SaveState,
 } from "../store/productionStore";
+import { DeviceSoundControls } from "./DeviceSoundControls";
 import { ProductionMenu } from "./ProductionMenu";
 import { ProjectorControl } from "./ProjectorControl";
 import { StudioSettingsDialog } from "./StudioSettingsDialog";
@@ -51,6 +52,7 @@ export const ProductionHeader = () => {
           orientation="vertical"
           className="mx-1.5 data-[orientation=vertical]:h-6"
         />
+        <DeviceSoundControls />
         <RecordControl />
         <IconButton
           icon={Video}

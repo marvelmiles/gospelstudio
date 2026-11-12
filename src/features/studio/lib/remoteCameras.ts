@@ -16,6 +16,7 @@ interface RemoteEntry {
   stream: MediaStream | null;
   status: PeerStatus;
   deviceName: string | null;
+  audioShared: boolean;
   isPending: boolean;
 }
 
@@ -54,11 +55,13 @@ let liveViewerIds: ReadonlySet<string> = new Set();
 
 const publish = (entry: RemoteEntry): void => {
   const copy = STATUS_COPY[entry.status];
+  const isConnected = SHOWS_PICTURE.has(entry.status);
   setSourceState(entry.sourceId, {
     status: copy.status,
     message: copy.message,
-    stream: SHOWS_PICTURE.has(entry.status) ? entry.stream : null,
+    stream: isConnected ? entry.stream : null,
     deviceName: entry.deviceName,
+    audioShared: isConnected && entry.audioShared,
   });
 };
 
@@ -70,6 +73,7 @@ const openEntry = (sourceId: string): RemoteEntry => {
     stream: null,
     status: "idle",
     deviceName: null,
+    audioShared: false,
     isPending: true,
   };
   entries.set(sourceId, entry);
@@ -108,6 +112,7 @@ export const connectNearbyCamera = async (
       {
         onStream: (stream) => updateEntry(entry, { stream }),
         onStatus: (status) => updateEntry(entry, { status }),
+        onAudioShared: (audioShared) => updateEntry(entry, { audioShared }),
         onRejected: () => updateEntry(entry, { status: "failed" }),
       },
     );
@@ -130,6 +135,7 @@ export const startCodePairing = async (
     onStream: (stream) => updateEntry(entry, { stream }),
     onStatus: (status) => updateEntry(entry, { status }),
     onDeviceName: (deviceName) => updateEntry(entry, { deviceName }),
+    onAudioShared: (audioShared) => updateEntry(entry, { audioShared }),
   });
   if (!attach(entry, receiver)) throw new Error("Pairing was cancelled.");
   return { invite: receiver.invite, accept: receiver.accept };

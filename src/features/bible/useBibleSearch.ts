@@ -12,6 +12,7 @@ export const useBibleSearch = (version: BibleVersionId, query: string) => {
 
   const [results, setResults] = useState<BibleSearchResult[]>([]);
   const [total, setTotal] = useState(0);
+  const [countsByBook, setCountsByBook] = useState<Record<number, number>>({});
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,6 +20,7 @@ export const useBibleSearch = (version: BibleVersionId, query: string) => {
   useValueChange(`${version}:${term}`, () => {
     setResults([]);
     setTotal(0);
+    setCountsByBook({});
     setPage(1);
     setError(null);
   });
@@ -36,6 +38,7 @@ export const useBibleSearch = (version: BibleVersionId, query: string) => {
               page === 1 ? res.results : [...prev, ...res.results],
             );
             setTotal(res.total);
+            setCountsByBook(res.countsByBook);
             setLoading(false);
           })
           .catch((err: Error) => {
@@ -59,9 +62,12 @@ export const useBibleSearch = (version: BibleVersionId, query: string) => {
     term,
     results,
     total,
+    countsByBook,
     loading: enabled && loading,
     error,
     hasMore: enabled && results.length < total,
     loadMore,
   };
 };
+
+export type BibleSearch = ReturnType<typeof useBibleSearch>;

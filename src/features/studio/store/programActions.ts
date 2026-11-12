@@ -1,6 +1,7 @@
 import { now } from "../../../lib/id";
 import type { Layer, LayerPatch } from "../types/layer";
 import type { ProgramSnapshot } from "../types/production";
+import { patchItem } from "../lib/linkedItems";
 import { previewSceneOf, takeProgramSnapshot } from "../lib/productionFactory";
 import { trackSceneActivated } from "../lib/studioAnalytics";
 import { editProduction, useProductionStore } from "./productionStore";
@@ -39,15 +40,6 @@ export const showBlackScreen = (): void =>
     { record: false },
   );
 
-const patchLayers = (
-  layers: Layer[],
-  layerId: string,
-  patch: object,
-): Layer[] =>
-  layers.map((layer) =>
-    layer.id === layerId ? ({ ...layer, ...patch } as Layer) : layer,
-  );
-
 export const updateLiveLayer = <T extends Layer>(
   layerId: string,
   patch: LayerPatch<T>,
@@ -60,11 +52,11 @@ export const updateLiveLayer = <T extends Layer>(
         ...production,
         program: {
           ...program,
-          layers: patchLayers(program.layers, layerId, patch),
+          layers: patchItem(program.layers, layerId, patch),
         },
         scenes: production.scenes.map((scene) =>
           scene.id === program.sceneId
-            ? { ...scene, layers: patchLayers(scene.layers, layerId, patch) }
+            ? { ...scene, layers: patchItem(scene.layers, layerId, patch) }
             : scene,
         ),
       };

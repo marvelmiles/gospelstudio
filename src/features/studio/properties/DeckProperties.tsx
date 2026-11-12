@@ -134,7 +134,7 @@ const PassageChooser = ({ layer, open, onClose }: ChooserProps<BibleLayer>) => (
     destination="this scene"
     onClose={onClose}
     onPick={(pick) => {
-      updateLayer<BibleLayer>(layer.id, passagePatch(pick));
+      updateLayer<BibleLayer>(layer.id, passagePatch(pick, layer.passage));
       onClose();
     }}
   />

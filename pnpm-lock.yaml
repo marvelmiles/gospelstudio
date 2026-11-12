@@ -44,6 +44,12 @@ importers:
       '@fontsource/poppins':
         specifier: ^5.3.0
         version: 5.3.0
+      '@fontsource/roboto':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource/roboto-condensed':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource/sora':
         specifier: ^5.2.8
         version: 5.2.8
@@ -1167,6 +1173,12 @@ packages:
 
   '@fontsource/poppins@5.3.0':
     resolution: {integrity: sha512-cms1nM7U6SN8epIV1WMVOV8VsA645aSm3wHfzIQnkk188U341ThbJGSl2Sv54V29gnDbT2arMPfLzvVIIVCceQ==}
+
+  '@fontsource/roboto-condensed@5.3.0':
+    resolution: {integrity: sha512-Vbh5pesre/M/Jspd10btdKRqLSTe3yn4l6B2tXHGElCeASfA7Pgdpu1mb8wTG8E72J4Xk6FUfqnSe46UN2QAog==}
+
+  '@fontsource/roboto@5.3.0':
+    resolution: {integrity: sha512-BapRJOWYP+LZ21zp+wBQjfpPYKRoxc4LspJ/RLuI+HSMBD5u/X4O+ESDrSvEqDSy0rAl7GwBJ+09mdc16cVQ1Q==}
 
   '@fontsource/sora@5.2.8':
     resolution: {integrity: sha512-1G6iTXUx8rcCKzi3mjaTQ1DE8PQz0OmW3Qnku+64S+bqRr1o/gGeiw8fxIQhhBU9ZP8ZofIqai7o00DNOPnlDw==}
@@ -5742,6 +5754,10 @@ snapshots:
   '@fontsource/playfair-display@5.2.8': {}
 
   '@fontsource/poppins@5.3.0': {}
+
+  '@fontsource/roboto-condensed@5.3.0': {}
+
+  '@fontsource/roboto@5.3.0': {}
 
   '@fontsource/sora@5.2.8': {}
 

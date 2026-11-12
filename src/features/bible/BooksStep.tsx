@@ -1,7 +1,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { ArrowRight, Play } from "lucide-react";
 import type { BibleVersionId } from "../../types";
-import { BIBLE_BOOKS, bookById } from "../../data/bibleBooks";
+import { BIBLE_BOOKS } from "../../data/bibleBooks";
 import type { ScriptureSelection } from "../../store/useStore";
 import { Button } from "@/components/ui/button";
 import { SearchInput } from "@/components/shared/SearchInput";
@@ -10,24 +10,38 @@ import { useBibleSearch } from "./useBibleSearch";
 import { useBibleChapter } from "./useBibleChapter";
 import { PresentButton } from "./PresentButton";
 import { VerseSnippet } from "./VerseSnippet";
-import { tileClassName } from "./tileStyle";
 import { stepScrollClassName } from "./ChaptersStep";
 import {
+  BookGroup,
+  BookTile,
+  ChapterGroup,
+  SearchGroup,
+  VerseNumberGroup,
+  WordMatchGroup,
+  bookGridClassName,
+} from "./SearchGroups";
+import {
   formatParsedReference,
-  parseReference,
   referenceSpan,
   type ParsedReference,
   type VerseSpan,
 } from "./lib/reference";
+import { referenceGroups } from "./lib/searchGroups";
 import { buildScriptureSelection } from "./lib/scriptureSelection";
 import type { ReadingPosition } from "./lib/readingPosition";
 import { cn } from "../../lib/utils";
+
+const TESTAMENTS: { label: string; key: "old" | "new" }[] = [
+  { label: "Old Testament", key: "old" },
+  { label: "New Testament", key: "new" },
+];
 
 export const BooksStep = ({
   position,
   version,
   continueLabel,
   onOpenBook,
+  onOpenChapter,
   onContinueReading,
   onOpenSearchResult,
 }: {
@@ -35,6 +49,7 @@ export const BooksStep = ({
   version: BibleVersionId;
   continueLabel: string | null;
   onOpenBook: (bookId: number) => void;
+  onOpenChapter: (bookId: number, chapter: number) => void;
   onContinueReading: () => void;
   onOpenSearchResult: (
     bookId: number,
@@ -43,29 +58,12 @@ export const BooksStep = ({
   ) => void;
 }) => {
   const [query, setQuery] = useState("");
-
-  const reference = useMemo(() => {
-    const parsed = parseReference(query);
-    return parsed?.hasChapter ? parsed : null;
-  }, [query]);
-
-  const search = useBibleSearch(version, reference ? "" : query);
-
-  const matchingBooks = useMemo(() => {
-    if (reference) return [reference.book];
-    const term = query.trim().toLowerCase();
-    if (!term) return BIBLE_BOOKS;
-    return BIBLE_BOOKS.filter(
-      (b) =>
-        b.name.toLowerCase().includes(term) ||
-        b.aliases.some((a) => a.startsWith(term)),
-    );
-  }, [query, reference]);
-
-  const testaments: { label: string; key: "old" | "new" }[] = [
-    { label: "Old Testament", key: "old" },
-    { label: "New Testament", key: "new" },
-  ];
+  const groups = useMemo(() => referenceGroups(query), [query]);
+  const search = useBibleSearch(version, groups.passage ? "" : query);
+  const { passage } = groups;
+  const isSearching = query.trim().length > 0;
+  const nothingFound =
+    isSearching && !passage && groups.books.length === 0 && !search.enabled;
 
   return (
     <div className="flex flex-col roomy:min-h-0 roomy:flex-1">
@@ -87,141 +85,115 @@ export const BooksStep = ({
         )}
       </div>
       <div className={stepScrollClassName}>
-        {reference && (
-          <PassageJump
-            reference={reference}
-            version={version}
-            onOpen={() =>
-              onOpenSearchResult(
-                reference.book.id,
-                reference.chapter,
-                referenceSpan(reference),
-              )
-            }
-          />
+        {!isSearching && (
+          <AllBooks activeBookId={position.bookId} onOpenBook={onOpenBook} />
         )}
-        {matchingBooks.length === 0 && !search.enabled && (
+        {passage && (
+          <>
+            <PassageJump
+              reference={passage}
+              version={version}
+              onOpen={() =>
+                onOpenSearchResult(
+                  passage.book.id,
+                  passage.chapter,
+                  referenceSpan(passage),
+                )
+              }
+            />
+            <VerseNumberGroup
+              passage={passage}
+              verses={groups.verses}
+              onPick={(verse) =>
+                onOpenSearchResult(passage.book.id, passage.chapter, {
+                  start: verse,
+                  end: verse,
+                })
+              }
+            />
+          </>
+        )}
+        {isSearching && (
+          <>
+            <BookGroup
+              books={groups.books}
+              activeBookId={position.bookId}
+              onPick={onOpenBook}
+            />
+            <ChapterGroup
+              chapters={groups.chapters}
+              onPick={({ book, chapter }) => onOpenChapter(book.id, chapter)}
+            />
+          </>
+        )}
+        <WordMatchGroup
+          search={search}
+          version={version}
+          renderResult={(result, book) => {
+            const heading = `${book.name} ${result.chapter}:${result.verse}`;
+            return (
+              <ResultRow
+                key={heading}
+                onOpen={() =>
+                  onOpenSearchResult(result.bookId, result.chapter, {
+                    start: result.verse,
+                    end: result.verse,
+                  })
+                }
+                title={`Open ${heading}`}
+                heading={heading}
+                selection={() =>
+                  buildScriptureSelection({
+                    version,
+                    bookId: result.bookId,
+                    chapter: result.chapter,
+                    verseStart: result.verse,
+                    verses: [{ v: result.verse, t: result.text }],
+                  })
+                }
+                presentTitle={`Present ${heading}`}
+              >
+                <span className="text-[13.5px] leading-[1.55] text-muted-foreground">
+                  <VerseSnippet text={result.text} term={search.term} />
+                </span>
+              </ResultRow>
+            );
+          }}
+        />
+        {nothingFound && (
           <p className="p-7.5 text-center text-subtle-foreground">
-            No book matches "{query}".
+            Nothing matches "{query.trim()}".
           </p>
-        )}
-        {testaments.map(({ label, key }) => {
-          const books = matchingBooks.filter((b) => b.testament === key);
-          if (!books.length) return null;
-          return (
-            <div key={key} className="mb-5">
-              <div className="mt-1.5 mb-2.5 section-label">
-                {query.trim() ? `${label}: matching books` : label}
-              </div>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(min(150px,100%),1fr))] gap-2">
-                {books.map((b) => {
-                  const active = b.id === position.bookId;
-                  return (
-                    <button
-                      key={b.id}
-                      onClick={() => onOpenBook(b.id)}
-                      className={cn(
-                        tileClassName(active),
-                        "flex flex-col gap-0.75 px-3.25 py-2.75 text-left",
-                      )}
-                    >
-                      <span className="max-w-full truncate text-[15px]">
-                        {b.name}
-                      </span>
-                      <span
-                        className={cn(
-                          "text-[11px] font-medium",
-                          active
-                            ? "text-primary-soft"
-                            : "text-subtle-foreground",
-                        )}
-                      >
-                        {b.chapters} chapter{b.chapters === 1 ? "" : "s"}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-
-        {search.enabled && (
-          <div className="mb-5">
-            <div className="mt-1.5 mb-2.5 section-label">
-              Verses matching "{search.term}"
-              {search.total > 0
-                ? ` (${search.total.toLocaleString()} found)`
-                : ""}
-            </div>
-            {search.loading && search.results.length === 0 && (
-              <div className="px-0.5 py-3.5">
-                <Spinner size={20} />
-              </div>
-            )}
-            {search.error && (
-              <p className="px-0.5 py-2.5 text-[13px] text-destructive">
-                {search.error}
-              </p>
-            )}
-            {!search.loading &&
-              !search.error &&
-              search.results.length === 0 && (
-                <p className="px-0.5 py-2.5 text-[13px] text-subtle-foreground">
-                  No verses in {version} contain "{search.term}".
-                </p>
-              )}
-            <div className="flex flex-col gap-1.5">
-              {search.results.map((result) => {
-                const resultBook = bookById(result.bookId);
-                if (!resultBook) return null;
-                return (
-                  <ResultRow
-                    key={`${result.bookId}:${result.chapter}:${result.verse}`}
-                    onOpen={() =>
-                      onOpenSearchResult(result.bookId, result.chapter, {
-                        start: result.verse,
-                        end: result.verse,
-                      })
-                    }
-                    title={`Open ${resultBook.name} ${result.chapter}:${result.verse}`}
-                    heading={`${resultBook.name} ${result.chapter}:${result.verse}`}
-                    selection={() =>
-                      buildScriptureSelection({
-                        version,
-                        bookId: result.bookId,
-                        chapter: result.chapter,
-                        verseStart: result.verse,
-                        verses: [{ v: result.verse, t: result.text }],
-                      })
-                    }
-                    presentTitle={`Present ${resultBook.name} ${result.chapter}:${result.verse}`}
-                  >
-                    <span className="text-[13.5px] leading-[1.55] text-muted-foreground">
-                      <VerseSnippet text={result.text} term={search.term} />
-                    </span>
-                  </ResultRow>
-                );
-              })}
-            </div>
-            {search.hasMore && (
-              <div className="mt-3 text-center">
-                <Button
-                  variant="secondary"
-                  onClick={search.loadMore}
-                  busy={search.loading}
-                >
-                  Load more ({search.results.length} of{" "}
-                  {search.total.toLocaleString()})
-                </Button>
-              </div>
-            )}
-          </div>
         )}
       </div>
     </div>
   );
 };
+
+const AllBooks = ({
+  activeBookId,
+  onOpenBook,
+}: {
+  activeBookId: number;
+  onOpenBook: (bookId: number) => void;
+}) => (
+  <>
+    {TESTAMENTS.map(({ label, key }) => (
+      <SearchGroup key={key} title={label}>
+        <div className={bookGridClassName}>
+          {BIBLE_BOOKS.filter((book) => book.testament === key).map((book) => (
+            <BookTile
+              key={book.id}
+              book={book}
+              isActive={book.id === activeBookId}
+              onOpen={onOpenBook}
+            />
+          ))}
+        </div>
+      </SearchGroup>
+    ))}
+  </>
+);
 
 const ResultRow = ({
   onOpen,
@@ -305,8 +277,7 @@ const PassageJump = ({
     : verses.slice(0, 1);
 
   return (
-    <div className="mb-5">
-      <div className="mt-1.5 mb-2.5 section-label">Go to passage</div>
+    <SearchGroup title="Passage">
       <ResultRow
         onOpen={onOpen}
         title={`Open ${formatParsedReference(reference)}`}
@@ -340,6 +311,6 @@ const PassageJump = ({
           </span>
         )}
       </ResultRow>
-    </div>
+    </SearchGroup>
   );
 };

@@ -1,6 +1,7 @@
 import { now } from "../../../lib/id";
 import type { ImportedProduction } from "../../../lib/schema";
 import type { Layer, LayerType } from "../types/layer";
+import type { MediaSource } from "../types/mediaSource";
 import type { Production } from "../types/production";
 import type { Scene, SceneLayout } from "../types/scene";
 import { LAYER_NAMES, createLayer } from "./layerDefaults";
@@ -39,8 +40,14 @@ export const normalizeLayers = (layers: readonly StoredLayer[]): Layer[] =>
     isKnownType(layer.type) ? [completeLayer(layer.type, layer)] : [],
   );
 
+const normalizeSource = (source: MediaSource): MediaSource =>
+  source.type === "remote"
+    ? { ...source, muted: source.muted === true }
+    : source;
+
 export const normalizeProduction = (production: Production): Production => ({
   ...production,
+  sources: production.sources.map(normalizeSource),
   settings: { ...defaultProductionSettings(), ...production.settings },
   scenes: production.scenes.map((scene) => ({
     ...scene,

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseInlineFormatting } from "../../../lib/inlineFormat";
+import { SCRIPTURE_REFERENCE_FONT_SIZE } from "../../../data/themes";
 import {
   buildScriptureSlides,
   slideIndexForVerse,
@@ -53,6 +54,22 @@ describe("scripture verse numbers", () => {
   it("marks slides as scripture so their numbers are never read as a list", () => {
     const [slide] = buildScriptureSlides(options);
     expect(slide.type).toBe("scripture");
+  });
+});
+
+describe("scripture reference line", () => {
+  const withReference = { ...options, showReference: true };
+  const referenceSize = (style?: ScriptureSlideOptions["style"]) => {
+    const [slide] = buildScriptureSlides({ ...withReference, style });
+    return slide.lineOverrides?.[slide.lines.length - 1]?.fontSize;
+  };
+
+  it("keeps the usual reference size for the usual text size", () => {
+    expect(referenceSize()).toBe(SCRIPTURE_REFERENCE_FONT_SIZE);
+  });
+
+  it("shrinks the reference with smaller text so it never outgrows the verse", () => {
+    expect(referenceSize({ fontSize: 3 })).toBe(2.1);
   });
 });
 

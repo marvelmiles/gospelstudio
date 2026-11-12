@@ -1,8 +1,9 @@
 import { memo, useEffect, useMemo, useRef } from "react";
 import { useResumePlaybackOnVisible } from "../../../hooks/useResumePlaybackOnVisible";
-import type { CameraLayer } from "../types/layer";
 import type { ProgramSnapshot } from "../types/production";
 import type { SourceStreams } from "../lib/outputStreams";
+import { audibleSourceIds, mutedSourceIds } from "../lib/deviceSound";
+import { useSources } from "../store/productionStore";
 import { setRecordingCameraAudio } from "../recording/programRecorder";
 
 interface ProgramAudioProps {
@@ -10,22 +11,13 @@ interface ProgramAudioProps {
   streams: SourceStreams;
 }
 
-const audibleSourceIds = (program: ProgramSnapshot | null): string[] => [
-  ...new Set(
-    (program?.layers ?? [])
-      .filter(
-        (layer): layer is CameraLayer =>
-          layer.type === "camera" &&
-          layer.visible &&
-          !layer.muted &&
-          Boolean(layer.sourceId),
-      )
-      .flatMap((layer) => (layer.sourceId ? [layer.sourceId] : [])),
-  ),
-];
-
 export const ProgramAudio = ({ program, streams }: ProgramAudioProps) => {
-  const sourceIds = useMemo(() => audibleSourceIds(program), [program]);
+  const sources = useSources();
+  const muted = useMemo(() => mutedSourceIds(sources), [sources]);
+  const sourceIds = useMemo(
+    () => audibleSourceIds(program, muted),
+    [program, muted],
+  );
 
   useEffect(() => {
     setRecordingCameraAudio(

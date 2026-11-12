@@ -84,9 +84,14 @@ export const buildScripturePassage = (
   };
 };
 
+interface RebuildOptions {
+  splitLongVerses?: boolean;
+}
+
 export const rebuildPassage = (
   current: ScripturePassage,
   changes: PassageLayoutChanges = {},
+  { splitLongVerses }: RebuildOptions = {},
 ): ScripturePassage => {
   const next: ScripturePassage = { ...current, ...changes, updatedAt: now() };
   const style = { ...PASSAGE_STYLE, ...next.style };
@@ -102,7 +107,7 @@ export const rebuildPassage = (
       showVerseNumbers: next.showVerseNumbers,
       raisedVerseNumbers: next.raisedVerseNumbers,
       showReference: next.showReference,
-      splitLongVerses: Boolean(next.quick),
+      splitLongVerses: splitLongVerses ?? Boolean(next.quick),
       style,
     }),
   };

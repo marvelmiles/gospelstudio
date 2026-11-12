@@ -120,6 +120,11 @@ export const BiblePage = () => {
     setFocusVerse(null);
     setStep("verses");
   };
+  const openBookChapter = (bookId: number, chapter: number) => {
+    setReadingPosition({ bookId, chapter, verse: null });
+    setFocusVerse(null);
+    setStep("verses");
+  };
   const openVerse = (verse: number) => {
     setReadingPosition((prev) => ({ ...prev, verse }));
     setFocusVerse(verse);
@@ -250,6 +255,7 @@ export const BiblePage = () => {
               : null
           }
           onOpenBook={openBook}
+          onOpenChapter={openBookChapter}
           onContinueReading={continueReading}
           onOpenSearchResult={openSearchResult}
         />

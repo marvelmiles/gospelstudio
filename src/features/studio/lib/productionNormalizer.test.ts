@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Layer } from "../types/layer";
+import type { MediaSource } from "../types/mediaSource";
 import { createLayer } from "./layerDefaults";
 import { createProduction, createScene } from "./productionFactory";
 import {
@@ -37,6 +38,37 @@ describe("stored productions", () => {
     const [layer] = normalizeLayers([saved]);
 
     expect(layer).toEqual(saved);
+  });
+
+  it("keeps icon items and completes their settings", () => {
+    const {
+      filled: _filled,
+      fill: _fill,
+      ...olderIcon
+    } = createLayer("icon", { icon: "bell", color: "#fed201" });
+    const [layer] = normalizeLayers([storedAs(olderIcon)]);
+
+    expect(layer.type).toBe("icon");
+    expect(layer.type === "icon" && layer.icon).toBe("bell");
+    expect(layer.type === "icon" && layer.color).toBe("#fed201");
+    expect(layer.type === "icon" && layer.filled).toBe(false);
+  });
+
+  it("starts phones saved before muting existed as unmuted", () => {
+    const production = createProduction("Sunday");
+    const olderPhone = {
+      id: "phone",
+      name: "Phone",
+      type: "remote",
+      deviceLabel: "Phone",
+    } as MediaSource;
+
+    const [source] = normalizeProduction({
+      ...production,
+      sources: [olderPhone],
+    }).sources;
+
+    expect(source.type === "remote" && source.muted).toBe(false);
   });
 
   it("drops layer types the studio no longer has", () => {

@@ -10,15 +10,11 @@ import type {
   VideoLayer,
 } from "../types/layer";
 import { libraryManuscriptOf, libraryPassageOf } from "../lib/deckContent";
+import { patchItem } from "../lib/linkedItems";
 import { findItemLayer, holdsLayer } from "../lib/sceneItems";
 import { trackSceneEdited } from "../lib/studioAnalytics";
 import { editProduction, useProductionStore } from "./productionStore";
 import { updateLiveLayer } from "./programActions";
-
-const patchLayer = (layers: Layer[], layerId: string, patch: object): Layer[] =>
-  layers.map((layer) =>
-    layer.id === layerId ? ({ ...layer, ...patch } as Layer) : layer,
-  );
 
 const isLiveItem = (layerId: string): boolean =>
   holdsLayer(
@@ -38,7 +34,7 @@ export const updateSceneItem = <T extends Layer>(
         editedSceneIds.push(scene.id);
         return {
           ...scene,
-          layers: patchLayer(scene.layers, layerId, patch),
+          layers: patchItem(scene.layers, layerId, patch),
           updatedAt: now(),
         };
       });
@@ -48,7 +44,7 @@ export const updateSceneItem = <T extends Layer>(
         scenes,
         program:
           program && holdsLayer(program.layers, layerId)
-            ? { ...program, layers: patchLayer(program.layers, layerId, patch) }
+            ? { ...program, layers: patchItem(program.layers, layerId, patch) }
             : program,
       };
     },
@@ -70,7 +66,7 @@ const updateQuietly = <T extends Layer>(
       ...production,
       scenes: production.scenes.map((scene) =>
         holdsLayer(scene.layers, layerId)
-          ? { ...scene, layers: patchLayer(scene.layers, layerId, patch) }
+          ? { ...scene, layers: patchItem(scene.layers, layerId, patch) }
           : scene,
       ),
     }),

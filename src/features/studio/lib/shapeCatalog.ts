@@ -124,6 +124,28 @@ export const SHAPES: Record<ShapeKind, ShapeDefinition> = {
       [0, 1],
     ],
   },
+  slantLeft: {
+    label: "Left slanted tag",
+    size: { width: 600, height: 160 },
+    radius: 0,
+    outline: [
+      [0.25, 0],
+      [1, 0],
+      [1, 1],
+      [0, 1],
+    ],
+  },
+  parallelogram: {
+    label: "Slanted bar",
+    size: { width: 600, height: 120 },
+    radius: 0,
+    outline: [
+      [0.2, 0],
+      [1, 0],
+      [0.8, 1],
+      [0, 1],
+    ],
+  },
 };
 
 export const SHAPE_ORDER: ShapeKind[] = [
@@ -137,6 +159,8 @@ export const SHAPE_ORDER: ShapeKind[] = [
   "arrow",
   "cross",
   "slant",
+  "slantLeft",
+  "parallelogram",
 ];
 
 export const outlinePoints = (

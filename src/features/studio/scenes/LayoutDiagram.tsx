@@ -1,11 +1,18 @@
 import { memo, type CSSProperties } from "react";
 import { cn } from "../../../lib/utils";
+import { stripInlineFormatting } from "../../../lib/inlineFormat";
 import { findMediaItem, type MediaLibrary } from "../../../lib/media";
+import { FormattedText } from "../../../components/FormattedText";
 import { useMediaLibrary } from "../../../hooks/useMediaLibrary";
-import type { Layer, TextLayer } from "../types/layer";
+import type { DeckLayer, Layer, TextLayer } from "../types/layer";
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from "../lib/canvasCoordinates";
+import { isDeckLayer } from "../lib/deckContent";
 import { LAYER_ICONS, LAYER_TINTS } from "../lib/layerCatalog";
 import { hasBorder, paintCss } from "../lib/paint";
+import { clampIndex } from "../lib/slidePosition";
+import { useDeckLook } from "../hooks/useContentLook";
+import { FittedSlide } from "../elements/DeckElement";
+import { IconElement } from "../elements/IconElement";
 import { panelStyle, typeStyle } from "../elements/textAppearanceStyle";
 
 const percent = (value: number, total: number): string =>
@@ -95,10 +102,11 @@ const fittedFontSize = ({ content, text, dimensions }: TextLayer): number => {
   const height = Math.max(1, dimensions.height - text.padding * 2);
   const glyph = text.uppercase ? CAPITAL_GLYPH_WIDTH : GLYPH_WIDTH;
   const minimum = text.fontSize * MIN_FIT_SCALE;
+  const visible = stripInlineFormatting(content);
   let size = text.fontSize;
   while (size > minimum) {
     const charsPerLine = Math.max(1, Math.floor(width / (glyph * size)));
-    const lines = wrappedLineCount(content, charsPerLine);
+    const lines = wrappedLineCount(visible, charsPerLine);
     if (lines * size * text.lineHeight <= height) break;
     size = Math.max(minimum, size * 0.92);
   }
@@ -117,10 +125,41 @@ const DiagramWords = ({ layer }: { layer: TextLayer }) => (
       }}
       className="block w-full whitespace-pre-wrap"
     >
-      {layer.content}
+      <FormattedText text={layer.content} baseWeight={layer.text.fontWeight} />
     </span>
   </span>
 );
+
+const TINTED_FRAME = "border border-white/25 text-white/80";
+
+const DiagramDeckLayer = ({
+  layer,
+  paint,
+}: {
+  layer: DeckLayer;
+  paint: string | undefined;
+}) => {
+  const { doc, theme } = useDeckLook(layer);
+  const slide = doc?.slides[clampIndex(layer.slideIndex, doc.slides.length)];
+  const Icon = LAYER_ICONS[layer.type];
+  const showsSlide = Boolean(doc && slide && theme);
+
+  return (
+    <span
+      style={frameStyle(layer, paint)}
+      className={cn(
+        "absolute grid place-items-center overflow-hidden",
+        !paint && !showsSlide && cn(TINTED_FRAME, LAYER_TINTS[layer.type]),
+      )}
+    >
+      {doc && slide && theme ? (
+        <FittedSlide doc={doc} slide={slide} theme={theme} live={false} />
+      ) : (
+        !paint && <Icon className="size-[min(14px,60%)]" />
+      )}
+    </span>
+  );
+};
 
 const DiagramLayer = ({
   layer,
@@ -130,6 +169,14 @@ const DiagramLayer = ({
   library: MediaLibrary;
 }) => {
   const paint = paintOf(layer, library);
+  if (isDeckLayer(layer))
+    return <DiagramDeckLayer layer={layer} paint={paint} />;
+  if (layer.type === "icon")
+    return (
+      <span style={frameStyle(layer, paint)} className="absolute">
+        <IconElement layer={layer} />
+      </span>
+    );
   const Icon = LAYER_ICONS[layer.type];
   const showsWords = layer.type === "text";
   const showsIcon = !paint || layer.type === "qr";

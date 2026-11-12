@@ -12,6 +12,7 @@ export interface RemoteCameraSource {
   name: string;
   type: "remote";
   deviceLabel: string;
+  muted: boolean;
 }
 
 export type MediaSource = CameraSource | RemoteCameraSource;

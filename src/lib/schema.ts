@@ -326,6 +326,7 @@ const mediaSourceSchema = z.discriminatedUnion("type", [
     name: z.string(),
     type: z.literal("remote"),
     deviceLabel: z.string(),
+    muted: z.boolean().catch(false),
   }),
 ]);
 

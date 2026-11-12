@@ -83,12 +83,25 @@ export interface BibleSearchResult {
 
 const SEARCH_PAGE_SIZE = 40;
 
+export interface BibleSearchPage {
+  results: BibleSearchResult[];
+  total: number;
+  countsByBook: Record<number, number>;
+}
+
+const countByBook = (matches: BibleSearchResult[]): Record<number, number> => {
+  const counts: Record<number, number> = {};
+  for (const match of matches)
+    counts[match.bookId] = (counts[match.bookId] ?? 0) + 1;
+  return counts;
+};
+
 export const searchBibleVerses = async (
   version: BibleVersionId,
   query: string,
   page: number,
   _signal?: AbortSignal,
-): Promise<{ results: BibleSearchResult[]; total: number }> => {
+): Promise<BibleSearchPage> => {
   let allVerses: string[];
   try {
     allVerses = await loadTranslation(version);
@@ -97,7 +110,7 @@ export const searchBibleVerses = async (
   }
 
   const searchWords = query.toLowerCase().split(/\s+/).filter(Boolean);
-  if (!searchWords.length) return { results: [], total: 0 };
+  if (!searchWords.length) return { results: [], total: 0, countsByBook: {} };
 
   const matches: BibleSearchResult[] = [];
   let position = 0;
@@ -118,5 +131,6 @@ export const searchBibleVerses = async (
   return {
     results: matches.slice(pageStart, pageStart + SEARCH_PAGE_SIZE),
     total: matches.length,
+    countsByBook: countByBook(matches),
   };
 };

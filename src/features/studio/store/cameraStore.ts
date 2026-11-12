@@ -11,6 +11,7 @@ export interface SourceState {
   message: string | null;
   stream: MediaStream | null;
   deviceName: string | null;
+  audioShared: boolean;
 }
 
 interface CameraStoreState {
@@ -34,6 +35,7 @@ const IDLE_SOURCE: SourceState = {
   message: null,
   stream: null,
   deviceName: null,
+  audioShared: false,
 };
 
 export const useSourceState = (sourceId: string | null): SourceState =>

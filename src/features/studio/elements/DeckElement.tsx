@@ -49,11 +49,7 @@ export const DeckElement = ({ layer }: { layer: DeckLayer }) => {
         transition={transitions.content}
         className="absolute inset-0"
       >
-        <div className="@container-size grid size-full place-items-center">
-          <div className="aspect-video w-[min(100cqw,calc(100cqh*16/9))]">
-            <DesignedSlide doc={doc} slide={slide} theme={theme} />
-          </div>
-        </div>
+        <FittedSlide doc={doc} slide={slide} theme={theme} live />
       </TransitionLayers>
     </div>
   );
@@ -98,9 +94,18 @@ interface SlideContentProps {
   doc: SlideDeckDoc;
   slide: Slide;
   theme: Theme;
+  live: boolean;
 }
 
-const DesignedSlide = ({ doc, slide, theme }: SlideContentProps) => {
+export const FittedSlide = (props: SlideContentProps) => (
+  <div className="@container-size grid size-full place-items-center">
+    <div className="aspect-video w-[min(100cqw,calc(100cqh*16/9))]">
+      <DesignedSlide {...props} />
+    </div>
+  </div>
+);
+
+const DesignedSlide = ({ doc, slide, theme, live }: SlideContentProps) => {
   const looks = useMemo(
     () => ({
       style: resolveStyle(slide, doc, theme),
@@ -119,7 +124,7 @@ const DesignedSlide = ({ doc, slide, theme }: SlideContentProps) => {
       radius={0}
       fill
       noBackground
-      live
+      live={live}
     />
   );
 };

@@ -4,10 +4,14 @@ import type {
   ScripturePassage,
   SlideDeckDoc,
 } from "../../../types";
-import { uid } from "../../../lib/id";
+import { now, uid } from "../../../lib/id";
 import { useStore } from "../../../store/useStore";
 import type { PassagePick } from "../../bible/PassagePicker";
-import { buildScripturePassage } from "../../bible/lib/scripturePassage";
+import {
+  buildScripturePassage,
+  rebuildPassage,
+  type ScriptureSelection,
+} from "../../bible/lib/scripturePassage";
 import type {
   BibleLayer,
   DeckLayer,
@@ -64,7 +68,34 @@ export const fallbackThemeIdOf = (layer: DeckLayer, prefs: Prefs): string =>
     ? prefs.defaultManuscriptThemeId
     : prefs.defaultScriptureThemeId;
 
-export const passagePatch = (pick: PassagePick): LayerPatch<BibleLayer> => {
+const versesOf = (pick: PassagePick): ScriptureSelection => {
+  const { version, range, verses } =
+    pick.kind === "saved" ? pick.passage : pick.selection;
+  return { version, range, verses };
+};
+
+const passageInLook = (
+  look: ScripturePassage,
+  pick: PassagePick,
+): LayerPatch<BibleLayer> => {
+  const passage = rebuildPassage(
+    { ...look, id: uid(), createdAt: now() },
+    versesOf(pick),
+    { splitLongVerses: true },
+  );
+  return {
+    name: passage.title,
+    passageId: pick.kind === "saved" ? pick.passage.id : null,
+    passage,
+    slideIndex: 0,
+  };
+};
+
+export const passagePatch = (
+  pick: PassagePick,
+  sceneLook: ScripturePassage | null = null,
+): LayerPatch<BibleLayer> => {
+  if (sceneLook) return passageInLook(sceneLook, pick);
   if (pick.kind === "saved")
     return {
       name: pick.passage.title,

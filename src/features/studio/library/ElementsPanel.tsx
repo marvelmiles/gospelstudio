@@ -9,6 +9,7 @@ import {
   Newspaper,
   QrCode,
   Shapes,
+  Star,
   Type,
   Wallpaper,
   Webcam,
@@ -24,11 +25,13 @@ import {
   percentFrame,
 } from "../lib/canvasCoordinates";
 import { passagePatch } from "../lib/deckContent";
+import { ICONS, type IconName } from "../lib/iconCatalog";
 import { SHAPES } from "../lib/shapeCatalog";
 import { addLayer } from "../store/layerActions";
 import { showSidebarView } from "../store/editorStore";
 import { usePreviewScene } from "../store/productionStore";
 import { CameraPicker } from "../camera/CameraPicker";
+import { IconPicker } from "../icons/IconPicker";
 import { ShapePicker } from "../shapes/ShapePicker";
 import { SidebarPane } from "../sidebar/SidebarPane";
 import {
@@ -41,6 +44,7 @@ type PendingPick =
   | { kind: "camera" }
   | { kind: "bible" }
   | { kind: "shape" }
+  | { kind: "icon" }
   | { kind: "library"; library: LibraryKind };
 
 interface ElementOption {
@@ -87,6 +91,9 @@ const shapeLayer = (shape: ShapeKind): Layer => {
     ...placement(centeredFrame(size)),
   });
 };
+
+const iconLayer = (icon: IconName): Layer =>
+  createLayer("icon", { name: ICONS[icon].label, icon });
 
 const tickerLayer = (): Layer =>
   createLayer("announcement", {
@@ -220,6 +227,13 @@ export const ElementsPanel = () => {
           icon: Shapes,
           run: () => setPending({ kind: "shape" }),
         },
+        {
+          id: "icon",
+          label: "Icon",
+          hint: "A Bible, bell, megaphone, camera and more",
+          icon: Star,
+          run: () => setPending({ kind: "icon" }),
+        },
       ],
     },
   ];
@@ -268,6 +282,11 @@ export const ElementsPanel = () => {
       <ShapePicker
         open={pending?.kind === "shape"}
         onChoose={(shape) => add(shapeLayer(shape))}
+        onClose={() => setPending(null)}
+      />
+      <IconPicker
+        open={pending?.kind === "icon"}
+        onChoose={(icon) => add(iconLayer(icon))}
         onClose={() => setPending(null)}
       />
       <LibraryPicker

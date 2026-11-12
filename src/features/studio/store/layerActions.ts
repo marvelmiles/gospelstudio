@@ -1,7 +1,15 @@
+import { uid } from "../../../lib/id";
 import { useStore } from "../../../store/useStore";
 import type { Layer, LayerFrame, LayerPatch } from "../types/layer";
 import { clampFrame } from "../lib/canvasCoordinates";
 import { copyLayer, placement } from "../lib/layerDefaults";
+import {
+  cloneItem,
+  linkedLayers,
+  patchItem,
+  removeItem,
+  unlinkItem,
+} from "../lib/linkedItems";
 import { moveLayerTo, stepLayer, type LayerStep } from "../lib/layerOrdering";
 import { previewSceneOf } from "../lib/productionFactory";
 import { selectLayer } from "./editorStore";
@@ -43,11 +51,7 @@ export const updateLayer = <T extends Layer>(
   patch: LayerPatch<T>,
   options?: EditOptions,
 ): void =>
-  editPreviewLayers(
-    (layers) =>
-      mapLayer(layers, layerId, (layer) => ({ ...layer, ...patch }) as Layer),
-    options,
-  );
+  editPreviewLayers((layers) => patchItem(layers, layerId, patch), options);
 
 export const setLayerFrame = (
   layerId: string,
@@ -78,7 +82,7 @@ export const nudgeLayer = (layerId: string, dx: number, dy: number): void =>
 export const duplicateLayer = (layerId: string): void => {
   const original = previewLayers().find((layer) => layer.id === layerId);
   if (!original) return;
-  const copy: Layer = { ...copyLayer(original), locked: false };
+  const copy: Layer = { ...copyLayer(original), linkId: null, locked: false };
   editPreviewLayers((layers) => {
     const index = layers.findIndex((layer) => layer.id === layerId);
     if (index < 0) return layers;
@@ -87,21 +91,36 @@ export const duplicateLayer = (layerId: string): void => {
   selectLayer(copy.id);
 };
 
-const removeLayer = (layerId: string): void => {
-  editPreviewLayers((layers) => {
-    const next = layers.filter((layer) => layer.id !== layerId);
-    return next.length === layers.length ? layers : next;
-  });
-  selectLayer(null);
+export const cloneLayer = (layerId: string): void => {
+  const cloned = cloneItem(previewLayers(), layerId, uid());
+  if (!cloned) return;
+  editPreviewLayers(() => cloned.layers);
+  selectLayer(cloned.clone.id);
+  useStore
+    .getState()
+    .pushToast(
+      `Cloned "${cloned.clone.name}". What you change on one now changes on both.`,
+    );
+};
+
+export const unlinkLayer = (layerId: string): void =>
+  editPreviewLayers((layers) => unlinkItem(layers, layerId));
+
+const deletedMessage = (name: string, cloneCount: number): string => {
+  if (cloneCount === 0)
+    return `Deleted "${name}". Press Ctrl+Z to bring it back.`;
+  const clones = cloneCount === 1 ? "its clone" : `its ${cloneCount} clones`;
+  return `Deleted "${name}" and ${clones}. Press Ctrl+Z to bring them back.`;
 };
 
 export const deleteLayer = (layerId: string): void => {
-  const layer = previewLayers().find((entry) => entry.id === layerId);
+  const layers = previewLayers();
+  const layer = layers.find((entry) => entry.id === layerId);
   if (!layer) return;
-  removeLayer(layerId);
-  useStore
-    .getState()
-    .pushToast(`Deleted "${layer.name}". Press Ctrl+Z to bring it back.`);
+  const cloneCount = linkedLayers(layers, layer).length;
+  editPreviewLayers((current) => removeItem(current, layerId));
+  selectLayer(null);
+  useStore.getState().pushToast(deletedMessage(layer.name, cloneCount));
 };
 
 export const toggleLayerVisible = (layer: Layer): void =>

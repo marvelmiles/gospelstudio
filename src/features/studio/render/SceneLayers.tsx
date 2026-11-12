@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Layer } from "../types/layer";
+import { silenceEchoClones } from "../lib/linkedItems";
 import { layerEntranceMotion, layerExitMotion } from "../lib/sceneTransitions";
 import { LayerSurface } from "../elements/LayerContent";
 
@@ -38,7 +39,7 @@ export const SceneLayers = ({
   geometryMs,
 }: SceneLayersProps) => {
   const visible = useMemo(
-    () => layers.filter((layer) => layer.visible),
+    () => silenceEchoClones(layers.filter((layer) => layer.visible)),
     [layers],
   );
   const [source, setSource] = useState(visible);

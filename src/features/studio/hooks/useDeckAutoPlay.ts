@@ -9,6 +9,7 @@ import { nextSlideIndex } from "../../presentation/lib/slideOrder";
 import type { DeckLayer } from "../types/layer";
 import type { ProgramSnapshot } from "../types/production";
 import { deckDocOf, fallbackThemeIdOf, isDeckLayer } from "../lib/deckContent";
+import { linkGroupOf } from "../lib/linkedItems";
 import { clampIndex } from "../lib/slidePosition";
 import { updateLiveLayer } from "../store/programActions";
 import { usePipStore } from "../pip/pipStore";
@@ -28,9 +29,15 @@ export const useDeckAutoPlay = (program: ProgramSnapshot | null): void => {
 
   const steps = useMemo<AutoPlayStep[]>(() => {
     const library = { manuscripts, scriptures };
-    return (program?.layers ?? []).flatMap((layer) => {
+    const layers = program?.layers ?? [];
+    const pausedGroups = new Set(
+      layers.filter((layer) => pausedLayerIds.has(layer.id)).map(linkGroupOf),
+    );
+    const steppedGroups = new Set<string>();
+    return layers.flatMap((layer) => {
       if (!isDeckLayer(layer) || !layer.visible) return [];
-      if (pausedLayerIds.has(layer.id)) return [];
+      const group = linkGroupOf(layer);
+      if (pausedGroups.has(group) || steppedGroups.has(group)) return [];
       const doc = deckDocOf(layer, library);
       const count = doc?.slides?.length ?? 0;
       if (!doc || count < 2) return [];
@@ -43,6 +50,7 @@ export const useDeckAutoPlay = (program: ProgramSnapshot | null): void => {
         resolveLoopSlides(doc, theme),
       );
       if (nextIndex === null) return [];
+      steppedGroups.add(group);
       return [
         {
           layerId: layer.id,

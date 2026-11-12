@@ -7,6 +7,7 @@ import {
   Megaphone,
   QrCode,
   Shapes,
+  Star,
   Type,
   Wallpaper,
   Webcam,
@@ -25,6 +26,7 @@ export const LAYER_ICONS: Record<LayerType, LucideIcon> = {
   lowerThird: IdCard,
   qr: QrCode,
   shape: Shapes,
+  icon: Star,
   background: Wallpaper,
 };
 
@@ -39,5 +41,6 @@ export const LAYER_TINTS: Record<LayerType, string> = {
   lowerThird: "bg-chart-1/55",
   qr: "bg-chart-7/40",
   shape: "bg-chart-5/30",
+  icon: "bg-chart-3/30",
   background: "bg-chart-7/20",
 };

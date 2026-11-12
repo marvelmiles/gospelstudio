@@ -6,6 +6,7 @@ import {
 import type { SceneTemplate } from "./sceneTemplates";
 import { createLayer, placement } from "./layerDefaults";
 import { colorFill, fillOf } from "./layerFill";
+import { overlayPassage } from "./overlayPassage";
 import {
   BLACK_BACKGROUND,
   BOTTOM_SHADE,
@@ -18,14 +19,88 @@ import {
   coverImage,
   dateTag,
   panel,
+  stripe,
   tag,
   wash,
   words,
 } from "./templateLayers";
+import { SERVICE_OVERVIEW_TEMPLATE } from "./serviceOverviewTemplate";
 
 const BOTTOM_HALF = { x: 0, y: 540, width: 1920, height: 540 };
 
+const SERMON_ACCENT = "#f0b455";
+const SERMON_SHADE =
+  "linear-gradient(180deg, rgb(5 7 12 / 0) 0%, rgb(5 7 12 / 0.45) 40%, rgb(5 7 12 / 0.86) 100%)";
+const HAIRLINE = stripe("rgb(255 255 255 / 0.34)", 2);
+const NAME_COLUMN = { x: 96, width: 584 };
+
+const sermonPassage = () => {
+  const passage = overlayPassage();
+  return createLayer("bible", {
+    name: passage.title,
+    passage,
+    fill: fillOf("none"),
+    ...placement({ x: 720, y: 405, width: 1200, height: 675 }),
+  });
+};
+
 export const BROADCAST_TEMPLATES: SceneTemplate[] = [
+  {
+    id: "broadcast-sermon",
+    name: "Preacher and passage",
+    description:
+      "The camera fills the screen, with the preacher's name and the passage along the bottom.",
+    group: "broadcast",
+    background: BLACK_BACKGROUND,
+    build: (context) => [
+      camera(context),
+      wash("Bottom shade", SERMON_SHADE, {
+        x: 0,
+        y: 480,
+        width: 1920,
+        height: 600,
+      }),
+      panel("Divider", { x: 734, y: 870, width: 40, height: 150 }, HAIRLINE),
+      words("Name label", "Preaching", {
+        frame: { ...NAME_COLUMN, y: 854, height: 40 },
+        text: {
+          fontFamily: "Outfit",
+          fontSize: 21,
+          fontWeight: 600,
+          color: SERMON_ACCENT,
+          uppercase: true,
+          verticalAlign: "bottom",
+          lineHeight: 1.2,
+          padding: 0,
+        },
+      }),
+      words("Preacher name", "Preacher name", {
+        frame: { ...NAME_COLUMN, y: 904, height: 72 },
+        text: {
+          fontFamily: "Outfit",
+          fontSize: 56,
+          fontWeight: 700,
+          verticalAlign: "bottom",
+          lineHeight: 1.08,
+          padding: 0,
+        },
+      }),
+      words("Preacher title", "Lead Pastor", {
+        frame: { ...NAME_COLUMN, y: 980, height: 40 },
+        text: {
+          fontFamily: "Outfit",
+          fontSize: 27,
+          fontWeight: 400,
+          color: "rgb(255 255 255 / 0.74)",
+          verticalAlign: "bottom",
+          lineHeight: 1.2,
+          padding: 0,
+        },
+      }),
+      sermonPassage(),
+    ],
+  },
+  SERVICE_OVERVIEW_TEMPLATE,
   {
     id: "broadcast-scripture",
     name: "Framed scripture",

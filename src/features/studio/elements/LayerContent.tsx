@@ -7,6 +7,7 @@ import { BackgroundElement } from "./BackgroundElement";
 import { BorderRing } from "./BorderRing";
 import { CameraElement } from "./CameraElement";
 import { DeckElement } from "./DeckElement";
+import { IconElement } from "./IconElement";
 import { ImageElement } from "./ImageElement";
 import { LowerThirdElement } from "./LowerThirdElement";
 import { QrElement } from "./QrElement";
@@ -35,6 +36,8 @@ const ElementOf = ({ layer }: { layer: Layer }) => {
       return <QrElement layer={layer} />;
     case "shape":
       return <ShapeElement layer={layer} />;
+    case "icon":
+      return <IconElement layer={layer} />;
     case "background":
       return <BackgroundElement layer={layer} />;
   }

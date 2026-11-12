@@ -7,6 +7,7 @@ import type {
   VerticalAlign,
   VideoSettings,
 } from "../../../types";
+import type { IconName } from "../lib/iconCatalog";
 
 export interface Position {
   x: number;
@@ -31,6 +32,7 @@ export type LayerType =
   | "lowerThird"
   | "qr"
   | "shape"
+  | "icon"
   | "background";
 
 export type LayerEntrance =
@@ -100,6 +102,7 @@ export interface LayerShadow {
 
 interface LayerBase {
   id: string;
+  linkId: string | null;
   name: string;
   visible: boolean;
   locked: boolean;
@@ -218,7 +221,9 @@ export type ShapeKind =
   | "star"
   | "arrow"
   | "cross"
-  | "slant";
+  | "slant"
+  | "slantLeft"
+  | "parallelogram";
 
 export interface ShapeLayer extends LayerBase {
   type: "shape";
@@ -226,6 +231,15 @@ export interface ShapeLayer extends LayerBase {
   fill: string;
   gradient: Gradient | null;
   fillOpacity: number;
+}
+
+export interface IconLayer extends LayerBase {
+  type: "icon";
+  icon: IconName;
+  color: string;
+  strokeWidth: number;
+  filled: boolean;
+  fill: string;
 }
 
 export interface BackgroundLayer extends LayerBase {
@@ -244,6 +258,7 @@ export type Layer =
   | LowerThirdLayer
   | QrLayer
   | ShapeLayer
+  | IconLayer
   | BackgroundLayer;
 
 export type FilledLayer = Extract<Layer, { fill: LayerFill }>;

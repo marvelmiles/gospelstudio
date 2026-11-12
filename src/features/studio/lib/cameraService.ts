@@ -164,6 +164,7 @@ const publish = (
     message,
     stream: runtime.stream,
     deviceName: null,
+    audioShared: false,
   });
 
 const watchTracks = (sourceId: string, runtime: SourceRuntime): void => {
