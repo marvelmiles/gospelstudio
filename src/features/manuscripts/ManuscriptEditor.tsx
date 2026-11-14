@@ -5,14 +5,13 @@ import { useStore } from "../../store/useStore";
 import { buildNewManuscript } from "../../lib/manuscript/newManuscript";
 import { MissingPage } from "@/components/shared/MissingPage";
 import { ManuscriptWorkspace } from "./ManuscriptWorkspace";
+import { useDefaultManuscriptThemeId } from "./useDefaultManuscriptTheme";
 import routes, { NEW_MANUSCRIPT_ID } from "../../routes";
 
 export const ManuscriptEditor = () => {
   const { manuscriptId } = useParams();
   const navigate = useNavigate();
-  const defaultThemeId = useStore(
-    (s) => s.prefs.defaultManuscriptThemeId || "classic",
-  );
+  const defaultThemeId = useDefaultManuscriptThemeId();
   const stored = useStore((s) =>
     s.manuscripts.find((item) => item.id === manuscriptId),
   );

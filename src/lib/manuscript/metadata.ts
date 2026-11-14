@@ -1,5 +1,6 @@
 import { matchSectionHeader } from "./sections";
 import { matchDelimitedStanzaNumber } from "./numbering";
+import { isShoutedTitle, opensFirstStanza } from "./lineShapes";
 import { DEFAULT_COLLECTION, SERMON_COLLECTION } from "../../data/collections";
 import type { Collection } from "../../data/collections";
 
@@ -44,17 +45,27 @@ const DECLARED_KINDS: Record<string, Collection> = {
   announcement: DEFAULT_COLLECTION,
 };
 
+const DECLARED_KIND_PATTERN = Object.keys(DECLARED_KINDS).join("|");
+
 const DECLARED_HEADING = new RegExp(
-  `^\\s*(${Object.keys(DECLARED_KINDS).join("|")})\\s*[:\\-–—]\\s*(.+)$`,
+  `^\\s*(${DECLARED_KIND_PATTERN})\\s*[:\\-–—]\\s*(.+)$`,
   "i",
 );
 
+const LABELLED_HEADING = new RegExp(
+  `^\\s*(?:${DECLARED_KIND_PATTERN})\\s*:\\s*\\S`,
+  "i",
+);
+
+export const isDeclaredHeading = (line: string): boolean =>
+  LABELLED_HEADING.test(line);
+
 const normalizeCase = (value: string): string => {
-  if (/[a-z]/.test(value) || value.length < 4) return value;
+  if (/\p{Ll}/u.test(value) || value.length < 4) return value;
   return value
     .toLowerCase()
     .replace(
-      /(^|[\s(/-])([a-z])/g,
+      /(^|[\s(/-])(\p{Ll})/gu,
       (_m, lead: string, letter: string) => lead + letter.toUpperCase(),
     );
 };
@@ -117,12 +128,17 @@ export const extractManuscriptMetadata = (
   const parts = heading.split(NAME_SEPARATOR).filter((part) => part.trim());
   const separated = parts.length === 2;
 
-  const next = lines.slice(first + 1).find((value) => value.trim() !== "");
+  const following = lines.slice(first + 1);
+  const next = following.find((value) => value.trim() !== "");
   const standsAboveSection = Boolean(
     next && looksLikeSection(next) && lines[first + 1]?.trim() === "",
   );
+  const namesTheSong =
+    standsAboveSection ||
+    (next !== undefined && opensFirstStanza(next)) ||
+    isShoutedTitle(line, following);
 
-  if (!heading || (!fromLyricsSite && !separated && !standsAboveSection))
+  if (!heading || (!fromLyricsSite && !separated && !namesTheSong))
     return EMPTY;
 
   const [title, author] = separated

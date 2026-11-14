@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { FileText, Plus } from "lucide-react";
+import { FileText, Import, Plus } from "lucide-react";
 import type { Manuscript } from "../../types";
 import { COLLECTIONS } from "../../data/collections";
 import { useStore } from "../../store/useStore";
@@ -32,6 +32,7 @@ import {
   ManuscriptRow,
   type ManuscriptItemActions,
 } from "./ManuscriptLibraryItem";
+import { ManuscriptImportModal } from "./import/ManuscriptImportModal";
 
 const searchTextCache = new WeakMap<Manuscript, string>();
 
@@ -64,6 +65,7 @@ export const ManuscriptLibrary = () => {
   const [collection, setCollection] = useState("All");
   const [sort, setSort] = useLibrarySort("manuscripts");
   const [deleting, setDeleting] = useState<Manuscript | null>(null);
+  const [importing, setImporting] = useState(false);
   const sharing = useShareTarget();
   const openShare = sharing.open;
   const { layout, setLayout } = useLibraryLayout("manuscripts");
@@ -116,10 +118,16 @@ export const ManuscriptLibrary = () => {
         title="Manuscripts"
         subtitle="Turn lyrics, hymns and sermons into slides."
         actions={
-          <Button onClick={onNew}>
-            <Plus size={16} />
-            New Manuscript
-          </Button>
+          <>
+            <Button variant="secondary" onClick={() => setImporting(true)}>
+              <Import size={16} />
+              Import
+            </Button>
+            <Button onClick={onNew}>
+              <Plus size={16} />
+              New Manuscript
+            </Button>
+          </>
         }
       />
 
@@ -189,6 +197,10 @@ export const ManuscriptLibrary = () => {
           title={sharing.target.title}
           onClose={sharing.close}
         />
+      )}
+
+      {importing && (
+        <ManuscriptImportModal onClose={() => setImporting(false)} />
       )}
 
       <ConfirmDialog

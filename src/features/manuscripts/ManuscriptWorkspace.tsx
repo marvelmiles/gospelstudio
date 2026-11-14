@@ -23,6 +23,7 @@ import { ManuscriptSettingsModal } from "./ManuscriptSettingsModal";
 import { parseManuscript } from "../../lib/parser";
 import { resolveStyle } from "../../lib/resolve";
 import { resolveManuscriptFormat } from "../../lib/manuscript/format";
+import { suggestCollection } from "../../lib/manuscript/category";
 import { manuscriptSlideElements } from "../../lib/slideElements";
 import { isUntitledManuscript } from "../../store/slices/manuscriptsSlice";
 import routes from "../../routes";
@@ -71,22 +72,36 @@ export const ManuscriptWorkspace = ({
     body: string,
     maxLines: number,
     format: ManuscriptFormat,
+    sourceTitle?: string,
   ) => {
-    const { title, author, collection, slides } = parseManuscript(body, {
+    const parsed = parseManuscript(body, {
       maxLines,
       format,
       style: resolveStyle(undefined, draft, theme),
     });
-    const changes: Partial<Manuscript> = { body, maxLines, format, slides };
+    const settingUp =
+      isUntitledManuscript(draft.title) || sourceTitle !== undefined;
+    const title = parsed.title ?? sourceTitle ?? null;
+    const changes: Partial<Manuscript> = {
+      body,
+      maxLines,
+      format,
+      slides: parsed.slides,
+    };
     if (title && isUntitledManuscript(draft.title)) changes.title = title;
-    if (author && !draft.author?.trim()) changes.author = author;
+    if (parsed.author && !draft.author?.trim()) changes.author = parsed.author;
     if (
-      collection &&
+      (parsed.collection || settingUp) &&
       (!draft.collection || draft.collection === DEFAULT_COLLECTION)
     )
-      changes.collection = collection;
+      changes.collection = suggestCollection({
+        lines: body.split("\n"),
+        title: title ?? draft.title,
+        format,
+        declared: parsed.collection,
+      });
     editor.patchDoc(changes);
-    editor.setSelectedId(slides[0]?.id ?? null);
+    editor.setSelectedId(parsed.slides[0]?.id ?? null);
   };
 
   const resetToDefault = () => {

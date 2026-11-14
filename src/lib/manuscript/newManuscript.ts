@@ -1,4 +1,4 @@
-import type { Manuscript } from "../../types";
+import type { Manuscript, ManuscriptFormat, Slide } from "../../types";
 import { DEFAULT_COLLECTION } from "../../data/collections";
 import { now, uid } from "../id";
 import { defaultMaxLines, parseManuscriptSlides } from "../parser";
@@ -12,24 +12,43 @@ export const isUntitledManuscript = (title: string): boolean => {
 
 const STARTER_BODY = "[verse]\nType your text here";
 
-export const buildNewManuscript = (themeId: string): Manuscript => {
+export interface ManuscriptContent {
+  title: string;
+  author: string;
+  collection: string;
+  body: string;
+  maxLines: number;
+  slides: Slide[];
+  format?: ManuscriptFormat;
+}
+
+export const buildManuscript = (
+  themeId: string,
+  content: ManuscriptContent,
+): Manuscript => {
   const timestamp = now();
-  const maxLines = defaultMaxLines();
   return {
     id: uid(),
-    title: UNTITLED_MANUSCRIPT,
-    author: "",
-    collection: DEFAULT_COLLECTION,
     defaultThemeId: themeId,
     defaultBackgroundId: "",
     defaultAudioId: null,
-    body: STARTER_BODY,
-    maxLines,
     createdAt: timestamp,
     updatedAt: timestamp,
     deleted: false,
     builtIn: false,
     style: {},
-    slides: parseManuscriptSlides(STARTER_BODY, { maxLines }),
+    ...content,
   };
+};
+
+export const buildNewManuscript = (themeId: string): Manuscript => {
+  const maxLines = defaultMaxLines();
+  return buildManuscript(themeId, {
+    title: UNTITLED_MANUSCRIPT,
+    author: "",
+    collection: DEFAULT_COLLECTION,
+    body: STARTER_BODY,
+    maxLines,
+    slides: parseManuscriptSlides(STARTER_BODY, { maxLines }),
+  });
 };

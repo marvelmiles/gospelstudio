@@ -308,6 +308,7 @@ export interface ParsedManuscript {
   author: string | null;
   collection: Collection | null;
   slides: Slide[];
+  empty: boolean;
 }
 
 export interface ParseManuscriptOptions {
@@ -356,6 +357,7 @@ export const parseManuscript = (
       author: metadata.author ?? sermon.author ?? source.author,
       collection: metadata.collection,
       slides: sermon.slides.length ? sermon.slides : [emptySlide()],
+      empty: !sermon.slides.length,
     };
   }
 
@@ -446,13 +448,15 @@ export const parseManuscript = (
     slides[index].notes = notes.join("\n");
   });
 
-  if (!slides.length) slides.push(emptySlide());
+  const empty = !slides.length;
+  if (empty) slides.push(emptySlide());
 
   return {
     title: metadata.title,
     author: metadata.author ?? source.author,
     collection: metadata.collection,
     slides,
+    empty,
   };
 };
 

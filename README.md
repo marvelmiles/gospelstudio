@@ -40,6 +40,7 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 
 - **Paste and it becomes slides.** Tags like `[verse]` and `[chorus]` are recognised and numbered, and long parts are split across slides so the text stays big enough to read.
 - **Manuscript library.** Lyrics, hymns, sermons and other decks, sorted into collections. Search by title, author or words.
+- **Import files and folders.** Choose files, a whole folder, or drop them on the Import window. Word (`.doc`, `.docx`), rich text (`.rtf`) and plain text (`.txt`, `.md`) are read on the device, every song, hymn or sermon in them becomes its own manuscript with a title and a collection, and text already in the library is left out. The Text window opens the same files, one at a time.
 - **Pin your favourites.** Keep up to five items at the top of each library.
 - **Offline Bible.** The King James Version and the American Standard Version are built in. Read, search, save and present any passage with no internet, or have it read aloud. Verse numbers can be written inline or as small raised numbers.
 - **Type on the slide itself.** The slide in the editor is where you type, so there is no separate text box to keep in sync.
@@ -275,6 +276,9 @@ src/
   lib/             parser, slide animations, style and background resolution, storage, zod schema, cn() in utils.ts
     analytics/     Plausible tracking, the event catalog, URL cleaning, sessions, opt-out and the
                    report periods and types shared with the server
+    documents/     text out of .doc (compound file and piece table), .docx, .rtf and text files
+    manuscript/    reading manuscript text: sections, numbering, titles, sermons, song or sermon
+                   detection, collection hints and splitting a file into several manuscripts
   data/            built-in backgrounds, themes, collections, fonts and seed manuscripts
                    (hymns.json holds the bundled hymnal, generated, not edited by hand)
   store/           Zustand store (state, actions and saving)
@@ -287,7 +291,7 @@ src/
   hooks/           shared behaviour (text editing, media playback, wake lock, Go live, layout)
   features/
     dashboard/     Dashboard
-    manuscripts/   Manuscript library, editor, text and settings modals
+    manuscripts/   Manuscript library, editor, text and settings modals, and import/ for files and folders
     editor/        Shared slide workspace, its edit hooks (deckEditor/) and slide list
     bible/         Reader, passage editor and the reader's selection and save hooks
     media/         Image and video libraries and editors
@@ -332,6 +336,12 @@ Components are written as `const` functions, each file does one job, and anythin
 - **Scene items keep their own copy.** Open editor saves into the layer itself (`manuscript`, `passage` or `overrides`), never into the library, so a production can carry a changed song or passage that the library does not have.
 - **Studio productions live in their own database** (`gospelstudio-studio`, version 1), next to the library database, so devices that already had a library get the studio stores without a version change. Reset and Free up space clear both.
 - **The service worker also runs in development**, so you can test offline and install behaviour without a production build.
+
+## Importing manuscripts
+
+Import on the Manuscripts page reads files on the device; nothing is uploaded. `src/lib/documents/readDocumentText.ts` picks a reader from the file's first bytes rather than its name, so a renamed file still opens: Word 97 to 2003 files through a small compound file and piece table reader (header, footer and field codes are left out), `.docx` through `fflate`, `.rtf` through a control word reader, and text files as UTF-8, UTF-16 or Windows-1252.
+
+`src/lib/manuscript/pieces.ts` then splits the text into songs or sermons. A new piece starts at a declared heading (`SONG: Way Maker`), a line of `=====` or `*****`, a short title line directly above verse `1.`, verse numbering that starts again at 1 with different words, or a capitalised heading above lyrics that is not repeated as a lyric. Sermons only split on a declared heading or a title followed by `Text:` or `Preacher:` lines, because capitalised lines in a sermon are its points. Each piece is then read as a song or a sermon (`detectFormat.ts`), titled from its heading or else the file name, and given a collection (`category.ts`): numbered stanzas or tune credits are Hymns, `Soloist:` and `Choir:` cues are Choir Ministration, Christmas, Easter, wedding and funeral words are Special Songs, and praise or worship vocabulary, including common Yoruba, Igbo and Hausa words, decides between Praise and Worship. Everything can be changed on the review list before importing.
 
 ## Hymn library
 

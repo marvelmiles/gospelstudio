@@ -1,6 +1,7 @@
 import type { Slide, TextStyle } from "../../types";
 import { uid } from "../id";
 import { analyzeLines } from "../lists";
+import { wordCount } from "./lineShapes";
 import {
   createSlideTextBox,
   SERMON_BODY_FRAME,
@@ -29,6 +30,8 @@ const NAMED_HEADING =
 const SENTENCE_END = /[.!?…]["')\]]?$/;
 const MARKER_CHARS = /[*_~`#>]/g;
 
+const PREACHER_BY_LINE = /^by\s+(.{2,60})$/i;
+
 interface PreambleField {
   pattern: RegExp;
   key: keyof SermonPreamble;
@@ -51,12 +54,19 @@ const PREAMBLE_FIELDS: PreambleField[] = [
       /^(?:preacher|minister|speaker|pastor|preached\s+by|delivered\s+by|ministering|facilitator)\s*[:\-–—]\s*(.+)$/i,
     key: "preacher",
   },
-  { pattern: /^by\s+(.{2,60})$/i, key: "preacher" },
+  { pattern: PREACHER_BY_LINE, key: "preacher" },
   {
     pattern: /^(?:theme|topic|subject|title)\s*[:\-–—]\s*(.+)$/i,
     key: "theme",
   },
 ];
+
+export const isLabeledPreambleLine = (line: string): boolean => {
+  const text = line.trim();
+  return PREAMBLE_FIELDS.some(
+    ({ pattern }) => pattern !== PREACHER_BY_LINE && pattern.test(text),
+  );
+};
 
 const DETAIL_LINE =
   /^(?:date|venue|series|occasion|service|programme|program|location|time)\s*[:\-–—]\s*(.+)$/i;
@@ -81,9 +91,6 @@ export interface SermonBuildOptions {
   title: string | null;
   author: string | null;
 }
-
-const wordCount = (value: string): number =>
-  value.trim().split(/\s+/).filter(Boolean).length;
 
 const plain = (value: string): string =>
   value.replace(MARKER_CHARS, "").replace(/\s+/g, " ").trim();
@@ -255,7 +262,8 @@ const leadingTitle = (
 
   const line = lines[index].trim();
   const next = lines[index + 1];
-  if (next !== undefined && next.trim() !== "") return null;
+  if (next !== undefined && next.trim() !== "" && !isLabeledPreambleLine(next))
+    return null;
 
   const content = plain(headingContent(line));
   if (!content || wordCount(content) > 12) return null;

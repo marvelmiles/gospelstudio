@@ -47,6 +47,11 @@ export const ANALYTICS_EVENTS = {
     interactive: true,
     countsAsUsage: true,
   },
+  "Manuscripts Imported": {
+    feature: "manuscripts",
+    interactive: true,
+    countsAsUsage: true,
+  },
   "Production Scene Created": {
     feature: "scenes",
     interactive: true,
@@ -139,6 +144,7 @@ export const eventsOfFeature = (feature: AnalyticsFeature): AnalyticsEvent[] =>
   );
 
 export type PresentedContent = "manuscript" | "scripture" | "image" | "video";
+export type ManuscriptImportSource = "files" | "folder";
 type UploadedMediaKind = "image" | "video" | "audio";
 export type SceneCreationSource = "blank" | "template" | "layout" | "duplicate";
 export type CameraPairingMethod = "one_tap" | "code";
@@ -149,6 +155,7 @@ export const VISITOR_TYPE_PROPERTY = "visitor_type";
 
 interface EventPropsWithValues {
   "Presentation Started": { content: PresentedContent };
+  "Manuscripts Imported": { source: ManuscriptImportSource };
   "Production Scene Created": { source: SceneCreationSource };
   "Camera Broadcast Started": { method: CameraPairingMethod };
   "Camera Broadcast Failed": {

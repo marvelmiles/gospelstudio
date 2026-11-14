@@ -10,6 +10,9 @@ export const COLLECTIONS = [
 
 export type Collection = (typeof COLLECTIONS)[number];
 
+export const isCollection = (value: string): value is Collection =>
+  (COLLECTIONS as readonly string[]).includes(value);
+
 export const DEFAULT_COLLECTION: Collection = "General";
 
 export const SERMON_COLLECTION: Collection = "Sermons";

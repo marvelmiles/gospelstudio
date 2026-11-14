@@ -37,7 +37,17 @@ export const ManuscriptFormatGuideModal = ({
         Paste the text as it comes. Open with <Mark>HYMN: Ancient Words</Mark>,{" "}
         <Mark>SONG: Way Maker</Mark> or <Mark>SERMON: Grace</Mark> and that line
         names the manuscript and files it in the matching collection instead of
-        becoming a slide.
+        becoming a slide. A capitalised heading such as{" "}
+        <Mark>NOW THANK WE OUR GOD</Mark>, or a short line sitting right above{" "}
+        <Mark>1.</Mark>, names it too.
+      </GuideSection>
+
+      <GuideSection title="Files and several songs at once">
+        Open file reads Word (<Mark>.doc</Mark>, <Mark>.docx</Mark>), rich text
+        (<Mark>.rtf</Mark>) and plain text (<Mark>.txt</Mark>, <Mark>.md</Mark>
+        ). When the text holds several songs or sermons, each can be imported as
+        its own manuscript. A new heading, a fresh verse 1 or a line of{" "}
+        <Mark>=====</Mark> marks where the next one starts.
       </GuideSection>
 
       <div className="mt-1 mb-3.5">

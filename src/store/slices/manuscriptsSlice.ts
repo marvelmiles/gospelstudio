@@ -1,7 +1,7 @@
 import type { Manuscript } from "../../types";
 import { now } from "../../lib/id";
 import { defaultManuscript } from "../../data/seed";
-import { deleteRecord, saveRecord } from "../../lib/storage";
+import { deleteRecord, saveRecord, saveRecords } from "../../lib/storage";
 import { afterDelete, afterWrite, blockWrite } from "../helpers";
 import type { SliceCreator } from "../storeTypes";
 
@@ -11,6 +11,7 @@ export interface ManuscriptsSlice {
   manuscripts: Manuscript[];
 
   upsertManuscript: (manuscript: Manuscript) => boolean;
+  addManuscripts: (manuscripts: Manuscript[]) => boolean;
   defaultManuscriptFor: (id: string) => Promise<Manuscript | null>;
   deleteManuscript: (id: string) => boolean;
 }
@@ -33,6 +34,15 @@ export const createManuscriptsSlice: SliceCreator<ManuscriptsSlice> = (
       return { manuscripts };
     });
     void saveRecord("manuscripts", manuscript);
+    afterWrite(get);
+    return true;
+  },
+
+  addManuscripts: (incoming) => {
+    if (!incoming.length) return true;
+    if (blockWrite(get)) return false;
+    set((state) => ({ manuscripts: [...incoming, ...state.manuscripts] }));
+    void saveRecords("manuscripts", incoming);
     afterWrite(get);
     return true;
   },

@@ -1,14 +1,19 @@
 import { useValueChange } from "@/hooks/useValueChange";
-import { useState } from "react";
-import { Info, RefreshCw } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { FileUp, Info, RefreshCw } from "lucide-react";
 import type { Manuscript, ManuscriptFormat, Theme } from "../../types";
 import { useTextFormatting } from "../../hooks/useTextFormatting";
+import { useCompactScreen } from "../../hooks/useCompactScreen";
 import { resolveStyle } from "../../lib/resolve";
 import { slideRowCapacity, slideTextMetrics } from "../../lib/slideLayout";
+import { DOCUMENT_FILE_ACCEPT } from "../../lib/documents/readDocumentText";
 import {
   DEFAULT_MANUSCRIPT_FORMAT,
   MANUSCRIPT_FORMAT_OPTIONS,
+  MANUSCRIPT_LINE_RANGE,
+  clampManuscriptLines,
 } from "../../lib/manuscript/format";
+import { isUntitledManuscript } from "../../lib/manuscript/newManuscript";
 import { Button } from "@/components/ui/button";
 import { IconButton } from "@/components/shared/IconButton";
 import { Field } from "@/components/shared/Field";
@@ -16,17 +21,16 @@ import { RangeSlider } from "@/components/shared/RangeSlider";
 import { OptionSelect } from "@/components/shared/OptionSelect";
 import { Modal } from "@/components/shared/Modal";
 import { ManuscriptFormatGuideModal } from "./ManuscriptFormatGuideModal";
+import { ManuscriptTextHints } from "./ManuscriptTextHints";
+import { ManuscriptImportModal } from "./import/ManuscriptImportModal";
+import type { ImportFile } from "./import/importFiles";
+import {
+  useManuscriptFileReader,
+  type OpenedManuscriptFile,
+} from "./useManuscriptFileReader";
 import { Textarea } from "@/components/ui/textarea";
 
-const LINE_RANGE: Record<ManuscriptFormat, { min: number; max: number }> = {
-  song: { min: 2, max: 10 },
-  sermon: { min: 4, max: 16 },
-};
-
-const clampLines = (value: number, format: ManuscriptFormat): number => {
-  const { min, max } = LINE_RANGE[format];
-  return Math.min(max, Math.max(min, value));
-};
+const PASTED_TEXT_NAME = "Pasted text";
 
 interface ManuscriptTextModalProps {
   open: boolean;
@@ -37,6 +41,7 @@ interface ManuscriptTextModalProps {
     body: string,
     maxLines: number,
     format: ManuscriptFormat,
+    sourceTitle?: string,
   ) => void;
 }
 
@@ -47,9 +52,14 @@ export const ManuscriptTextModal = ({
   theme,
   onRegenerate,
 }: ManuscriptTextModalProps) => {
-  const fittedLines = slideRowCapacity(
-    slideTextMetrics(resolveStyle(undefined, manuscript, theme)),
+  const style = useMemo(
+    () => resolveStyle(undefined, manuscript, theme),
+    [manuscript, theme],
   );
+  const fittedLines = slideRowCapacity(slideTextMetrics(style));
+  const compact = useCompactScreen();
+  const readFile = useManuscriptFileReader(style);
+  const fileInput = useRef<HTMLInputElement>(null);
 
   const [body, setBody] = useState(manuscript.body);
   const [format, setFormat] = useState<ManuscriptFormat>(
@@ -57,6 +67,11 @@ export const ManuscriptTextModal = ({
   );
   const [guideOpen, setGuideOpen] = useState(false);
   const [maxLines, setMaxLines] = useState(manuscript.maxLines || fittedLines);
+  const [openedFile, setOpenedFile] = useState<OpenedManuscriptFile | null>(
+    null,
+  );
+  const [readingFile, setReadingFile] = useState(false);
+  const [importFiles, setImportFiles] = useState<ImportFile[] | null>(null);
   const { bind: bindFormatting, ...formatting } = useTextFormatting({
     value: body,
     onChange: setBody,
@@ -68,18 +83,35 @@ export const ManuscriptTextModal = ({
     const openedFormat = opened.format ?? DEFAULT_MANUSCRIPT_FORMAT;
     setBody(opened.body);
     setFormat(openedFormat);
-    setMaxLines(clampLines(opened.maxLines || fittedLines, openedFormat));
+    setMaxLines(
+      clampManuscriptLines(opened.maxLines || fittedLines, openedFormat),
+    );
+    setOpenedFile(null);
   });
 
   const changeFormat = (next: ManuscriptFormat) => {
     setFormat(next);
-    setMaxLines((lines) => clampLines(lines, next));
+    setMaxLines((lines) => clampManuscriptLines(lines, next));
+  };
+
+  const openFile = async (file: File) => {
+    setReadingFile(true);
+    const opened = await readFile(file);
+    setReadingFile(false);
+    if (!opened) return;
+    setOpenedFile(opened);
+    setBody(opened.first.body);
+    changeFormat(opened.first.format);
   };
 
   const regenerate = () => {
-    onRegenerate(body, maxLines, format);
+    onRegenerate(body, maxLines, format, openedFile?.first.title);
     onClose();
   };
+
+  const textName = isUntitledManuscript(manuscript.title)
+    ? PASTED_TEXT_NAME
+    : manuscript.title;
 
   return (
     <Modal
@@ -109,7 +141,25 @@ export const ManuscriptTextModal = ({
             />
           </Field>
         </div>
-        <div className="mb-4">
+        <div className="mb-4 flex gap-2">
+          {compact ? (
+            <IconButton
+              icon={FileUp}
+              title="Open a file"
+              filled
+              disabled={readingFile}
+              onClick={() => fileInput.current?.click()}
+            />
+          ) : (
+            <Button
+              variant="secondary"
+              busy={readingFile}
+              onClick={() => fileInput.current?.click()}
+            >
+              <FileUp size={15} />
+              Open file
+            </Button>
+          )}
           <IconButton
             icon={Info}
             title="How the text is read"
@@ -118,6 +168,25 @@ export const ManuscriptTextModal = ({
           />
         </div>
       </div>
+      <input
+        ref={fileInput}
+        type="file"
+        accept={DOCUMENT_FILE_ACCEPT}
+        hidden
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void openFile(file);
+          event.target.value = "";
+        }}
+      />
+      <ManuscriptTextHints
+        body={body}
+        format={format}
+        openedFile={openedFile}
+        textName={textName}
+        onFormatChange={changeFormat}
+        onImport={setImportFiles}
+      />
       <Textarea
         ref={bindFormatting}
         value={body}
@@ -139,8 +208,8 @@ export const ManuscriptTextModal = ({
           <RangeSlider
             aria-label={isSermon ? "Lines per slide" : "Max lines per slide"}
             value={maxLines}
-            min={LINE_RANGE[format].min}
-            max={LINE_RANGE[format].max}
+            min={MANUSCRIPT_LINE_RANGE[format].min}
+            max={MANUSCRIPT_LINE_RANGE[format].max}
             onValueChange={(next) => setMaxLines(next)}
           />
         </Field>
@@ -155,6 +224,12 @@ export const ManuscriptTextModal = ({
           open
           onClose={() => setGuideOpen(false)}
           format={format}
+        />
+      )}
+      {importFiles && (
+        <ManuscriptImportModal
+          initialFiles={importFiles}
+          onClose={() => setImportFiles(null)}
         />
       )}
     </Modal>
