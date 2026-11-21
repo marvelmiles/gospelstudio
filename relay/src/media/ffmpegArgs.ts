@@ -1,0 +1,33 @@
+const PLATFORM_TIMEOUT_MICROSECONDS = 15_000_000;
+const PROGRESS_INTERVAL_SECONDS = 1;
+
+export const relayToPlatformArgs = (destinationUrl: string): string[] => [
+  "-hide_banner",
+  "-loglevel",
+  "error",
+  "-probesize",
+  "1000000",
+  "-analyzeduration",
+  "2000000",
+  "-f",
+  "flv",
+  "-i",
+  "pipe:0",
+  "-map",
+  "0:v?",
+  "-map",
+  "0:a?",
+  "-c",
+  "copy",
+  "-progress",
+  "pipe:1",
+  "-stats_period",
+  String(PROGRESS_INTERVAL_SECONDS),
+  "-rw_timeout",
+  String(PLATFORM_TIMEOUT_MICROSECONDS),
+  "-f",
+  "flv",
+  "-flvflags",
+  "no_duration_filesize",
+  destinationUrl,
+];

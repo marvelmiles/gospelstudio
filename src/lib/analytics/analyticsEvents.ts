@@ -1,3 +1,5 @@
+import type { LiveQualityId } from "../../features/liveStream/lib/liveQuality";
+
 export const ANALYTICS_FEATURES = [
   { id: "studio", label: "Studio" },
   { id: "manuscripts", label: "Manuscripts" },
@@ -5,6 +7,7 @@ export const ANALYTICS_FEATURES = [
   { id: "bible", label: "Bible" },
   { id: "presentations", label: "Presentations" },
   { id: "camera", label: "Camera Broadcast" },
+  { id: "liveStream", label: "Live Streaming" },
   { id: "media", label: "Media" },
 ] as const;
 
@@ -107,6 +110,21 @@ export const ANALYTICS_EVENTS = {
     interactive: false,
     countsAsUsage: false,
   },
+  "Live Stream Started": {
+    feature: "liveStream",
+    interactive: true,
+    countsAsUsage: true,
+  },
+  "Live Stream Ended": {
+    feature: "liveStream",
+    interactive: false,
+    countsAsUsage: false,
+  },
+  "Live Stream Failed": {
+    feature: "liveStream",
+    interactive: false,
+    countsAsUsage: false,
+  },
   "Media Uploaded": {
     feature: "media",
     interactive: true,
@@ -143,6 +161,12 @@ type UploadedMediaKind = "image" | "video" | "audio";
 export type SceneCreationSource = "blank" | "template" | "layout" | "duplicate";
 export type CameraPairingMethod = "one_tap" | "code";
 export type CameraFailureReason = "camera_unavailable" | "connection_failed";
+export type LiveStreamFailureReason =
+  | "capture_failed"
+  | "service_unavailable"
+  | "connection_failed"
+  | "broadcast_failed"
+  | "unsupported_browser";
 export type VisitorType = "new" | "returning";
 
 export const VISITOR_TYPE_PROPERTY = "visitor_type";
@@ -155,6 +179,8 @@ interface EventPropsWithValues {
     method: CameraPairingMethod;
     reason: CameraFailureReason;
   };
+  "Live Stream Started": { quality: LiveQualityId; platforms: string };
+  "Live Stream Failed": { reason: LiveStreamFailureReason };
   "Media Uploaded": { kind: UploadedMediaKind };
 }
 

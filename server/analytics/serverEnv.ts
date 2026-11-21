@@ -3,12 +3,10 @@ import {
   DEFAULT_REPORT_TIME_ZONE,
   isValidTimeZone,
 } from "../../src/lib/analytics/reportPeriods";
+import { emptyAsMissing, parseEnvWith, type EnvResult } from "../shared/env";
 
 const DEFAULT_PLAUSIBLE_API_BASE_URL = "https://plausible.io";
 const MIN_ADMIN_TOKEN_LENGTH = 32;
-
-const emptyAsMissing = <T extends z.ZodTypeAny>(schema: T) =>
-  z.preprocess((value) => (value === "" ? undefined : value), schema);
 
 const serverEnvSchema = z.object({
   PLAUSIBLE_API_KEY: emptyAsMissing(z.string().min(20)),
@@ -29,18 +27,6 @@ const serverEnvSchema = z.object({
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;
 
-type ServerEnvResult =
-  { ok: true; env: ServerEnv } | { ok: false; invalidVariables: string[] };
-
 export const parseServerEnv = (
   source: Record<string, string | undefined>,
-): ServerEnvResult => {
-  const result = serverEnvSchema.safeParse(source);
-  if (result.success) return { ok: true, env: result.data };
-  return {
-    ok: false,
-    invalidVariables: [
-      ...new Set(result.error.issues.map((issue) => String(issue.path[0]))),
-    ],
-  };
-};
+): EnvResult<ServerEnv> => parseEnvWith(serverEnvSchema, source);

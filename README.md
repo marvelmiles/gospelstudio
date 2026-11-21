@@ -29,6 +29,7 @@ GospelStudio is a single page React and TypeScript app that works like a desktop
 - **The editor** lets you type straight on the slide, so what you see is what the room will see.
 - **Presentation mode** fills the projector, while your laptop shows your notes, the next slide and a timer.
 - **The Studio** builds the projector screen from layers: a webcam or phone camera, Bible verses, manuscripts, images, videos, subtitles, a speaker's name and more, prepared in a preview and sent live with one button.
+- **Live streaming** sends the Studio's live screen to YouTube, Facebook and other platforms at the same time, so people anywhere can watch the service.
 - **Share camera** turns a phone, tablet or laptop into a camera for the Studio, over WiFi or with a code.
 - **Share** copies your library and studio productions to a nearby device, over WiFi or with a code.
 
@@ -78,6 +79,14 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 - **Hear the other device.** When a phone shares its microphone, its sound plays from the computer running the Studio whenever that camera is on the live screen.
 - **A clean projector screen.** Point at Present and choose Go live to open a window on the projector with only the picture, filling the whole screen, with no buttons or outlines. It keeps up when the studio reloads, and the test picture in its menu shows a test card with corner marks before the service.
 - **Undo, redo and autosave.** Every change can be undone, and productions save on this device as you work.
+
+**Live streaming**
+
+- **Every major platform at once.** Stream the live screen to YouTube, Facebook, Instagram, TikTok, X, Twitch, LinkedIn, Kick or any RTMP service. The picture is encoded once and sent to all of them together, and a platform can be switched on or off while live without stopping the others.
+- **Made for weak internet.** The stream adapts to the connection: when it weakens, the picture is lowered for a moment instead of freezing, and lost sound packets are hidden. Choose Full HD 1080p, HD 720p or Data saver 480p as the ceiling, and watch the connection strength in the header while live.
+- **Clear sound.** Sound goes out at 128 kbps stereo, tuned for music. Plug the church sound desk in through a USB audio interface and pick it as the sound input. Polish cuts rumble and evens out loud and quiet parts, and AI noise cancellation (RNNoise, running in the browser) removes fans, traffic and chatter from speech.
+- **The same screen the room sees.** Stream captures the projector screen together with the sound of cameras on other devices, and shares one window pick with Record.
+- **Keys stay with you.** Stream keys are saved only on the device and are redacted from everything the server returns. See [`src/features/liveStream/LIVE_STREAMING.md`](src/features/liveStream/LIVE_STREAMING.md).
 
 **Share camera**
 
@@ -176,7 +185,7 @@ In an editor opened from the Studio, `Ctrl` + `S` updates the scene and `Ctrl` +
 
 ## Setup
 
-You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. The app itself needs no server, database or account, because it keeps everything in the browser. The only server code is an optional Netlify Function that feeds the admin analytics dashboard (see Deployment).
+You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. The app itself needs no server, database or account, because it keeps everything in the browser. The only server code is an optional Netlify Function that feeds the admin analytics dashboard, and the optional live streaming relay in `relay/`, a small Node service you run with Docker (see Deployment).
 
 ## Installation
 
@@ -248,6 +257,14 @@ The admin analytics dashboard needs these server-only variables. Never give them
 | `PLAUSIBLE_API_BASE_URL` | Optional, defaults to `https://plausible.io`                                                 |
 | `ANALYTICS_TIMEZONE`     | Optional, defaults to `Africa/Lagos`. Must match the site's reporting time zone in Plausible |
 
+Live streaming needs the address of your streaming relay. It is public, so it is built into the app:
+
+| Variable              | What it is                                                                  |
+| --------------------- | --------------------------------------------------------------------------- |
+| `VITE_LIVE_RELAY_URL` | The relay's `https://` address. Without it the Stream dialog says it is off |
+
+The relay has its own variables, listed in [`relay/.env.example`](relay/.env.example).
+
 ## Deployment
 
 `pnpm build` creates a static `dist/` folder that any static host can serve. The repo includes a `netlify.toml` for Netlify. On other hosts, publish `dist/` and send any unknown path to `index.html` so links inside the app keep working.
@@ -255,6 +272,8 @@ The admin analytics dashboard needs these server-only variables. Never give them
 The build also writes one HTML file for each main page, such as `manuscripts.html` and `bible.html`, with that page's own title and description. Hosts serve them at `/manuscripts` and `/bible`, so a link shared on WhatsApp or another app shows the right preview. The titles and descriptions live in `src/lib/pageMeta.ts`.
 
 On Netlify, `netlify/functions/analytics-report.ts` is deployed with the site and answers `/api/analytics/report` for the admin dashboard at `/admin/analytics`. Set `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_API_BASE_URL` if needed) with the Builds scope, and the server-only analytics variables with the Functions scope, then redeploy. On other static hosts the tracking still works, but the dashboard needs that function ported to the host's own server functions. To try the dashboard locally, run `netlify dev` with the server variables in `.env`. Plausible setup, goals and the full event list are in [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md).
+
+Live streaming runs on the relay in `relay/`, not on Netlify, because serverless functions cannot keep a stream open. On any server with Docker and a domain name, copy `relay/.env.example` to `relay/.env`, set `ALLOWED_ORIGINS` and `RELAY_DOMAIN`, and run `docker compose up -d --build` in `relay/`. Caddy gets the HTTPS certificate by itself. Then set `VITE_LIVE_RELAY_URL` for the app with the Builds scope and redeploy. The relay copies the stream to each platform without re-encoding it, so one small server carries many streams, with no accounts, quotas or per-minute fees. For local development run `pnpm relay:install` and `pnpm relay:dev`. Setup, sizing, the API and troubleshooting are in [`src/features/liveStream/LIVE_STREAMING.md`](src/features/liveStream/LIVE_STREAMING.md).
 
 ## Tech stack
 
@@ -264,6 +283,7 @@ On Netlify, `netlify/functions/analytics-report.ts` is deployed with the site an
 - **Interface helpers:** Sonner for toasts, usehooks-ts for window size, media queries, element size and local storage, @dnd-kit for dragging slides, scenes and layers, react-rnd for moving and resizing layers in the Studio, and lucide-react for icons.
 - **Slide and scene transitions:** the browser's Web Animations API.
 - **Storage:** IndexedDB for documents and files, Zod to check backups, and fflate for the `.zip` format.
+- **Live streaming:** WebCodecs for H.264 and AAC encoding in a Web Worker, `@sapphi-red/web-noise-suppressor` (RNNoise) for noise cancellation, Web Audio for the sound mix and polish, and Simple Icons (`@icons-pack/react-simple-icons`) for platform logos. The relay uses Express, `ws`, Zod, `express-rate-limit` and FFmpeg.
 - **Cameras and sharing:** getUserMedia for webcams in the Studio, WebRTC for cameras on other devices, jsQR and qrcode-generator for pairing codes and on-screen QR codes, and Firebase Realtime Database as an optional signalling relay.
 - **Offline:** vite-plugin-pwa and Workbox.
 
@@ -296,10 +316,13 @@ src/
     presentation/  Presentation view, presenter bar and projection hooks
     studio/        Studio: the editable canvas, scenes, layers, properties, live controls,
                    the projector window (output/), scene item editors (itemEditor/),
-                   the PiP window (pip/), its own Zustand stores (store/) and lib/
+                   the PiP window (pip/), its own Zustand stores (store/) and lib/,
+                   and the program capture and sound mix shared by Record and Stream (capture/)
     pairing/       Device pairing shared by cameras and Share: QR and code exchange,
                    WebRTC peers, signalling and the pairing codec (lib/)
     cameraShare/   Share camera page: sends this device's camera to the Studio
+    liveStream/    Live streaming to social platforms: the Stream button and dialog, the
+                   saved platforms, the encoder worker, FLV and the relay contract (lib/)
     share/         Share: handing a library and studio productions to a nearby device
     settings/      Settings modal, split into one file per section
     about/         About & Help modal and its FAQ list
@@ -312,8 +335,11 @@ src/
   main.tsx         entry point (Router, starts analytics outside projector windows)
 server/
   analytics/       Stats API client, caching, request checks, admin key check and the report builder
+  shared/          JSON responses, env parsing and constant-time secret checks used by both
 netlify/
   functions/       analytics-report.ts, the serverless entry for /api/analytics/report
+relay/             live streaming relay: Express API, WebSocket ingest, FLV fan-out and FFmpeg,
+                   with its own package.json, Dockerfile and docker-compose.yml
 ```
 
 Components are written as `const` functions, each file does one job, and anything shared lives in a hook, a component or a `lib/` module.
@@ -331,6 +357,9 @@ Components are written as `const` functions, each file does one job, and anythin
 - **Live is a copy, not the scene.** GO LIVE copies the preview scene, so editing it afterwards never changes what the room sees until you press GO LIVE again. Live controls, the PiP window and Update scene from an item's editor change the copy and the scene together.
 - **Scene items keep their own copy.** Open editor saves into the layer itself (`manuscript`, `passage` or `overrides`), never into the library, so a production can carry a changed song or passage that the library does not have.
 - **Studio productions live in their own database** (`gospelstudio-studio`, version 1), next to the library database, so devices that already had a library get the studio stores without a version change. Reset and Free up space clear both.
+- **The browser encodes, the relay only copies.** Browsers cannot send RTMP, so the Studio encodes H.264 and AAC itself with WebCodecs, with 2 second keyframes and a bitrate that adapts to the upload, and sends FLV over a WebSocket. The relay copies it to every platform with FFmpeg without re-encoding, so it needs very little CPU and no third-party streaming service.
+- **Record and Stream share one capture.** `studio/capture/programCapture.ts` hands out leases on a single screen capture and sound mix, so the projector window is picked once and closing it ends both.
+- **Noise cancellation works offline too.** RNNoise's WebAssembly files (about 155 kB) are precached, so recordings made without internet are cleaned up as well.
 - **The service worker also runs in development**, so you can test offline and install behaviour without a production build.
 
 ## Hymn library

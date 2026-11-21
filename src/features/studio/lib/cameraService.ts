@@ -269,6 +269,18 @@ export const openCameraPreview = async (
 export const stopPreviewStream = (stream: MediaStream | null): void =>
   stopStream(stream);
 
+export const requestMicrophoneAccess = async (): Promise<void> => {
+  if (!isCameraSupported()) return;
+  watchDevices();
+  try {
+    stopStream(await navigator.mediaDevices.getUserMedia({ audio: true }));
+  } catch {
+    return;
+  } finally {
+    await refreshDevices();
+  }
+};
+
 export const requestCameraAccess = async (): Promise<CameraFailure | null> => {
   if (!isCameraSupported()) return UNSUPPORTED;
   watchDevices();

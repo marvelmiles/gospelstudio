@@ -4,7 +4,7 @@ import type { ProgramSnapshot } from "../types/production";
 import type { SourceStreams } from "../lib/outputStreams";
 import { audibleSourceIds, mutedSourceIds } from "../lib/deviceSound";
 import { useSources } from "../store/productionStore";
-import { setRecordingCameraAudio } from "../recording/programRecorder";
+import { setProgramCameraAudio } from "../capture/programCapture";
 
 interface ProgramAudioProps {
   program: ProgramSnapshot | null;
@@ -20,7 +20,7 @@ export const ProgramAudio = ({ program, streams }: ProgramAudioProps) => {
   );
 
   useEffect(() => {
-    setRecordingCameraAudio(
+    setProgramCameraAudio(
       sourceIds.flatMap((sourceId) => {
         const stream = streams[sourceId];
         return stream ? [stream] : [];

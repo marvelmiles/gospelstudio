@@ -23,6 +23,7 @@ import { ProductionMenu } from "./ProductionMenu";
 import { ProjectorControl } from "./ProjectorControl";
 import { StudioSettingsDialog } from "./StudioSettingsDialog";
 import { RecordControl } from "../recording/RecordControl";
+import { LiveStreamControl } from "../../liveStream/components/LiveStreamControl";
 
 export const ProductionHeader = () => {
   const canUndo = useProductionStore((state) => state.past.length > 0);
@@ -54,6 +55,7 @@ export const ProductionHeader = () => {
         />
         <DeviceSoundControls />
         <RecordControl />
+        <LiveStreamControl />
         <IconButton
           icon={Video}
           title="Share a camera: opens a tab that turns this or another device into a Studio camera"

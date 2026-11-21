@@ -137,10 +137,3 @@ export const REPORT_SCHEMAS = {
   features: featuresReportSchema,
   audience: audienceReportSchema,
 } satisfies { [S in ReportSection]: z.ZodType<ReportBySection[S]> };
-
-export const reportErrorSchema = z.object({
-  error: z.object({
-    code: z.string(),
-    message: z.string(),
-  }),
-});

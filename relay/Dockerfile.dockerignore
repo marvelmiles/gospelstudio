@@ -1,0 +1,8 @@
+*
+!relay/package.json
+!relay/pnpm-lock.yaml
+!relay/tsconfig.json
+!relay/src
+!src/features/liveStream/lib
+**/*.test.ts
+relay/src/testing

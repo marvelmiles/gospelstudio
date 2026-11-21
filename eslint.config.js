@@ -11,6 +11,8 @@ export default tseslint.config(
       "dist",
       "dev-dist",
       "node_modules",
+      "relay/dist",
+      "relay/node_modules",
       "scripts",
       ".netlify",
       "*.config.js",
@@ -48,7 +50,7 @@ export default tseslint.config(
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["server/**/*.ts", "netlify/**/*.ts"],
+    files: ["server/**/*.ts", "netlify/**/*.ts", "relay/src/**/*.ts"],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.node,

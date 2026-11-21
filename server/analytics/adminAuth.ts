@@ -1,13 +1,10 @@
-import { createHash, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+import { secretsMatch } from "../shared/secrets";
 
 const authorizationSchema = z
   .string()
   .max(512)
   .regex(/^Bearer [\x21-\x7E]+$/);
-
-const digest = (value: string): Buffer =>
-  createHash("sha256").update(value, "utf8").digest();
 
 export const isAuthorizedAdmin = (
   authorization: string | null,
@@ -15,6 +12,5 @@ export const isAuthorizedAdmin = (
 ): boolean => {
   const parsed = authorizationSchema.safeParse(authorization);
   if (!parsed.success) return false;
-  const presented = parsed.data.slice("Bearer ".length);
-  return timingSafeEqual(digest(presented), digest(adminToken));
+  return secretsMatch(parsed.data.slice("Bearer ".length), adminToken);
 };

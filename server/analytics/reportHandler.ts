@@ -14,6 +14,7 @@ import {
 import { parseReportRequest } from "./reportRequest";
 import { REPORT_BUILDERS } from "./reportService";
 import { parseServerEnv, type ServerEnv } from "./serverEnv";
+import { describeError, jsonResponse } from "../shared/http";
 
 const PLAUSIBLE_TIMEOUT_MS = 10_000;
 const MAX_CONCURRENT_QUERIES = 4;
@@ -30,22 +31,6 @@ interface ReportHandlerOptions {
   logger?: Logger;
 }
 
-const BASE_HEADERS = {
-  "Content-Type": "application/json; charset=utf-8",
-  "Cache-Control": "no-store",
-  "X-Content-Type-Options": "nosniff",
-};
-
-const jsonResponse = (
-  status: number,
-  body: unknown,
-  headers: Record<string, string> = {},
-): Response =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { ...BASE_HEADERS, ...headers },
-  });
-
 const errorHeaders = (error: AnalyticsApiError): Record<string, string> => {
   if (error.status === 405) return { Allow: "GET" };
   if (error.status === 401)
@@ -61,9 +46,6 @@ const errorResponse = (error: AnalyticsApiError): Response =>
     { error: { code: error.code, message: error.message } },
     errorHeaders(error),
   );
-
-const describeError = (error: unknown): string =>
-  error instanceof Error ? error.message : "Unknown error";
 
 const createReportClient = (
   env: ServerEnv,

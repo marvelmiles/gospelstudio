@@ -12,6 +12,11 @@ const envSchema = z.object({
     .regex(/^[a-z0-9.-]+\.[a-z]{2,}$/i)
     .optional(),
   VITE_PLAUSIBLE_API_BASE_URL: z.string().url().optional(),
+  VITE_LIVE_RELAY_URL: z
+    .string()
+    .url()
+    .refine((value) => /^https?:\/\//i.test(value), "Use an http(s) address")
+    .optional(),
 });
 
 type ParsedEnv = z.infer<typeof envSchema>;

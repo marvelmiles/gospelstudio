@@ -272,7 +272,17 @@ export const FAQ_GROUPS: FaqGroup[] = [
       {
         question: "Does it stream to YouTube or Facebook?",
         answer:
-          "No. This version shows the Studio on screens in the room, such as a projector, TV or LED wall. Everything stays on your device.",
+          "Yes. In the Studio, press Stream, add YouTube, Facebook, Instagram, TikTok, X, Twitch, LinkedIn, Kick or any RTMP service with its stream key, then press Go live. Open the projector screen first and choose it when the browser asks what to share. The service goes out to every platform you switched on at the same time, and you can add or remove a platform while live without stopping the others. Streaming needs a computer running Chrome or Edge.",
+      },
+      {
+        question: "Will the live stream work on weak internet?",
+        answer:
+          "Yes. The stream adapts by itself: when the connection weakens, the picture is lowered for a moment instead of freezing, and the sound keeps its quality. Choose HD 720p or Data saver 480p under Picture quality if your internet is slow or costly. The Stream button shows how strong the connection is while you are live.",
+      },
+      {
+        question: "Is my stream key safe?",
+        answer:
+          "Stream keys are saved only on the device you typed them on. They are sent over an encrypted connection to the streaming server only while you are live, and they are never shown back or written to logs. Anyone with your key can stream to your channel, so reset it on the platform if it is ever shared.",
       },
     ],
   },

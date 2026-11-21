@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { Circle, LoaderCircle, Pause, Play, Square } from "lucide-react";
 import { useStore } from "../../../store/useStore";
+import { useElapsedTime } from "../../../hooks/useElapsedTime";
 import { formatDuration } from "../../../lib/media";
 import { cn } from "../../../lib/utils";
 import { Button } from "@/components/ui/button";
@@ -15,22 +15,10 @@ import {
   useRecordingStore,
 } from "./programRecorder";
 
-const CLOCK_TICK_MS = 500;
-
 const useRecordingClock = (): number => {
   const elapsedMs = useRecordingStore((state) => state.elapsedMs);
   const runningSince = useRecordingStore((state) => state.runningSince);
-  const [now, setNow] = useState(Date.now);
-
-  useEffect(() => {
-    if (runningSince === null) return;
-    const timer = window.setInterval(() => setNow(Date.now()), CLOCK_TICK_MS);
-    return () => window.clearInterval(timer);
-  }, [runningSince]);
-
-  return (
-    elapsedMs + (runningSince === null ? 0 : Math.max(0, now - runningSince))
-  );
+  return useElapsedTime(runningSince, elapsedMs);
 };
 
 export const RecordControl = () => {

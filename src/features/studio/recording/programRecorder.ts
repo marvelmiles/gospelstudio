@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { downloadBlob } from "../../../lib/download";
 import { useStore } from "../../../store/useStore";
+import { toLandscapeTrack } from "../capture/landscapeTrack";
 import {
-  RECORDING_HEIGHT,
-  RECORDING_WIDTH,
-  toLandscapeTrack,
-} from "./landscapeTrack";
+  acquireProgramCapture,
+  isProgramCaptureSupported,
+  type ProgramCaptureLease,
+} from "../capture/programCapture";
 
 export type RecordingStatus =
   "idle" | "starting" | "recording" | "paused" | "saving";
@@ -18,24 +19,15 @@ interface RecordingState {
   runningSince: number | null;
 }
 
-interface ScreenCaptureOptions extends DisplayMediaStreamOptions {
-  selfBrowserSurface?: "include" | "exclude";
-  systemAudio?: "include" | "exclude";
-  surfaceSwitching?: "include" | "exclude";
-}
-
 interface RecordingSession {
   recorder: MediaRecorder;
-  capture: MediaStream;
-  context: AudioContext;
-  destination: MediaStreamAudioDestinationNode;
-  cameraSources: Map<MediaStream, MediaStreamAudioSourceNode>;
+  lease: ProgramCaptureLease;
+  videoTrack: MediaStreamTrack;
   chunks: Blob[];
   fileName: string;
 }
 
 const CHUNK_INTERVAL_MS = 1000;
-const FRAME_RATE = 30;
 const VIDEO_BITS_PER_SECOND = 2_000_000;
 const AUDIO_BITS_PER_SECOND = 128_000;
 
@@ -47,19 +39,6 @@ const RECORDING_FORMATS = [
   { mimeType: "video/webm", extension: "webm" },
 ];
 
-const CAPTURE_OPTIONS: ScreenCaptureOptions = {
-  video: {
-    displaySurface: "window",
-    frameRate: { ideal: FRAME_RATE, max: FRAME_RATE },
-    width: { ideal: RECORDING_WIDTH, max: RECORDING_WIDTH },
-    height: { ideal: RECORDING_HEIGHT, max: RECORDING_HEIGHT },
-  },
-  audio: true,
-  selfBrowserSurface: "exclude",
-  systemAudio: "exclude",
-  surfaceSwitching: "include",
-};
-
 const IDLE: RecordingState = {
   status: "idle",
   elapsedMs: 0,
@@ -69,11 +48,9 @@ const IDLE: RecordingState = {
 export const useRecordingStore = create<RecordingState>()(() => IDLE);
 
 let session: RecordingSession | null = null;
-let cameraAudio: readonly MediaStream[] = [];
 
 export const isRecordingSupported = (): boolean =>
-  typeof MediaRecorder !== "undefined" &&
-  typeof navigator.mediaDevices?.getDisplayMedia === "function";
+  typeof MediaRecorder !== "undefined" && isProgramCaptureSupported();
 
 const recordingFormat = () =>
   RECORDING_FORMATS.find((format) =>
@@ -91,39 +68,13 @@ const fileSlug = (title: string): string =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "") || "recording";
 
-const syncCameraAudio = (active: RecordingSession): void => {
-  const wanted = new Set(
-    cameraAudio.filter((stream) => stream.getAudioTracks().length > 0),
-  );
-  for (const [stream, node] of active.cameraSources) {
-    if (wanted.has(stream)) continue;
-    node.disconnect();
-    active.cameraSources.delete(stream);
-  }
-  for (const stream of wanted) {
-    if (active.cameraSources.has(stream)) continue;
-    const node = active.context.createMediaStreamSource(stream);
-    node.connect(active.destination);
-    active.cameraSources.set(stream, node);
-  }
-};
-
-export const setRecordingCameraAudio = (
-  streams: readonly MediaStream[],
-): void => {
-  cameraAudio = streams;
-  if (session) syncCameraAudio(session);
-};
-
 const warnBeforeLeaving = (event: BeforeUnloadEvent): void => {
   event.preventDefault();
 };
 
 const release = (finished: RecordingSession): void => {
-  for (const track of finished.capture.getTracks()) track.stop();
-  for (const track of finished.recorder.stream.getVideoTracks()) track.stop();
-  for (const node of finished.cameraSources.values()) node.disconnect();
-  void finished.context.close().catch(() => {});
+  finished.videoTrack.stop();
+  finished.lease.release();
   window.removeEventListener("beforeunload", warnBeforeLeaving);
 };
 
@@ -138,44 +89,22 @@ const saveRecording = (finished: RecordingSession): void => {
   useRecordingStore.setState(IDLE);
 };
 
-const mixedRecordingStream = (
-  capture: MediaStream,
-  context: AudioContext,
-  destination: MediaStreamAudioDestinationNode,
-): MediaStream => {
-  const screenAudio = capture.getAudioTracks();
-  if (screenAudio.length > 0)
-    context
-      .createMediaStreamSource(new MediaStream(screenAudio))
-      .connect(destination);
-  return new MediaStream([
-    ...capture.getVideoTracks().map(toLandscapeTrack),
-    ...destination.stream.getAudioTracks(),
-  ]);
-};
-
 export const startRecording = async (
   title: string,
 ): Promise<RecordingStart> => {
   const format = isRecordingSupported() ? recordingFormat() : undefined;
   if (!format || session) return "failed";
   useRecordingStore.setState({ ...IDLE, status: "starting" });
-  const context = new AudioContext();
-  const destination = context.createMediaStreamDestination();
 
-  let capture: MediaStream;
-  try {
-    capture = await navigator.mediaDevices.getDisplayMedia(CAPTURE_OPTIONS);
-  } catch (error) {
-    void context.close().catch(() => {});
+  const capture = await acquireProgramCapture();
+  if (capture.status !== "started") {
     useRecordingStore.setState(IDLE);
-    return error instanceof DOMException && error.name === "NotAllowedError"
-      ? "cancelled"
-      : "failed";
+    return capture.status;
   }
-  void context.resume().catch(() => {});
+  const { lease } = capture;
+  const videoTrack = toLandscapeTrack(lease.videoTrack);
   const recorder = new MediaRecorder(
-    mixedRecordingStream(capture, context, destination),
+    new MediaStream([videoTrack, lease.audioTrack]),
     {
       mimeType: format.mimeType,
       videoBitsPerSecond: VIDEO_BITS_PER_SECOND,
@@ -184,22 +113,18 @@ export const startRecording = async (
   );
   const active: RecordingSession = {
     recorder,
-    capture,
-    context,
-    destination,
-    cameraSources: new Map(),
+    lease,
+    videoTrack,
     chunks: [],
     fileName: `${fileSlug(title)}-${fileStamp(new Date())}.${format.extension}`,
   };
   session = active;
-  syncCameraAudio(active);
 
   recorder.addEventListener("dataavailable", (event) => {
     if (event.data.size > 0) active.chunks.push(event.data);
   });
   recorder.addEventListener("stop", () => saveRecording(active));
-  for (const track of capture.getVideoTracks())
-    track.addEventListener("ended", stopRecording);
+  lease.onEnded(stopRecording);
 
   window.addEventListener("beforeunload", warnBeforeLeaving);
   recorder.start(CHUNK_INTERVAL_MS);
