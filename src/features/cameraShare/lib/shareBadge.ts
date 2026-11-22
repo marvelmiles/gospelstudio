@@ -2,7 +2,13 @@ import type { ConnectionBadgeStatus } from "../../pairing/lib/connectionBadge";
 import type { ConnectionPhase } from "../../pairing/lib/useConnectionLifecycle";
 
 export type BroadcastPhase =
-  "starting" | "waiting" | "connecting" | "live" | "reconnecting" | "failed";
+  | "starting"
+  | "noNetwork"
+  | "waiting"
+  | "connecting"
+  | "live"
+  | "reconnecting"
+  | "failed";
 
 export const broadcastPhaseBadge = (
   phase: BroadcastPhase,

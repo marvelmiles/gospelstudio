@@ -5,12 +5,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { KeyRound } from "lucide-react";
+import { KeyRound, RotateCcw } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { Button } from "@/components/ui/button";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { ConnectionBadge } from "../pairing/ConnectionBadge";
 import { LobbyActions } from "./LobbyActions";
+import { QuickConnectFailure } from "../pairing/QuickConnectFailure";
 import { QuickConnectNote } from "../pairing/QuickConnectNote";
 import { PairingStatusLine } from "../pairing/PairingStatusLine";
 import { openCamera } from "../pairing/lib/cameras";
@@ -57,10 +58,6 @@ export const NearbySharePanel = ({
     method: "one_tap",
   });
 
-  const switchToCode = useEffectEvent((message?: string) => {
-    if (message) pushToast(message, "error");
-    onUseCode();
-  });
   const leaveWithError = useEffectEvent((message: string) => {
     pushToast(message, "error");
     onBack();
@@ -107,9 +104,7 @@ export const NearbySharePanel = ({
       const room = studioLink?.room ?? (await deriveNetworkRoom());
       if (isCancelled) return;
       if (!room) {
-        switchToCode(
-          "Couldn't detect your network for one-tap. Use a code instead.",
-        );
+        setPhase("noNetwork");
         return;
       }
 
@@ -140,7 +135,8 @@ export const NearbySharePanel = ({
           studioLink?.studio ?? null,
         );
       } catch {
-        switchToCode();
+        stopCapture();
+        setPhase("noNetwork");
         return;
       }
       broadcastRef.current = broadcast;
@@ -184,6 +180,16 @@ export const NearbySharePanel = ({
     }, graceMs);
     return () => window.clearTimeout(timer);
   }, [phase, pushToast, onReset]);
+
+  if (phase === "noNetwork")
+    return (
+      <QuickConnectFailure onRetry={onReset} onUseCode={onUseCode}>
+        <Button variant="secondary" size="sm" onClick={onBack}>
+          <RotateCcw size={14} />
+          Back
+        </Button>
+      </QuickConnectFailure>
+    );
 
   return (
     <div className="mx-auto max-w-115">

@@ -10,7 +10,8 @@ import {
   type SharePresence,
 } from "./shareSignaling";
 
-export type LobbyStatus = "starting" | "ready" | "offline" | "unavailable";
+export type LobbyStatus =
+  "starting" | "ready" | "networkNotFound" | "offline" | "unavailable";
 
 export interface ShareLobbyOptions {
   announce?: boolean;
@@ -79,7 +80,7 @@ export const useShareLobby = ({
       if (isCancelled) return;
       if (!networkRoom) {
         setRoom(null);
-        setStatus("offline");
+        setStatus(isOnline() ? "networkNotFound" : "offline");
         return;
       }
       if (announce) {
@@ -136,7 +137,10 @@ const newestPerDevice = (devices: ShareDevice[]): ShareDevice[] => {
   return [...byName.values()];
 };
 
-export const deviceListHint = (status: LobbyStatus): string =>
-  status === "ready"
-    ? "No other device is here yet. Open Share on the other device and it appears in this list, or pair with a code."
-    : "No device paired yet. Choose Pair with a code, then on the other device open Share and choose Receive with a code.";
+export const deviceListHint = (status: LobbyStatus): string => {
+  if (status === "ready")
+    return "No other device is here yet. Open Share on the other device and it appears in this list, or pair with a code.";
+  if (status === "networkNotFound")
+    return "Couldn't find this network, so nearby devices can't show up. Press Refresh to try again, or pair with a code instead.";
+  return "No device paired yet. Choose Pair with a code, then on the other device open Share and choose Receive with a code.";
+};

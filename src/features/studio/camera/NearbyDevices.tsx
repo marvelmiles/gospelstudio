@@ -1,8 +1,9 @@
 import { useEffect, useEffectEvent, useState } from "react";
-import { KeyRound, Smartphone, Wifi, WifiOff } from "lucide-react";
+import { KeyRound, Smartphone, Wifi } from "lucide-react";
 import { deriveNetworkRoom } from "../../../lib/networkRoom";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
+import { QuickConnectFailure } from "../../pairing/QuickConnectFailure";
 import { QuickConnectNote } from "../../pairing/QuickConnectNote";
 import {
   watchBroadcasters,
@@ -10,7 +11,6 @@ import {
 } from "../../pairing/lib/signaling";
 import { connectNearbyCamera } from "../lib/remoteCameras";
 import { useSourceState } from "../store/cameraStore";
-import { CameraNotice } from "./CameraNotice";
 import { studioLinkUrl } from "../../pairing/lib/cameraLink";
 import { InfoTip } from "@/components/shared/InfoTip";
 import { LinkQr } from "./LinkQr";
@@ -27,6 +27,7 @@ interface NearbyDevicesProps {
 
 export const NearbyDevices = ({ pairingId, onUseCode }: NearbyDevicesProps) => {
   const [lookup, setLookup] = useState<RoomLookup>({ state: "searching" });
+  const [attempt, setAttempt] = useState(0);
   const [devices, setDevices] = useState<DeviceEntry[]>([]);
   const [viewerId] = useState(() => crypto.randomUUID());
   const [studioToken] = useState(() => crypto.randomUUID());
@@ -68,7 +69,12 @@ export const NearbyDevices = ({ pairingId, onUseCode }: NearbyDevicesProps) => {
       isCancelled = true;
       stopWatching();
     };
-  }, []);
+  }, [attempt]);
+
+  const retryLookup = () => {
+    setLookup({ state: "searching" });
+    setAttempt((count) => count + 1);
+  };
 
   const connect = (device: DeviceEntry) => {
     if (lookup.state === "found") connectTo(device, lookup.room);
@@ -82,16 +88,7 @@ export const NearbyDevices = ({ pairingId, onUseCode }: NearbyDevicesProps) => {
   );
 
   if (lookup.state === "missing")
-    return (
-      <div className="flex flex-col items-center gap-3 py-2 text-center">
-        <CameraNotice
-          icon={WifiOff}
-          title="Your WiFi could not be found"
-          message="Quick connect needs a moment of internet on both devices. Pair with a code instead. It works with no internet at all."
-        />
-        {codeButton}
-      </div>
-    );
+    return <QuickConnectFailure onRetry={retryLookup} onUseCode={onUseCode} />;
 
   return (
     <div className="flex flex-col gap-3">

@@ -257,6 +257,16 @@ const DeviceBadge = () => (
 const statusLineClassName =
   "mt-0.75 flex items-center gap-1.5 text-xs text-subtle-foreground";
 
+const LOBBY_STATUS_MESSAGES: Record<
+  Exclude<LobbyStatus, "starting" | "ready">,
+  string
+> = {
+  networkNotFound:
+    "Couldn't find this network. Press Refresh to try again, or pair with a code.",
+  offline: "No internet. Pair with a code to share over this WiFi.",
+  unavailable: "Pair with a code to share over this WiFi.",
+};
+
 const LobbyStatusLine = ({ status }: { status: LobbyStatus }) => {
   if (status === "starting") {
     return (
@@ -275,11 +285,14 @@ const LobbyStatusLine = ({ status }: { status: LobbyStatus }) => {
     );
   }
   return (
-    <span className={statusLineClassName}>
+    <span
+      className={cn(
+        statusLineClassName,
+        status === "networkNotFound" && "text-destructive",
+      )}
+    >
       <WifiOff size={13} />
-      {status === "offline"
-        ? "No internet. Pair with a code to share over this WiFi."
-        : "Pair with a code to share over this WiFi."}
+      {LOBBY_STATUS_MESSAGES[status]}
     </span>
   );
 };
