@@ -13,7 +13,7 @@ import {
 const SERVICE_NAME = "streaming relay";
 const MISSING_RELAY_HINT =
   "Check VITE_LIVE_RELAY_URL and that the relay server is running.";
-const REQUEST_TIMEOUT_MS = 20_000;
+const REQUEST_TIMEOUT_MS = 60_000;
 
 export const liveRelayUrl = (): string | null =>
   env.VITE_LIVE_RELAY_URL?.replace(/\/+$/, "") ?? null;

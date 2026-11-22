@@ -181,6 +181,12 @@ describe("relay HTTP API", () => {
       headers: { Origin: "https://evil.example" },
     });
     expect(foreign.status).toBe(403);
+    expect(foreign.headers.get("access-control-allow-origin")).toBe(
+      "https://evil.example",
+    );
+    const refusal = (await foreign.json()) as { error: { message: string } };
+    expect(refusal.error.message).toContain("ALLOWED_ORIGINS");
+    expect(relay?.registry.size).toBe(0);
     const preflight = await call(base, "/v1/sessions", { method: "OPTIONS" });
     expect(preflight.status).toBe(204);
     expect(preflight.headers.get("access-control-allow-headers")).toContain(

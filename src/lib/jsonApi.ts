@@ -53,6 +53,12 @@ export const requestJson = async <S extends z.ZodTypeAny>({
       headers: { Accept: "application/json", ...init.headers },
     });
   } catch (error) {
+    if (error instanceof DOMException && error.name === "TimeoutError")
+      throw new ApiRequestError(
+        "timeout",
+        `The ${serviceName} took too long to answer. If it was asleep it may be waking up, so try again in a moment.`,
+        0,
+      );
     if (init.signal?.aborted) throw error;
     throw new ApiRequestError(
       "network",

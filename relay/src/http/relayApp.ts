@@ -76,7 +76,7 @@ const corsFor =
   (request, response, next) => {
     const origin = request.headers.origin;
     const isAllowed = isOriginAllowed(allowedOrigins, origin);
-    if (origin && isAllowed) {
+    if (origin) {
       response.setHeader("Access-Control-Allow-Origin", origin);
       response.setHeader("Vary", "Origin");
     }
@@ -86,7 +86,7 @@ const corsFor =
         new RelayError(
           403,
           "forbidden_origin",
-          "This site may not use the relay.",
+          `This site (${origin}) is not allowed to use the streaming relay. Add it to ALLOWED_ORIGINS on the relay server.`,
         ),
       );
       return;
