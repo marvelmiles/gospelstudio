@@ -2,8 +2,8 @@ import type { CustomProperties } from "@plausible-analytics/tracker";
 import {
   ANALYTICS_EVENTS,
   type AnalyticsEvent,
-  type AnalyticsEventProps,
-} from "./analyticsEvents";
+} from "@/contracts/analyticsEvents";
+import type { AnalyticsEventProps } from "./eventProps";
 import { createOccurrenceCheck } from "./eventDeduplication";
 import { isPlausibleActive, sendPlausibleEvent } from "./plausible";
 

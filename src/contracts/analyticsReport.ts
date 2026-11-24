@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ANALYTICS_FEATURES, type AnalyticsFeature } from "./analyticsEvents";
 import { REPORT_PERIOD_IDS } from "./reportPeriods";
 
-export const ANALYTICS_REPORT_ENDPOINT = "/api/analytics/report";
+export const ANALYTICS_REPORT_PATH = "/v1/analytics/report";
 
 const REPORT_SECTIONS = ["overview", "features", "audience"] as const;
 

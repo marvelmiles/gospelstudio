@@ -1,6 +1,7 @@
-import type { LiveStreamFailureReason } from "../../../lib/analytics/analyticsEvents";
+import type { LiveStreamFailureReason } from "../../../lib/analytics/eventProps";
 import { trackEvent } from "../../../lib/analytics/trackEvent";
 import { ApiRequestError } from "../../../lib/jsonApi";
+import { relayServerUrl } from "../../../lib/relayServer";
 import { useStore } from "../../../store/useStore";
 import { toLandscapeTrack } from "../../studio/capture/landscapeTrack";
 import {
@@ -19,10 +20,10 @@ import {
   createRelaySession,
   endRelaySession,
   ingestUrlOf,
-  liveRelayUrl,
+  LIVE_STREAMING_NOT_CONFIGURED,
   setRelayDestinations,
 } from "./liveRelayApi";
-import type { CreatedSession } from "./liveRelayContract";
+import type { CreatedSession } from "@/contracts/liveRelay";
 import { liveQualityProfile, type LiveQualityId } from "./liveQuality";
 import { streamUrlOf, type StreamDestination } from "./liveStreamSettings";
 import {
@@ -53,8 +54,7 @@ const CONNECT_TIMEOUT_MS = 20_000;
 
 const NOT_CONFIGURED: LiveProblem = {
   code: "not_configured",
-  message:
-    "Live streaming is not set up on this site yet. Whoever runs it needs to start the streaming relay and set VITE_LIVE_RELAY_URL.",
+  message: LIVE_STREAMING_NOT_CONFIGURED,
 };
 
 const UNSUPPORTED: LiveProblem = {
@@ -206,7 +206,7 @@ export const startLiveStream = async ({
     destinations.length === 0
   )
     return "failed";
-  const relayUrl = liveRelayUrl();
+  const relayUrl = relayServerUrl();
   if (!relayUrl) {
     setState({ ...IDLE_LIVE_STATE, problem: NOT_CONFIGURED });
     return "failed";

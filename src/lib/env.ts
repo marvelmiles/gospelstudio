@@ -9,7 +9,7 @@ const ENV_FIELDS = {
   VITE_FIREBASE_DATABASE_URL: z.string().url(),
   VITE_PLAUSIBLE_DOMAIN: z.string().regex(/^[a-z0-9.-]+\.[a-z]{2,}$/i),
   VITE_PLAUSIBLE_API_BASE_URL: z.string().url(),
-  VITE_LIVE_RELAY_URL: z
+  VITE_RELAY_SERVER_URL: z
     .string()
     .url()
     .refine((value) => /^https?:\/\//i.test(value), "Use an http(s) address"),

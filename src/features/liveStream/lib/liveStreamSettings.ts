@@ -5,7 +5,7 @@ import {
   readDeviceSetting,
   writeDeviceSetting,
 } from "../../../lib/deviceSettings";
-import { MAX_STREAM_DESTINATIONS } from "./liveRelayContract";
+import { MAX_STREAM_DESTINATIONS } from "@/contracts/liveRelay";
 import {
   DEFAULT_LIVE_QUALITY,
   liveQualityIdSchema,
@@ -16,7 +16,7 @@ import {
   buildStreamUrl,
   streamKeySchema,
   streamServerUrlSchema,
-} from "./streamUrl";
+} from "@/contracts/streamUrl";
 
 const SETTING_NAME = "live-stream";
 const MAX_LABEL_LENGTH = 60;

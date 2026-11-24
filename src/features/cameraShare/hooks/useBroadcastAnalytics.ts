@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { CameraPairingMethod } from "../../../lib/analytics/analyticsEvents";
+import type { CameraPairingMethod } from "../../../lib/analytics/eventProps";
 import {
   endSession,
   isSessionOpen,

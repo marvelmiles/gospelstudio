@@ -1,6 +1,6 @@
 import { cn } from "../../../lib/utils";
 import { HEALTH_TONE_CLASS, useStreamHealth } from "../hooks/useStreamHealth";
-import type { SessionSnapshot } from "../lib/liveRelayContract";
+import type { SessionSnapshot } from "@/contracts/liveRelay";
 import { useLiveStreamStore } from "../lib/liveStreamStore";
 import { LiveClock } from "./LiveClock";
 

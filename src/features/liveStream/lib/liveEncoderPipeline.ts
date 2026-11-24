@@ -8,7 +8,7 @@ import {
   encodeFlvTag,
   FLV_TAG_AUDIO,
   FLV_TAG_VIDEO,
-} from "./flv";
+} from "@/contracts/flv";
 import { IngestConnection } from "./ingestConnection";
 import {
   audioEncoderConfigFor,

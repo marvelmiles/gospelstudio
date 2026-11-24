@@ -9,7 +9,7 @@ import {
   destinationName,
   type StreamDestination,
 } from "../lib/liveStreamSettings";
-import { streamKeyEnding } from "../lib/streamUrl";
+import { streamKeyEnding } from "@/contracts/streamUrl";
 import { DestinationStatusBadge } from "./DestinationStatusBadge";
 import { PlatformIcon } from "./PlatformIcon";
 

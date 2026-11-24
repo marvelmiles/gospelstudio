@@ -1,5 +1,5 @@
 import type { StreamHealth } from "./adaptiveBitrate";
-import type { SessionSnapshot } from "./liveRelayContract";
+import type { SessionSnapshot } from "@/contracts/liveRelay";
 import type { LiveQualityProfile } from "./liveQuality";
 
 export interface EncoderStartCommand {

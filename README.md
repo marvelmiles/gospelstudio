@@ -185,7 +185,9 @@ In an editor opened from the Studio, `Ctrl` + `S` updates the scene and `Ctrl` +
 
 ## Setup
 
-You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. The app itself needs no server, database or account, because it keeps everything in the browser. The only server code is an optional Netlify Function that feeds the admin analytics dashboard, and the optional live streaming relay in `relay/`, a small Node service you run with Docker (see Deployment).
+You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. The app itself needs no server, database or account, because it keeps everything in the browser.
+
+This repository is the frontend only. Live streaming and the admin analytics dashboard talk to the **GospelStudio relay server**, a separate project ([`gospelstudio-relay-server`](https://github.com/marvelmiles/gospelstudio-relay-server)) that you run with Docker. Both are optional: without the relay server, every other feature works as before.
 
 ## Installation
 
@@ -218,6 +220,8 @@ Then open the address Vite prints. By default that is http://localhost:5173.
 | `pnpm generate:icons`          | Create the PNG icons from `public/icon.svg`             |
 | `pnpm generate:thumbnails`     | Create small previews of the built-in background images |
 | `pnpm generate:bible-layout`   | Rebuild the list of Bible books and chapters            |
+| `pnpm contracts:sync`          | Copy `src/contracts` from the relay server project      |
+| `pnpm contracts:check`         | Fail if `src/contracts` differs from the relay server   |
 
 Run `pnpm generate:thumbnails` after adding a picture to `public/assets/images`. Lists and editors show the small copy from `public/assets/images/thumbs`, and only the projector loads the full picture.
 
@@ -247,23 +251,13 @@ Analytics is optional too. These are built into the public JavaScript, so they h
 
 Tracking only runs in a production build opened on that domain or its `www.` address, so `pnpm dev`, `pnpm preview` and localhost are never counted. Without `VITE_PLAUSIBLE_DOMAIN`, every production deploy reports under its own address, deploy previews included. Plausible drops visits for addresses that are not added as sites, so set the variable when only one address should count.
 
-The admin analytics dashboard needs these server-only variables. Never give them a `VITE_` prefix:
+Live streaming and the admin analytics dashboard need the address of the relay server. It is public, so it is built into the app:
 
-| Variable                 | What it is                                                                                   |
-| ------------------------ | -------------------------------------------------------------------------------------------- |
-| `PLAUSIBLE_API_KEY`      | A Plausible Stats API key                                                                    |
-| `PLAUSIBLE_SITE_ID`      | The site in Plausible, `gospelstudio.app`                                                    |
-| `ANALYTICS_ADMIN_TOKEN`  | A random secret of at least 32 characters that admins type to open the dashboard             |
-| `PLAUSIBLE_API_BASE_URL` | Optional, defaults to `https://plausible.io`                                                 |
-| `ANALYTICS_TIMEZONE`     | Optional, defaults to `Africa/Lagos`. Must match the site's reporting time zone in Plausible |
+| Variable                | What it is                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `VITE_RELAY_SERVER_URL` | The relay server's `https://` address. Without it the Stream dialog and the analytics dashboard say they are not set up |
 
-Live streaming needs the address of your streaming relay. It is public, so it is built into the app:
-
-| Variable              | What it is                                                                  |
-| --------------------- | --------------------------------------------------------------------------- |
-| `VITE_LIVE_RELAY_URL` | The relay's `https://` address. Without it the Stream dialog says it is off |
-
-The relay has its own variables, listed in [`relay/.env.example`](relay/.env.example).
+The relay server keeps its own variables, including the secret Plausible Stats API key and the analytics admin token. They are listed in the relay server's `.env.example` and never go into this app's build.
 
 ## Deployment
 
@@ -271,19 +265,23 @@ The relay has its own variables, listed in [`relay/.env.example`](relay/.env.exa
 
 The build also writes one HTML file for each main page, such as `manuscripts.html` and `bible.html`, with that page's own title and description. Hosts serve them at `/manuscripts` and `/bible`, so a link shared on WhatsApp or another app shows the right preview. The titles and descriptions live in `src/lib/pageMeta.ts`.
 
-On Netlify, `netlify/functions/analytics-report.ts` is deployed with the site and answers `/api/analytics/report` for the admin dashboard at `/admin/analytics`. Set `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_API_BASE_URL` if needed) with the Builds scope, and the server-only analytics variables with the Functions scope, then redeploy. On other static hosts the tracking still works, but the dashboard needs that function ported to the host's own server functions. To try the dashboard locally, run `netlify dev` with the server variables in `.env`. Plausible setup, goals and the full event list are in [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md).
+The app is a static site only. Live streaming and the admin dashboard at `/admin/analytics` are served by the relay server, which runs on any server with Docker and a domain name (not on Netlify, because serverless functions cannot keep a stream open). Deploy it as its README describes, add this app's address to its `ALLOWED_ORIGINS`, then set `VITE_RELAY_SERVER_URL` for the app (on Netlify, with the Builds scope) and redeploy. Set `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_API_BASE_URL` if needed) the same way. Plausible setup, goals and the full event list are in [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md), and the streaming flow and troubleshooting are in [`src/features/liveStream/LIVE_STREAMING.md`](src/features/liveStream/LIVE_STREAMING.md).
 
-Live streaming runs on the relay in `relay/`, not on Netlify, because serverless functions cannot keep a stream open. On any server with Docker and a domain name, copy `relay/.env.example` to `relay/.env`, set `ALLOWED_ORIGINS` and `RELAY_DOMAIN`, and run `docker compose up -d --build` in `relay/`. Caddy gets the HTTPS certificate by itself. Then set `VITE_LIVE_RELAY_URL` for the app with the Builds scope and redeploy. The relay copies the stream to each platform without re-encoding it, so one small server carries many streams, with no accounts, quotas or per-minute fees. For local development run `pnpm relay:install` and `pnpm relay:dev`. Setup, sizing, the API and troubleshooting are in [`src/features/liveStream/LIVE_STREAMING.md`](src/features/liveStream/LIVE_STREAMING.md).
+For local development, clone the relay server next to this project, run `pnpm install` and `pnpm dev` there with `ALLOWED_ORIGINS=http://localhost:5173` in its `.env`, then set `VITE_RELAY_SERVER_URL=http://localhost:8080` in this project's `.env` and run `pnpm dev`.
+
+### Shared contracts
+
+The request and response shapes both projects rely on live in `src/contracts`: the live relay API and its close codes, the FLV format, the stream address rules, the analytics event catalog, and the report periods and types. The relay server owns them. This project keeps an exact copy, so it builds and deploys on its own. After changing a contract in the relay server, run `pnpm contracts:sync` here (it looks for `../gospelstudio-relay-server`, or the folder in `RELAY_SERVER_DIR`). `pnpm contracts:check` fails when the copies differ. Never edit `src/contracts` in this project directly.
 
 ## Tech stack
 
 - **App:** Vite, React 19, TypeScript, React Router and Zustand.
 - **Styling:** Tailwind CSS 4 and shadcn/ui (Radix UI primitives and tw-animate-css), with clsx, tailwind-merge and class-variance-authority for combining classes.
-- **Analytics:** Plausible through its official `@plausible-analytics/tracker` package, and a Netlify Function that reads the Plausible Stats API for the admin dashboard.
+- **Analytics:** Plausible through its official `@plausible-analytics/tracker` package. The admin dashboard reads the Plausible Stats API through the relay server.
 - **Interface helpers:** Sonner for toasts, usehooks-ts for window size, media queries, element size and local storage, @dnd-kit for dragging slides, scenes and layers, react-rnd for moving and resizing layers in the Studio, and lucide-react for icons.
 - **Slide and scene transitions:** the browser's Web Animations API.
 - **Storage:** IndexedDB for documents and files, Zod to check backups, and fflate for the `.zip` format.
-- **Live streaming:** WebCodecs for H.264 and AAC encoding in a Web Worker, `@sapphi-red/web-noise-suppressor` (RNNoise) for noise cancellation, Web Audio for the sound mix and polish, and Simple Icons (`@icons-pack/react-simple-icons`) for platform logos. The relay uses Express, `ws`, Zod, `express-rate-limit` and FFmpeg.
+- **Live streaming:** WebCodecs for H.264 and AAC encoding in a Web Worker, `@sapphi-red/web-noise-suppressor` (RNNoise) for noise cancellation, Web Audio for the sound mix and polish, and Simple Icons (`@icons-pack/react-simple-icons`) for platform logos. The relay server is a separate project built with Express, `ws`, Zod, `express-rate-limit` and FFmpeg.
 - **Cameras and sharing:** getUserMedia for webcams in the Studio, WebRTC for cameras on other devices, jsQR and qrcode-generator for pairing codes and on-screen QR codes, and Firebase Realtime Database as an optional signalling relay.
 - **Offline:** vite-plugin-pwa and Workbox.
 
@@ -292,9 +290,11 @@ Live streaming runs on the relay in `relay/`, not on Netlify, because serverless
 ```
 src/
   index.css        Tailwind entry: the shadcn theme variables, shadows, animations and custom utilities
-  lib/             parser, slide animations, style and background resolution, storage, zod schema, cn() in utils.ts
-    analytics/     Plausible tracking, the event catalog, URL cleaning, sessions, opt-out and the
-                   report periods and types shared with the server
+  contracts/       exact copy of the relay server's contracts: live relay API, FLV, stream address rules,
+                   analytics event catalog, report periods and report types (pnpm contracts:sync)
+  lib/             parser, slide animations, style and background resolution, storage, zod schema, cn() in utils.ts,
+                   the relay server address (relayServer.ts)
+    analytics/     Plausible tracking, event properties, URL cleaning, sessions and opt-out
   data/            built-in backgrounds, themes, collections, fonts and seed manuscripts
                    (hymns.json holds the bundled hymnal, generated, not edited by hand)
   store/           Zustand store (state, actions and saving)
@@ -322,7 +322,7 @@ src/
                    WebRTC peers, signalling and the pairing codec (lib/)
     cameraShare/   Share camera page: sends this device's camera to the Studio
     liveStream/    Live streaming to social platforms: the Stream button and dialog, the
-                   saved platforms, the encoder worker, FLV and the relay contract (lib/)
+                   saved platforms, the encoder worker and the relay server calls (lib/)
     share/         Share: handing a library and studio productions to a nearby device
     settings/      Settings modal, split into one file per section
     about/         About & Help modal and its FAQ list
@@ -333,14 +333,10 @@ src/
   App.tsx          layout shell, routes and global overlays
   ProjectionApp.tsx  the live windows shown on the projector (present and studio)
   main.tsx         entry point (Router, starts analytics outside projector windows)
-server/
-  analytics/       Stats API client, caching, request checks, admin key check and the report builder
-  shared/          JSON responses, env parsing and constant-time secret checks used by both
-netlify/
-  functions/       analytics-report.ts, the serverless entry for /api/analytics/report
-relay/             live streaming relay: Express API, WebSocket ingest, FLV fan-out and FFmpeg,
-                   with its own package.json, Dockerfile and docker-compose.yml
+scripts/           generators for hymns, icons, thumbnails and the Bible layout, and the contract sync
 ```
+
+The live streaming relay and the analytics report API live in the separate `gospelstudio-relay-server` project.
 
 Components are written as `const` functions, each file does one job, and anything shared lives in a hook, a component or a `lib/` module.
 
@@ -357,7 +353,7 @@ Components are written as `const` functions, each file does one job, and anythin
 - **Live is a copy, not the scene.** GO LIVE copies the preview scene, so editing it afterwards never changes what the room sees until you press GO LIVE again. Live controls, the PiP window and Update scene from an item's editor change the copy and the scene together.
 - **Scene items keep their own copy.** Open editor saves into the layer itself (`manuscript`, `passage` or `overrides`), never into the library, so a production can carry a changed song or passage that the library does not have.
 - **Studio productions live in their own database** (`gospelstudio-studio`, version 1), next to the library database, so devices that already had a library get the studio stores without a version change. Reset and Free up space clear both.
-- **The browser encodes, the relay only copies.** Browsers cannot send RTMP, so the Studio encodes H.264 and AAC itself with WebCodecs, with 2 second keyframes and a bitrate that adapts to the upload, and sends FLV over a WebSocket. The relay copies it to every platform with FFmpeg without re-encoding, so it needs very little CPU and no third-party streaming service.
+- **The browser encodes, the relay only copies.** Browsers cannot send RTMP, so the Studio encodes H.264 and AAC itself with WebCodecs, with 2 second keyframes and a bitrate that adapts to the upload, and sends FLV over a WebSocket. The relay server copies it to every platform with FFmpeg without re-encoding, so it needs very little CPU and no third-party streaming service.
 - **Record and Stream share one capture.** `studio/capture/programCapture.ts` hands out leases on a single screen capture and sound mix, so the projector window is picked once and closing it ends both.
 - **Noise cancellation works offline too.** RNNoise's WebAssembly files (about 155 kB) are precached, so recordings made without internet are cleaned up as well.
 - **The service worker also runs in development**, so you can test offline and install behaviour without a production build.

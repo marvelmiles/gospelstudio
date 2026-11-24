@@ -1,13 +1,19 @@
-import type { ReportPeriod } from "../../../lib/analytics/reportPeriods";
+import type { ReportPeriod } from "@/contracts/reportPeriods";
 import {
-  ANALYTICS_REPORT_ENDPOINT,
+  ANALYTICS_REPORT_PATH,
   REPORT_SCHEMAS,
   type ReportBySection,
   type ReportSection,
-} from "../../../lib/analytics/reportTypes";
-import { requestJson } from "../../../lib/jsonApi";
+} from "@/contracts/analyticsReport";
+import { ApiRequestError, requestJson } from "../../../lib/jsonApi";
+import {
+  RELAY_SERVER_MISSING_HINT,
+  relayServerUrl,
+} from "../../../lib/relayServer";
 
 export { ApiRequestError as ReportRequestError } from "../../../lib/jsonApi";
+
+const SERVICE_NAME = "analytics service";
 
 export interface ReportSelection {
   period: ReportPeriod;
@@ -24,7 +30,7 @@ export const reportUrl = (
     params.set("from", selection.from);
     params.set("to", selection.to);
   }
-  return `${ANALYTICS_REPORT_ENDPOINT}?${params.toString()}`;
+  return `${ANALYTICS_REPORT_PATH}?${params.toString()}`;
 };
 
 export const fetchReport = async <S extends ReportSection>(
@@ -32,10 +38,19 @@ export const fetchReport = async <S extends ReportSection>(
   selection: ReportSelection,
   adminKey: string,
   signal: AbortSignal,
-): Promise<ReportBySection[S]> =>
-  (await requestJson({
-    url: reportUrl(section, selection),
+): Promise<ReportBySection[S]> => {
+  const serverUrl = relayServerUrl();
+  if (!serverUrl)
+    throw new ApiRequestError(
+      "not_configured",
+      "Analytics reports are not set up on this site yet. Set VITE_RELAY_SERVER_URL to the relay server's address.",
+      0,
+    );
+  return (await requestJson({
+    url: `${serverUrl}${reportUrl(section, selection)}`,
     init: { headers: { Authorization: `Bearer ${adminKey}` }, signal },
     dataSchema: REPORT_SCHEMAS[section],
-    serviceName: "analytics service",
+    serviceName: SERVICE_NAME,
+    missingServiceHint: RELAY_SERVER_MISSING_HINT,
   })) as ReportBySection[S];
+};

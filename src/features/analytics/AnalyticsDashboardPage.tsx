@@ -15,12 +15,12 @@ import {
   DEFAULT_REPORT_PERIOD,
   DEFAULT_REPORT_TIME_ZONE,
   todayIn,
-} from "../../lib/analytics/reportPeriods";
+} from "@/contracts/reportPeriods";
 import type {
   AudienceReport,
   BreakdownRow,
   FeaturesReport,
-} from "../../lib/analytics/reportTypes";
+} from "@/contracts/analyticsReport";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { Panel, PanelTitle } from "@/components/shared/Panel";
 import { Button } from "@/components/ui/button";

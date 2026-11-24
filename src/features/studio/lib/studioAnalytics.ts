@@ -1,4 +1,4 @@
-import type { SceneCreationSource } from "../../../lib/analytics/analyticsEvents";
+import type { SceneCreationSource } from "../../../lib/analytics/eventProps";
 import { analyticsKey, trackEvent } from "../../../lib/analytics/trackEvent";
 
 const sceneKey = (sceneId: string): string => analyticsKey("scene", sceneId);

@@ -14,31 +14,31 @@ describe("environment variables", () => {
     const { values, invalidFields } = parseEnvValues({
       ...FIREBASE,
       VITE_PLAUSIBLE_DOMAIN: "localhost",
-      VITE_LIVE_RELAY_URL: "not a url",
+      VITE_RELAY_SERVER_URL: "not a url",
     });
     expect(values).toMatchObject(FIREBASE);
     expect(invalidFields).toEqual([
       "VITE_PLAUSIBLE_DOMAIN",
-      "VITE_LIVE_RELAY_URL",
+      "VITE_RELAY_SERVER_URL",
     ]);
   });
 
   it("treats empty values as not set rather than invalid", () => {
     const { values, invalidFields } = parseEnvValues({
       ...FIREBASE,
-      VITE_LIVE_RELAY_URL: "",
+      VITE_RELAY_SERVER_URL: "",
       VITE_PLAUSIBLE_API_BASE_URL: "   ",
     });
     expect(invalidFields).toEqual([]);
-    expect(values.VITE_LIVE_RELAY_URL).toBeUndefined();
+    expect(values.VITE_RELAY_SERVER_URL).toBeUndefined();
     expect(values.VITE_FIREBASE_API_KEY).toBe(FIREBASE.VITE_FIREBASE_API_KEY);
   });
 
   it("trims stray spaces around values", () => {
     expect(
-      parseEnvValues({ VITE_LIVE_RELAY_URL: " https://live.example.com " })
+      parseEnvValues({ VITE_RELAY_SERVER_URL: " https://live.example.com " })
         .values,
-    ).toEqual({ VITE_LIVE_RELAY_URL: "https://live.example.com" });
+    ).toEqual({ VITE_RELAY_SERVER_URL: "https://live.example.com" });
   });
 
   it("ignores variables it does not know", () => {

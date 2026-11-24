@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import type { StreamStats } from "./liveEncoderProtocol";
-import type { SessionSnapshot } from "./liveRelayContract";
+import type { SessionSnapshot } from "@/contracts/liveRelay";
 
 type LivePhase = "idle" | "starting" | "live" | "stopping";
 

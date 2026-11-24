@@ -22,8 +22,8 @@ Plausible recognises a browser for one day only (its salt rotates every 24 hours
 ## How it works
 
 ```
-Browser                                              Server (Netlify Function)
-main.tsx ─ startAnalytics() ─ plausible.ts            /api/analytics/report
+Browser                                              Relay server (gospelstudio-relay-server)
+main.tsx ─ startAnalytics() ─ plausible.ts            GET /v1/analytics/report
              │  init once, cleans every URL              │  checks the admin key
              │  adds visitor_type                        │  validates section and dates (Zod)
 feature code ─ trackEvent() ── trackEvent.ts            │  caches answers, limits concurrency
@@ -34,12 +34,13 @@ feature code ─ trackEvent() ── trackEvent.ts            │  caches answer
                                                  /admin/analytics dashboard
 ```
 
-- `src/lib/analytics/analyticsEvents.ts` is the single list of events, the feature each belongs to, whether it counts as usage, whether it is interactive and which properties it may carry. The server reads the same file to build the feature report.
+- `src/contracts/analyticsEvents.ts` is the single list of events, the feature each belongs to, whether it counts as usage and whether it is interactive. It is an exact copy of the relay server's contract, which builds the feature report from it. `src/lib/analytics/eventProps.ts` lists which properties each event may carry.
 - `src/lib/analytics/plausible.ts` wraps the official `@plausible-analytics/tracker` package. It starts once, only in production builds served from `VITE_PLAUSIBLE_DOMAIN` or its `www.` address (the domain defaults to the address the app is opened on), and never in the projector or preview windows. The tracker follows History API navigation on its own, so there is no route listener in React. It counts a page view only when the path changes, never for re-renders or query string changes.
 - `src/lib/analytics/trackEvent.ts` is the only way the app sends an event. It does nothing when analytics is off or the visitor opted out, drops repeats that share a dedupe key inside 30 minutes, and never throws.
 - `src/lib/analytics/analyticsSessions.ts` pairs Started and Ended events so a session starts once and ends once, and ends open sessions when the tab closes.
 - `src/main.tsx` loads analytics in parallel with the app and ignores any failure, so it never delays or breaks the app.
-- `server/analytics/` holds the Stats API client, the cache, request validation, the admin key check and the report builder. `netlify/functions/analytics-report.ts` is the thin Netlify entry.
+- `src/contracts/reportPeriods.ts` and `src/contracts/analyticsReport.ts` define the periods, the report endpoint and the Zod schemas of every report, shared with the relay server. `src/features/analytics/lib/reportApi.ts` calls the endpoint at `VITE_RELAY_SERVER_URL` and checks each answer against those schemas.
+- The relay server's `src/analytics/` holds the Stats API client, the cache, request validation, the admin key check and the report builder.
 
 ## Event catalog
 
@@ -74,7 +75,7 @@ Every event also carries `visitor_type` (`new` or `returning`). Events marked no
 
 The brief also listed Presentation Media Displayed. It would fire at exactly the same moment as Image Presented and Video Presented, so it is left out rather than counting one action twice. Camera broadcasts are the app's own phone-to-Studio cameras shown on projectors and TVs. Live streams are the separate broadcasts to YouTube, Facebook and other platforms, counted under Live Streaming.
 
-To add an event: add it to `ANALYTICS_EVENTS`, add its properties to `EventPropsWithValues` if it has any, call `trackEvent` where the action has succeeded, and add the goal in Plausible.
+To add an event: add it to `ANALYTICS_EVENTS` in the relay server's `src/contracts/analyticsEvents.ts` and run `pnpm contracts:sync` here, add its properties to `EventPropsWithValues` in `src/lib/analytics/eventProps.ts` if it has any, call `trackEvent` where the action has succeeded, and add the goal in Plausible.
 
 ## What is never sent
 
@@ -103,31 +104,37 @@ Settings, Privacy, Share anonymous usage statistics. Turning it off sets Plausib
 
 Plausible filters bots, crawlers, referrer spam and data centre traffic on its own. To keep your own visits out, turn usage statistics off in Settings on your devices, or block your IP address under Shields in Plausible.
 
-## Setting up the server (Netlify)
+## Setting up the app and the relay server
 
-In Netlify, under Site configuration, Environment variables:
+In Netlify, under Site configuration, Environment variables, with the Builds scope:
 
-| Variable                      | Scope     | Value                                                                                       |
-| ----------------------------- | --------- | ------------------------------------------------------------------------------------------- |
-| `VITE_PLAUSIBLE_DOMAIN`       | Builds    | `gospelstudio.app` (optional, defaults to the address the app is opened on, without `www.`) |
-| `VITE_PLAUSIBLE_API_BASE_URL` | Builds    | `https://plausible.io` (optional, the default)                                              |
-| `PLAUSIBLE_API_KEY`           | Functions | the Stats API key                                                                           |
-| `PLAUSIBLE_SITE_ID`           | Functions | `gospelstudio.app`                                                                          |
-| `ANALYTICS_ADMIN_TOKEN`       | Functions | a random secret of at least 32 characters                                                   |
-| `PLAUSIBLE_API_BASE_URL`      | Functions | `https://plausible.io` (optional)                                                           |
-| `ANALYTICS_TIMEZONE`          | Functions | `Africa/Lagos` (optional)                                                                   |
+| Variable                      | Value                                                                                       |
+| ----------------------------- | ------------------------------------------------------------------------------------------- |
+| `VITE_PLAUSIBLE_DOMAIN`       | `gospelstudio.app` (optional, defaults to the address the app is opened on, without `www.`) |
+| `VITE_PLAUSIBLE_API_BASE_URL` | `https://plausible.io` (optional, the default)                                              |
+| `VITE_RELAY_SERVER_URL`       | the relay server's `https://` address                                                       |
 
-Make an admin token with:
+On the relay server, set these in its `.env` (they are secrets and stay on that server):
+
+| Variable                 | Value                                                                                        |
+| ------------------------ | -------------------------------------------------------------------------------------------- |
+| `PLAUSIBLE_API_KEY`      | the Stats API key                                                                            |
+| `PLAUSIBLE_SITE_ID`      | `gospelstudio.app`                                                                           |
+| `ANALYTICS_ADMIN_TOKEN`  | a random secret of at least 32 characters                                                    |
+| `PLAUSIBLE_API_BASE_URL` | `https://plausible.io` (optional)                                                            |
+| `ANALYTICS_TIMEZONE`     | `Africa/Lagos` (optional). Must match the site's reporting time zone in Plausible             |
+
+The app's address must also be in the relay server's `ALLOWED_ORIGINS`, because the dashboard calls it from the browser. Make an admin token with:
 
 ```bash
 node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 ```
 
-Redeploy after changing any of them. Variables with a `VITE_` prefix are built into the public JavaScript, so the API key and admin token must never have that prefix. Scope selection needs a Pro plan on Netlify; without it every variable reaches every scope, which is still safe because only `VITE_` variables reach the browser.
+Redeploy the app after changing a `VITE_` variable and restart the relay server after changing its own. Variables with a `VITE_` prefix are built into the public JavaScript, so the API key and admin token must never be set on the app.
 
-The function answers `GET /api/analytics/report?section=overview|features|audience&period=...` with `Authorization: Bearer <admin token>`. It returns `{ "data": ... }` or `{ "error": { "code", "message" } }` with these statuses: 400 for a bad section, period or date range, 401 for a missing or wrong admin key, 405 for anything but GET, 503 when the server variables are missing or Plausible's hourly limit is reached (with `Retry-After`), 502 when Plausible rejects the key, the plan or the query, and 504 when Plausible does not answer in 10 seconds. Responses are never cached by browsers or the CDN.
+The relay server answers `GET /v1/analytics/report?section=overview|features|audience&period=...` with `Authorization: Bearer <admin token>`. It returns `{ "data": ... }` or `{ "error": { "code", "message" } }` with these statuses: 400 for a bad section, period or date range, 401 for a missing or wrong admin key, 405 for anything but GET, 503 when its analytics variables are missing or Plausible's hourly limit is reached (with `Retry-After`), 502 when Plausible rejects the key, the plan or the query, and 504 when Plausible does not answer in 10 seconds. Responses are never cached and carry `X-Robots-Tag: noindex`.
 
-To run the dashboard locally, install the Netlify CLI, put the server variables in `.env`, and run `netlify dev`. Plain `pnpm dev` serves the app without the function, and the dashboard says so.
+To run the dashboard locally, put the analytics variables in the relay server's `.env`, run it with `pnpm dev`, and set `VITE_RELAY_SERVER_URL=http://localhost:8080` here. Without `VITE_RELAY_SERVER_URL` the dashboard says reports are not set up.
 
 ## The dashboard
 
@@ -142,7 +149,7 @@ Answers are cached on the server for 2 minutes when the period includes today an
 
 ## Testing
 
-`pnpm test` runs the unit tests for URL cleaning, deduplication, sessions, visitor type, report periods and time zones, the Stats API client, caching, the report builder and the request handler (auth, validation, errors, no key in responses). After a deploy, check the Network tab and the Plausible Realtime view as described in step 6.
+`pnpm test` here runs the unit tests for URL cleaning, deduplication, sessions, visitor type, the event catalog, and report periods and time zones. The relay server's tests cover the Stats API client, caching, the report builder and the report route (auth, CORS, validation, errors, no key in responses). After a deploy, check the Network tab and the Plausible Realtime view as described in step 6.
 
 ## Limitations
 
@@ -153,4 +160,4 @@ Answers are cached on the server for 2 minutes when the period includes today an
 - Ended events sent while a tab is closing use the browser's keepalive request and can occasionally be lost, so Started and Ended totals may differ slightly.
 - Each tab keeps its own sessions, so presenting in two tabs counts two presentations.
 - The Stats API and custom properties need Plausible's Business plan.
-- The report function is written for Netlify. Another host needs its own small wrapper around `createReportHandler` in `server/analytics/reportHandler.ts`.
+- The dashboard needs the relay server running. Tracking itself goes straight from the browser to Plausible and does not depend on it.

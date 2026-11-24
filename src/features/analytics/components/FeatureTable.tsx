@@ -4,7 +4,7 @@ import { cn } from "../../../lib/utils";
 import type {
   FeatureReport,
   FeaturesReport,
-} from "../../../lib/analytics/reportTypes";
+} from "@/contracts/analyticsReport";
 import { formatCountLabel } from "../../../lib/formatNumber";
 import { formatExact } from "../lib/reportFormat";
 

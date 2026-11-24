@@ -6,7 +6,10 @@ import {
 } from "@plausible-analytics/tracker";
 import { getAnalyticsConfig } from "./analyticsConfig";
 import { isAnalyticsOptedOut } from "./analyticsConsent";
-import { VISITOR_TYPE_PROPERTY, type VisitorType } from "./analyticsEvents";
+import {
+  VISITOR_TYPE_PROPERTY,
+  type VisitorType,
+} from "@/contracts/analyticsEvents";
 import { trackedReferrer, trackedUrl } from "./trackedUrl";
 import { resolveVisitorType } from "./visitorType";
 

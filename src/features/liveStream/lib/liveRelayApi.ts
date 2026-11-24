@@ -1,6 +1,6 @@
 import type { z } from "zod";
-import { env } from "../../../lib/env";
 import { requestJson } from "../../../lib/jsonApi";
+import { RELAY_SERVER_MISSING_HINT } from "../../../lib/relayServer";
 import {
   createdSessionSchema,
   RELAY_PATHS,
@@ -8,15 +8,13 @@ import {
   type CreatedSession,
   type DestinationInput,
   type SessionSnapshot,
-} from "./liveRelayContract";
+} from "@/contracts/liveRelay";
 
 const SERVICE_NAME = "streaming relay";
-const MISSING_RELAY_HINT =
-  "Check VITE_LIVE_RELAY_URL and that the relay server is running.";
 const REQUEST_TIMEOUT_MS = 60_000;
 
-export const liveRelayUrl = (): string | null =>
-  env.VITE_LIVE_RELAY_URL?.replace(/\/+$/, "") ?? null;
+export const LIVE_STREAMING_NOT_CONFIGURED =
+  "Live streaming is not set up on this site yet. Whoever runs it needs to start the relay server and set VITE_RELAY_SERVER_URL.";
 
 export const ingestUrlOf = (relayUrl: string, sessionId: string): string =>
   `${relayUrl.replace(/^http/i, "ws")}${RELAY_PATHS.ingest(sessionId)}`;
@@ -32,7 +30,7 @@ const relayRequest = <S extends z.ZodTypeAny>(
     init: { ...init, signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) },
     dataSchema,
     serviceName: SERVICE_NAME,
-    missingServiceHint: MISSING_RELAY_HINT,
+    missingServiceHint: RELAY_SERVER_MISSING_HINT,
   });
 
 const authorized = (session: CreatedSession): Record<string, string> => ({

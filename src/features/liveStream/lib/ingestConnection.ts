@@ -2,7 +2,7 @@ import {
   INGEST_CLOSE_CODES,
   relayMessageSchema,
   type SessionSnapshot,
-} from "./liveRelayContract";
+} from "@/contracts/liveRelay";
 import type { EncoderFailure } from "./liveEncoderProtocol";
 
 const RECONNECT_DELAYS_MS = [

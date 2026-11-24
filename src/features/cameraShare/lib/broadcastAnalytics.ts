@@ -1,7 +1,7 @@
 import type {
   CameraFailureReason,
   CameraPairingMethod,
-} from "../../../lib/analytics/analyticsEvents";
+} from "../../../lib/analytics/eventProps";
 import { trackEvent } from "../../../lib/analytics/trackEvent";
 
 export const trackBroadcastFailure = (

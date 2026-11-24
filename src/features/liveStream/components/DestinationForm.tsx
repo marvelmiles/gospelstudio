@@ -20,7 +20,7 @@ import {
   streamPlatformIdSchema,
   type StreamPlatformId,
 } from "../lib/streamPlatforms";
-import { buildStreamUrl } from "../lib/streamUrl";
+import { buildStreamUrl } from "@/contracts/streamUrl";
 import { PlatformIcon } from "./PlatformIcon";
 
 type FieldName = keyof StreamDestinationForm;

@@ -11,8 +11,6 @@ export default tseslint.config(
       "dist",
       "dev-dist",
       "node_modules",
-      "relay/dist",
-      "relay/node_modules",
       "scripts",
       ".netlify",
       "*.config.js",
@@ -40,22 +38,6 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "no-empty": ["error", { allowEmptyCatch: true }],
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
-      ],
-    },
-  },
-  {
-    extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["server/**/*.ts", "netlify/**/*.ts", "relay/src/**/*.ts"],
-    languageOptions: {
-      ecmaVersion: 2022,
-      globals: globals.node,
-    },
-    rules: {
       "no-empty": ["error", { allowEmptyCatch: true }],
       "@typescript-eslint/no-explicit-any": "error",
       "@typescript-eslint/no-unused-vars": [

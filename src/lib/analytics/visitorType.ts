@@ -1,4 +1,4 @@
-import type { VisitorType } from "./analyticsEvents";
+import type { VisitorType } from "@/contracts/analyticsEvents";
 
 const FIRST_ACTIVE_DAY_KEY = "gospelstudio:first-active-day";
 const DAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;

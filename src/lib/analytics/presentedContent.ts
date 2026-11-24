@@ -1,4 +1,4 @@
-import type { PresentedContent } from "./analyticsEvents";
+import type { PresentedContent } from "./eventProps";
 import { trackEvent, type EventWithoutProps } from "./trackEvent";
 
 const CONTENT_EVENTS: Record<PresentedContent, EventWithoutProps | null> = {

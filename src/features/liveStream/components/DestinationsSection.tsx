@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { destinationStatusOf } from "../lib/destinationStatus";
-import { MAX_STREAM_DESTINATIONS } from "../lib/liveRelayContract";
+import { MAX_STREAM_DESTINATIONS } from "@/contracts/liveRelay";
 import {
   destinationName,
   removeDestination,

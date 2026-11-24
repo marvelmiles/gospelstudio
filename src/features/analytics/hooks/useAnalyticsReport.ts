@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useState } from "react";
 import type {
   ReportBySection,
   ReportSection,
-} from "../../../lib/analytics/reportTypes";
+} from "@/contracts/analyticsReport";
 import {
   fetchReport,
   reportUrl,

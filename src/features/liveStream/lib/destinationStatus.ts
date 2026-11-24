@@ -1,7 +1,7 @@
 import type {
   DestinationState as RelayDestinationState,
   SessionSnapshot,
-} from "./liveRelayContract";
+} from "@/contracts/liveRelay";
 
 export type DestinationState = "idle" | RelayDestinationState;
 

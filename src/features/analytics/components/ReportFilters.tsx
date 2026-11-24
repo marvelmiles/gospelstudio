@@ -6,7 +6,7 @@ import {
   addDays,
   customRangeProblem,
   type ReportPeriod,
-} from "../../../lib/analytics/reportPeriods";
+} from "@/contracts/reportPeriods";
 import { OptionSelect } from "@/components/shared/OptionSelect";
 import { Field } from "@/components/shared/Field";
 import { Input } from "@/components/ui/input";

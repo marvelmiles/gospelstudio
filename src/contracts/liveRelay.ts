@@ -53,7 +53,6 @@ export const setDestinationsRequestSchema = z
   })
   .strict();
 
-
 const DESTINATION_STATES = [
   "waiting",
   "connecting",
@@ -89,7 +88,6 @@ export type SessionSnapshot = z.infer<typeof sessionSnapshotSchema>;
 export const ingestAuthMessageSchema = z
   .object({ type: z.literal("auth"), token: sessionTokenSchema })
   .strict();
-
 
 export const relayMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("ready") }),

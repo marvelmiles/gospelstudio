@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { destinationStatusOf } from "./destinationStatus";
-import type { SessionSnapshot } from "./liveRelayContract";
+import type { SessionSnapshot } from "@/contracts/liveRelay";
 
 const relay: SessionSnapshot = {
   sessionId: "a".repeat(22),

@@ -24,8 +24,7 @@ interface JsonRequest<S extends z.ZodTypeAny> {
   missingServiceHint?: string;
 }
 
-const DEFAULT_MISSING_SERVICE_HINT =
-  "Open the deployed site, or run it locally with netlify dev.";
+const DEFAULT_MISSING_SERVICE_HINT = "Check that it is running and try again.";
 
 const isJsonResponse = (response: Response): boolean =>
   response.headers.get("content-type")?.includes("application/json") ?? false;

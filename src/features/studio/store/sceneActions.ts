@@ -1,5 +1,5 @@
 import { PARTICLE_WAVE_BACKGROUND_ID } from "../../../data/backgrounds";
-import type { SceneCreationSource } from "../../../lib/analytics/analyticsEvents";
+import type { SceneCreationSource } from "../../../lib/analytics/eventProps";
 import type { Scene, SceneTransition } from "../types/scene";
 import { withFreshIds } from "../lib/layerDefaults";
 import {

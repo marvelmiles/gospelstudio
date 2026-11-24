@@ -1,5 +1,5 @@
-import type { ReportGranularity } from "../../../lib/analytics/reportPeriods";
-import type { ReportRange } from "../../../lib/analytics/reportTypes";
+import type { ReportGranularity } from "@/contracts/reportPeriods";
+import type { ReportRange } from "@/contracts/analyticsReport";
 
 const EXACT = new Intl.NumberFormat("en-US");
 const PERCENT = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });

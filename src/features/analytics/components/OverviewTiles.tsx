@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { formatCount } from "../../../lib/formatNumber";
 import { InfoTip } from "@/components/shared/InfoTip";
-import type { OverviewReport } from "../../../lib/analytics/reportTypes";
+import type { OverviewReport } from "@/contracts/analyticsReport";
 import {
   formatDuration,
   formatExact,

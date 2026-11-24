@@ -16,7 +16,8 @@ import { PropertySection } from "../../studio/properties/fields";
 import { useOpenProjector } from "../../studio/hooks/useOpenProjector";
 import { useOutputConnection } from "../../studio/hooks/useOutputConnection";
 import { hasLiveEncodingApis } from "../lib/liveEncoderClient";
-import { liveRelayUrl } from "../lib/liveRelayApi";
+import { LIVE_STREAMING_NOT_CONFIGURED } from "../lib/liveRelayApi";
+import { relayServerUrl } from "../../../lib/relayServer";
 import {
   destinationName,
   enabledDestinations,
@@ -87,8 +88,7 @@ const ProjectorHint = () => {
 const readinessProblem = (): string | null => {
   if (!hasLiveEncodingApis())
     return "Live streaming needs a recent Chrome or Edge on a Windows or Mac computer. Phones and other browsers cannot encode the stream yet.";
-  if (!liveRelayUrl())
-    return "Live streaming is not set up on this site yet. Whoever runs it needs to start the streaming relay and set VITE_LIVE_RELAY_URL.";
+  if (!relayServerUrl()) return LIVE_STREAMING_NOT_CONFIGURED;
   return null;
 };
 
