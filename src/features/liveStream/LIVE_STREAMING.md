@@ -30,7 +30,7 @@ The relay lives in the separate `gospelstudio-relay-server` project. Its README 
 
 ### 2. Point the app at it
 
-Set `VITE_RELAY_SERVER_URL=https://<RELAY_DOMAIN>` for the app (in Netlify, with the Builds scope) and redeploy. That is all: every visitor can now stream.
+Set `VITE_RELAY_SERVER_URL=https://<RELAY_DOMAIN>` for the app and redeploy. That is all: every visitor can now stream. In Netlify, give the variable the Builds scope and every deploy context you build, such as Production and Branch deploys. The address is written into the app when it is built, so a site built before the variable was added keeps saying streaming is not set up until it is redeployed.
 
 ### Local development
 
@@ -90,7 +90,7 @@ The relay server's tests include one that streams real H.264 and AAC through it 
 
 ## Troubleshooting
 
-- **Live streaming is not set up on this site yet.** `VITE_RELAY_SERVER_URL` is missing from the app's build.
+- **Live streaming is not set up on this site yet.** `VITE_RELAY_SERVER_URL` was missing when the site was built. Check that the variable has the Builds scope and covers the deploy context of this site (a branch deploy such as `dev--` needs Branch deploys), then redeploy. The build log says `VITE_RELAY_SERVER_URL is not set` when it is missing, and the build stops if only the old name `VITE_LIVE_RELAY_URL` is set or a value is not valid.
 - **The streaming relay isn't running at this address.** The relay server is down or the URL is wrong. Open `/healthz` on it.
 - **This site is not allowed to use the relay server (403).** Add the app's exact address to `ALLOWED_ORIGINS` on the relay server.
 - **A platform shows Not receiving.** The key is wrong or used up (Facebook keys can be single use unless you choose a persistent key), or the platform is not waiting for a stream. Fix the key while the platform is switched off, then switch it on or press Try again.

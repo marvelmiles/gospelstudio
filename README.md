@@ -253,8 +253,8 @@ Tracking only runs in a production build opened on that domain or its `www.` add
 
 Live streaming and the admin analytics dashboard need the address of the relay server. It is public, so it is built into the app:
 
-| Variable                | What it is                                                                                                          |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Variable                | What it is                                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `VITE_RELAY_SERVER_URL` | The relay server's `https://` address. Without it the Stream dialog and the analytics dashboard say they are not set up |
 
 The relay server keeps its own variables, including the secret Plausible Stats API key and the analytics admin token. They are listed in the relay server's `.env.example` and never go into this app's build.
@@ -265,7 +265,7 @@ The relay server keeps its own variables, including the secret Plausible Stats A
 
 The build also writes one HTML file for each main page, such as `manuscripts.html` and `bible.html`, with that page's own title and description. Hosts serve them at `/manuscripts` and `/bible`, so a link shared on WhatsApp or another app shows the right preview. The titles and descriptions live in `src/lib/pageMeta.ts`.
 
-The app is a static site only. Live streaming and the admin dashboard at `/admin/analytics` are served by the relay server, which runs on any server with Docker and a domain name (not on Netlify, because serverless functions cannot keep a stream open). Deploy it as its README describes, add this app's address to its `ALLOWED_ORIGINS`, then set `VITE_RELAY_SERVER_URL` for the app (on Netlify, with the Builds scope) and redeploy. Set `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_API_BASE_URL` if needed) the same way. Plausible setup, goals and the full event list are in [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md), and the streaming flow and troubleshooting are in [`src/features/liveStream/LIVE_STREAMING.md`](src/features/liveStream/LIVE_STREAMING.md).
+The app is a static site only. Live streaming and the admin dashboard at `/admin/analytics` are served by the relay server, which runs on any server with Docker and a domain name (not on Netlify, because serverless functions cannot keep a stream open). Deploy it as its README describes, add this app's address to its `ALLOWED_ORIGINS`, then set `VITE_RELAY_SERVER_URL` for the app and redeploy. On Netlify, give it the Builds scope and every deploy context you build (Production, Branch deploys and Deploy Previews as needed), because a branch deploy such as `dev--` only sees variables in the Branch deploys context. `VITE_*` values are written into the app at build time, so adding or changing one has no effect until the next deploy. The build stops with a clear message if a value is not valid or only the old name `VITE_LIVE_RELAY_URL` is set, and its log warns when `VITE_RELAY_SERVER_URL` is missing. Set `VITE_PLAUSIBLE_DOMAIN` (and `VITE_PLAUSIBLE_API_BASE_URL` if needed) the same way. Plausible setup, goals and the full event list are in [`src/features/analytics/ANALYTICS.md`](src/features/analytics/ANALYTICS.md), and the streaming flow and troubleshooting are in [`src/features/liveStream/LIVE_STREAMING.md`](src/features/liveStream/LIVE_STREAMING.md).
 
 For local development, clone the relay server next to this project, run `pnpm install` and `pnpm dev` there with `ALLOWED_ORIGINS=http://localhost:5173` in its `.env`, then set `VITE_RELAY_SERVER_URL=http://localhost:8080` in this project's `.env` and run `pnpm dev`.
 

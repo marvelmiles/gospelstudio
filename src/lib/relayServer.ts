@@ -1,5 +1,8 @@
 import { env } from "./env";
 
+export const RELAY_SERVER_SETUP_HINT =
+  "Set VITE_RELAY_SERVER_URL to the relay server's address, then redeploy the site so the build picks it up.";
+
 export const RELAY_SERVER_MISSING_HINT =
   "Check VITE_RELAY_SERVER_URL and that the relay server is running.";
 

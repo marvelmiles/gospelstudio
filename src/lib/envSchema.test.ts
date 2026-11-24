@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseEnvValues } from "./env";
+import { parseEnvValues, renamedEnvFieldsIn } from "./envSchema";
 
 const FIREBASE = {
   VITE_FIREBASE_API_KEY: "AIza-test-key",
@@ -46,5 +46,23 @@ describe("environment variables", () => {
       values: {},
       invalidFields: [],
     });
+  });
+});
+
+describe("renamed environment variables", () => {
+  it("names the replacement for a previous name that is still set", () => {
+    expect(
+      renamedEnvFieldsIn({ VITE_LIVE_RELAY_URL: "https://live.example.com" }),
+    ).toEqual([
+      {
+        previousName: "VITE_LIVE_RELAY_URL",
+        currentName: "VITE_RELAY_SERVER_URL",
+      },
+    ]);
+  });
+
+  it("ignores previous names that are empty or not set", () => {
+    expect(renamedEnvFieldsIn({ VITE_LIVE_RELAY_URL: "  " })).toEqual([]);
+    expect(renamedEnvFieldsIn({})).toEqual([]);
   });
 });

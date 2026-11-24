@@ -1,6 +1,9 @@
 import type { z } from "zod";
 import { requestJson } from "../../../lib/jsonApi";
-import { RELAY_SERVER_MISSING_HINT } from "../../../lib/relayServer";
+import {
+  RELAY_SERVER_MISSING_HINT,
+  RELAY_SERVER_SETUP_HINT,
+} from "../../../lib/relayServer";
 import {
   createdSessionSchema,
   RELAY_PATHS,
@@ -13,8 +16,7 @@ import {
 const SERVICE_NAME = "streaming relay";
 const REQUEST_TIMEOUT_MS = 60_000;
 
-export const LIVE_STREAMING_NOT_CONFIGURED =
-  "Live streaming is not set up on this site yet. Whoever runs it needs to start the relay server and set VITE_RELAY_SERVER_URL.";
+export const LIVE_STREAMING_NOT_CONFIGURED = `Live streaming is not set up on this site yet. Whoever runs it needs to start the relay server. ${RELAY_SERVER_SETUP_HINT}`;
 
 export const ingestUrlOf = (relayUrl: string, sessionId: string): string =>
   `${relayUrl.replace(/^http/i, "ws")}${RELAY_PATHS.ingest(sessionId)}`;

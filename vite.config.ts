@@ -5,6 +5,7 @@ import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import { APP_INSTALL_NAME, APP_NAME, APP_URL } from "./app.config";
+import { checkBuildEnv, formatBuildEnvErrors } from "./src/lib/buildEnvCheck";
 import { PAGE_META, pageUrl, type PageMeta } from "./src/lib/pageMeta";
 
 const { version } = JSON.parse(
@@ -68,6 +69,16 @@ const appHtmlIdentity = (): Plugin => ({
   },
 });
 
+const buildEnvironmentCheck = (): Plugin => ({
+  name: "build-environment-check",
+  apply: "build",
+  configResolved({ env, logger }) {
+    const { errors, warnings } = checkBuildEnv(env);
+    for (const warning of warnings) logger.warn(warning);
+    if (errors.length > 0) throw new Error(formatBuildEnvErrors(errors));
+  },
+});
+
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(version),
@@ -81,6 +92,7 @@ export default defineConfig({
     stringify: true,
   },
   plugins: [
+    buildEnvironmentCheck(),
     react(),
     tailwindcss(),
     appHtmlIdentity(),

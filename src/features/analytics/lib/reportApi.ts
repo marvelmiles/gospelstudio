@@ -8,6 +8,7 @@ import {
 import { ApiRequestError, requestJson } from "../../../lib/jsonApi";
 import {
   RELAY_SERVER_MISSING_HINT,
+  RELAY_SERVER_SETUP_HINT,
   relayServerUrl,
 } from "../../../lib/relayServer";
 
@@ -43,7 +44,7 @@ export const fetchReport = async <S extends ReportSection>(
   if (!serverUrl)
     throw new ApiRequestError(
       "not_configured",
-      "Analytics reports are not set up on this site yet. Set VITE_RELAY_SERVER_URL to the relay server's address.",
+      `Analytics reports are not set up on this site yet. ${RELAY_SERVER_SETUP_HINT}`,
       0,
     );
   return (await requestJson({
