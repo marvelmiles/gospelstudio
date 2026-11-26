@@ -4,6 +4,7 @@ import {
   type CustomProperties,
   type PlausibleRequestPayload,
 } from "@plausible-analytics/tracker";
+import { currentAppOrigin } from "../appOrigin";
 import { getAnalyticsConfig } from "./analyticsConfig";
 import { isAnalyticsOptedOut } from "./analyticsConsent";
 import {
@@ -30,7 +31,7 @@ const sanitizePayload = (
   return {
     ...payload,
     u: url,
-    r: trackedReferrer(payload.r, window.location.origin),
+    r: trackedReferrer(payload.r, currentAppOrigin()),
   };
 };
 

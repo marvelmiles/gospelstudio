@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Camera, ShieldAlert, Smartphone } from "lucide-react";
 import { usePageMeta } from "../../hooks/usePageMeta";
 import routes from "../../routes";
+import { appUrl } from "@/lib/appOrigin";
 import { Button } from "@/components/ui/button";
 import { PageHeader, pageClassName } from "@/components/shared/PageHeader";
 import { Panel, PanelTitle } from "@/components/shared/Panel";
@@ -69,7 +70,7 @@ const ShareIntro = ({ onStart }: { onStart: () => void }) => (
       />
       <div className="grid flex-1 place-items-center">
         <QrCode
-          value={new URL(routes.cameraShare(), window.location.origin).href}
+          value={appUrl(routes.cameraShare())}
           size={PHONE_QR_SIZE}
           caption="Open on a phone"
         />

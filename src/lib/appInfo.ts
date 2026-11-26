@@ -1,4 +1,4 @@
-export { APP_CONTACT_EMAIL, APP_NAME } from "../../app.config";
+export { APP_NAME } from "../../app.config";
 import { APP_NAME, APP_TITLE } from "../../app.config";
 
 declare const __APP_VERSION__: string;

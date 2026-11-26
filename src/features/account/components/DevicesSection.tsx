@@ -5,8 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Panel, PanelTitle } from "@/components/shared/Panel";
-import { problemMessageOf } from "../../../hooks/useSubmission";
 import { formatDate, timeAgo } from "../../../lib/id";
+import { userProblemOf, type UserProblem } from "../../../lib/userProblem";
 import {
   listDevices,
   signOutDevice,
@@ -49,7 +49,7 @@ const DeviceRow = ({ device, busy, onSignOut }: DeviceRowProps) => (
 
 export const DevicesSection = () => {
   const [devices, setDevices] = useState<AccountSession[] | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problem, setProblem] = useState<UserProblem | null>(null);
   const [busyWith, setBusyWith] = useState<string | null>(null);
   const [listVersion, setListVersion] = useState(0);
 
@@ -62,7 +62,7 @@ export const DevicesSection = () => {
         setProblem(null);
       },
       (error: unknown) => {
-        if (isCurrent) setProblem(problemMessageOf(error));
+        if (isCurrent) setProblem(userProblemOf(error));
       },
     );
     return () => {
@@ -76,7 +76,7 @@ export const DevicesSection = () => {
       await action();
       setListVersion((version) => version + 1);
     } catch (error) {
-      setProblem(problemMessageOf(error));
+      setProblem(userProblemOf(error));
     } finally {
       setBusyWith(null);
     }

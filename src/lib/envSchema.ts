@@ -15,6 +15,7 @@ const ENV_FIELDS = {
     .string()
     .url()
     .refine((value) => /^https?:\/\//i.test(value), "Use an http(s) address"),
+  VITE_SUPPORT_EMAIL: z.string().email(),
 } satisfies Record<string, z.ZodType<string>>;
 
 export type EnvField = keyof typeof ENV_FIELDS;

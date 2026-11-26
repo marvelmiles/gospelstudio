@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import {
   ApiRequestError,
+  REQUEST_FAILURE_CODES,
   requestJson,
   requestNoContent,
 } from "../../../lib/jsonApi";
@@ -24,7 +25,7 @@ const apiUrl = (path: string): string => {
   const base = apiServerUrl();
   if (!base)
     throw new ApiRequestError(
-      "not_configured",
+      REQUEST_FAILURE_CODES.notConfigured,
       "Accounts are not set up on this site yet.",
       0,
     );

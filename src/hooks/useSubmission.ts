@@ -1,20 +1,16 @@
 import { useCallback, useRef, useState } from "react";
+import { userProblemOf, type UserProblem } from "../lib/userProblem";
 
 export interface Submission {
   busy: boolean;
-  problem: string | null;
+  problem: UserProblem | null;
   submit: (action: () => Promise<void>) => Promise<boolean>;
   clearProblem: () => void;
 }
 
-const UNEXPECTED_PROBLEM = "Something went wrong. Please try again.";
-
-export const problemMessageOf = (error: unknown): string =>
-  error instanceof Error && error.message ? error.message : UNEXPECTED_PROBLEM;
-
 export const useSubmission = (): Submission => {
   const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problem, setProblem] = useState<UserProblem | null>(null);
   const inFlight = useRef(false);
 
   const submit = useCallback(async (action: () => Promise<void>) => {
@@ -26,7 +22,7 @@ export const useSubmission = (): Submission => {
       await action();
       return true;
     } catch (error) {
-      setProblem(problemMessageOf(error));
+      setProblem(userProblemOf(error));
       return false;
     } finally {
       inFlight.current = false;

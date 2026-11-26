@@ -1,10 +1,11 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { defineConfig, type Plugin } from "vite";
+import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
-import { APP_INSTALL_NAME, APP_NAME, APP_URL } from "./app.config";
+import { APP_INSTALL_NAME, APP_NAME } from "./app.config";
+import { APP_ORIGIN_PLACEHOLDER } from "./src/lib/appOrigin";
 import { checkBuildEnv, formatBuildEnvErrors } from "./src/lib/buildEnvCheck";
 import { PAGE_META, pageUrl, type PageMeta } from "./src/lib/pageMeta";
 
@@ -12,7 +13,10 @@ const { version } = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
 ) as { version: string };
 
-const HTML_IDENTITY: Record<string, string> = { APP_NAME, APP_URL };
+const devServerOrigin = (server: ViteDevServer): string => {
+  const localUrl = server.resolvedUrls?.local[0];
+  return localUrl ? new URL(localUrl).origin : APP_ORIGIN_PLACEHOLDER;
+};
 
 const escapeHtml = (value: string): string =>
   value
@@ -30,10 +34,18 @@ const fillPlaceholders = (
     (match, key: string) => values[key] ?? match,
   );
 
-const pagePlaceholders = (meta: PageMeta): Record<string, string> => ({
+const identityPlaceholders = (origin: string): Record<string, string> => ({
+  APP_NAME,
+  APP_ORIGIN: escapeHtml(origin),
+});
+
+const pagePlaceholders = (
+  meta: PageMeta,
+  origin: string,
+): Record<string, string> => ({
   PAGE_TITLE: escapeHtml(meta.title),
   PAGE_DESCRIPTION: escapeHtml(meta.description),
-  PAGE_URL: escapeHtml(pageUrl(meta)),
+  PAGE_URL: escapeHtml(pageUrl(meta, origin)),
 });
 
 const pageHtmlFileName = (meta: PageMeta): string =>
@@ -44,20 +56,28 @@ const appHtmlIdentity = (): Plugin => ({
   enforce: "post",
   transformIndexHtml: {
     order: "pre",
-    handler: (html, { server }) =>
-      fillPlaceholders(
-        html,
-        server
-          ? { ...HTML_IDENTITY, ...pagePlaceholders(PAGE_META.home) }
-          : HTML_IDENTITY,
-      ),
+    handler: (html, { server }) => {
+      if (!server)
+        return fillPlaceholders(
+          html,
+          identityPlaceholders(APP_ORIGIN_PLACEHOLDER),
+        );
+      const origin = devServerOrigin(server);
+      return fillPlaceholders(html, {
+        ...identityPlaceholders(origin),
+        ...pagePlaceholders(PAGE_META.home, origin),
+      });
+    },
   },
   generateBundle(_options, bundle) {
     const index = bundle["index.html"];
     if (index?.type !== "asset") return;
     const template = String(index.source);
     for (const meta of Object.values(PAGE_META)) {
-      const source = fillPlaceholders(template, pagePlaceholders(meta));
+      const source = fillPlaceholders(
+        template,
+        pagePlaceholders(meta, APP_ORIGIN_PLACEHOLDER),
+      );
       if (meta.path === PAGE_META.home.path) index.source = source;
       else
         this.emitFile({

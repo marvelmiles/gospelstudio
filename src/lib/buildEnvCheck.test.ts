@@ -3,6 +3,7 @@ import { checkBuildEnv, formatBuildEnvErrors } from "./buildEnvCheck";
 
 const RELAY_URL = "https://relay.example.com";
 const API_URL = "https://api.example.com";
+const SUPPORT_EMAIL = "support@example.org";
 
 describe("build environment check", () => {
   it("passes a build with valid relay and API addresses", () => {
@@ -10,6 +11,7 @@ describe("build environment check", () => {
       checkBuildEnv({
         VITE_RELAY_SERVER_URL: RELAY_URL,
         VITE_API_URL: API_URL,
+        VITE_SUPPORT_EMAIL: SUPPORT_EMAIL,
       }),
     ).toEqual({
       errors: [],
@@ -21,6 +23,7 @@ describe("build environment check", () => {
     const { errors, warnings } = checkBuildEnv({
       VITE_LIVE_RELAY_URL: RELAY_URL,
       VITE_API_URL: API_URL,
+      VITE_SUPPORT_EMAIL: SUPPORT_EMAIL,
     });
     expect(errors).toHaveLength(1);
     expect(errors[0]).toContain(
@@ -34,6 +37,7 @@ describe("build environment check", () => {
       VITE_LIVE_RELAY_URL: RELAY_URL,
       VITE_RELAY_SERVER_URL: RELAY_URL,
       VITE_API_URL: API_URL,
+      VITE_SUPPORT_EMAIL: SUPPORT_EMAIL,
     });
     expect(errors).toEqual([]);
     expect(warnings).toHaveLength(1);
@@ -45,6 +49,7 @@ describe("build environment check", () => {
       VITE_LIVE_RELAY_URL: RELAY_URL,
       VITE_RELAY_SERVER_URL: "gospelstudio.onrender.com",
       VITE_API_URL: API_URL,
+      VITE_SUPPORT_EMAIL: SUPPORT_EMAIL,
     });
     expect(errors).toEqual([
       "VITE_RELAY_SERVER_URL is set but its value is not valid.",
@@ -53,7 +58,10 @@ describe("build environment check", () => {
   });
 
   it("warns that streaming is off when the relay address is missing", () => {
-    const { errors, warnings } = checkBuildEnv({ VITE_API_URL: API_URL });
+    const { errors, warnings } = checkBuildEnv({
+      VITE_API_URL: API_URL,
+      VITE_SUPPORT_EMAIL: SUPPORT_EMAIL,
+    });
     expect(errors).toEqual([]);
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("VITE_RELAY_SERVER_URL is not set");
@@ -62,10 +70,33 @@ describe("build environment check", () => {
   it("warns that accounts are off when the API address is missing", () => {
     const { errors, warnings } = checkBuildEnv({
       VITE_RELAY_SERVER_URL: RELAY_URL,
+      VITE_SUPPORT_EMAIL: SUPPORT_EMAIL,
     });
     expect(errors).toEqual([]);
     expect(warnings).toHaveLength(1);
     expect(warnings[0]).toContain("VITE_API_URL is not set");
+  });
+
+  it("warns that Contact us is off when the support email is missing", () => {
+    const { errors, warnings } = checkBuildEnv({
+      VITE_RELAY_SERVER_URL: RELAY_URL,
+      VITE_API_URL: API_URL,
+    });
+    expect(errors).toEqual([]);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain("VITE_SUPPORT_EMAIL is not set");
+  });
+
+  it("stops a build whose support email is not an email address", () => {
+    const { errors, warnings } = checkBuildEnv({
+      VITE_RELAY_SERVER_URL: RELAY_URL,
+      VITE_API_URL: API_URL,
+      VITE_SUPPORT_EMAIL: "support at gospelstudio",
+    });
+    expect(errors).toEqual([
+      "VITE_SUPPORT_EMAIL is set but its value is not valid.",
+    ]);
+    expect(warnings).toEqual([]);
   });
 
   it("lists every error in the build failure message", () => {

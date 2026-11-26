@@ -3,9 +3,9 @@ import {
   APP_DESCRIPTION,
   APP_NAME,
   APP_TITLE,
-  APP_URL,
 } from "../../app.config";
 import routes from "../routes";
+import { appUrl } from "./appOrigin";
 
 export interface PageMeta {
   path: string;
@@ -69,5 +69,5 @@ export const PAGE_META = {
 
 export type PageName = keyof typeof PAGE_META;
 
-export const pageUrl = (meta: PageMeta): string =>
-  new URL(meta.path, APP_URL).href;
+export const pageUrl = (meta: PageMeta, origin?: string): string =>
+  appUrl(meta.path, origin);

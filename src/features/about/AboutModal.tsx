@@ -1,11 +1,8 @@
 import { Heart, Mail } from "lucide-react";
 import { useStore } from "../../store/useStore";
 import { Modal } from "@/components/shared/Modal";
-import {
-  APP_CONTACT_EMAIL,
-  APP_NAME,
-  APP_VERSION_LABEL,
-} from "../../lib/appInfo";
+import { APP_NAME, APP_VERSION_LABEL } from "../../lib/appInfo";
+import { supportEmail } from "../../lib/supportEmail";
 import { SectionTitle } from "@/components/shared/Field";
 import { FAQ_GROUPS } from "./faqs";
 import { FaqList } from "./FaqList";
@@ -82,18 +79,29 @@ export const AboutModal = () => {
         them.
       </p>
 
+      <ContactUs />
+    </Modal>
+  );
+};
+
+const ContactUs = () => {
+  const email = supportEmail();
+  if (!email) return null;
+
+  return (
+    <>
       <SectionTitle>Contact us</SectionTitle>
       <p className="mt-0 mb-4 text-[13.5px] leading-[1.6] text-muted-foreground">
         Found a bug, have an idea, or want to tell us how your church uses{" "}
         {APP_NAME}? We would love to hear from you.
       </p>
       <a
-        href={`mailto:${APP_CONTACT_EMAIL}`}
+        href={`mailto:${email}`}
         className="inline-flex max-w-full items-center gap-2.25 rounded-[11px] bg-linear-140 from-primary-soft to-primary px-4 py-2.75 text-sm font-semibold text-white no-underline"
       >
         <Mail size={16} className="shrink-0" />
-        <span className="min-w-0 break-all">{APP_CONTACT_EMAIL}</span>
+        <span className="min-w-0 break-all">{email}</span>
       </a>
-    </Modal>
+    </>
   );
 };

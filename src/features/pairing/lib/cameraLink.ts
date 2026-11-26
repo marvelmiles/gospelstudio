@@ -1,5 +1,6 @@
 import { z } from "zod";
 import routes from "../../../routes";
+import { appUrl } from "../../../lib/appOrigin";
 
 const ROOM_PARAM = "room";
 const STUDIO_PARAM = "studio";
@@ -18,8 +19,7 @@ export interface CameraLinkRequest {
   offerCode: string | null;
 }
 
-const cameraPageUrl = (): URL =>
-  new URL(routes.cameraShare(), window.location.origin);
+const cameraPageUrl = (): URL => new URL(appUrl(routes.cameraShare()));
 
 export const studioLinkUrl = (link: StudioLink): string => {
   const url = cameraPageUrl();

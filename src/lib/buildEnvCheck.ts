@@ -44,6 +44,14 @@ export const checkBuildEnv = (
       `VITE_API_URL is not set, so accounts and syncing are off in this build and the app works on this device only. ${BUILD_SCOPE_HINT}`,
     );
 
+  if (
+    values.VITE_SUPPORT_EMAIL === undefined &&
+    !reportedFields.has("VITE_SUPPORT_EMAIL")
+  )
+    warnings.push(
+      `VITE_SUPPORT_EMAIL is not set, so About & Help shows no Contact us email in this build. ${BUILD_SCOPE_HINT}`,
+    );
+
   return { errors, warnings };
 };
 

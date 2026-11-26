@@ -8,7 +8,3 @@ export const APP_TITLE = `${APP_NAME} | ${APP_CATEGORY} Software`;
 
 export const APP_DESCRIPTION =
   "Show song lyrics, hymns, Bible verses, sermon notes, pictures and videos on a projector or TV, and put live cameras on the screen with them. Works in your browser, even offline.";
-
-export const APP_URL = "https://gospelstudio.app/";
-
-export const APP_CONTACT_EMAIL = "gospelstudioapp@gmail.com";

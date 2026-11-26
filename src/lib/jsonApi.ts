@@ -1,5 +1,14 @@
 import { z } from "zod";
 
+export const REQUEST_FAILURE_CODES = {
+  network: "network",
+  timeout: "timeout",
+  serviceMissing: "service_missing",
+  unexpectedStatus: "unexpected",
+  invalidResponse: "invalid_response",
+  notConfigured: "not_configured",
+} as const;
+
 export class ApiRequestError extends Error {
   readonly code: string;
   readonly status: number;
@@ -48,7 +57,7 @@ const missingService = (
   status: number,
 ): ApiRequestError =>
   new ApiRequestError(
-    "service_missing",
+    REQUEST_FAILURE_CODES.serviceMissing,
     `The ${serviceName} isn't running at this address. ${missingServiceHint}`,
     status,
   );
@@ -66,13 +75,13 @@ export const sendServiceRequest = async (
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError")
       throw new ApiRequestError(
-        "timeout",
+        REQUEST_FAILURE_CODES.timeout,
         `The ${serviceName} took too long to answer. If it was asleep it may be waking up, so try again in a moment.`,
         0,
       );
     if (init.signal?.aborted) throw error;
     throw new ApiRequestError(
-      "network",
+      REQUEST_FAILURE_CODES.network,
       `Couldn't reach the ${serviceName}. Check the connection and try again.`,
       0,
     );
@@ -93,7 +102,7 @@ export const failureOf = async (
         response.status,
       )
     : new ApiRequestError(
-        "unexpected",
+        REQUEST_FAILURE_CODES.unexpectedStatus,
         `The ${request.serviceName} answered with status ${response.status}.`,
         response.status,
       );
@@ -111,7 +120,7 @@ export const requestJson = async <S extends z.ZodTypeAny>(
     .safeParse(await readJson(response));
   if (!parsed.success)
     throw new ApiRequestError(
-      "invalid_response",
+      REQUEST_FAILURE_CODES.invalidResponse,
       `The ${request.serviceName} sent a response this page can't read.`,
       response.status,
     );

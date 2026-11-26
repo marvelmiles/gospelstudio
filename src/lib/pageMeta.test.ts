@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { APP_CATEGORY, APP_NAME, APP_URL } from "../../app.config";
+import { APP_CATEGORY, APP_NAME } from "../../app.config";
+import { APP_ORIGIN_PLACEHOLDER } from "./appOrigin";
 import { PAGE_META, pageUrl } from "./pageMeta";
+
+const ORIGIN = "https://gospelstudio.app";
 
 const pages = Object.values(PAGE_META);
 
@@ -26,8 +29,16 @@ describe("page meta", () => {
       );
   });
 
-  it("builds absolute links on the app's own address", () => {
-    expect(pageUrl(PAGE_META.home)).toBe(APP_URL);
-    expect(pageUrl(PAGE_META.manuscripts)).toBe(`${APP_URL}manuscripts`);
+  it("builds absolute links on the address it is given", () => {
+    expect(pageUrl(PAGE_META.home, ORIGIN)).toBe(`${ORIGIN}/`);
+    expect(pageUrl(PAGE_META.manuscripts, ORIGIN)).toBe(
+      `${ORIGIN}/manuscripts`,
+    );
+  });
+
+  it("leaves the placeholder in built pages for the host to fill in", () => {
+    expect(pageUrl(PAGE_META.bible, APP_ORIGIN_PLACEHOLDER)).toBe(
+      `${APP_ORIGIN_PLACEHOLDER}/bible`,
+    );
   });
 });

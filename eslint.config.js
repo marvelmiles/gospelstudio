@@ -18,7 +18,7 @@ export default tseslint.config(
   },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
-    files: ["src/**/*.{ts,tsx}"],
+    files: ["src/**/*.{ts,tsx}", "netlify/**/*.ts"],
     languageOptions: {
       ecmaVersion: 2022,
       globals: globals.browser,

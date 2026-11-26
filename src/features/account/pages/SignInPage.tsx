@@ -17,6 +17,7 @@ import { AuthPageLayout } from "../components/AuthPageLayout";
 import { FormProblem } from "../components/FormProblem";
 import { OfflineNotice } from "../components/OfflineNotice";
 import { useNextPage } from "../hooks/useNextPage";
+import { forgotPasswordStateOf } from "../lib/forgotPasswordState";
 import { sessionDeviceName } from "../lib/sessionDeviceName";
 import { useAuthStore } from "../session/authStore";
 
@@ -99,7 +100,12 @@ export const SignInPage = () => {
           />
         </Field>
         <div className="-mt-1 mb-4 text-right text-[13px]">
-          <AuthLink to={routes.forgotPassword()}>Forgot password?</AuthLink>
+          <AuthLink
+            to={routes.forgotPassword()}
+            state={forgotPasswordStateOf(values.email)}
+          >
+            Forgot password?
+          </AuthLink>
         </div>
         <Button type="submit" className="w-full" busy={busy}>
           <LogIn size={15} />

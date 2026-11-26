@@ -3,6 +3,7 @@ import { API_ERROR_CODES } from "@/contracts/apiErrors";
 import type { AuthSession, SessionTokens } from "@/contracts/authContract";
 import { deepEqual } from "../../../lib/equality";
 import { ApiRequestError } from "../../../lib/jsonApi";
+import { UserFacingError } from "../../../lib/userProblem";
 import { withWebLock } from "../../../lib/webLocks";
 import { useStore } from "../../../store/useStore";
 import { endSession, refreshSession } from "../api/authApi";
@@ -20,9 +21,9 @@ const REFRESH_ATTEMPTS = 2;
 const EXPIRED_MESSAGE =
   "Your sign-in ended, so syncing stopped. Everything on this device is still here. Sign in again to keep syncing.";
 
-export class SignedOutError extends Error {
+export class SignedOutError extends UserFacingError {
   constructor() {
-    super("You are signed out.");
+    super("You're signed out. Sign in again to continue.");
     this.name = "SignedOutError";
   }
 }
