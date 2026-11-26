@@ -85,7 +85,7 @@ const TIPS: { icon: LucideIcon; title: string; desc: string }[] = [
   {
     icon: MessageSquareHeart,
     title: "Found a bug or have an idea?",
-    desc: "Click the help icon in the header to open About & Help, then scroll down to the Contact section to report a bug, suggest a feature or share how you use the app.",
+    desc: "Click the help icon in the header to open About & Help, then scroll down to Contact us to report a bug, suggest a feature or share how you use the app.",
   },
 ];
 
@@ -93,7 +93,7 @@ const HEADER_ICONS: { icon: LucideIcon; name: string; desc: string }[] = [
   {
     icon: HelpCircle,
     name: "About & Help",
-    desc: "The story behind the app, FAQs, and the Contact section for bugs and ideas.",
+    desc: "The story behind the app, FAQs, and Contact us for bugs and ideas.",
   },
   {
     icon: ImageIcon,

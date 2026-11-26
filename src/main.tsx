@@ -6,6 +6,8 @@ import "./index.css";
 import "./pwa";
 import clearEverything, { FRESH_START_MESSAGE } from "./lib/clearEverything";
 import { hasIncompatibleDatabase } from "./lib/storage";
+import { isAccountsAvailable } from "./lib/apiServer";
+import { startChangeJournal } from "./features/sync/syncJournal";
 import routes from "./routes";
 
 const PROJECTION_PATHS = new Set([
@@ -35,6 +37,8 @@ const bootstrap = async () => {
   } else if (await hasIncompatibleDatabase()) {
     await clearEverything(FRESH_START_MESSAGE);
   }
+
+  if (isAccountsAvailable()) startChangeJournal();
 
   const [{ default: Root }] = await Promise.all([
     loadRoot(),

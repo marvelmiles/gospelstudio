@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Modal } from "@/components/shared/Modal";
 import { MAX_KEPT_ITEMS } from "../../lib/keepOnReset";
 import { APP_NAME } from "../../lib/appInfo";
+import { useAuthStore } from "../account/session/authStore";
 
 const RESET_PHRASE = "ResetApp";
 
@@ -19,6 +20,7 @@ export const ResetSection = ({
   onBeforeReset: () => void;
 }) => {
   const resetApp = useStore((s) => s.resetApp);
+  const isSignedIn = useAuthStore((state) => state.status === "signedIn");
   const [isConfirming, setIsConfirming] = useState(false);
   const [typedPhrase, setTypedPhrase] = useState("");
 
@@ -101,6 +103,13 @@ export const ResetSection = ({
               )}
             </div>
           </div>
+          {isSignedIn && (
+            <p className="mt-0 mb-3 text-[13.5px] leading-[1.6] text-muted-foreground">
+              You&apos;re signed in, so this only resets this device. Your
+              account keeps its library, and it downloads here again after the
+              reset. To clear this device completely, sign out first.
+            </p>
+          )}
           <p className="mt-0 mb-2 text-[13.5px] leading-[1.6] text-muted-foreground">
             Type{" "}
             <code className="text-foreground normal-case">{RESET_PHRASE}</code>{" "}

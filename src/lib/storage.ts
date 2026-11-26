@@ -9,7 +9,10 @@ type LibraryStoreName =
   | "prefs"
   | "files";
 type StudioStoreName = "productions" | "sceneLayouts";
-export type StoreName = LibraryStoreName | StudioStoreName;
+type SyncStoreName = "syncChanges";
+type AccountStoreName = "credentials";
+export type StoreName =
+  LibraryStoreName | StudioStoreName | SyncStoreName | AccountStoreName;
 export type Backend = "indexeddb" | "session" | "memory";
 
 interface HasId {
@@ -20,6 +23,17 @@ interface DatabaseSchema {
   name: string;
   stores: StoreName[];
 }
+
+export interface WriteOptions {
+  tracked?: boolean;
+}
+
+export interface RecordChange {
+  store: StoreName;
+  ids: string[];
+}
+
+type RecordChangeListener = (change: RecordChange) => Promise<void>;
 
 const DB_VERSION = 1;
 const LIBRARY_DATABASE: DatabaseSchema = {
@@ -35,13 +49,29 @@ const LIBRARY_DATABASE: DatabaseSchema = {
     "files",
   ],
 };
-/* The studio keeps its own database so its stores exist on devices whose library database was created before the studio. */
+/* The studio, sync and account stores each keep their own database so they exist on devices whose library database was created before them. */
 const STUDIO_DATABASE: DatabaseSchema = {
   name: "gospelstudio-studio",
   stores: ["productions", "sceneLayouts"],
 };
-const DATABASES: DatabaseSchema[] = [LIBRARY_DATABASE, STUDIO_DATABASE];
+const SYNC_DATABASE: DatabaseSchema = {
+  name: "gospelstudio-sync",
+  stores: ["syncChanges"],
+};
+const ACCOUNT_DATABASE: DatabaseSchema = {
+  name: "gospelstudio-account",
+  stores: ["credentials"],
+};
+const DATABASES: DatabaseSchema[] = [
+  LIBRARY_DATABASE,
+  STUDIO_DATABASE,
+  SYNC_DATABASE,
+  ACCOUNT_DATABASE,
+];
 const STORES: StoreName[] = DATABASES.flatMap((database) => database.stores);
+const DEVICE_DATA_STORES: StoreName[] = STORES.filter(
+  (store) => !ACCOUNT_DATABASE.stores.includes(store),
+);
 
 const SESSION_SKIP: ReadonlySet<StoreName> = new Set(["files"]);
 const SESSION_PREFIX = "gospelstudio:";
@@ -58,9 +88,28 @@ const mem = Object.fromEntries(
 
 const connections = new Map<StoreName, IDBDatabase>();
 let initPromise: Promise<Backend> | null = null;
+let recordChangeListener: RecordChangeListener | null = null;
 
 const connectionOf = (store: StoreName): IDBDatabase | null =>
   connections.get(store) ?? null;
+
+export const onRecordsChanged = (
+  listener: RecordChangeListener | null,
+): void => {
+  recordChangeListener = listener;
+};
+
+const reportChange = async (
+  store: StoreName,
+  ids: string[],
+  options: WriteOptions,
+): Promise<void> => {
+  if (options.tracked === false || !recordChangeListener || ids.length === 0)
+    return;
+  try {
+    await recordChangeListener({ store, ids });
+  } catch {}
+};
 
 const openIDB = (schema: DatabaseSchema): Promise<IDBDatabase | null> => {
   return new Promise((resolve) => {
@@ -186,6 +235,29 @@ export const readAllRecords = async <T extends HasId>(
   return Array.from(mem[store].values()) as T[];
 };
 
+export const readAllKeys = async (store: StoreName): Promise<string[]> => {
+  const backend = await init();
+  const idb = connectionOf(store);
+  if (backend === "indexeddb" && idb) {
+    return new Promise((resolve) => {
+      try {
+        const tx = idb.transaction(store, "readonly");
+        const r = tx.objectStore(store).getAllKeys();
+        r.onsuccess = () =>
+          resolve(
+            (r.result || []).filter(
+              (key): key is string => typeof key === "string",
+            ),
+          );
+        r.onerror = () => resolve([]);
+      } catch {
+        resolve([]);
+      }
+    });
+  }
+  return Array.from(mem[store].keys());
+};
+
 export const readRecord = async <T extends HasId>(
   store: StoreName,
   id: string,
@@ -207,16 +279,7 @@ export const readRecord = async <T extends HasId>(
   return mem[store].get(id) as T | undefined;
 };
 
-export const saveRecord = async <T extends HasId>(
-  store: StoreName,
-  val: T,
-): Promise<void> => {
-  try {
-    await saveRecordStrict(store, val);
-  } catch {}
-};
-
-export const saveRecordStrict = async <T extends HasId>(
+const putRecord = async <T extends HasId>(
   store: StoreName,
   val: T,
 ): Promise<void> => {
@@ -241,11 +304,29 @@ export const saveRecordStrict = async <T extends HasId>(
   if (backend === "session") persistSession(store);
 };
 
-export const saveRecords = async <T extends HasId>(
+export const saveRecord = async <T extends HasId>(
+  store: StoreName,
+  val: T,
+  options: WriteOptions = {},
+): Promise<void> => {
+  try {
+    await saveRecordStrict(store, val, options);
+  } catch {}
+};
+
+export const saveRecordStrict = async <T extends HasId>(
+  store: StoreName,
+  val: T,
+  options: WriteOptions = {},
+): Promise<void> => {
+  await putRecord(store, val);
+  await reportChange(store, [val.id], options);
+};
+
+const putRecords = async <T extends HasId>(
   store: StoreName,
   values: T[],
-): Promise<void> => {
-  if (!values.length) return;
+): Promise<boolean> => {
   const backend = await init();
   const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
@@ -254,27 +335,43 @@ export const saveRecords = async <T extends HasId>(
         const tx = idb.transaction(store, "readwrite");
         const target = tx.objectStore(store);
         for (const value of values) target.put(value);
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => resolve();
-        tx.onabort = () => resolve();
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+        tx.onabort = () => resolve(false);
       } catch {
-        resolve();
+        resolve(false);
       }
     });
   }
   for (const value of values) mem[store].set(value.id, value);
   if (backend === "session") persistSession(store);
+  return true;
+};
+
+export const saveRecords = async <T extends HasId>(
+  store: StoreName,
+  values: T[],
+  options: WriteOptions = {},
+): Promise<void> => {
+  if (!values.length) return;
+  if (await putRecords(store, values))
+    await reportChange(
+      store,
+      values.map((value) => value.id),
+      options,
+    );
 };
 
 export const deleteRecord = async (
   store: StoreName,
   id: string,
+  options: WriteOptions = {},
 ): Promise<void> => {
   const backend = await init();
   mem[store].delete(id);
   const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
-    return new Promise((resolve) => {
+    await new Promise<void>((resolve) => {
       try {
         const tx = idb.transaction(store, "readwrite");
         tx.objectStore(store).delete(id);
@@ -284,16 +381,58 @@ export const deleteRecord = async (
         resolve();
       }
     });
-  }
-  if (backend === "session") persistSession(store);
+  } else if (backend === "session") persistSession(store);
+  await reportChange(store, [id], options);
 };
 
-export const clearStore = async (store: StoreName): Promise<void> => {
-  mem[store].clear();
+export const deleteMatchingRecords = async <T extends HasId>(
+  store: StoreName,
+  ids: readonly string[],
+  matches: (record: T) => boolean,
+): Promise<void> => {
+  if (!ids.length) return;
   const backend = await init();
   const idb = connectionOf(store);
   if (backend === "indexeddb" && idb) {
     return new Promise((resolve) => {
+      try {
+        const tx = idb.transaction(store, "readwrite");
+        const target = tx.objectStore(store);
+        for (const id of ids) {
+          const request = target.get(id);
+          request.onsuccess = () => {
+            const record = request.result as T | undefined;
+            if (record && matches(record)) target.delete(id);
+          };
+        }
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+        tx.onabort = () => resolve();
+      } catch {
+        resolve();
+      }
+    });
+  }
+  for (const id of ids) {
+    const record = mem[store].get(id) as T | undefined;
+    if (record && matches(record)) mem[store].delete(id);
+  }
+  if (backend === "session") persistSession(store);
+};
+
+export const clearStore = async (
+  store: StoreName,
+  options: WriteOptions = {},
+): Promise<void> => {
+  const clearedIds =
+    options.tracked !== false && recordChangeListener
+      ? await readAllKeys(store)
+      : [];
+  mem[store].clear();
+  const backend = await init();
+  const idb = connectionOf(store);
+  if (backend === "indexeddb" && idb) {
+    await new Promise<void>((resolve) => {
       try {
         const tx = idb.transaction(store, "readwrite");
         tx.objectStore(store).clear();
@@ -303,16 +442,17 @@ export const clearStore = async (store: StoreName): Promise<void> => {
         resolve();
       }
     });
-  }
-  if (backend === "session") {
+  } else if (backend === "session") {
     try {
       sessionStorage.removeItem(SESSION_PREFIX + store);
     } catch {}
   }
+  await reportChange(store, clearedIds, options);
 };
 
 export const wipeAllStores = async (): Promise<void> => {
-  for (const store of STORES) await clearStore(store);
+  for (const store of DEVICE_DATA_STORES)
+    await clearStore(store, { tracked: false });
 };
 
 const sessionUsageBytes = (): number => {

@@ -22,11 +22,14 @@ import {
 } from "../lib/productionNormalizer";
 import {
   clearProductions,
+  readLayout,
   readLayouts,
+  readProduction,
   readProductions,
   removeProduction,
   writeProduction,
 } from "../lib/productionStorage";
+import type { WriteOptions } from "../../../lib/storage";
 import { retainSources } from "../lib/cameraService";
 import { retainRemoteCameras } from "../lib/remoteCameras";
 import type { InputDevice } from "./cameraStore";
@@ -74,11 +77,17 @@ const activate = (production: Production): void => {
   selectLayer(null);
 };
 
-const persistNew = async (production: Production): Promise<void> => {
+/* A production the Studio makes on its own, because none is left, stays on this device until it is edited, so new devices never fill the account with empty productions. */
+const STARTER_PRODUCTION = { tracked: false } as const;
+
+const persistNew = async (
+  production: Production,
+  options?: WriteOptions,
+): Promise<void> => {
   documents.set(production.id, production);
   activate(production);
   try {
-    await writeProduction(production);
+    await writeProduction(production, options);
   } catch {
     useProductionStore.setState({ saveState: "failed" });
   }
@@ -117,7 +126,7 @@ const openActiveProduction = async (): Promise<void> => {
   const remembered = documents.get(rememberedProductionId() ?? "");
   const active = remembered ?? byNewest([...documents.values()])[0];
   if (active) activate(active);
-  else await persistNew(createProduction());
+  else await persistNew(createProduction(), STARTER_PRODUCTION);
 };
 
 export const loadStudio = (): Promise<void> => {
@@ -174,7 +183,7 @@ export const importProductions = async ({
   const replacement =
     documents.get(active.id) ?? byNewest([...documents.values()])[0];
   if (replacement) activate(replacement);
-  else await persistNew(createProduction());
+  else await persistNew(createProduction(), STARTER_PRODUCTION);
 };
 
 export const openProduction = async (id: string): Promise<void> => {
@@ -242,7 +251,81 @@ export const deleteProduction = async (id: string): Promise<void> => {
   cancelScheduledSave();
   const next = byNewest([...documents.values()])[0];
   if (next) activate(next);
-  else await persistNew(createProduction());
+  else await persistNew(createProduction(), STARTER_PRODUCTION);
+};
+
+export interface StudioRecordChanges {
+  productionIds: readonly string[];
+  layoutIds: readonly string[];
+}
+
+/* What is on air and which scene is in preview belong to this device, so a production arriving from another device keeps them. */
+const withLocalOutput = (
+  incoming: Production,
+  local: Production,
+): Production => ({
+  ...incoming,
+  program: local.program,
+  previewSceneId: incoming.scenes.some(
+    (scene) => scene.id === local.previewSceneId,
+  )
+    ? local.previewSceneId
+    : incoming.previewSceneId,
+});
+
+const refreshActiveProduction = async (
+  productionIds: readonly string[],
+): Promise<void> => {
+  const { production: active, saveState } = useProductionStore.getState();
+  if (!active || !productionIds.includes(active.id)) return;
+  if (saveState !== "saved") {
+    documents.set(active.id, active);
+    return;
+  }
+  const incoming = documents.get(active.id);
+  if (incoming) {
+    const merged = withLocalOutput(incoming, active);
+    documents.set(active.id, merged);
+    useProductionStore.setState({ production: merged });
+    resetHistory();
+    return;
+  }
+  cancelScheduledSave();
+  const next = byNewest([...documents.values()])[0];
+  if (next) activate(next);
+  else await persistNew(createProduction(), STARTER_PRODUCTION);
+};
+
+const refreshLayouts = async (layoutIds: readonly string[]): Promise<void> => {
+  if (layoutIds.length === 0) return;
+  const stored = await Promise.all(layoutIds.map(readLayout));
+  const changed = new Set(layoutIds);
+  const incoming = stored.flatMap((layout) =>
+    layout ? [normalizeLayout(layout)] : [],
+  );
+  useProductionStore.setState((state) => ({
+    layouts: byNewest([
+      ...state.layouts.filter((layout) => !changed.has(layout.id)),
+      ...incoming,
+    ]),
+  }));
+};
+
+export const refreshStudioRecords = async ({
+  productionIds,
+  layoutIds,
+}: StudioRecordChanges): Promise<void> => {
+  if (useProductionStore.getState().status === "idle") return;
+  await loadProductions();
+  const stored = await Promise.all(productionIds.map(readProduction));
+  productionIds.forEach((id, index) => {
+    const production = stored[index];
+    if (production) documents.set(id, normalizeProduction(production));
+    else documents.delete(id);
+  });
+  await refreshActiveProduction(productionIds);
+  useProductionStore.setState({ productions: summaries() });
+  await refreshLayouts(layoutIds);
 };
 
 export const updateSettings = (patch: Partial<ProductionSettings>): void =>

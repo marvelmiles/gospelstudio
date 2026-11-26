@@ -16,12 +16,15 @@ const apiErrorSchema = z.object({
   error: z.object({ code: z.string(), message: z.string() }),
 });
 
-interface JsonRequest<S extends z.ZodTypeAny> {
+interface ServiceRequest {
   url: string;
   init?: RequestInit;
-  dataSchema: S;
   serviceName: string;
   missingServiceHint?: string;
+}
+
+interface JsonRequest<S extends z.ZodTypeAny> extends ServiceRequest {
+  dataSchema: S;
 }
 
 const DEFAULT_MISSING_SERVICE_HINT = "Check that it is running and try again.";
@@ -37,16 +40,25 @@ const readJson = async (response: Response): Promise<unknown> => {
   }
 };
 
-export const requestJson = async <S extends z.ZodTypeAny>({
-  url,
-  init = {},
-  dataSchema,
-  serviceName,
-  missingServiceHint = DEFAULT_MISSING_SERVICE_HINT,
-}: JsonRequest<S>): Promise<z.output<S>> => {
-  let response: Response;
+const missingService = (
+  {
+    serviceName,
+    missingServiceHint = DEFAULT_MISSING_SERVICE_HINT,
+  }: ServiceRequest,
+  status: number,
+): ApiRequestError =>
+  new ApiRequestError(
+    "service_missing",
+    `The ${serviceName} isn't running at this address. ${missingServiceHint}`,
+    status,
+  );
+
+export const sendServiceRequest = async (
+  request: ServiceRequest,
+): Promise<Response> => {
+  const { url, init = {}, serviceName } = request;
   try {
-    response = await fetch(url, {
+    return await fetch(url, {
       cache: "no-store",
       ...init,
       headers: { Accept: "application/json", ...init.headers },
@@ -65,36 +77,50 @@ export const requestJson = async <S extends z.ZodTypeAny>({
       0,
     );
   }
+};
 
+export const failureOf = async (
+  request: ServiceRequest,
+  response: Response,
+): Promise<ApiRequestError> => {
   if (!isJsonResponse(response))
-    throw new ApiRequestError(
-      "service_missing",
-      `The ${serviceName} isn't running at this address. ${missingServiceHint}`,
-      response.status,
-    );
+    return missingService(request, response.status);
+  const parsed = apiErrorSchema.safeParse(await readJson(response));
+  return parsed.success
+    ? new ApiRequestError(
+        parsed.data.error.code,
+        parsed.data.error.message,
+        response.status,
+      )
+    : new ApiRequestError(
+        "unexpected",
+        `The ${request.serviceName} answered with status ${response.status}.`,
+        response.status,
+      );
+};
 
-  const body = await readJson(response);
-  if (!response.ok) {
-    const parsed = apiErrorSchema.safeParse(body);
-    throw parsed.success
-      ? new ApiRequestError(
-          parsed.data.error.code,
-          parsed.data.error.message,
-          response.status,
-        )
-      : new ApiRequestError(
-          "unexpected",
-          `The ${serviceName} answered with status ${response.status}.`,
-          response.status,
-        );
-  }
+export const requestJson = async <S extends z.ZodTypeAny>(
+  request: JsonRequest<S>,
+): Promise<z.output<S>> => {
+  const response = await sendServiceRequest(request);
+  if (!response.ok) throw await failureOf(request, response);
+  if (!isJsonResponse(response)) throw missingService(request, response.status);
 
-  const parsed = z.object({ data: dataSchema }).safeParse(body);
+  const parsed = z
+    .object({ data: request.dataSchema })
+    .safeParse(await readJson(response));
   if (!parsed.success)
     throw new ApiRequestError(
       "invalid_response",
-      `The ${serviceName} sent a response this page can't read.`,
+      `The ${request.serviceName} sent a response this page can't read.`,
       response.status,
     );
   return parsed.data.data;
+};
+
+export const requestNoContent = async (
+  request: ServiceRequest,
+): Promise<void> => {
+  const response = await sendServiceRequest(request);
+  if (!response.ok) throw await failureOf(request, response);
 };

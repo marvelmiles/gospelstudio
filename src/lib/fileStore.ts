@@ -1,4 +1,9 @@
-import { deleteRecord, readRecord, saveRecordStrict } from "./storage";
+import {
+  deleteRecord,
+  readRecord,
+  saveRecordStrict,
+  type WriteOptions,
+} from "./storage";
 
 interface FileRecord {
   id: string;
@@ -20,12 +25,19 @@ export const getFileBlob = (id: string): Promise<Blob | null> => {
   return request;
 };
 
-export const putFileBlob = (id: string, blob: Blob): Promise<void> => {
-  return saveRecordStrict<FileRecord>("files", { id, blob });
+export const putFileBlob = (
+  id: string,
+  blob: Blob,
+  options?: WriteOptions,
+): Promise<void> => {
+  return saveRecordStrict<FileRecord>("files", { id, blob }, options);
 };
 
-export const deleteFileBlob = async (id: string): Promise<void> => {
-  await deleteRecord("files", id);
+export const deleteFileBlob = async (
+  id: string,
+  options?: WriteOptions,
+): Promise<void> => {
+  await deleteRecord("files", id, options);
 };
 
 export const deleteFileWithThumb = async (id: string): Promise<void> => {

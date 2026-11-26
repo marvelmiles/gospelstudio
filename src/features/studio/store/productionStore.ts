@@ -89,8 +89,8 @@ const replaceSummary = (
 export const flushSave = async (): Promise<void> => {
   window.clearTimeout(saveTimer);
   saveTimer = undefined;
-  const { production } = useProductionStore.getState();
-  if (!production) return;
+  const { production, saveState } = useProductionStore.getState();
+  if (!production || saveState === "saved") return;
   useProductionStore.setState({ saveState: "saving" });
   try {
     await writeProduction(production);

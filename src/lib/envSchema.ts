@@ -11,6 +11,10 @@ const ENV_FIELDS = {
     .string()
     .url()
     .refine((value) => /^https?:\/\//i.test(value), "Use an http(s) address"),
+  VITE_API_URL: z
+    .string()
+    .url()
+    .refine((value) => /^https?:\/\//i.test(value), "Use an http(s) address"),
 } satisfies Record<string, z.ZodType<string>>;
 
 export type EnvField = keyof typeof ENV_FIELDS;

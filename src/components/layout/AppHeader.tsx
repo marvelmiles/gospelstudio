@@ -7,13 +7,18 @@ import { IconButton } from "@/components/shared/IconButton";
 import { NavDrawer } from "./NavDrawer";
 import { useAppNavigation } from "./appNavigation";
 import { APP_NAME } from "../../lib/appInfo";
+import { isAccountsAvailable } from "../../lib/apiServer";
 import routes, { isRouteActive } from "../../routes";
+import { AccountMenu } from "../../features/account/components/AccountMenu";
 
 const ICON_SLOT = 38;
 const LOGO_SLOT = 34;
 const MENU_SLOT = 38;
 const WORDMARK_SLOT = 132;
+const ACCOUNT_SLOT = 49;
+const LABELLED_ACCOUNT_SLOT = 103;
 const LABELLED_FROM = 1360;
+const ROOMY_LABELS_FROM = 1440;
 const WORDMARK_FROM = 780;
 const WIDE_PADDING_FROM = 700;
 
@@ -27,8 +32,18 @@ export const AppHeader = () => {
   const showWordmark = width >= WORDMARK_FROM;
   const wide = width >= WIDE_PADDING_FROM;
   const edgePadding = wide ? 22 : 12;
+  const accountSlot = isAccountsAvailable()
+    ? showWordmark
+      ? LABELLED_ACCOUNT_SLOT
+      : ACCOUNT_SLOT
+    : 0;
+  const tightLabels = labelled && accountSlot > 0 && width < ROOMY_LABELS_FROM;
   const chrome =
-    edgePadding * 2 + LOGO_SLOT + (showWordmark ? WORDMARK_SLOT : 0) + 16;
+    edgePadding * 2 +
+    LOGO_SLOT +
+    (showWordmark ? WORDMARK_SLOT : 0) +
+    accountSlot +
+    16;
   const totalItems = destinations.length + actions.length;
   const capacity = Math.floor((width - chrome) / ICON_SLOT);
   const needsDrawer = !labelled && capacity < totalItems;
@@ -78,7 +93,9 @@ export const AppHeader = () => {
               aria-current={active ? "page" : undefined}
               className={cn(
                 "flex h-8.5 items-center justify-center gap-2 border text-[13.5px] font-semibold whitespace-nowrap no-underline",
-                labelled ? "rounded-[10px] px-3.5" : "w-8.5 rounded-[9px] p-0",
+                labelled
+                  ? cn("rounded-[10px]", tightLabels ? "px-2.5" : "px-3.5")
+                  : "w-8.5 rounded-[9px] p-0",
                 active
                   ? "border-border bg-secondary text-foreground"
                   : "border-transparent bg-transparent text-muted-foreground",
@@ -111,6 +128,12 @@ export const AppHeader = () => {
             title="Open menu"
             onClick={() => setDrawerOpen(true)}
           />
+        )}
+        {accountSlot > 0 && (
+          <>
+            <span aria-hidden className="mx-1.5 h-5 w-px bg-border" />
+            <AccountMenu showLabel={showWordmark} />
+          </>
         )}
       </div>
 

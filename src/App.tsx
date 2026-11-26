@@ -36,6 +36,13 @@ import { SettingsModal } from "./features/settings/SettingsModal";
 import { ThemesPage } from "./features/themes/ThemesPage";
 import { ShortcutsModal } from "./features/shortcuts/ShortcutsModal";
 import { AboutModal } from "./features/about/AboutModal";
+import { SignInPage } from "./features/account/pages/SignInPage";
+import { SignUpPage } from "./features/account/pages/SignUpPage";
+import { ForgotPasswordPage } from "./features/account/pages/ForgotPasswordPage";
+import { ResetPasswordPage } from "./features/account/pages/ResetPasswordPage";
+import { AccountPage } from "./features/account/pages/AccountPage";
+import { SyncConsentDialog } from "./features/sync/components/SyncConsentDialog";
+import { useSyncLifecycle } from "./features/sync/useSyncLifecycle";
 import routes, { isSelfScrollingRoute } from "./routes";
 
 const AnalyticsDashboardPage = lazy(() =>
@@ -59,6 +66,8 @@ const App = () => {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useSyncLifecycle();
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-foreground">
@@ -100,6 +109,17 @@ const App = () => {
             <Route path={routes.studioItem()} element={<StudioItemPage />} />
             <Route path={routes.cameraShare()} element={<CameraSharePage />} />
             <Route path={routes.share()} element={<SharePage />} />
+            <Route path={routes.signIn()} element={<SignInPage />} />
+            <Route path={routes.signUp()} element={<SignUpPage />} />
+            <Route
+              path={routes.forgotPassword()}
+              element={<ForgotPasswordPage />}
+            />
+            <Route
+              path={routes.resetPassword()}
+              element={<ResetPasswordPage />}
+            />
+            <Route path={routes.account()} element={<AccountPage />} />
             <Route
               path={routes.analytics()}
               element={
@@ -128,6 +148,7 @@ const App = () => {
       <UploadLabelModal />
       <GoLiveTipDialog />
       <GuideModal />
+      <SyncConsentDialog />
       <ResetOverlay />
       <StorageGate />
       <Toaster position="bottom-center" duration={3400} />

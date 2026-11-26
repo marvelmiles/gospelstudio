@@ -1,6 +1,8 @@
 import type { MediaKind } from "./types";
+import { PASSWORD_RESET_APP_PATH } from "./contracts/authContract";
 
 export const NEW_MANUSCRIPT_ID = "new";
+export const NEXT_PAGE_PARAM = "next";
 
 type UsageAsset = "background" | "sound";
 
@@ -51,6 +53,17 @@ const assetUsage = (
   assetId = ":assetId",
 ) => `${assetUsages()}/${asset}/${segment(assetId)}`;
 
+const withNextPage = (path: string, next?: string) =>
+  next && next !== home()
+    ? `${path}?${NEXT_PAGE_PARAM}=${encodeURIComponent(next)}`
+    : path;
+
+const signIn = (next?: string) => withNextPage(`${home()}sign-in`, next);
+const signUp = (next?: string) => withNextPage(`${home()}sign-up`, next);
+const forgotPassword = () => `${home()}forgot-password`;
+const resetPassword = () => PASSWORD_RESET_APP_PATH;
+const account = () => `${home()}account`;
+
 const admin = () => `${home()}admin`;
 const analytics = () => `${admin()}/analytics`;
 
@@ -84,6 +97,11 @@ const routes = {
   cameraShare,
   share,
   assetUsage,
+  signIn,
+  signUp,
+  forgotPassword,
+  resetPassword,
+  account,
   admin,
   analytics,
   presentWindow,
@@ -96,6 +114,12 @@ export default routes;
 
 export const isRoutePath = (candidate: string): boolean =>
   candidate.startsWith("/");
+
+export const isSafeNextPath = (candidate: string | null): candidate is string =>
+  candidate !== null &&
+  isRoutePath(candidate) &&
+  !candidate.startsWith("//") &&
+  !candidate.startsWith("/\\");
 
 export const isRouteActive = (route: string, pathname: string): boolean =>
   route === dashboard()

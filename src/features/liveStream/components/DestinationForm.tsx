@@ -1,11 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { ExternalLink, Eye, EyeOff } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import type { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Field } from "@/components/shared/Field";
-import { IconButton } from "@/components/shared/IconButton";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 import {
   saveDestination,
   streamDestinationFormSchema,
@@ -66,7 +66,6 @@ export const DestinationForm = ({
   const destinations = useLiveStreamSettings((state) => state.destinations);
   const [draft, setDraft] = useState(() => draftOf(destination));
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [isKeyVisible, setIsKeyVisible] = useState(false);
   const platform = STREAM_PLATFORMS[draft.platform];
 
   const update = (patch: Partial<StreamDestinationForm>) => {
@@ -178,24 +177,14 @@ export const DestinationForm = ({
       </Field>
 
       <Field label="Stream key" error={errors.streamKey ?? null}>
-        <div className="relative">
-          <Input
-            type={isKeyVisible ? "text" : "password"}
-            value={draft.streamKey}
-            autoComplete="off"
-            spellCheck={false}
-            onChange={(event) => update({ streamKey: event.target.value })}
-            aria-invalid={Boolean(errors.streamKey)}
-            className="pr-10 font-mono text-[13px] [&::-ms-reveal]:hidden"
-          />
-          <IconButton
-            icon={isKeyVisible ? EyeOff : Eye}
-            size="sm"
-            title={isKeyVisible ? "Hide the stream key" : "Show the stream key"}
-            onClick={() => setIsKeyVisible((visible) => !visible)}
-            className="absolute top-1/2 right-1 -translate-y-1/2"
-          />
-        </div>
+        <PasswordInput
+          label="Stream key"
+          value={draft.streamKey}
+          autoComplete="off"
+          onChange={(event) => update({ streamKey: event.target.value })}
+          aria-invalid={Boolean(errors.streamKey)}
+          className="font-mono text-[13px]"
+        />
       </Field>
 
       <p className="m-0 mb-3 text-[12px] leading-relaxed text-subtle-foreground">

@@ -39,6 +39,11 @@ export const checkBuildEnv = (
       `VITE_RELAY_SERVER_URL is not set, so live streaming and the analytics dashboard are off in this build. ${BUILD_SCOPE_HINT}`,
     );
 
+  if (values.VITE_API_URL === undefined && !reportedFields.has("VITE_API_URL"))
+    warnings.push(
+      `VITE_API_URL is not set, so accounts and syncing are off in this build and the app works on this device only. ${BUILD_SCOPE_HINT}`,
+    );
+
   return { errors, warnings };
 };
 

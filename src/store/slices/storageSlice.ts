@@ -17,6 +17,9 @@ import { DEFAULT_AUDIO } from "../../data/sounds";
 import { seedManuscripts } from "../../data/seed";
 import type { SliceCreator } from "../storeTypes";
 import { resetStudio } from "../../features/studio/store/productionActions";
+import { restartDeviceSync } from "../../features/sync/syncSettings";
+
+const SYSTEM_WRITE = { tracked: false } as const;
 
 export interface StorageSlice {
   storage: StorageInfo | null;
@@ -63,9 +66,10 @@ export const createStorageSlice: SliceCreator<StorageSlice> = (set, get) => ({
     await wipeAllStores();
     resetStudio();
     const manuscripts = await seedManuscripts();
-    await saveRecords("manuscripts", manuscripts);
-    for (const theme of THEMES) await saveRecord("themes", theme);
-    await saveRecord("prefs", get().prefs);
+    await saveRecords("manuscripts", manuscripts, SYSTEM_WRITE);
+    for (const theme of THEMES) await saveRecord("themes", theme, SYSTEM_WRITE);
+    await saveRecord("prefs", get().prefs, SYSTEM_WRITE);
+    await restartDeviceSync();
     set({
       manuscripts,
       scriptures: [],

@@ -32,6 +32,7 @@ GospelStudio is a single page React and TypeScript app that works like a desktop
 - **Live streaming** sends the Studio's live screen to YouTube, Facebook and other platforms at the same time, so people anywhere can watch the service.
 - **Share camera** turns a phone, tablet or laptop into a camera for the Studio, over WiFi or with a code.
 - **Share** copies your library and studio productions to a nearby device, over WiFi or with a code.
+- **Accounts and sync** keep a church's library in one account and sync it between devices in the background, while everything still works offline.
 
 It builds to plain static files, can be installed as an app (PWA), and updates itself in the background.
 
@@ -52,6 +53,14 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 - **Built-in backgrounds.** Pictures, moving video backgrounds, colors and gradients come ready to use. You can edit them, but not delete them.
 - **Images and videos.** Upload once and use them anywhere: as a background, on a slide, in a Studio scene, or sent to another device.
 - **Themes.** A theme sets the whole look of a manuscript. Use the built-in ones or make your own in the theme editor.
+
+**Accounts and sync**
+
+- **Optional church accounts.** Sign up with a church or ministry name, an email and a password. Nothing changes for people who never sign in.
+- **Offline first, always.** Every change is saved on the device first. Signed in or not, online or not, the app keeps working.
+- **You decide when offline work joins your account.** After signing in, a dialog asks before anything made on this device is uploaded. Choose Sync now, or Not now and turn it on later from Account.
+- **Sync in the background.** Manuscripts, Bible passages, images, videos, sounds, backgrounds, themes, settings and Studio productions sync while you keep working. The header shows whether you are up to date, syncing, paused or offline.
+- **Your account, your devices.** Rename the church or ministry, change the email or password, see every signed-in device and sign any of them out, check cloud storage, or delete the account. Forgot password sends a reset link by email.
 
 **Presenting**
 
@@ -187,7 +196,12 @@ In an editor opened from the Studio, `Ctrl` + `S` updates the scene and `Ctrl` +
 
 You need Node 18 or newer (20 or 22 is best) and pnpm. npm and yarn work too. The app itself needs no server, database or account, because it keeps everything in the browser.
 
-This repository is the frontend only. Live streaming and the admin analytics dashboard talk to the **GospelStudio relay server**, a separate project ([`gospelstudio-relay-server`](https://github.com/marvelmiles/gospelstudio-relay-server)) that you run with Docker. Both are optional: without the relay server, every other feature works as before.
+This repository is the frontend only. Two separate projects add optional features:
+
+- The **GospelStudio relay server** ([`gospelstudio-relay-server`](https://github.com/marvelmiles/gospelstudio-relay-server)) carries live streams and the admin analytics dashboard.
+- The **GospelStudio API** ([`gospelstudio-api`](https://github.com/marvelmiles/gospelstudio-api)) holds accounts and syncs each account's library between devices.
+
+Without them, every other feature works as before.
 
 ## Installation
 
@@ -220,8 +234,8 @@ Then open the address Vite prints. By default that is http://localhost:5173.
 | `pnpm generate:icons`          | Create the PNG icons from `public/icon.svg`             |
 | `pnpm generate:thumbnails`     | Create small previews of the built-in background images |
 | `pnpm generate:bible-layout`   | Rebuild the list of Bible books and chapters            |
-| `pnpm contracts:sync`          | Copy `src/contracts` from the relay server project      |
-| `pnpm contracts:check`         | Fail if `src/contracts` differs from the relay server   |
+| `pnpm contracts:sync`          | Copy `src/contracts` from the relay server and the API  |
+| `pnpm contracts:check`         | Fail if `src/contracts` differs from either server      |
 
 Run `pnpm generate:thumbnails` after adding a picture to `public/assets/images`. Lists and editors show the small copy from `public/assets/images/thumbs`, and only the projector loads the full picture.
 
@@ -259,6 +273,12 @@ Live streaming and the admin analytics dashboard need the address of the relay s
 
 The relay server keeps its own variables, including the secret Plausible Stats API key and the analytics admin token. They are listed in the relay server's `.env.example` and never go into this app's build.
 
+Accounts and sync need the address of the API. It is public too:
+
+| Variable       | What it is                                                                                               |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| `VITE_API_URL` | The API's `https://` address. Without it there is no Sign in button and the library stays on each device |
+
 ## Deployment
 
 `pnpm build` creates a static `dist/` folder that any static host can serve. The repo includes a `netlify.toml` for Netlify. On other hosts, publish `dist/` and send any unknown path to `index.html` so links inside the app keep working.
@@ -269,9 +289,11 @@ The app is a static site only. Live streaming and the admin dashboard at `/admin
 
 For local development, clone the relay server next to this project, run `pnpm install` and `pnpm dev` there with `ALLOWED_ORIGINS=http://localhost:5173` in its `.env`, then set `VITE_RELAY_SERVER_URL=http://localhost:8080` in this project's `.env` and run `pnpm dev`.
 
+Accounts work the same way. Deploy the API as its README describes, add this app's addresses to its `ALLOWED_ORIGINS`, set `VITE_API_URL` for every deploy context and redeploy. The build log warns when `VITE_API_URL` is missing. Locally, run the API on a free port (for example `PORT=8081`) with MongoDB, and set `VITE_API_URL=http://localhost:8081`.
+
 ### Shared contracts
 
-The request and response shapes both projects rely on live in `src/contracts`: the live relay API and its close codes, the FLV format, the stream address rules, the analytics event catalog, and the report periods and types. The relay server owns them. This project keeps an exact copy, so it builds and deploys on its own. After changing a contract in the relay server, run `pnpm contracts:sync` here (it looks for `../gospelstudio-relay-server`, or the folder in `RELAY_SERVER_DIR`). `pnpm contracts:check` fails when the copies differ. Never edit `src/contracts` in this project directly.
+The request and response shapes this app shares with its servers live in `src/contracts`. From the relay server: the live relay API and its close codes, the FLV format, the stream address rules, the analytics event catalog, and the report periods and types. From the API: the account, sign-in and sync schemas and the error codes. Each server owns its files and this project keeps an exact copy, so it builds and deploys on its own. After changing a contract, run `pnpm contracts:sync` here (it looks for `../gospelstudio-relay-server` and `../gospelstudio-api`, or the folders in `RELAY_SERVER_DIR` and `API_SERVER_DIR`). `pnpm contracts:check` fails when the copies differ. Never edit `src/contracts` in this project directly.
 
 ## Tech stack
 
@@ -283,6 +305,7 @@ The request and response shapes both projects rely on live in `src/contracts`: t
 - **Storage:** IndexedDB for documents and files, Zod to check backups, and fflate for the `.zip` format.
 - **Live streaming:** WebCodecs for H.264 and AAC encoding in a Web Worker, `@sapphi-red/web-noise-suppressor` (RNNoise) for noise cancellation, Web Audio for the sound mix and polish, and Simple Icons (`@icons-pack/react-simple-icons`) for platform logos. The relay server is a separate project built with Express, `ws`, Zod, `express-rate-limit` and FFmpeg.
 - **Cameras and sharing:** getUserMedia for webcams in the Studio, WebRTC for cameras on other devices, jsQR and qrcode-generator for pairing codes and on-screen QR codes, and Firebase Realtime Database as an optional signalling relay.
+- **Accounts and sync:** the separate GospelStudio API (Express, MongoDB, Redis, Zod). In the browser, a change journal in IndexedDB, Web Locks so only one tab syncs or renews the sign-in at a time, and BroadcastChannel to refresh other tabs.
 - **Offline:** vite-plugin-pwa and Workbox.
 
 ## Architecture
@@ -290,10 +313,11 @@ The request and response shapes both projects rely on live in `src/contracts`: t
 ```
 src/
   index.css        Tailwind entry: the shadcn theme variables, shadows, animations and custom utilities
-  contracts/       exact copy of the relay server's contracts: live relay API, FLV, stream address rules,
-                   analytics event catalog, report periods and report types (pnpm contracts:sync)
+  contracts/       exact copy of the servers' contracts: live relay API, FLV, stream address rules,
+                   analytics event catalog, report periods and report types (relay server), and
+                   accounts, sign-in, sync and error codes (API) (pnpm contracts:sync)
   lib/             parser, slide animations, style and background resolution, storage, zod schema, cn() in utils.ts,
-                   the relay server address (relayServer.ts)
+                   the relay server and API addresses (relayServer.ts, apiServer.ts)
     analytics/     Plausible tracking, event properties, URL cleaning, sessions and opt-out
   data/            built-in backgrounds, themes, collections, fonts and seed manuscripts
                    (hymns.json holds the bundled hymnal, generated, not edited by hand)
@@ -324,6 +348,10 @@ src/
     liveStream/    Live streaming to social platforms: the Stream button and dialog, the
                    saved platforms, the encoder worker and the relay server calls (lib/)
     share/         Share: handing a library and studio productions to a nearby device
+    account/       Sign in, sign up, forgot and reset password, the Account page, the session
+                   (tokens, stored sign-in, cross-tab messages) and the API calls (api/)
+    sync/          Background sync: the change journal, push and pull, applying remote changes,
+                   the sync engine and status, and the dialog that asks before uploading
     settings/      Settings modal, split into one file per section
     about/         About & Help modal and its FAQ list
     analytics/     Admin analytics dashboard (/admin/analytics), its charts and report hooks
@@ -336,7 +364,7 @@ src/
 scripts/           generators for hymns, icons, thumbnails and the Bible layout, and the contract sync
 ```
 
-The live streaming relay and the analytics report API live in the separate `gospelstudio-relay-server` project.
+The live streaming relay and the analytics report API live in the separate `gospelstudio-relay-server` project, and accounts and sync in the separate `gospelstudio-api` project.
 
 Components are written as `const` functions, each file does one job, and anything shared lives in a hook, a component or a `lib/` module.
 
@@ -357,6 +385,11 @@ Components are written as `const` functions, each file does one job, and anythin
 - **Record and Stream share one capture.** `studio/capture/programCapture.ts` hands out leases on a single screen capture and sound mix, so the projector window is picked once and closing it ends both.
 - **Noise cancellation works offline too.** RNNoise's WebAssembly files (about 155 kB) are precached, so recordings made without internet are cleaned up as well.
 - **The service worker also runs in development**, so you can test offline and install behaviour without a production build.
+- **Sync rides on the existing storage, not beside it.** Every save already goes through `lib/storage.ts`, so it reports each changed record to a small journal (`gospelstudio-sync`), and the sync engine pushes whatever the journal lists by reading the record as it is now. Seeding, resets and changes downloaded from the account are written with `{ tracked: false }`, so the 845 built-in hymns, the first-run tour and the Studio's starter production never fill an account, and nothing echoes back.
+- **Asking before uploading.** Signing in sets a stored "awaiting decision" flag. If this device has work the account does not, the sync dialog asks first, and the question survives a reload. Nothing syncs until it is answered.
+- **The newest change wins.** Each journal entry keeps the time of the edit, and the API keeps the newer one, so an old offline edit never overwrites newer work from another device. On a device, what is on air and which scene is in preview stay local, so a production arriving from another device never cuts the live screen.
+- **Remote records are checked like backups.** Pulled records go through the same Zod schemas and normalisers as an imported backup before they are saved. Settings that belong to one device (the first-run tour and the hymnal version) are never taken from the account.
+- **Signing out keeps the library.** The library stays on the device and keeps working offline. Reset while signed in clears this device only, and the account's library downloads again; sign out first to clear a device completely.
 
 ## Hymn library
 

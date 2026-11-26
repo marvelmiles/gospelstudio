@@ -4,7 +4,7 @@ import {
   DEFAULT_MANUSCRIPT_THEME_ID,
   DEFAULT_SCRIPTURE_THEME_ID,
 } from "../../data/themes";
-import { saveRecord } from "../../lib/storage";
+import { saveRecord, type WriteOptions } from "../../lib/storage";
 import type { SliceCreator } from "../storeTypes";
 
 export const DEFAULT_PREFS: Prefs = {
@@ -30,16 +30,16 @@ export const DEFAULT_PREFS: Prefs = {
 export interface PrefsSlice {
   prefs: Prefs;
 
-  savePrefs: (prefs: Prefs) => void;
+  savePrefs: (prefs: Prefs, options?: WriteOptions) => void;
   setBibleVersion: (version: BibleVersionId) => void;
 }
 
 export const createPrefsSlice: SliceCreator<PrefsSlice> = (set, get) => ({
   prefs: DEFAULT_PREFS,
 
-  savePrefs: (prefs) => {
+  savePrefs: (prefs, options) => {
     set({ prefs });
-    void saveRecord("prefs", prefs);
+    void saveRecord("prefs", prefs, options);
   },
 
   setBibleVersion: (version) => {

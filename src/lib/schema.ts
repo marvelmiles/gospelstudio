@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { SyncRecordStore } from "../contracts/syncContract";
 
 const alignSchema = z.enum(["left", "center", "right"]);
 
@@ -352,6 +353,17 @@ const productionSchema = z
   })
   .passthrough();
 
+const sceneLayoutSchema = z
+  .object({
+    id: z.string().min(1),
+    name: z.string(),
+    layers: z.array(studioLayerSchema),
+    background: z.string().optional().catch(undefined),
+    createdAt: z.string().optional(),
+    updatedAt: z.string().optional(),
+  })
+  .passthrough();
+
 const prefsSchema = z
   .object({
     transition: animationSchema,
@@ -389,6 +401,18 @@ export const dataFileSchema = z.object({
   productions: z.array(productionSchema).optional().catch(undefined),
   prefs: prefsSchema.optional().catch(undefined),
 });
+
+export const SYNCED_RECORD_SCHEMAS = {
+  manuscripts: manuscriptSchema,
+  scriptures: scriptureSchema,
+  media: mediaSchema,
+  backgrounds: backgroundSchema,
+  themes: themeSchema,
+  audio: audioSchema,
+  prefs: prefsSchema,
+  productions: productionSchema,
+  sceneLayouts: sceneLayoutSchema,
+} satisfies Record<SyncRecordStore, z.ZodTypeAny>;
 
 export type ImportedSlide = z.infer<typeof slideSchema>;
 export type ImportedManuscript = z.infer<typeof manuscriptSchema>;

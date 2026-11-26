@@ -76,7 +76,7 @@ export const createUiSlice: SliceCreator<UiSlice> = (set, get) => ({
 
   completeGuide: () => {
     set({ showGuide: false });
-    get().savePrefs({ ...get().prefs, onboarded: true });
+    get().savePrefs({ ...get().prefs, onboarded: true }, { tracked: false });
   },
 
   showGoLiveTip: () => {

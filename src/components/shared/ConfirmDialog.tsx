@@ -1,5 +1,6 @@
-import type { MouseEvent } from "react";
-import { AlertTriangle } from "lucide-react";
+import type { MouseEvent, ReactNode } from "react";
+import { AlertTriangle, type LucideIcon } from "lucide-react";
+import { cn } from "../../lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,20 +13,33 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+type ConfirmTone = "danger" | "default";
+
 interface ConfirmDialogProps {
   open: boolean;
   title: string;
-  message: string;
+  message: ReactNode;
   confirmLabel?: string;
+  cancelLabel?: string;
+  tone?: ConfirmTone;
+  icon?: LucideIcon;
   onConfirm: () => void;
   onCancel: () => void;
 }
+
+const TONE_STYLES: Record<ConfirmTone, string> = {
+  danger: "bg-destructive/14 text-destructive",
+  default: "bg-primary/14 text-primary-soft",
+};
 
 export const ConfirmDialog = ({
   open,
   title,
   message,
   confirmLabel = "Delete",
+  cancelLabel = "Cancel",
+  tone = "danger",
+  icon: Icon = AlertTriangle,
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) => {
@@ -38,8 +52,13 @@ export const ConfirmDialog = ({
     <AlertDialog open={open} onOpenChange={(next) => !next && onCancel()}>
       <AlertDialogContent className="sm:max-w-110">
         <AlertDialogHeader>
-          <AlertDialogMedia className="size-11 bg-destructive/14 text-destructive *:[svg:not([class*='size-'])]:size-5">
-            <AlertTriangle />
+          <AlertDialogMedia
+            className={cn(
+              "size-11 *:[svg:not([class*='size-'])]:size-5",
+              TONE_STYLES[tone],
+            )}
+          >
+            <Icon />
           </AlertDialogMedia>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription className="text-[13.5px] leading-[1.6]">
@@ -47,8 +66,11 @@ export const ConfirmDialog = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={confirm}>
+          <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+          <AlertDialogAction
+            variant={tone === "danger" ? "destructive" : "default"}
+            onClick={confirm}
+          >
             {confirmLabel}
           </AlertDialogAction>
         </AlertDialogFooter>

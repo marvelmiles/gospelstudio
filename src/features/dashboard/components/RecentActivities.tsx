@@ -1,6 +1,6 @@
 import { Clock } from "lucide-react";
 import { EmptyState } from "@/components/shared/EmptyState";
-import { timeAgo } from "../utils";
+import { timeAgo } from "../../../lib/id";
 import type { Activity } from "../utils";
 
 interface RecentActivitiesProps {

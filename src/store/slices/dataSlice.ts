@@ -9,13 +9,13 @@ import type {
   Theme,
 } from "../../types";
 import { BACKGROUNDS, BUILT_IN_MEDIA } from "../../data/backgrounds";
-import { DEFAULT_BIBLE_VERSION, isBibleVersion } from "../../data/bibleBooks";
 import { THEMES } from "../../data/themes";
 import { DEFAULT_AUDIO } from "../../data/sounds";
 import { seedManuscripts } from "../../data/seed";
 import { HYMNAL_VERSION } from "../../data/hymns";
 import { planDefaultManuscripts } from "../../lib/manuscript/defaults";
-import { dataFileSchema, type ImportedPrefs } from "../../lib/schema";
+import { dataFileSchema } from "../../lib/schema";
+import { mergeImportedPrefs } from "../importedPrefs";
 import {
   readAllRecords,
   clearStore,
@@ -23,7 +23,7 @@ import {
   saveRecord,
   saveRecords,
 } from "../../lib/storage";
-import type { StoreName } from "../../lib/storage";
+import type { StoreName, WriteOptions } from "../../lib/storage";
 import { thumbId } from "../../lib/fileStore";
 import { invalidateBlobUrls, resetBlobUrls } from "../../lib/blobUrls";
 import { survivingAfterReset } from "../../lib/keepOnReset";
@@ -41,10 +41,16 @@ import {
   customMedia,
   ensureBuiltInThemes,
   mergeById,
-  sortBuiltInFirst,
-  withBuiltInBackgroundEdits,
-  withBuiltInMediaEdits,
 } from "../helpers";
+import {
+  audioState,
+  backgroundsState,
+  mediaState,
+  prefsFrom,
+  readLibraryState,
+  themesState,
+  type LibraryRecordStore,
+} from "../libraryState";
 import {
   normalizeImportedBackground,
   normalizeImportedManuscript,
@@ -66,14 +72,17 @@ import { wholeLibrarySelection } from "../../lib/shareSelection";
 import { DEFAULT_PREFS } from "./prefsSlice";
 import type { SliceCreator } from "../storeTypes";
 import { APP_NAME } from "../../lib/appInfo";
+import { restartDeviceSync } from "../../features/sync/syncSettings";
 
 const MIN_RESET_OVERLAY_MS = 900;
+const SYSTEM_WRITE: WriteOptions = { tracked: false };
 
 export interface DataSlice {
   loading: boolean;
   resetting: boolean;
 
   load: () => Promise<void>;
+  reloadLibrary: (stores: readonly LibraryRecordStore[]) => Promise<void>;
   exportData: (
     onProgress?: (fraction: number) => void,
   ) => Promise<{ ok: boolean; cancelled?: boolean }>;
@@ -84,16 +93,6 @@ export interface DataSlice {
   ) => Promise<{ ok: boolean; message: string }>;
   resetApp: () => Promise<void>;
 }
-
-const definedOnly = (prefs: ImportedPrefs): Partial<Prefs> =>
-  Object.fromEntries(
-    Object.entries(prefs).filter(([, value]) => value !== undefined),
-  ) as Partial<Prefs>;
-
-const withSupportedBibleVersion = (prefs: Prefs): Prefs =>
-  isBibleVersion(prefs.bibleVersion)
-    ? prefs
-    : { ...prefs, bibleVersion: DEFAULT_BIBLE_VERSION };
 
 const mergeIncoming = <T extends { id: string }>(
   current: T[],
@@ -129,9 +128,7 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
       readAllRecords<Prefs>("prefs"),
     ]);
 
-    let prefs = prefsRows[0]
-      ? { ...DEFAULT_PREFS, ...prefsRows[0] }
-      : DEFAULT_PREFS;
+    let prefs = prefsFrom(prefsRows[0]);
 
     let manuscripts = storedManuscripts;
     if (prefs.hymnalVersion !== HYMNAL_VERSION) {
@@ -140,29 +137,27 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
         await seedManuscripts(),
       );
       manuscripts = plan.manuscripts;
-      await saveRecords("manuscripts", plan.toInstall);
-      for (const id of plan.staleIds) await deleteRecord("manuscripts", id);
+      await saveRecords("manuscripts", plan.toInstall, SYSTEM_WRITE);
+      for (const id of plan.staleIds)
+        await deleteRecord("manuscripts", id, SYSTEM_WRITE);
       prefs = { ...prefs, hymnalVersion: HYMNAL_VERSION };
-      await saveRecord("prefs", prefs);
+      await saveRecord("prefs", prefs, SYSTEM_WRITE);
     }
 
     let themes = storedThemes;
     if (!themes.length) {
       themes = THEMES;
-      for (const theme of themes) await saveRecord("themes", theme);
+      for (const theme of themes)
+        await saveRecord("themes", theme, SYSTEM_WRITE);
     }
 
     set({
       manuscripts,
       scriptures,
-      media: customMedia(media),
-      builtInMedia: withBuiltInMediaEdits(media),
-      themes: sortBuiltInFirst(ensureBuiltInThemes(themes)),
-      backgrounds: [
-        ...withBuiltInBackgroundEdits(backgrounds),
-        ...customBackgrounds(backgrounds),
-      ],
-      audio: [...DEFAULT_AUDIO, ...customAudio(audio)],
+      ...mediaState(media),
+      ...themesState(themes),
+      ...backgroundsState(backgrounds),
+      ...audioState(audio),
       prefs,
       showGuide: !prefs.onboarded,
       loading: false,
@@ -175,6 +170,12 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
     } else if (storageInfo && storageInfo.level !== "ok") {
       get().pushAlert(WARN_MSG, "warning", "storage-warn");
     }
+  },
+
+  reloadLibrary: async (stores) => {
+    if (stores.length === 0) return;
+    set(await readLibraryState(stores));
+    await get().refreshStorage();
   },
 
   exportData: async (onProgress) => {
@@ -261,12 +262,10 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
 
       const prefs =
         data.prefs && importedWins
-          ? withSupportedBibleVersion({
-              ...DEFAULT_PREFS,
-              ...definedOnly(data.prefs),
-              id: "app",
-              onboarded: true,
-            })
+          ? mergeImportedPrefs(
+              { ...DEFAULT_PREFS, id: "app", onboarded: true },
+              data.prefs,
+            )
           : state.prefs;
 
       const acceptedFileIds = new Set<string>();
@@ -302,7 +301,7 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
               "audio",
               "files",
             ] as StoreName[]
-          ).map(clearStore),
+          ).map((store) => clearStore(store)),
         );
       }
 
@@ -402,17 +401,19 @@ export const createDataSlice: SliceCreator<DataSlice> = (set, get) => ({
             "prefs",
             "files",
           ] as StoreName[]
-        ).map(clearStore),
+        ).map((store) => clearStore(store, SYSTEM_WRITE)),
       );
-      await clearStudioStorage();
+      await clearStudioStorage(SYSTEM_WRITE);
       resetStudio();
-      await saveRecords("manuscripts", survivors.manuscripts);
-      for (const theme of survivors.themes) await saveRecord("themes", theme);
+      await saveRecords("manuscripts", survivors.manuscripts, SYSTEM_WRITE);
+      for (const theme of survivors.themes)
+        await saveRecord("themes", theme, SYSTEM_WRITE);
       const freshPrefs: Prefs = {
         ...DEFAULT_PREFS,
         hymnalVersion: HYMNAL_VERSION,
       };
-      await saveRecord("prefs", freshPrefs);
+      await saveRecord("prefs", freshPrefs, SYSTEM_WRITE);
+      await restartDeviceSync();
       set({
         manuscripts: survivors.manuscripts,
         scriptures: [],
