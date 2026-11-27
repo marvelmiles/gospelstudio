@@ -93,6 +93,11 @@ export const ensureChurchLogo = (accountId: string): void => {
   fetchChurchLogo(accountId);
 };
 
+export const reloadChurchLogo = (accountId: string): void => {
+  if (useChurchLogoStore.getState().accountId === accountId)
+    fetchChurchLogo(accountId);
+};
+
 export const replaceChurchLogo = (
   accountId: string,
   image: Blob | null,

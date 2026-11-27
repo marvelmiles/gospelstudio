@@ -1,16 +1,27 @@
-import { CloudUpload, Pause, RefreshCw, TriangleAlert } from "lucide-react";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  CircleStop,
+  ListChecks,
+  Pause,
+  Play,
+  RefreshCw,
+  TriangleAlert,
+} from "lucide-react";
 import type { StorageUsage } from "@/contracts/accountContract";
-import { cn } from "../../../lib/utils";
-import { formatCountLabel } from "../../../lib/formatNumber";
+import { formatCount, formatCountLabel } from "../../../lib/formatNumber";
 import { formatBytes } from "../../../lib/storageStats";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Panel, PanelTitle } from "@/components/shared/Panel";
 import { useOnlineStatus } from "../../../hooks/useOnlineStatus";
+import routes from "../../../routes";
+import { LiveSyncBadge } from "../../sync/components/LiveSyncBadge";
+import { StopSyncDialog } from "../../sync/components/StopSyncDialog";
+import { SyncStatusSummary } from "../../sync/components/SyncStatusSummary";
 import { requestSync } from "../../sync/syncEngine";
-import { pauseSync, turnOnSync } from "../../sync/syncControls";
-import { useSyncStore } from "../../sync/syncStore";
-import { useSyncStatus } from "../../sync/useSyncStatus";
+import { pauseSync, stopAllSyncing, turnOnSync } from "../../sync/syncControls";
+import { queuedItemCount, useSyncStore } from "../../sync/syncStore";
 
 interface AccountSyncPanelProps {
   accountId: string;
@@ -39,65 +50,49 @@ export const AccountSyncPanel = ({
   accountId,
   storage,
 }: AccountSyncPanelProps) => {
+  const navigate = useNavigate();
   const isOnline = useOnlineStatus();
   const phase = useSyncStore((state) => state.phase);
-  const tooLargeCount = useSyncStore((state) => state.tooLargeCount);
-  const status = useSyncStatus();
-  const StatusIcon = status.icon;
+  const queue = useSyncStore((state) => state.queue);
+  const [isStopping, setIsStopping] = useState(false);
+  const itemCount = queuedItemCount(queue);
+
+  const confirmStop = () => {
+    void stopAllSyncing();
+    setIsStopping(false);
+  };
 
   return (
     <Panel>
       <PanelTitle
         title="Sync"
         icon={RefreshCw}
-        info="Everything you create or change on this device, from manuscripts and Bible passages to pictures, videos, themes and Studio productions, is saved here first and then synced to your account in the background. GospelStudio keeps working offline either way."
+        info="Everything you create or change on this device, from manuscripts and Bible passages to pictures, videos, themes and Studio productions, is saved here first and then synced to your account in the background. Changes from your other devices arrive the same way, and removing something on one device removes it everywhere. GospelStudio keeps working offline either way."
+        trailing={<LiveSyncBadge />}
       />
-      <div className="flex items-start gap-3" aria-live="polite">
-        <span
-          className={cn(
-            "grid size-9 shrink-0 place-items-center rounded-xl",
-            phase === "error"
-              ? "bg-destructive/14 text-destructive"
-              : "bg-primary/14 text-primary-soft",
-          )}
-        >
-          <StatusIcon
-            size={18}
-            aria-hidden
-            className={cn(phase === "syncing" && "animate-spin")}
-          />
-        </span>
-        <div className="min-w-0">
-          <div className="text-[14px] font-semibold text-foreground">
-            {status.title}
-          </div>
-          <p className="m-0 mt-0.5 text-[13px] leading-relaxed text-muted-foreground">
-            {status.detail}
-          </p>
-        </div>
-      </div>
+      <SyncStatusSummary />
 
-      {tooLargeCount > 0 && (
+      {queue.failed > 0 && (
         <p className="mt-3 mb-0 flex items-start gap-2 text-[12.5px] leading-relaxed text-warning-foreground">
           <TriangleAlert size={14} className="mt-0.5 shrink-0" aria-hidden />
-          {formatCountLabel(tooLargeCount, "item")}{" "}
-          {tooLargeCount === 1 ? "is" : "are"} too large to sync and will stay
-          on this device only.
+          {formatCountLabel(queue.failed, "item")}{" "}
+          {queue.failed === 1 ? "needs" : "need"} your attention. Open sync
+          activity to see why and try again.
         </p>
       )}
 
       <div className="mt-3.5 flex flex-wrap gap-2.5">
         {phase === "paused" ? (
           <Button onClick={() => turnOnSync(accountId)}>
-            <CloudUpload size={15} />
-            Turn on sync
+            <Play size={15} />
+            Resume sync
           </Button>
         ) : (
           <>
             <Button
               variant="secondary"
               onClick={requestSync}
-              disabled={!isOnline || phase === "syncing"}
+              disabled={!isOnline}
             >
               <RefreshCw size={15} />
               Sync now
@@ -108,9 +103,35 @@ export const AccountSyncPanel = ({
             </Button>
           </>
         )}
+        <Button variant="ghost" onClick={() => navigate(routes.syncActivity())}>
+          <ListChecks size={15} />
+          Sync activity
+          {itemCount > 0 && (
+            <span className="rounded-full bg-primary/14 px-1.75 py-px text-[11.5px] text-primary-soft tabular-nums">
+              {formatCount(itemCount)}
+            </span>
+          )}
+        </Button>
+        {itemCount > 0 && (
+          <Button
+            variant="ghost"
+            className="enabled:hover:text-destructive"
+            onClick={() => setIsStopping(true)}
+          >
+            <CircleStop size={15} />
+            Stop sync
+          </Button>
+        )}
       </div>
 
       {storage && <StorageMeter {...storage} />}
+
+      <StopSyncDialog
+        open={isStopping}
+        itemCount={itemCount}
+        onConfirm={confirmStop}
+        onCancel={() => setIsStopping(false)}
+      />
     </Panel>
   );
 };

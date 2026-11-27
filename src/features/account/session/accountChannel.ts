@@ -12,6 +12,7 @@ const accountMessageSchema = z.discriminatedUnion("type", [
     layoutIds: z.array(z.string()),
     fileIds: z.array(z.string()),
   }),
+  z.object({ type: z.literal("sync-queue-changed"), needsSync: z.boolean() }),
 ]);
 
 export type AccountMessage = z.infer<typeof accountMessageSchema>;

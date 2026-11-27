@@ -81,15 +81,46 @@ export const uploadFile = async ({
   return parsed.data.data;
 };
 
-export const downloadFile = async (
-  fileId: string,
-  contentType: string,
-  signal: AbortSignal,
-): Promise<Blob> => {
+export type ByteProgress = (loadedBytes: number) => void;
+
+type ByteChunk = Uint8Array<ArrayBuffer>;
+
+const readWithProgress = async (
+  body: ReadableStream<ByteChunk>,
+  onProgress: ByteProgress,
+): Promise<ByteChunk[]> => {
+  const reader = body.getReader();
+  const chunks: ByteChunk[] = [];
+  let loadedBytes = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) return chunks;
+    chunks.push(value);
+    loadedBytes += value.byteLength;
+    onProgress(loadedBytes);
+  }
+};
+
+export interface FileDownload {
+  fileId: string;
+  contentType: string;
+  signal: AbortSignal;
+  onProgress: ByteProgress;
+}
+
+export const downloadFile = async ({
+  fileId,
+  contentType,
+  signal,
+  onProgress,
+}: FileDownload): Promise<Blob> => {
   const response = await sendAccountRequest({
     path: syncFilePath(fileId),
     method: "GET",
     signal,
   });
-  return new Blob([await response.arrayBuffer()], { type: contentType });
+  const parts = response.body
+    ? await readWithProgress(response.body, onProgress)
+    : [await response.arrayBuffer()];
+  return new Blob(parts, { type: contentType });
 };

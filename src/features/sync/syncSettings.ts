@@ -1,3 +1,4 @@
+import { useSyncExternalStore } from "react";
 import { z } from "zod";
 import { deviceIdSchema } from "@/contracts/syncContract";
 import {
@@ -6,6 +7,14 @@ import {
 } from "../../lib/deviceSettings";
 import { uid } from "../../lib/id";
 import { clearStore } from "../../lib/storage";
+
+const SYNC_RESUME_REASONS = [
+  "joining",
+  "signed-out",
+  "offline",
+] as const;
+
+export type SyncResumeReason = (typeof SYNC_RESUME_REASONS)[number];
 
 const SETTING_NAME = "sync";
 const STORAGE_KEY = `gospelstudio:${SETTING_NAME}`;
@@ -18,6 +27,14 @@ const syncSettingsSchema = z.object({
   lastSyncedAt: z.string().nullable(),
   libraryQueued: z.boolean(),
   awaitingDecision: z.boolean().default(false),
+  clockOffsetMs: z.number().finite().default(0),
+  pausedItems: z.array(z.string()).default([]),
+  offlineSince: z.string().datetime().nullable().default(null),
+  pendingDecision: z
+    .enum(SYNC_RESUME_REASONS)
+    .nullable()
+    .catch(null)
+    .default(null),
 });
 
 export type SyncSettings = z.output<typeof syncSettingsSchema>;
@@ -32,6 +49,10 @@ const freshSettings = (): SyncSettings => ({
   lastSyncedAt: null,
   libraryQueued: false,
   awaitingDecision: false,
+  clockOffsetMs: 0,
+  pausedItems: [],
+  offlineSince: null,
+  pendingDecision: null,
 });
 
 let cached: SyncSettings | null = null;
@@ -76,12 +97,19 @@ export const subscribeSyncSettings = (listener: () => void): (() => void) => {
   };
 };
 
+export const useSyncSettings = (): SyncSettings =>
+  useSyncExternalStore(subscribeSyncSettings, readSyncSettings);
+
 /* A new device id after a reset lets this device download what it uploaded before, instead of skipping it as its own echo. */
 export const restartDeviceSync = async (): Promise<void> => {
-  await clearStore("syncChanges", { tracked: false });
+  await Promise.all([
+    clearStore("syncChanges", { tracked: false }),
+    clearStore("syncDownloads", { tracked: false }),
+  ]);
   updateSyncSettings({
     deviceId: newDeviceId(),
     cursor: 0,
     lastSyncedAt: null,
+    pausedItems: [],
   });
 };

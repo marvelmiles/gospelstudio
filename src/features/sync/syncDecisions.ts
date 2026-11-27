@@ -3,6 +3,7 @@ import {
   MAX_PUSH_CHANGES,
   MAX_RECORD_BYTES,
   type LocalChange,
+  type PushResult,
   type RemoteChange,
 } from "@/contracts/syncContract";
 import type { JournalEntry } from "./syncJournal";
@@ -15,7 +16,7 @@ export interface PreparedChange {
   bytes: number;
 }
 
-interface PushBatch {
+export interface PushBatch {
   entries: JournalEntry[];
   changes: LocalChange[];
 }
@@ -35,6 +36,13 @@ export const shouldApplyRemote = (
     !pending || Date.parse(pending.changedAt) <= Date.parse(change.changedAt)
   );
 };
+
+export const overwrittenOnServer = (
+  results: readonly PushResult[],
+): RemoteChange[] =>
+  results.flatMap((result) =>
+    result.outcome === "superseded" && result.current ? [result.current] : [],
+  );
 
 export const planBatches = (prepared: readonly PreparedChange[]): BatchPlan => {
   const batches: PushBatch[] = [];

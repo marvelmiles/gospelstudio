@@ -139,6 +139,7 @@ export const changesResponseSchema = z.object({
   changes: z.array(remoteChangeSchema),
   cursor: z.number().int().min(0),
   hasMore: z.boolean(),
+  serverTime: z.string().datetime(),
 });
 
 export type ChangesPage = z.infer<typeof changesResponseSchema>;

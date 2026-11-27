@@ -8,14 +8,17 @@ import {
 import type { Prefs } from "../../types";
 import { invalidateBlobUrls } from "../../lib/blobUrls";
 import { deepEqual } from "../../lib/equality";
-import { deleteFileBlob, getFileBlob, putFileBlob } from "../../lib/fileStore";
-import { ApiRequestError } from "../../lib/jsonApi";
+import { deleteFileBlob, getFileBlob } from "../../lib/fileStore";
 import { deleteRecord, readRecord, saveRecord } from "../../lib/storage";
 import { LIBRARY_RECORD_STORES, prefsFrom } from "../../store/libraryState";
 import { useStore } from "../../store/useStore";
 import { refreshStudioRecords } from "../studio/store/productionActions";
 import { announceToOtherTabs } from "../account/session/accountChannel";
-import { downloadFile } from "./syncApi";
+import {
+  queueDownloads,
+  removeDownloads,
+  type DownloadEntry,
+} from "./syncDownloads";
 import { shouldApplyRemote } from "./syncDecisions";
 import {
   acknowledgeEntries,
@@ -30,7 +33,6 @@ import {
 } from "./remoteRecords";
 
 const UNTRACKED = { tracked: false } as const;
-const NOT_FOUND_STATUS = 404;
 
 interface AppliedChanges {
   stores: Set<SyncStore>;
@@ -94,6 +96,12 @@ const publish = async (applied: AppliedChanges): Promise<void> => {
   announceToOtherTabs({ type: "library-changed", ...change });
 };
 
+export const announceFilesArrived = (fileIds: readonly string[]) => {
+  const applied = emptyChanges();
+  for (const fileId of fileIds) markApplied(applied, SYNC_FILE_STORE, fileId);
+  return publish(applied);
+};
+
 const incomingRecord = async (
   store: SyncRecordStore,
   data: unknown,
@@ -121,39 +129,49 @@ const applyRecord = async (
   markApplied(applied, store, recordId);
 };
 
-const applyFile = async (
-  change: RemoteChange,
-  applied: AppliedChanges,
-  signal: AbortSignal,
-): Promise<void> => {
-  const { recordId } = change;
-  if (change.deleted) {
-    await deleteFileBlob(recordId, UNTRACKED);
-    markApplied(applied, SYNC_FILE_STORE, recordId);
-    return;
+interface FilePlan {
+  removedIds: string[];
+  settledIds: string[];
+  downloads: DownloadEntry[];
+}
+
+/* Files are only queued here so the cursor can move on at once: a large or failing download then never holds back the rest of the account's changes. */
+const planFiles = async (
+  changes: readonly RemoteChange[],
+): Promise<FilePlan> => {
+  const plan: FilePlan = { removedIds: [], settledIds: [], downloads: [] };
+  for (const change of changes) {
+    if (change.deleted) {
+      plan.removedIds.push(change.recordId);
+      continue;
+    }
+    const metadata = fileMetadataSchema.safeParse(change.data);
+    if (!metadata.success) continue;
+    const local = await getFileBlob(change.recordId);
+    if (local && local.size === metadata.data.size)
+      plan.settledIds.push(change.recordId);
+    else
+      plan.downloads.push({
+        id: change.recordId,
+        size: metadata.data.size,
+        contentType: metadata.data.contentType,
+        changedAt: change.changedAt,
+      });
   }
-  const metadata = fileMetadataSchema.safeParse(change.data);
-  if (!metadata.success) return;
-  const local = await getFileBlob(recordId);
-  if (local && local.size === metadata.data.size) return;
-  try {
-    const blob = await downloadFile(
-      recordId,
-      metadata.data.contentType,
-      signal,
-    );
-    await putFileBlob(recordId, blob, UNTRACKED);
-    markApplied(applied, SYNC_FILE_STORE, recordId);
-  } catch (error) {
-    const removedSince =
-      error instanceof ApiRequestError && error.status === NOT_FOUND_STATUS;
-    if (!removedSince) throw error;
-  }
+  return plan;
 };
 
-const fileSizeOf = (change: RemoteChange): number => {
-  const metadata = fileMetadataSchema.safeParse(change.data);
-  return metadata.success ? metadata.data.size : 0;
+const applyFiles = async (changes: readonly RemoteChange[]): Promise<void> => {
+  if (changes.length === 0) return;
+  const plan = await planFiles(changes);
+  const removed = emptyChanges();
+  for (const fileId of plan.removedIds) {
+    await deleteFileBlob(fileId, UNTRACKED);
+    markApplied(removed, SYNC_FILE_STORE, fileId);
+  }
+  await removeDownloads([...plan.removedIds, ...plan.settledIds]);
+  await queueDownloads(plan.downloads);
+  await publish(removed);
 };
 
 const isRecordChange = (
@@ -163,15 +181,13 @@ const isRecordChange = (
 
 interface ApplyOptions {
   deviceId: string;
-  signal: AbortSignal;
-  onActivity: (activity: string | null) => void;
 }
 
-/* Records land and show first; files follow smallest first so thumbnails appear before large videos finish downloading. */
 export const applyRemoteChanges = async (
   changes: readonly RemoteChange[],
-  { deviceId, signal, onActivity }: ApplyOptions,
+  { deviceId }: ApplyOptions,
 ): Promise<void> => {
+  if (changes.length === 0) return;
   const pending = new Map(
     (await readJournal()).map((entry) => [entry.id, entry]),
   );
@@ -193,14 +209,5 @@ export const applyRemoteChanges = async (
     await applyRecord(change, recordsApplied);
   await publish(recordsApplied);
 
-  const files = accepted
-    .filter((change) => !isRecordChange(change))
-    .sort((a, b) => fileSizeOf(a) - fileSizeOf(b));
-  const filesApplied = emptyChanges();
-  for (const [index, change] of files.entries()) {
-    signal.throwIfAborted();
-    onActivity(`Downloading file ${index + 1} of ${files.length}`);
-    await applyFile(change, filesApplied, signal);
-  }
-  await publish(filesApplied);
+  await applyFiles(accepted.filter((change) => !isRecordChange(change)));
 };

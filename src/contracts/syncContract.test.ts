@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   baseContentType,
   changesQuerySchema,
+  changesResponseSchema,
   localChangeSchema,
   pushRequestSchema,
   recordIdSchema,
@@ -90,5 +91,18 @@ describe("sync contract", () => {
     expect(baseContentType(" Image/PNG ")).toBe("image/png");
     expect(baseContentType("")).toBe("application/octet-stream");
     expect(baseContentType(undefined)).toBe("application/octet-stream");
+  });
+
+  it("requires the server time on a changes page", () => {
+    const page = { changes: [], cursor: 4, hasMore: false };
+    expect(
+      changesResponseSchema.safeParse({ ...page, serverTime: CHANGED_AT })
+        .success,
+    ).toBe(true);
+    expect(changesResponseSchema.safeParse(page).success).toBe(false);
+    expect(
+      changesResponseSchema.safeParse({ ...page, serverTime: "yesterday" })
+        .success,
+    ).toBe(false);
   });
 });

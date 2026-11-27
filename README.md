@@ -58,8 +58,13 @@ It builds to plain static files, can be installed as an app (PWA), and updates i
 
 - **Optional church accounts.** Sign up with a church or ministry name, an email and a password. Nothing changes for people who never sign in.
 - **Offline first, always.** Every change is saved on the device first. Signed in or not, online or not, the app keeps working.
-- **You decide when offline work joins your account.** After signing in, a dialog asks before anything made on this device is uploaded. Choose Sync now, or Not now and turn it on later from Account.
-- **Sync in the background.** Manuscripts, Bible passages, images, videos, sounds, backgrounds, themes, settings and Studio productions sync while you keep working. The header shows whether you are up to date, syncing, paused or offline.
+- **You decide when offline work joins your account.** After signing in, and when a device comes back online with changes made while it was offline, a dialog asks before anything is sent. Choose Continue sync, Manage syncs to open Sync activity and pick item by item, or Not now and resume later from the account menu or Account.
+- **Sync in the background.** Manuscripts, Bible passages, images, videos, sounds, backgrounds, themes, settings and Studio productions sync while you keep working. Add, change or remove something on one device and every other device signed in to the account follows. The header shows whether you are up to date, syncing, paused or offline.
+- **Realtime between devices.** Every signed-in device holds a Socket.IO connection to the API. When any device adds, changes or removes something, including pictures and videos and Studio scenes, the others pull it within a second, with nothing checking on a timer. Renaming the church, changing the logo, and signing devices in or out reach every device the same way; a device signed out elsewhere signs out at once and says why.
+- **See your other devices.** The account menu and Signed-in devices show which devices are online now and what they are doing, such as "Live on YouTube and Facebook" with the stream's running time, a platform that is having trouble, or a recording and its time. A toast says when another device goes live or ends its stream. Stream keys and addresses never leave the device that streams.
+- **Pause or stop sync.** Pause sync from the account menu or the Account page and nothing moves until you resume, with nothing lost. Stop sync takes everything waiting off this device's list.
+- **Sync activity.** Account > Sync activity lists everything still moving between this device and the account, split into what this device is sending and what it is still downloading, with the size, progress and status of each. Pause, resume, retry or stop one item, or pause, resume or stop all of them. Items that can't sync (a file over the size limit, or a full cloud storage) are set aside with the reason, so they never hold back the rest.
+- **A warning before signing out mid-sync.** If something is still syncing, signing out says so and offers to keep syncing first.
 - **Your account, your devices.** Rename the church or ministry, change the email or password, see every signed-in device and sign any of them out, check cloud storage, or delete the account. Forgot password sends a reset link by email.
 
 **Presenting**
@@ -313,7 +318,7 @@ The request and response shapes this app shares with its servers live in `src/co
 - **Storage:** IndexedDB for documents and files, Zod to check backups, and fflate for the `.zip` format.
 - **Live streaming:** WebCodecs for H.264 and AAC encoding in a Web Worker, `@sapphi-red/web-noise-suppressor` (RNNoise) for noise cancellation, Web Audio for the sound mix and polish, and Simple Icons (`@icons-pack/react-simple-icons`) for platform logos. The relay server is a separate project built with Express, `ws`, Zod, `express-rate-limit` and FFmpeg.
 - **Cameras and sharing:** getUserMedia for webcams in the Studio, WebRTC for cameras on other devices, jsQR and qrcode-generator for pairing codes and on-screen QR codes, and Firebase Realtime Database as an optional signalling relay.
-- **Accounts and sync:** the separate GospelStudio API (Express, MongoDB, Redis, Zod). In the browser, a change journal in IndexedDB, Web Locks so only one tab syncs or renews the sign-in at a time, and BroadcastChannel to refresh other tabs.
+- **Accounts and sync:** the separate GospelStudio API (Express, MongoDB, Redis, Zod). In the browser, a change journal and download queue in IndexedDB, Socket.IO for realtime events and presence, Web Locks so only one tab syncs or renews the sign-in at a time, and BroadcastChannel to refresh other tabs.
 - **Offline:** vite-plugin-pwa and Workbox.
 
 ## Architecture
@@ -358,8 +363,12 @@ src/
     share/         Share: handing a library and studio productions to a nearby device
     account/       Sign in, sign up, forgot and reset password, the Account page, the session
                    (tokens, stored sign-in, cross-tab messages) and the API calls (api/)
-    sync/          Background sync: the change journal, push and pull, applying remote changes,
-                   the sync engine and status, and the dialog that asks before uploading
+    sync/          Background sync: the change journal and download queue, the records lane
+                   (push and pull) and files lane (uploads and downloads), the engine and status,
+                   pause and stop controls, the Sync activity page (pages/, components/, hooks/)
+                   and the dialog that asks before syncing work made signed out or offline
+    realtime/      The Socket.IO connection, its events, device presence and live-stream
+                   activity sharing, and the other-devices views
     settings/      Settings modal, split into one file per section
     about/         About & Help modal and its FAQ list
     analytics/     Admin analytics dashboard (/admin/analytics), its charts and report hooks
@@ -395,7 +404,14 @@ Components are written as `const` functions, each file does one job, and anythin
 - **The service worker also runs in development**, so you can test offline and install behaviour without a production build.
 - **Sync rides on the existing storage, not beside it.** Every save already goes through `lib/storage.ts`, so it reports each changed record to a small journal (`gospelstudio-sync`), and the sync engine pushes whatever the journal lists by reading the record as it is now. Seeding, resets and changes downloaded from the account are written with `{ tracked: false }`, so the 845 built-in hymns, the first-run tour and the Studio's starter production never fill an account, and nothing echoes back.
 - **Asking before uploading.** Signing in sets a stored "awaiting decision" flag. If this device has work the account does not, the sync dialog asks first, and the question survives a reload. Nothing syncs until it is answered.
-- **The newest change wins.** Each journal entry keeps the time of the edit, and the API keeps the newer one, so an old offline edit never overwrites newer work from another device. On a device, what is on air and which scene is in preview stay local, so a production arriving from another device never cuts the live screen.
+- **The newest change wins.** Each journal entry keeps the time of the edit, and the API keeps the newer one, so an old offline edit never overwrites newer work from another device. Those times are kept on the server's clock (measured from `serverTime` on each pull), so a device whose clock runs slow does not lose its edits. On a device, what is on air and which scene is in preview stay local, so a production arriving from another device never cuts the live screen.
+- **Two lanes, so nothing big blocks anything small.** The records lane pushes edits and removals, then always pulls, even when pushing hit a problem, so a device that can't send its own changes still receives everyone else's. The files lane uploads and downloads pictures, videos and sounds on its own, smallest first. Each lane runs in one tab at a time (Web Locks), retries with backoff, and can be cancelled at any point.
+- **One bad item never stops the queue.** An item the server refuses, such as a file over the size limit, is set aside with the reason and shown on the Sync activity page, and everything else carries on. A full cloud storage sets aside the remaining uploads with that message and retries in 15 minutes. A server error retries the item in 2 minutes. Only problems that affect everything (offline, signed out, a busy server) pause the whole lane.
+- **Files download from a queue.** When a pull sees a new or changed file, it records it in a separate download queue (`gospelstudio-sync-downloads`, its own database so older copies of the app never see an unexpected version) and moves on, so the account's changes keep arriving while a long video downloads.
+- **Items, not entries.** A video syncs as its details, its file and its preview. They share one item key, so they are counted, shown, paused and stopped together.
+- **Realtime instead of polling.** `features/realtime` keeps one Socket.IO connection per tab while signed in, even with sync paused, so account and sign-out events still arrive. The handshake reads a fresh access token on every attempt, and a rejected token is renewed before retrying. Every event is checked against the shared contract. Sync pulls when the connection opens or reopens, when another device saves past this device's cursor, and when an edit is made here; a set-aside item wakes its lane exactly when it may be retried.
+- **Asking after offline work.** Going offline records the time. Coming back online holds sync until the device has checked whether anything changed meanwhile; if so, it asks first, and the question survives a reload.
+- **Presence is display only.** Each tab shares its live stream and recording (status, platforms, start time on the server clock) and the server shows one entry per signed-in browser, so runtimes tick the same on every device whatever their clocks say.
 - **Remote records are checked like backups.** Pulled records go through the same Zod schemas and normalisers as an imported backup before they are saved. Settings that belong to one device (the first-run tour and the hymnal version) are never taken from the account.
 - **Signing out keeps the library.** The library stays on the device and keeps working offline. Reset while signed in clears this device only, and the account's library downloads again; sign out first to clear a device completely.
 

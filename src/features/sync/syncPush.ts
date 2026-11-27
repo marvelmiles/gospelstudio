@@ -1,32 +1,46 @@
 import {
+  MAX_RECORD_BYTES,
   SYNC_FILE_STORE,
+  localChangeSchema,
   type LocalChange,
   type PushResult,
-  type RemoteChange,
   type SyncRecordStore,
 } from "@/contracts/syncContract";
-import { getFileBlob } from "../../lib/fileStore";
-import { readRecord } from "../../lib/storage";
+import { formatBytes } from "../../lib/storageStats";
+import { readAllKeys, readRecord } from "../../lib/storage";
 import { applyRemoteChanges } from "./applyRemoteChanges";
-import { pushChanges, uploadFile } from "./syncApi";
-import { planBatches, type PreparedChange } from "./syncDecisions";
-import { acknowledgeEntries, type JournalEntry } from "./syncJournal";
+import { pushChanges } from "./syncApi";
+import {
+  overwrittenOnServer,
+  planBatches,
+  type PreparedChange,
+  type PushBatch,
+} from "./syncDecisions";
+import { permanentFailure } from "./syncFailure";
+import { failureOrRethrow } from "./syncLaneErrors";
+import { isReadyToTransfer, syncItemKeyOf } from "./syncItems";
+import {
+  acknowledgeEntries,
+  markEntriesFailed,
+  type JournalEntry,
+} from "./syncJournal";
 import {
   isDeviceOnlyRecord,
   pendingJournal,
   type SyncedRecordShape,
 } from "./syncScope";
+import { readSyncSettings } from "./syncSettings";
 
 const encoder = new TextEncoder();
+
+const TOO_LARGE_MESSAGE = `This item is larger than ${formatBytes(MAX_RECORD_BYTES)}, so it can't sync and stays on this device.`;
+const UNREADABLE_MESSAGE =
+  "This item has information sync can't read, so it stays on this device.";
 
 interface PushOptions {
   deviceId: string;
   signal: AbortSignal;
   onActivity: (activity: string | null) => void;
-}
-
-export interface PushSummary {
-  tooLarge: number;
 }
 
 const deletionOf = (entry: JournalEntry): PreparedChange => ({
@@ -65,63 +79,81 @@ const prepareRecordChange = async (
   return { entry, change, bytes: encoder.encode(json).length };
 };
 
-const overwrittenOnServer = (results: readonly PushResult[]): RemoteChange[] =>
-  results.flatMap((result) =>
-    result.outcome === "superseded" && result.current ? [result.current] : [],
+const readyEntries = async (nowMs: number): Promise<JournalEntry[]> => {
+  const paused = new Set(readSyncSettings().pausedItems);
+  return (await pendingJournal()).filter((entry) =>
+    isReadyToTransfer(
+      syncItemKeyOf(entry.store, entry.recordId),
+      entry.failure,
+      paused,
+      nowMs,
+    ),
   );
-
-const pushFiles = async (
-  entries: readonly JournalEntry[],
-  { deviceId, signal, onActivity }: PushOptions,
-): Promise<PreparedChange[]> => {
-  const removed: PreparedChange[] = [];
-  for (const [index, entry] of entries.entries()) {
-    signal.throwIfAborted();
-    const blob = await getFileBlob(entry.recordId);
-    if (!blob) {
-      removed.push(deletionOf(entry));
-      continue;
-    }
-    onActivity(`Uploading file ${index + 1} of ${entries.length}`);
-    const result = await uploadFile({
-      fileId: entry.recordId,
-      blob,
-      deviceId,
-      changedAt: entry.changedAt,
-      signal,
-    });
-    await acknowledgeEntries([entry]);
-    await applyRemoteChanges(overwrittenOnServer([result]), {
-      deviceId,
-      signal,
-      onActivity,
-    });
-  }
-  return removed;
 };
 
-export const pushPendingChanges = async (
+/* A batch the server refuses as malformed is split so the one bad record is set aside and the rest still sync; a server outage fails the batch as a whole instead of retrying each change. */
+const pushBatch = async (
+  batch: PushBatch,
   options: PushOptions,
-): Promise<PushSummary> => {
-  const entries = await pendingJournal();
-  if (entries.length === 0) return { tooLarge: 0 };
-  const { deviceId, signal, onActivity } = options;
+): Promise<void> => {
+  const { deviceId, signal } = options;
+  let results: PushResult[];
+  try {
+    results = await pushChanges(deviceId, batch.changes, signal);
+  } catch (error) {
+    const failure = failureOrRethrow(error, signal);
+    const canSplit = batch.changes.length > 1 && failure.retryAt === null;
+    if (!canSplit) {
+      await markEntriesFailed(batch.entries, failure);
+      return;
+    }
+    for (const [index, change] of batch.changes.entries()) {
+      const entry = batch.entries[index];
+      if (entry)
+        await pushBatch({ entries: [entry], changes: [change] }, options);
+    }
+    return;
+  }
+  await acknowledgeEntries(batch.entries);
+  await applyRemoteChanges(overwrittenOnServer(results), { deviceId });
+};
 
-  const removedFiles = await pushFiles(
-    entries.filter((entry) => !isRecordEntry(entry)),
-    options,
+/* Records and deletions only: file contents travel in the separate files lane so a large upload never holds back an edit. */
+export const pushRecordChanges = async (
+  options: PushOptions,
+): Promise<void> => {
+  const { signal, onActivity } = options;
+  const nowMs = Date.now();
+  const entries = await readyEntries(nowMs);
+  if (entries.length === 0) return;
+
+  const storedFileIds = new Set(
+    entries.some((entry) => !isRecordEntry(entry))
+      ? await readAllKeys(SYNC_FILE_STORE)
+      : [],
   );
-
-  const prepared: PreparedChange[] = [...removedFiles];
+  const prepared: PreparedChange[] = [];
   const deviceOnly: JournalEntry[] = [];
-  for (const entry of entries.filter(isRecordEntry)) {
+  const unreadable: JournalEntry[] = [];
+  for (const entry of entries) {
+    if (!isRecordEntry(entry)) {
+      if (!storedFileIds.has(entry.recordId)) prepared.push(deletionOf(entry));
+      continue;
+    }
     const change = await prepareRecordChange(entry);
-    if (change) prepared.push(change);
-    else deviceOnly.push(entry);
+    if (!change) deviceOnly.push(entry);
+    else if (localChangeSchema.safeParse(change.change).success)
+      prepared.push(change);
+    else unreadable.push(entry);
   }
   await acknowledgeEntries(deviceOnly);
+  await markEntriesFailed(
+    unreadable,
+    permanentFailure(UNREADABLE_MESSAGE, nowMs),
+  );
 
   const { batches, tooLarge } = planBatches(prepared);
+  await markEntriesFailed(tooLarge, permanentFailure(TOO_LARGE_MESSAGE, nowMs));
   for (const [index, batch] of batches.entries()) {
     signal.throwIfAborted();
     onActivity(
@@ -129,13 +161,6 @@ export const pushPendingChanges = async (
         ? `Saving changes, part ${index + 1} of ${batches.length}`
         : "Saving changes",
     );
-    const results = await pushChanges(deviceId, batch.changes, signal);
-    await acknowledgeEntries(batch.entries);
-    await applyRemoteChanges(overwrittenOnServer(results), {
-      deviceId,
-      signal,
-      onActivity,
-    });
+    await pushBatch(batch, options);
   }
-  return { tooLarge: tooLarge.length };
 };

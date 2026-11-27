@@ -63,6 +63,7 @@ const signUp = (next?: string) => withNextPage(`${home()}sign-up`, next);
 const forgotPassword = () => `${home()}forgot-password`;
 const resetPassword = () => PASSWORD_RESET_APP_PATH;
 const account = () => `${home()}account`;
+const syncActivity = () => `${account()}/sync`;
 
 const admin = () => `${home()}admin`;
 const analytics = () => `${admin()}/analytics`;
@@ -102,6 +103,7 @@ const routes = {
   forgotPassword,
   resetPassword,
   account,
+  syncActivity,
   admin,
   analytics,
   presentWindow,

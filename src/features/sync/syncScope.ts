@@ -15,6 +15,7 @@ import {
   type JournalEntry,
   type JournalInput,
 } from "./syncJournal";
+import { syncItemKeyOf } from "./syncItems";
 import { readSyncSettings, updateSyncSettings } from "./syncSettings";
 
 export interface SyncedRecordShape {
@@ -121,8 +122,10 @@ export const queueLibraryIfNeeded = async (): Promise<void> => {
 export const countLibraryUpload = async (
   journal: readonly JournalEntry[],
 ): Promise<number> => {
-  const keys = new Set(journal.map((entry) => entry.id));
+  const keys = new Set(
+    journal.map((entry) => syncItemKeyOf(entry.store, entry.recordId)),
+  );
   for (const input of await planLibraryUpload())
-    keys.add(journalKey(input.store, input.recordId));
+    keys.add(syncItemKeyOf(input.store, input.recordId));
   return keys.size;
 };

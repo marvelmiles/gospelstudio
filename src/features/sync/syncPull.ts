@@ -1,5 +1,6 @@
 import { applyRemoteChanges } from "./applyRemoteChanges";
 import { fetchChanges } from "./syncApi";
+import { rememberServerTime } from "./syncClock";
 import { readSyncSettings, updateSyncSettings } from "./syncSettings";
 
 interface PullOptions {
@@ -21,8 +22,15 @@ export const pullRemoteChanges = async ({
     const settings = readSyncSettings();
     if (settings.accountId !== accountId) return;
     onActivity("Checking for changes");
+    const sentAtMs = Date.now();
     const page = await fetchChanges(settings.cursor, signal);
-    await applyRemoteChanges(page.changes, { deviceId, signal, onActivity });
+    if (page.serverTime)
+      rememberServerTime({
+        serverTime: page.serverTime,
+        sentAtMs,
+        receivedAtMs: Date.now(),
+      });
+    await applyRemoteChanges(page.changes, { deviceId });
     signal.throwIfAborted();
     updateSyncSettings({ cursor: page.cursor });
     if (!page.hasMore) return;

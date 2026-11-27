@@ -1,11 +1,14 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  CloudUpload,
+  ListChecks,
   LogIn,
   LogOut,
+  Pause,
+  Play,
   RefreshCw,
   UserRoundCog,
 } from "lucide-react";
+import { formatCount } from "../../../lib/formatNumber";
 import { cn } from "../../../lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,9 +21,11 @@ import {
 import { IconButton } from "@/components/shared/IconButton";
 import { useOnlineStatus } from "../../../hooks/useOnlineStatus";
 import routes, { isRouteActive } from "../../../routes";
+import { OtherDevicesActivity } from "../../realtime/components/OtherDevicesActivity";
+import { otherDevicesOf, useRealtimeStore } from "../../realtime/realtimeStore";
 import { requestSync } from "../../sync/syncEngine";
-import { turnOnSync } from "../../sync/syncControls";
-import { useSyncStore } from "../../sync/syncStore";
+import { pauseSync, turnOnSync } from "../../sync/syncControls";
+import { queuedItemCount, useSyncStore } from "../../sync/syncStore";
 import { useSyncStatus } from "../../sync/useSyncStatus";
 import { useSignOut } from "../hooks/useSignOut";
 import { useAuthStore } from "../session/authStore";
@@ -72,6 +77,10 @@ export const AccountMenu = ({ showLabel }: AccountMenuProps) => {
   const status = useAuthStore((state) => state.status);
   const account = useAuthStore((state) => state.account);
   const phase = useSyncStore((state) => state.phase);
+  const queuedCount = useSyncStore((state) => queuedItemCount(state.queue));
+  const hasOtherDevices = useRealtimeStore(
+    (state) => otherDevicesOf(state).length > 0,
+  );
   const syncStatus = useSyncStatus();
   const isOnline = useOnlineStatus();
   const signOut = useSignOut();
@@ -135,21 +144,39 @@ export const AccountMenu = ({ showLabel }: AccountMenuProps) => {
               </div>
             </div>
           </div>
+          {hasOtherDevices && (
+            <>
+              <DropdownMenuSeparator />
+              <OtherDevicesActivity />
+            </>
+          )}
           <DropdownMenuSeparator />
           {phase === "paused" ? (
             <DropdownMenuItem onSelect={() => turnOnSync(account.id)}>
-              <CloudUpload />
-              Turn on sync
+              <Play />
+              Resume sync
             </DropdownMenuItem>
           ) : (
-            <DropdownMenuItem
-              disabled={!isOnline || phase === "syncing"}
-              onSelect={requestSync}
-            >
-              <RefreshCw />
-              Sync now
-            </DropdownMenuItem>
+            <>
+              <DropdownMenuItem disabled={!isOnline} onSelect={requestSync}>
+                <RefreshCw />
+                Sync now
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={pauseSync}>
+                <Pause />
+                Pause sync
+              </DropdownMenuItem>
+            </>
           )}
+          <DropdownMenuItem onSelect={() => navigate(routes.syncActivity())}>
+            <ListChecks />
+            Sync activity
+            {queuedCount > 0 && (
+              <span className="ml-auto text-xs text-muted-foreground tabular-nums">
+                {formatCount(queuedCount)}
+              </span>
+            )}
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => navigate(routes.account())}>
             <UserRoundCog />
             Account settings

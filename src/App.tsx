@@ -41,13 +41,20 @@ import { SignUpPage } from "./features/account/pages/SignUpPage";
 import { ForgotPasswordPage } from "./features/account/pages/ForgotPasswordPage";
 import { ResetPasswordPage } from "./features/account/pages/ResetPasswordPage";
 import { AccountPage } from "./features/account/pages/AccountPage";
-import { SyncConsentDialog } from "./features/sync/components/SyncConsentDialog";
+import { SyncResumeDialog } from "./features/sync/components/SyncResumeDialog";
+import { useRealtimeLifecycle } from "./features/realtime/useRealtimeLifecycle";
 import { useSyncLifecycle } from "./features/sync/useSyncLifecycle";
 import routes, { isSelfScrollingRoute } from "./routes";
 
 const AnalyticsDashboardPage = lazy(() =>
   import("./features/analytics/AnalyticsDashboardPage").then((module) => ({
     default: module.AnalyticsDashboardPage,
+  })),
+);
+
+const SyncActivityPage = lazy(() =>
+  import("./features/sync/pages/SyncActivityPage").then((module) => ({
+    default: module.SyncActivityPage,
   })),
 );
 
@@ -68,6 +75,7 @@ const App = () => {
   }, [load]);
 
   useSyncLifecycle();
+  useRealtimeLifecycle();
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-background bg-[radial-gradient(1100px_520px_at_80%_-12%,rgb(37_99_235/0.1),transparent_65%),radial-gradient(1200px_500px_at_50%_-15%,rgb(255_255_255/0.02),transparent_70%)] text-foreground">
@@ -121,6 +129,14 @@ const App = () => {
             />
             <Route path={routes.account()} element={<AccountPage />} />
             <Route
+              path={routes.syncActivity()}
+              element={
+                <Suspense fallback={<LoadingArea />}>
+                  <SyncActivityPage />
+                </Suspense>
+              }
+            />
+            <Route
               path={routes.analytics()}
               element={
                 <Suspense fallback={<LoadingArea />}>
@@ -148,7 +164,7 @@ const App = () => {
       <UploadLabelModal />
       <GoLiveTipDialog />
       <GuideModal />
-      <SyncConsentDialog />
+      <SyncResumeDialog />
       <ResetOverlay />
       <StorageGate />
       <Toaster position="bottom-center" duration={3400} />

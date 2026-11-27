@@ -9,6 +9,7 @@ import {
 import { refreshAppAfterSync } from "./applyRemoteChanges";
 import { prepareSyncForAccount } from "./syncControls";
 import { startSyncEngine, stopSyncEngine } from "./syncEngine";
+import { receiveSyncQueueFromOtherTab } from "./syncQueueEvents";
 import { readSyncSettings } from "./syncSettings";
 
 export const useSyncLifecycle = (): void => {
@@ -25,6 +26,8 @@ export const useSyncLifecycle = (): void => {
         return;
       }
       if (message.type === "library-changed") void refreshAppAfterSync(message);
+      if (message.type === "sync-queue-changed")
+        receiveSyncQueueFromOtherTab({ needsSync: message.needsSync });
     });
   }, []);
 

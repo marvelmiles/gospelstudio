@@ -6,6 +6,7 @@ import {
   type RemoteChange,
 } from "@/contracts/syncContract";
 import {
+  overwrittenOnServer,
   planBatches,
   retryDelayAfter,
   shouldApplyRemote,
@@ -141,5 +142,28 @@ describe("retrying after a failure", () => {
     expect(retryDelayAfter(2)).toBe(10000);
     expect(retryDelayAfter(4)).toBe(40000);
     expect(retryDelayAfter(20)).toBe(5 * 60 * 1000);
+  });
+});
+
+describe("pushes another device won", () => {
+  it("hands back only the winning versions to apply on this device", () => {
+    const winner = remote("2026-11-25T11:00:00.000Z");
+    expect(
+      overwrittenOnServer([
+        {
+          store: "manuscripts",
+          recordId: "song-1",
+          outcome: "superseded",
+          sequence: 7,
+          current: winner,
+        },
+        {
+          store: "manuscripts",
+          recordId: "song-2",
+          outcome: "applied",
+          sequence: 8,
+        },
+      ]),
+    ).toEqual([winner]);
   });
 });

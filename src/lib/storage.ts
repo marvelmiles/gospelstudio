@@ -9,7 +9,7 @@ type LibraryStoreName =
   | "prefs"
   | "files";
 type StudioStoreName = "productions" | "sceneLayouts";
-type SyncStoreName = "syncChanges";
+type SyncStoreName = "syncChanges" | "syncDownloads";
 type AccountStoreName = "credentials";
 export type StoreName =
   LibraryStoreName | StudioStoreName | SyncStoreName | AccountStoreName;
@@ -58,6 +58,11 @@ const SYNC_DATABASE: DatabaseSchema = {
   name: "gospelstudio-sync",
   stores: ["syncChanges"],
 };
+/* Added as a new database rather than a version bump: an older copy of the app treats a newer database version as incompatible and clears everything. */
+const SYNC_DOWNLOADS_DATABASE: DatabaseSchema = {
+  name: "gospelstudio-sync-downloads",
+  stores: ["syncDownloads"],
+};
 const ACCOUNT_DATABASE: DatabaseSchema = {
   name: "gospelstudio-account",
   stores: ["credentials"],
@@ -66,6 +71,7 @@ const DATABASES: DatabaseSchema[] = [
   LIBRARY_DATABASE,
   STUDIO_DATABASE,
   SYNC_DATABASE,
+  SYNC_DOWNLOADS_DATABASE,
   ACCOUNT_DATABASE,
 ];
 const STORES: StoreName[] = DATABASES.flatMap((database) => database.stores);
@@ -416,6 +422,43 @@ export const deleteMatchingRecords = async <T extends HasId>(
   for (const id of ids) {
     const record = mem[store].get(id) as T | undefined;
     if (record && matches(record)) mem[store].delete(id);
+  }
+  if (backend === "session") persistSession(store);
+};
+
+export const updateMatchingRecords = async <T extends HasId>(
+  store: StoreName,
+  ids: readonly string[],
+  update: (record: T) => T | null,
+): Promise<void> => {
+  if (!ids.length) return;
+  const backend = await init();
+  const idb = connectionOf(store);
+  if (backend === "indexeddb" && idb) {
+    return new Promise((resolve) => {
+      try {
+        const tx = idb.transaction(store, "readwrite");
+        const target = tx.objectStore(store);
+        for (const id of ids) {
+          const request = target.get(id);
+          request.onsuccess = () => {
+            const record = request.result as T | undefined;
+            const next = record ? update(record) : null;
+            if (next) target.put(next);
+          };
+        }
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => resolve();
+        tx.onabort = () => resolve();
+      } catch {
+        resolve();
+      }
+    });
+  }
+  for (const id of ids) {
+    const record = mem[store].get(id) as T | undefined;
+    const next = record ? update(record) : null;
+    if (next) mem[store].set(id, next);
   }
   if (backend === "session") persistSession(store);
 };

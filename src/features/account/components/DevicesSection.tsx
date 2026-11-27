@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LogOut, MonitorSmartphone } from "lucide-react";
 import type { AccountSession } from "@/contracts/accountContract";
+import type { PresentDevice } from "@/contracts/realtimeContract";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -12,17 +13,21 @@ import {
   signOutDevice,
   signOutOtherDevices,
 } from "../api/accountApi";
+import { DeviceActivityLine } from "../../realtime/components/DeviceActivityLine";
+import { onRealtime } from "../../realtime/realtimeEvents";
+import { useRealtimeStore } from "../../realtime/realtimeStore";
 import { FormProblem } from "./FormProblem";
 
 const ALL_OTHERS = "others";
 
 interface DeviceRowProps {
   device: AccountSession;
+  presence: PresentDevice | undefined;
   busy: boolean;
   onSignOut: () => void;
 }
 
-const DeviceRow = ({ device, busy, onSignOut }: DeviceRowProps) => (
+const DeviceRow = ({ device, presence, busy, onSignOut }: DeviceRowProps) => (
   <li className="flex flex-wrap items-center gap-3 rounded-xl border bg-background/40 px-3 py-2.5">
     <MonitorSmartphone
       size={17}
@@ -34,10 +39,14 @@ const DeviceRow = ({ device, busy, onSignOut }: DeviceRowProps) => (
         <span className="truncate">{device.deviceName}</span>
         {device.current && <Badge variant="secondary">This device</Badge>}
       </div>
-      <div className="mt-0.5 text-xs text-muted-foreground">
-        Active {timeAgo(device.lastActiveAt)}. Signed in{" "}
-        {formatDate(device.createdAt)}.
-      </div>
+      {presence ? (
+        <DeviceActivityLine activity={presence.activity} className="mt-1" />
+      ) : (
+        <div className="mt-0.5 text-xs text-muted-foreground">
+          Active {timeAgo(device.lastActiveAt)}. Signed in{" "}
+          {formatDate(device.createdAt)}.
+        </div>
+      )}
     </div>
     {!device.current && (
       <Button size="sm" variant="ghost" busy={busy} onClick={onSignOut}>
@@ -52,6 +61,15 @@ export const DevicesSection = () => {
   const [problem, setProblem] = useState<UserProblem | null>(null);
   const [busyWith, setBusyWith] = useState<string | null>(null);
   const [listVersion, setListVersion] = useState(0);
+  const presentDevices = useRealtimeStore((state) => state.devices);
+
+  useEffect(
+    () =>
+      onRealtime("sessionsChanged", () =>
+        setListVersion((version) => version + 1),
+      ),
+    [],
+  );
 
   useEffect(() => {
     let isCurrent = true;
@@ -89,7 +107,7 @@ export const DevicesSection = () => {
       <PanelTitle
         title="Signed-in devices"
         icon={MonitorSmartphone}
-        info="Signing a device out stops it syncing. Its library stays on that device."
+        info="Devices online now show what they are doing, such as a live stream and how long it has run. Signing a device out signs it out at once and stops it syncing. Its library stays on that device."
       />
       <FormProblem problem={problem} />
       {devices === null ? (
@@ -100,6 +118,9 @@ export const DevicesSection = () => {
             <DeviceRow
               key={device.id}
               device={device}
+              presence={presentDevices.find(
+                (present) => present.sessionId === device.id,
+              )}
               busy={busyWith === device.id}
               onSignOut={() =>
                 void run(device.id, () => signOutDevice(device.id))
