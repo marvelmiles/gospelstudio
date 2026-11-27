@@ -1,11 +1,8 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
-import { UserRoundPlus } from "lucide-react";
 import { PASSWORD_MIN_LENGTH } from "@/contracts/accountContract";
 import { signUpRequestSchema } from "@/contracts/authContract";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/shared/Field";
 import { PasswordInput } from "@/components/shared/PasswordInput";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useSubmission } from "../../../hooks/useSubmission";
@@ -13,10 +10,11 @@ import { checkForm, type FieldErrors } from "../../../lib/formErrors";
 import routes from "../../../routes";
 import { signUp } from "../api/authApi";
 import { completeSignIn } from "../accountLifecycle";
+import { AuthSubmitButton } from "../components/AuthButtons";
+import { AuthField } from "../components/AuthField";
 import { AuthLink } from "../components/AuthLink";
 import { AuthPageLayout } from "../components/AuthPageLayout";
 import { FormProblem } from "../components/FormProblem";
-import { OfflineNotice } from "../components/OfflineNotice";
 import { useNextPage } from "../hooks/useNextPage";
 import { sessionDeviceName } from "../lib/sessionDeviceName";
 import { useAuthStore } from "../session/authStore";
@@ -70,63 +68,55 @@ export const SignUpPage = () => {
 
   return (
     <AuthPageLayout
-      icon={UserRoundPlus}
-      title="Create an account"
-      description="Keep your songs, Bible passages, media and Studio productions safe in one account. Everything still works offline on this device."
+      title="Create your account"
+      description="Sync your library across devices."
       footer={
         <>
-          <span>Already have an account?</span>
+          <span>Have an account?</span>
           <AuthLink to={routes.signIn(nextPage)}>Sign in</AuthLink>
         </>
       }
     >
-      <OfflineNotice message="You're offline. Keep working as usual, and create your account once you're back online." />
       <FormProblem problem={problem} />
       <form onSubmit={handleSubmit} noValidate>
-        <Field
-          label="Church or ministry name"
-          error={errors.churchName ?? null}
-        >
-          <Input
-            autoComplete="organization"
-            value={values.churchName}
-            onChange={update("churchName")}
-            aria-invalid={Boolean(errors.churchName)}
-          />
-        </Field>
-        <Field label="Email" error={errors.email ?? null}>
-          <Input
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            value={values.email}
-            onChange={update("email")}
-            aria-invalid={Boolean(errors.email)}
-          />
-        </Field>
-        <Field label="Password" error={errors.password ?? null}>
-          <PasswordInput
-            label="Password"
-            autoComplete="new-password"
-            value={values.password}
-            onChange={update("password")}
-            aria-invalid={Boolean(errors.password)}
-            aria-describedby="sign-up-password-hint"
-          />
-          {!errors.password && (
-            <span
-              id="sign-up-password-hint"
-              className="mt-1.5 block text-[11.5px] text-muted-foreground"
-            >
-              At least {PASSWORD_MIN_LENGTH} characters. A short sentence is
-              easy to remember and hard to guess.
-            </span>
+        <AuthField label="Church or ministry name" error={errors.churchName}>
+          {(control) => (
+            <Input
+              {...control}
+              autoComplete="organization"
+              value={values.churchName}
+              onChange={update("churchName")}
+            />
           )}
-        </Field>
-        <Button type="submit" className="mt-1 w-full" busy={busy}>
-          <UserRoundPlus size={15} />
-          Create account
-        </Button>
+        </AuthField>
+        <AuthField label="Email" error={errors.email}>
+          {(control) => (
+            <Input
+              {...control}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={values.email}
+              onChange={update("email")}
+            />
+          )}
+        </AuthField>
+        <AuthField
+          label="Password"
+          hint={`${PASSWORD_MIN_LENGTH}+ characters`}
+          error={errors.password}
+        >
+          {(control) => (
+            <PasswordInput
+              {...control}
+              label="Password"
+              autoComplete="new-password"
+              value={values.password}
+              onChange={update("password")}
+            />
+          )}
+        </AuthField>
+        <AuthSubmitButton busy={busy}>Create account</AuthSubmitButton>
       </form>
     </AuthPageLayout>
   );

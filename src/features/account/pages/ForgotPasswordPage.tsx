@@ -1,35 +1,36 @@
 import { useState, type FormEvent } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { ArrowLeft, KeyRound, MailCheck, RotateCw } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { MailCheck } from "lucide-react";
 import { forgotPasswordRequestSchema } from "@/contracts/authContract";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/shared/Field";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useSubmission } from "../../../hooks/useSubmission";
 import { checkForm, type FieldErrors } from "../../../lib/formErrors";
 import routes from "../../../routes";
+import { useStore } from "../../../store/useStore";
 import { requestPasswordReset } from "../api/authApi";
-import { AuthLink } from "../components/AuthLink";
+import {
+  AuthActionButton,
+  AuthLinkButton,
+  AuthSubmitButton,
+} from "../components/AuthButtons";
+import { AuthField } from "../components/AuthField";
+import { BackToSignInLink } from "../components/AuthLink";
 import { AuthPageLayout } from "../components/AuthPageLayout";
 import { FormProblem } from "../components/FormProblem";
-import { OfflineNotice } from "../components/OfflineNotice";
 import { emailFromForgotPasswordState } from "../lib/forgotPasswordState";
-
-const OFFLINE_MESSAGE =
-  "You're offline. Ask for a reset link once you're back online.";
 
 export const ForgotPasswordPage = () => {
   useDocumentTitle("Forgot password");
   const location = useLocation();
+  const pushToast = useStore((state) => state.pushToast);
   const { busy, problem, submit, clearProblem } = useSubmission();
   const [email, setEmail] = useState(() =>
     emailFromForgotPasswordState(location.state),
   );
   const [errors, setErrors] = useState<FieldErrors>({});
   const [sentTo, setSentTo] = useState<string | null>(null);
-  const [resendCount, setResendCount] = useState(0);
 
   const sendLink = (address: string) =>
     submit(() => requestPasswordReset({ email: address }));
@@ -42,15 +43,12 @@ export const ForgotPasswordPage = () => {
       return;
     }
     setErrors({});
-    if (await sendLink(check.data.email)) {
-      setSentTo(check.data.email);
-      setResendCount(0);
-    }
+    if (await sendLink(check.data.email)) setSentTo(check.data.email);
   };
 
   const handleResend = async () => {
     if (sentTo && (await sendLink(sentTo)))
-      setResendCount((count) => count + 1);
+      pushToast("New link sent. Use the latest email.");
   };
 
   const handleUseAnotherEmail = () => {
@@ -69,85 +67,48 @@ export const ForgotPasswordPage = () => {
             <strong className="font-semibold wrap-anywhere text-foreground">
               {sentTo}
             </strong>
-            , we sent it a link to choose a new password. The link works once,
-            for a short time.
+            , a reset link is on its way.
           </>
         }
         footer={
-          <>
-            <span>Wrong email?</span>
-            <Button
-              variant="link"
-              className="h-auto p-0 text-[13px] has-[>svg]:px-0"
-              onClick={handleUseAnotherEmail}
-            >
-              Use a different one
-            </Button>
-          </>
+          <Button
+            variant="link"
+            className="h-auto p-0 text-[13px] has-[>svg]:px-0"
+            onClick={handleUseAnotherEmail}
+          >
+            Use a different email
+          </Button>
         }
       >
-        <OfflineNotice message={OFFLINE_MESSAGE} />
         <FormProblem problem={problem} />
-        {resendCount > 0 && !problem && (
-          <Alert variant="info" className="mb-3.5">
-            <MailCheck aria-hidden />
-            <AlertDescription className="text-[13px]">
-              We sent another link. Use the one in the newest email.
-            </AlertDescription>
-          </Alert>
-        )}
-        {!problem && (
-          <p className="mt-0 mb-4 text-center text-[13px] leading-relaxed text-muted-foreground">
-            Not there after a few minutes? Check your spam or junk folder, then
-            send it again.
-          </p>
-        )}
-        <Button asChild className="w-full">
-          <Link to={routes.signIn()}>
-            <ArrowLeft size={15} />
-            Back to sign in
-          </Link>
-        </Button>
-        <Button
-          variant="ghost"
-          className="mt-2 w-full"
-          busy={busy}
-          onClick={() => void handleResend()}
-        >
-          <RotateCw size={15} />
-          Send the link again
-        </Button>
+        <AuthLinkButton to={routes.signIn()}>Back to sign in</AuthLinkButton>
+        <AuthActionButton busy={busy} onClick={() => void handleResend()}>
+          Resend link
+        </AuthActionButton>
       </AuthPageLayout>
     );
 
   return (
     <AuthPageLayout
-      icon={KeyRound}
-      title="Forgot your password?"
-      description="Enter the email you sign in with and we'll send you a link to choose a new password."
-      footer={
-        <>
-          <span>Remembered it?</span>
-          <AuthLink to={routes.signIn()}>Sign in</AuthLink>
-        </>
-      }
+      title="Reset your password"
+      description="We'll email you a link to set a new one."
+      footer={<BackToSignInLink />}
     >
-      <OfflineNotice message={OFFLINE_MESSAGE} />
       <FormProblem problem={problem} />
       <form onSubmit={handleSubmit} noValidate>
-        <Field label="Email" error={errors.email ?? null}>
-          <Input
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            aria-invalid={Boolean(errors.email)}
-          />
-        </Field>
-        <Button type="submit" className="mt-1 w-full" busy={busy}>
-          Send reset link
-        </Button>
+        <AuthField label="Email" error={errors.email}>
+          {(control) => (
+            <Input
+              {...control}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          )}
+        </AuthField>
+        <AuthSubmitButton busy={busy}>Send reset link</AuthSubmitButton>
       </form>
     </AuthPageLayout>
   );

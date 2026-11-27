@@ -26,6 +26,7 @@
   --accent-foreground: #fafafa;
   --destructive: #dc2626;
   --destructive-foreground: color-mix(in srgb, #dc2626 28%, white);
+  --destructive-soft: color-mix(in srgb, #dc2626 55%, white);
   --success: #16a34a;
   --success-foreground: color-mix(in srgb, #16a34a 28%, white);
   --warning: #f59e0b;
@@ -84,6 +85,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-soft: var(--destructive-soft);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);

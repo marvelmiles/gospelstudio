@@ -1,6 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
-import { CircleCheck, KeyRound, LinkIcon, LogIn } from "lucide-react";
+import { CircleCheck, Link2Off } from "lucide-react";
 import { API_ERROR_CODES } from "@/contracts/apiErrors";
 import {
   newPasswordSchema,
@@ -10,18 +9,17 @@ import {
   PASSWORD_RESET_TOKEN_PARAM,
   resetTokenSchema,
 } from "@/contracts/authContract";
-import { Button } from "@/components/ui/button";
-import { Field } from "@/components/shared/Field";
 import { PasswordInput } from "@/components/shared/PasswordInput";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useSubmission } from "../../../hooks/useSubmission";
 import { ApiRequestError } from "../../../lib/jsonApi";
 import routes from "../../../routes";
 import { completePasswordReset } from "../api/authApi";
-import { AuthLink } from "../components/AuthLink";
+import { AuthLinkButton, AuthSubmitButton } from "../components/AuthButtons";
+import { AuthField } from "../components/AuthField";
+import { BackToSignInLink } from "../components/AuthLink";
 import { AuthPageLayout } from "../components/AuthPageLayout";
 import { FormProblem } from "../components/FormProblem";
-import { OfflineNotice } from "../components/OfflineNotice";
 
 const tokenFromLink = (): string | null => {
   const token = new URLSearchParams(window.location.hash.slice(1)).get(
@@ -31,12 +29,7 @@ const tokenFromLink = (): string | null => {
 };
 
 const RequestNewLink = () => (
-  <Button asChild variant="secondary" className="w-full">
-    <Link to={routes.forgotPassword()}>
-      <LinkIcon size={15} />
-      Ask for a new link
-    </Link>
-  </Button>
+  <AuthLinkButton to={routes.forgotPassword()}>Get a new link</AuthLinkButton>
 );
 
 export const ResetPasswordPage = () => {
@@ -86,63 +79,46 @@ export const ResetPasswordPage = () => {
       <AuthPageLayout
         icon={CircleCheck}
         title="Password updated"
-        description="Your new password is ready. Every device was signed out, so sign in again where you use GospelStudio."
+        description="You've been signed out on all devices."
       >
-        <Button asChild className="w-full">
-          <Link to={routes.signIn()}>
-            <LogIn size={15} />
-            Sign in
-          </Link>
-        </Button>
+        <AuthLinkButton to={routes.signIn()}>Sign in</AuthLinkButton>
       </AuthPageLayout>
     );
 
   if (!token)
     return (
       <AuthPageLayout
-        icon={LinkIcon}
-        title="This link is incomplete"
-        description="Open the link from the email again, or ask for a new one."
+        icon={Link2Off}
+        title="This link doesn't work"
+        footer={<BackToSignInLink />}
       >
         <RequestNewLink />
       </AuthPageLayout>
     );
 
   return (
-    <AuthPageLayout
-      icon={KeyRound}
-      title="Choose a new password"
-      description="Pick a password you don't use anywhere else."
-      footer={
-        <>
-          <span>Changed your mind?</span>
-          <AuthLink to={routes.signIn()}>Sign in</AuthLink>
-        </>
-      }
-    >
-      <OfflineNotice message="You're offline. Choose your new password once you're back online." />
+    <AuthPageLayout title="Set a new password" footer={<BackToSignInLink />}>
       <FormProblem problem={problem} />
       {isLinkSpent ? (
         <RequestNewLink />
       ) : (
         <form onSubmit={handleSubmit} noValidate>
-          <Field label="New password" error={fieldError}>
-            <PasswordInput
-              label="New password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              aria-invalid={Boolean(fieldError)}
-            />
-            {!fieldError && (
-              <span className="mt-1.5 block text-[11.5px] text-muted-foreground">
-                At least {PASSWORD_MIN_LENGTH} characters.
-              </span>
+          <AuthField
+            label="New password"
+            hint={`${PASSWORD_MIN_LENGTH}+ characters`}
+            error={fieldError}
+          >
+            {(control) => (
+              <PasswordInput
+                {...control}
+                label="New password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+              />
             )}
-          </Field>
-          <Button type="submit" className="mt-1 w-full" busy={busy}>
-            Save new password
-          </Button>
+          </AuthField>
+          <AuthSubmitButton busy={busy}>Save password</AuthSubmitButton>
         </form>
       )}
     </AuthPageLayout>

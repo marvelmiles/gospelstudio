@@ -1,10 +1,7 @@
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
-import { LogIn } from "lucide-react";
 import { signInRequestSchema } from "@/contracts/authContract";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Field } from "@/components/shared/Field";
 import { PasswordInput } from "@/components/shared/PasswordInput";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import { useSubmission } from "../../../hooks/useSubmission";
@@ -12,10 +9,11 @@ import { checkForm, type FieldErrors } from "../../../lib/formErrors";
 import routes from "../../../routes";
 import { signIn } from "../api/authApi";
 import { completeSignIn } from "../accountLifecycle";
+import { AuthSubmitButton } from "../components/AuthButtons";
+import { AuthField } from "../components/AuthField";
 import { AuthLink } from "../components/AuthLink";
 import { AuthPageLayout } from "../components/AuthPageLayout";
 import { FormProblem } from "../components/FormProblem";
-import { OfflineNotice } from "../components/OfflineNotice";
 import { useNextPage } from "../hooks/useNextPage";
 import { forgotPasswordStateOf } from "../lib/forgotPasswordState";
 import { sessionDeviceName } from "../lib/sessionDeviceName";
@@ -67,50 +65,53 @@ export const SignInPage = () => {
 
   return (
     <AuthPageLayout
-      icon={LogIn}
       title="Sign in"
-      description="Sign in to keep your church's library in your account and use it on every device."
       footer={
         <>
-          <span>New here?</span>
-          <AuthLink to={routes.signUp(nextPage)}>Create an account</AuthLink>
+          <span>No account?</span>
+          <AuthLink to={routes.signUp(nextPage)}>Create one</AuthLink>
         </>
       }
     >
-      <OfflineNotice message="You're offline. Keep working as usual, and sign in once you're back online." />
       <FormProblem problem={problem} />
       <form onSubmit={handleSubmit} noValidate>
-        <Field label="Email" error={errors.email ?? null}>
-          <Input
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            value={values.email}
-            onChange={update("email")}
-            aria-invalid={Boolean(errors.email)}
-          />
-        </Field>
-        <Field label="Password" error={errors.password ?? null}>
-          <PasswordInput
-            label="Password"
-            autoComplete="current-password"
-            value={values.password}
-            onChange={update("password")}
-            aria-invalid={Boolean(errors.password)}
-          />
-        </Field>
-        <div className="-mt-1 mb-4 text-right text-[13px]">
-          <AuthLink
-            to={routes.forgotPassword()}
-            state={forgotPasswordStateOf(values.email)}
-          >
-            Forgot password?
-          </AuthLink>
-        </div>
-        <Button type="submit" className="w-full" busy={busy}>
-          <LogIn size={15} />
-          Sign in
-        </Button>
+        <AuthField label="Email" error={errors.email}>
+          {(control) => (
+            <Input
+              {...control}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              value={values.email}
+              onChange={update("email")}
+            />
+          )}
+        </AuthField>
+        <AuthField
+          label="Password"
+          error={errors.password}
+          action={
+            <span className="text-xs">
+              <AuthLink
+                to={routes.forgotPassword()}
+                state={forgotPasswordStateOf(values.email)}
+              >
+                Forgot password?
+              </AuthLink>
+            </span>
+          }
+        >
+          {(control) => (
+            <PasswordInput
+              {...control}
+              label="Password"
+              autoComplete="current-password"
+              value={values.password}
+              onChange={update("password")}
+            />
+          )}
+        </AuthField>
+        <AuthSubmitButton busy={busy}>Sign in</AuthSubmitButton>
       </form>
     </AuthPageLayout>
   );
