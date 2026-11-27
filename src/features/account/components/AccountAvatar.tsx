@@ -1,8 +1,10 @@
+import type { Account } from "@/contracts/accountContract";
 import { cn } from "../../../lib/utils";
 import type { SyncPhase } from "../../sync/syncStore";
+import { useChurchLogo } from "../hooks/useChurchLogo";
 
 interface AccountAvatarProps {
-  churchName: string;
+  account: Pick<Account, "id" | "churchName">;
   size?: "md" | "lg";
   phase?: SyncPhase;
 }
@@ -26,25 +28,38 @@ const initialsOf = (name: string): string =>
     .join("") || "?";
 
 export const AccountAvatar = ({
-  churchName,
+  account,
   size = "md",
   phase,
-}: AccountAvatarProps) => (
-  <span
-    aria-hidden
-    className={cn(
-      "relative grid shrink-0 place-items-center rounded-full bg-primary/20 font-bold text-primary-soft ring-1 ring-primary/35",
-      size === "lg" ? "size-10 text-[14px]" : "size-8 text-[12px]",
-    )}
-  >
-    {initialsOf(churchName)}
-    {phase && (
-      <span
-        className={cn(
-          "absolute -right-0.5 -bottom-0.5 size-2.75 rounded-full ring-2 ring-sidebar",
-          PHASE_DOT[phase],
-        )}
-      />
-    )}
-  </span>
-);
+}: AccountAvatarProps) => {
+  const logo = useChurchLogo(account.id);
+
+  return (
+    <span
+      aria-hidden
+      className={cn(
+        "relative grid shrink-0 place-items-center rounded-full bg-primary/20 font-bold text-primary-soft ring-1 ring-primary/35",
+        size === "lg" ? "size-10 text-[14px]" : "size-8 text-[12px]",
+      )}
+    >
+      {logo.status === "ready" ? (
+        <img
+          src={logo.url}
+          alt=""
+          draggable={false}
+          className="size-full rounded-full object-cover"
+        />
+      ) : (
+        initialsOf(account.churchName)
+      )}
+      {phase && (
+        <span
+          className={cn(
+            "absolute -right-0.5 -bottom-0.5 size-2.75 rounded-full ring-2 ring-sidebar",
+            PHASE_DOT[phase],
+          )}
+        />
+      )}
+    </span>
+  );
+};

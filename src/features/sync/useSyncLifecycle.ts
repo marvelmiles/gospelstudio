@@ -24,7 +24,7 @@ export const useSyncLifecycle = (): void => {
         void restoreSession();
         return;
       }
-      void refreshAppAfterSync(message);
+      if (message.type === "library-changed") void refreshAppAfterSync(message);
     });
   }, []);
 

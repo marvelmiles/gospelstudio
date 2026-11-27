@@ -97,7 +97,7 @@ export const AccountMenu = ({ showLabel }: AccountMenuProps) => {
               isOnAccountPage && "ring-2 ring-primary/45",
             )}
           >
-            <AccountAvatar churchName={account.churchName} phase={phase} />
+            <AccountAvatar account={account} phase={phase} />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent
@@ -105,7 +105,7 @@ export const AccountMenu = ({ showLabel }: AccountMenuProps) => {
           className="w-[min(18rem,calc(100vw-1.5rem))]"
         >
           <div className="flex items-center gap-3 px-2.5 pt-2 pb-2.5">
-            <AccountAvatar churchName={account.churchName} size="lg" />
+            <AccountAvatar account={account} size="lg" />
             <div className="min-w-0">
               <div className="truncate text-sm font-semibold text-foreground">
                 {account.churchName}

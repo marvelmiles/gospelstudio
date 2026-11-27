@@ -4,6 +4,7 @@ import { LoadingArea } from "@/components/shared/LoadingArea";
 import { useDocumentTitle } from "../../../hooks/useDocumentTitle";
 import routes from "../../../routes";
 import { AccountSyncPanel } from "../components/AccountSyncPanel";
+import { ChurchLogoSection } from "../components/ChurchLogoSection";
 import { ChurchNameSection } from "../components/ChurchNameSection";
 import { DeleteAccountSection } from "../components/DeleteAccountSection";
 import { DevicesSection } from "../components/DevicesSection";
@@ -40,6 +41,7 @@ export const AccountPage = () => {
             accountId={account.id}
             storage={details?.storage ?? null}
           />
+          <ChurchLogoSection account={account} />
           <ChurchNameSection account={account} />
           <EmailSection account={account} />
           <PasswordSection />

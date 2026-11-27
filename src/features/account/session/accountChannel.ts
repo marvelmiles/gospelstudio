@@ -4,6 +4,7 @@ const CHANNEL_NAME = "gospelstudio-account";
 
 const accountMessageSchema = z.discriminatedUnion("type", [
   z.object({ type: z.literal("session-changed") }),
+  z.object({ type: z.literal("logo-changed"), accountId: z.string() }),
   z.object({
     type: z.literal("library-changed"),
     stores: z.array(z.string()),
